@@ -1,0 +1,78 @@
+=head1 ActivePerl 5.20 Change Log
+
+For the latest information on ActivePerl, please see:
+
+    http://www.ActiveState.com/ActivePerl/
+
+=head2 Build 2002 June, 2015
+
+Build 2002 is based on Perl 5.20.2 plus additional selected changes.
+
+I<Bug Fixes and Changes since build 2001>
+
+=over 3
+
+=item *
+
+Most bundled modules have been updated to their latest released
+version from CPAN.  Use the C<ppm query> command to check the exact
+version included in this release.
+
+=back
+
+=head2 Build 2001 March, 2014
+
+Build 2001 is based on Perl 5.20.2 plus additional selected changes.
+
+I<Bug Fixes and Changes since build 2000>
+
+=over 3
+
+=item *
+
+Significant changes that have occurred in the Perl 5.20.2 release are
+documented in L<perl5202delta>.
+
+=item *
+
+Most bundled modules have been updated to their latest released
+version from CPAN.  Use the C<ppm query> command to check the exact
+version included in this release.
+
+=back
+
+=head2 Build 2000 October, 2014
+
+I<What's new in the 2000 Series>
+
+=over 3
+
+=item *
+
+This build corresponds to the Perl 5.20.1 source code release.
+
+=item *
+
+ActivePerl 5.20 for Linux is only released as a 64-bit build for x64 architecture.
+It requires glibc-2.15 or later, e.g. Ubuntu 12.04.
+
+=item *
+
+The 2000 series builds of ActivePerl are not binary compatible with
+builds in the 1800 or earlier series.  Any extensions built using binaries
+from the ActivePerl 1800 or earlier series will need to be recompiled.
+Note especially that this applies to PPM packages that may have been
+built for earlier series of ActivePerl.
+
+=item *
+
+Significant changes that have occurred since the 5.18 release are documented in
+L<perl5200delta>.  Other minor changes and bugfixes is documented in L<perl5201delta>.
+
+=item *
+
+Most bundled distributions have been updated to their latest released
+version from CPAN.  Use the C<ppm list> command to check the exact
+version included in this release.
+
+=back

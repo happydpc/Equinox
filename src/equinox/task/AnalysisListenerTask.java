@@ -1,0 +1,93 @@
+/*
+ * Copyright 2018 Murat Artim (muratartim@gmail.com).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package equinox.task;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import equinoxServer.remote.listener.AnalysisListener;
+import equinoxServer.remote.message.AnalysisMessage;
+import equinoxServer.remote.message.AnalysisProgress;
+
+/**
+ * Interface for server analysis listener task.
+ *
+ * @author Murat Artim
+ * @date 24 Jan 2018
+ * @time 13:33:50
+ */
+public interface AnalysisListenerTask extends AnalysisListener {
+
+	/**
+	 * Waits for server analysis to complete.
+	 *
+	 * @param task
+	 *            Listener task.
+	 * @param isAnalysisCompleted
+	 *            Atomic boolean to check whether the server analysis is completed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	default void waitForAnalysis(InternalEquinoxTask<?> task, AtomicBoolean isAnalysisCompleted) throws Exception {
+
+		// loop while analysis is running
+		while (!isAnalysisCompleted.get()) {
+
+			// task cancelled
+			if (task.isCancelled())
+				return;
+
+			// sleep a bit
+			try {
+				Thread.sleep(1000);
+			}
+
+			// task interrupted
+			catch (InterruptedException e) {
+				if (task.isCancelled())
+					return;
+			}
+		}
+	}
+
+	/**
+	 * Processes analysis message from the server.
+	 *
+	 * @param serverMessage
+	 *            Server message.
+	 * @param task
+	 *            Listener task.
+	 * @param serverMessageRef
+	 *            Reference to server message.
+	 * @param isAnalysisComplete
+	 *            Atomic boolean to check whether the server analysis process is completed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	default void processServerAnalysisMessage(AnalysisMessage serverMessage, InternalEquinoxTask<?> task, AtomicReference<AnalysisMessage> serverMessageRef, AtomicBoolean isAnalysisComplete) throws Exception {
+
+		// analysis progress
+		if (serverMessage instanceof AnalysisProgress) {
+			task.updateMessage(((AnalysisProgress) serverMessage).getProgressMessage());
+		}
+
+		// analysis completed
+		else {
+			serverMessageRef.set(serverMessage);
+			isAnalysisComplete.set(true);
+		}
+	}
+}
