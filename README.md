@@ -11,4 +11,4 @@ Screenshots below demonstrate some of the analysis and data visualization capabi
 <img width="1528" alt="shots" src="https://user-images.githubusercontent.com/13915745/40891639-b25e01c2-6789-11e8-9142-80a913a040b8.png">
 
 ## Video demonstrations
-Here's a 5 minutes [screencast](https://youtu.be/k49bgTfAgVU) demonstrating data visualization capabilities of Equinox.
+Here's a 5 minutes [screencast](https://youtu.be/k49bgTfAgVU) demonstrating some of the analysis and data visualization capabilities of Equinox. 3D data visualizations are demonstrated in this short [video](https://youtu.be/RM_ofreMsaQ).
