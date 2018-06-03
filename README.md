@@ -6,6 +6,7 @@ Aircraft digital twin application for fatigue analysis. It is the desktop client
 ![equinox](https://user-images.githubusercontent.com/13915745/40886218-6d63737c-6734-11e8-892e-b07f12cb5a3d.gif)
 
 ## Screenshots
+<img width="1528" alt="shots" src="https://user-images.githubusercontent.com/13915745/40891639-b25e01c2-6789-11e8-9142-80a913a040b8.png">
 
 ## Video demonstrations
 
