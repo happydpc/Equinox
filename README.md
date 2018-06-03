@@ -7,5 +7,5 @@ Data analytics application for Aircraft Fatigue Twin (AF-Twin) platform. AF-Twin
 
 ## Screenshots
 
-## Video demonstration
+## Video demonstrations
 
