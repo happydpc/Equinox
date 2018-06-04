@@ -1,7 +1,7 @@
 # Equinox
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-Desktop application client for Aircraft Fatigue Twin (AF-Twin) platform. AF-Twin platform aims at creating a digital fatigue representation of the aircraft structure. This project contains the prototype desktop client application of the platform, named as Equinox.
+Desktop application client for Aircraft Fatigue Twin (AF-Twin) platform. AF-Twin platform aims at creating a digital fatigue representation of the aircraft structure. This project contains the prototype desktop client application of the platform, named as Equinox. The application is developed using JavaFX framework.
 
 ![ezgif com-crop](https://user-images.githubusercontent.com/13915745/40910546-b3101f70-67ec-11e8-8417-bc142bdeb1b7.gif)
 
