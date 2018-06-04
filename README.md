@@ -3,7 +3,7 @@
 
 Aircraft-digital-twin application for fatigue analysis. It is the desktop client application of Aircraft Fatigue Twin (AF-Twin) platform. AF-Twin platform aims at creating a digital fatigue representation of the aircraft structure. This project contains the prototype desktop client application of the platform, named as Equinox.
 
-![equinox](https://user-images.githubusercontent.com/13915745/40886218-6d63737c-6734-11e8-892e-b07f12cb5a3d.gif)
+![ezgif com-crop](https://user-images.githubusercontent.com/13915745/40910546-b3101f70-67ec-11e8-8417-bc142bdeb1b7.gif)
 
 ## Screenshots
 Screenshots below demonstrate some of the analysis and data visualization capabilities of Equinox.
