@@ -13,7 +13,7 @@ Screenshots below demonstrate some of the analysis and data visualization capabi
 ## Video demonstrations
 Here's a 5 minutes [screencast](https://youtu.be/k49bgTfAgVU) demonstrating some of the analysis and data visualization capabilities of Equinox. 3D data visualizations are demonstrated in this short [video](https://youtu.be/RM_ofreMsaQ).
 
-### Multi-threading in Equinox
+## Multi-threading in Equinox
 Equinox is a highly multi-threaded application. All features of the application are performed by background tasks running in thread pools. In addition to multi-threading, it also supports peer-to-peer task sharing among Equinox clients.
 
 ![parallel](https://user-images.githubusercontent.com/13915745/40908265-85e1694c-67e6-11e8-9281-d936482992c9.gif)
