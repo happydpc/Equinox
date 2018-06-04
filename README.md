@@ -16,4 +16,4 @@ Here's a 5 minutes [screencast](https://youtu.be/k49bgTfAgVU) demonstrating some
 ### Multi-threading in Equinox
 Equinox is a highly multi-threaded application. All features of the application are performed by background tasks running in thread pools. In addition to multi-threading, it also supports peer-to-peer task sharing among Equinox clients.
 
-![parallel](https://user-images.githubusercontent.com/13915745/40907897-75a2d94a-67e5-11e8-9c33-bdaeff8986aa.gif)
+![parallel](https://user-images.githubusercontent.com/13915745/40908265-85e1694c-67e6-11e8-9281-d936482992c9.gif)
