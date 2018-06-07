@@ -1,7 +1,7 @@
 # Equinox
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-Data analysis and visualisation software for digital-twin platform. Digital-twin platform aims at creating a digital fatigue representation of the structure. This project contains the prototype desktop client application of the platform, named as Equinox. The application has the following major capabilities,
+Data analysis and visualisation software. It is the desktop application client of the fatigue-data-analysis platform. Fatigue-data-analysis platform aims at creating a digital fatigue representation of the structure. This project contains the prototype desktop client application of the platform, named as Equinox. The application has the following major capabilities,
 - Parameterized fatigue spectrum analysis,
 - 2D & 3D data visualization,
 - Search engine for central digital-twin database,
