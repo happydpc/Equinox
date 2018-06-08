@@ -85,7 +85,7 @@ public class ProgramArguments {
 		arguments_ = new EnumMap<>(ArgumentType.class);
 
 		// get user and JVM arguments
-		Map<String, String> userArgs = application.getParameters().getNamed();
+		Map<String, String> userArgs = application.getApplicationParameters().getNamed();
 		List<String> jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
 
 		// loop over argument types

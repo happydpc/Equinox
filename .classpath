@@ -6,7 +6,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-10">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -15,23 +15,6 @@
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/Users/aurora/EclipseWorkspace/EquinoxServer/equinoxServer.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/aurora/EclipseWorkspace/EquinoxServer/javadoc/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/Users/aurora/Documents/Developer/Libraries/INF/oofem/inf-oofem-all.jar"/>
-	<classpathentry kind="lib" path="/Users/aurora/Documents/Developer/Libraries/CustomControls/customControls.jar"/>
-	<classpathentry kind="lib" path="/Users/aurora/EclipseWorkspace/AppContainer/appContainer.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/aurora/EclipseWorkspace/AppContainer/javadoc/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/Users/aurora/Documents/Developer/Libraries/base64-data-encryption/base64-all.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/Users/aurora/Documents/Developer/Libraries/base64-data-encryption/javadoc/all-javadoc/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
