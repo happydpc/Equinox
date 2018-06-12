@@ -1,3 +1,25 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# Macos files
+*.DS_Store
+
+# Project classpath
+*.classpath
+
+# Project compilation directories
+/bin/
 /target/
-/.DS_Store
-/derby.log
+/build/
