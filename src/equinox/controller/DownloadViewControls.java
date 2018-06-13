@@ -54,7 +54,7 @@ public class DownloadViewControls implements Initializable {
 	private HBox root_;
 
 	@FXML
-	private Button download_, add_;
+	private Button download_, add_, settings_;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -97,6 +97,15 @@ public class DownloadViewControls implements Initializable {
 	 */
 	public Button getAddButton() {
 		return add_;
+	}
+
+	/**
+	 * Returns settings button.
+	 *
+	 * @return Settings button.
+	 */
+	public Button getSettingsButton() {
+		return settings_;
 	}
 
 	@FXML
@@ -189,6 +198,11 @@ public class DownloadViewControls implements Initializable {
 				item.add();
 			}
 		}
+	}
+
+	@FXML
+	private void onSettingsClicked() {
+		owner_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.SEARCH_ENGINE_SETTINGS_PANEL);
 	}
 
 	/**

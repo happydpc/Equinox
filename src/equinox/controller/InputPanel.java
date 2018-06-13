@@ -79,6 +79,9 @@ public class InputPanel implements Initializable {
 	/** Pagination control. */
 	private Pagination pagination_;
 
+	/** Index of previous panel. */
+	private int previousPanelIndex_ = FILE_VIEW_PANEL;
+
 	/** Sub panels. */
 	private HashMap<Integer, InputSubPanel> subPanels_;
 
@@ -354,6 +357,7 @@ public class InputPanel implements Initializable {
 	 *            Index of demanded sub panel.
 	 */
 	public void showSubPanel(int index) {
+		previousPanelIndex_ = pagination_.getCurrentPageIndex();
 		pagination_.setCurrentPageIndex(index);
 	}
 
@@ -388,6 +392,15 @@ public class InputPanel implements Initializable {
 	 */
 	public int getCurrentSubPanelIndex() {
 		return pagination_.getCurrentPageIndex();
+	}
+
+	/**
+	 * Returns the previous sub panel index.
+	 *
+	 * @return The previous sub panel index.
+	 */
+	public int getPreviousSubPanelIndex() {
+		return previousPanelIndex_;
 	}
 
 	/**

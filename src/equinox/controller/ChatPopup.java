@@ -30,7 +30,6 @@ import equinoxServer.remote.message.ChatMessage;
 import equinoxServer.remote.message.ShareFile;
 import equinoxServer.remote.message.StatusChange;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -42,7 +41,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
 
 /**
  * Class for chat panel controller.
@@ -81,13 +79,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// bind scroll position to container height
-		messageContainer_.heightProperty().addListener(new ChangeListener<Number>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				scroll_.setVvalue(scroll_.getVmax());
-			}
-		});
+		messageContainer_.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> scroll_.setVvalue(scroll_.getVmax()));
 	}
 
 	@Override
@@ -149,22 +141,10 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 			popOver_.setContentNode(root_);
 
 			// set showing handler
-			popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = true;
-				}
-			});
+			popOver_.setOnShowing(event -> isShown_ = true);
 
 			// set hidden handler
-			popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = false;
-				}
-			});
+			popOver_.setOnHidden(event -> isShown_ = false);
 
 			// show
 			popOver_.show(owner_.getOwner().getOwner().getStage());
@@ -246,13 +226,9 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 
 			// create confirmation action
 			PopOver popOver = new PopOver();
-			EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-					popOver.hide();
-				}
+			EventHandler<ActionEvent> handler = event -> {
+				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				popOver.hide();
 			};
 
 			// show question
@@ -267,13 +243,13 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 		}
 
 		// recipient
-		else if ((recipient == null) || recipient.isEmpty()) {
+		else if (recipient == null || recipient.isEmpty()) {
 			warning = "Please select a recipient to send the message.";
 			node = recipient_;
 		}
 
 		// message text
-		else if ((messageText == null) || messageText.isEmpty()) {
+		else if (messageText == null || messageText.isEmpty()) {
 			warning = "Please enter a message to send.";
 			node = message_;
 		}

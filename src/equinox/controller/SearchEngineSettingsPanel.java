@@ -145,12 +145,12 @@ public class SearchEngineSettingsPanel implements InternalInputSubPanel {
 		order_.setUserData(order_.getSelectionModel().getSelectedItem());
 
 		// get back to file panel
-		owner_.showSubPanel(InputPanel.FILE_VIEW_PANEL);
+		owner_.showSubPanel(owner_.getPreviousSubPanelIndex());
 	}
 
 	@FXML
 	private void onCancelClicked() {
-		owner_.showSubPanel(InputPanel.FILE_VIEW_PANEL);
+		owner_.showSubPanel(owner_.getPreviousSubPanelIndex());
 	}
 
 	@FXML

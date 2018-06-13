@@ -186,7 +186,7 @@ public class DownloadMultiplicationTablePanel implements Initializable, Download
 		PopOver popOver = new PopOver();
 		double buttonY = infoButton_.localToScreen(infoButton_.getBoundsInLocal()).getMinY();
 		double height = Screen.getPrimary().getBounds().getHeight();
-		popOver.setArrowLocation(buttonY <= (height * 0.5) ? ArrowLocation.TOP_RIGHT : ArrowLocation.BOTTOM_RIGHT);
+		popOver.setArrowLocation(buttonY <= height * 0.5 ? ArrowLocation.TOP_RIGHT : ArrowLocation.BOTTOM_RIGHT);
 		popOver.setDetachable(true);
 		popOver.setContentNode(canEdit ? DownloadMultiplicationTableInfoEditPanel.load(info_, popOver, this) : DownloadMultiplicationTableInfoPanel.load(info_, popOver));
 		popOver.setHideOnEscape(true);

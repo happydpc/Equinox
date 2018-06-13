@@ -214,7 +214,7 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 		PopOver popOver = new PopOver();
 		double buttonY = infoButton_.localToScreen(infoButton_.getBoundsInLocal()).getMinY();
 		double height = Screen.getPrimary().getBounds().getHeight();
-		popOver.setArrowLocation(buttonY <= (height * 0.5) ? ArrowLocation.TOP_RIGHT : ArrowLocation.BOTTOM_RIGHT);
+		popOver.setArrowLocation(buttonY <= height * 0.5 ? ArrowLocation.TOP_RIGHT : ArrowLocation.BOTTOM_RIGHT);
 		popOver.setDetachable(true);
 		popOver.setContentNode(DownloadPilotPointInfoPanel.load(info_, this, canEdit, popOver));
 		popOver.setHideOnEscape(true);
