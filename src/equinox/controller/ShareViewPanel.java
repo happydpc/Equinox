@@ -40,7 +40,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
 
 /**
  * Class for share view panel controller.
@@ -91,7 +90,7 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 				button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
 			}
 			else {
-				if (i == (size - 1)) {
+				if (i == size - 1) {
 					button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
 				}
 				else {
@@ -136,22 +135,10 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 			popOver_.setAutoHide(true);
 
 			// set showing handler
-			popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = true;
-				}
-			});
+			popOver_.setOnShowing(event -> isShown_ = true);
 
 			// set hidden handler
-			popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = false;
-				}
-			});
+			popOver_.setOnHidden(event -> isShown_ = false);
 
 			// clear all selections
 			for (Node recipient : container_.getChildren()) {
@@ -209,13 +196,9 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 
 			// create confirmation action
 			PopOver popOver = new PopOver();
-			EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-					popOver.hide();
-				}
+			EventHandler<ActionEvent> handler = event -> {
+				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				popOver.hide();
 			};
 
 			// show question

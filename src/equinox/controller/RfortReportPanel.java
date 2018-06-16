@@ -513,13 +513,9 @@ public class RfortReportPanel implements InternalInputSubPanel, RfortPilotPoints
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
-				EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-						popOver.hide();
-					}
+				EventHandler<ActionEvent> handler = event -> {
+					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+					popOver.hide();
 				};
 
 				// show question

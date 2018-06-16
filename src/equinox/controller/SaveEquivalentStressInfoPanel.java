@@ -171,7 +171,7 @@ public class SaveEquivalentStressInfoPanel implements InternalInputSubPanel, Lis
 		SpectrumItem selected = (SpectrumItem) owner_.getSelectedFiles().get(0);
 
 		// equivalent stress
-		if ((selected instanceof FatigueEquivalentStress) || (selected instanceof PreffasEquivalentStress) || (selected instanceof LinearEquivalentStress)) {
+		if (selected instanceof FatigueEquivalentStress || selected instanceof PreffasEquivalentStress || selected instanceof LinearEquivalentStress) {
 			ppName_.setDisable(false);
 			spectrumName_.setDisable(false);
 			sequenceName_.setDisable(false);
@@ -181,7 +181,7 @@ public class SaveEquivalentStressInfoPanel implements InternalInputSubPanel, Lis
 		}
 
 		// external equivalent stress
-		else if ((selected instanceof ExternalFatigueEquivalentStress) || (selected instanceof ExternalPreffasEquivalentStress) || (selected instanceof ExternalLinearEquivalentStress)) {
+		else if (selected instanceof ExternalFatigueEquivalentStress || selected instanceof ExternalPreffasEquivalentStress || selected instanceof ExternalLinearEquivalentStress) {
 			ppName_.setDisable(true);
 			spectrumName_.setDisable(true);
 			ppName_.setSelected(false);
@@ -193,7 +193,7 @@ public class SaveEquivalentStressInfoPanel implements InternalInputSubPanel, Lis
 		}
 
 		// fast equivalent stress
-		else if ((selected instanceof FastFatigueEquivalentStress) || (selected instanceof FastPreffasEquivalentStress) || (selected instanceof FastLinearEquivalentStress)) {
+		else if (selected instanceof FastFatigueEquivalentStress || selected instanceof FastPreffasEquivalentStress || selected instanceof FastLinearEquivalentStress) {
 			ppName_.setDisable(false);
 			spectrumName_.setDisable(false);
 			sequenceName_.setDisable(true);
@@ -446,13 +446,9 @@ public class SaveEquivalentStressInfoPanel implements InternalInputSubPanel, Lis
 
 			// create confirmation action
 			PopOver popOver = new PopOver();
-			EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-					popOver.hide();
-				}
+			EventHandler<ActionEvent> handler = event -> {
+				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				popOver.hide();
 			};
 
 			// show question
@@ -629,15 +625,15 @@ public class SaveEquivalentStressInfoPanel implements InternalInputSubPanel, Lis
 				}
 			}
 			else if (i == SaveEquivalentStresses.PP_NAME) {
-				if ((selected instanceof FatigueEquivalentStress) || (selected instanceof PreffasEquivalentStress) || (selected instanceof LinearEquivalentStress) || (selected instanceof FastFatigueEquivalentStress) || (selected instanceof FastPreffasEquivalentStress)
-						|| (selected instanceof FastLinearEquivalentStress) || (selected instanceof STFFileBucket)) {
+				if (selected instanceof FatigueEquivalentStress || selected instanceof PreffasEquivalentStress || selected instanceof LinearEquivalentStress || selected instanceof FastFatigueEquivalentStress || selected instanceof FastPreffasEquivalentStress
+						|| selected instanceof FastLinearEquivalentStress || selected instanceof STFFileBucket) {
 					if (!options_[i].get()) {
 						options_[i].set(true);
 					}
 				}
 			}
 			else if (i == SaveEquivalentStresses.SEQ_NAME) {
-				if ((selected instanceof ExternalFatigueEquivalentStress) || (selected instanceof ExternalPreffasEquivalentStress) || (selected instanceof ExternalLinearEquivalentStress)) {
+				if (selected instanceof ExternalFatigueEquivalentStress || selected instanceof ExternalPreffasEquivalentStress || selected instanceof ExternalLinearEquivalentStress) {
 					if (!options_[i].get()) {
 						options_[i].set(true);
 					}

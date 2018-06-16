@@ -2514,7 +2514,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -2551,7 +2551,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -2583,7 +2583,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -2609,7 +2609,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		File selectedDir = dirChooser.showDialog(owner_.getOwner().getStage());
 
 		// no directory selected
-		if ((selectedDir == null) || !selectedDir.exists())
+		if (selectedDir == null || !selectedDir.exists())
 			return;
 
 		// set initial directory
@@ -2719,22 +2719,19 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 
 		// create confirmation action
 		PopOver popOver = new PopOver();
-		EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
+		EventHandler<ActionEvent> handler = event -> {
 
-				// get selected items
-				ObservableList<TreeItem<String>> selected = getSelectedItems();
+			// get selected items
+			ObservableList<TreeItem<String>> selected = getSelectedItems();
 
-				// get progress panel
-				ActiveTasksPanel tm = owner_.getActiveTasksPanel();
+			// get progress panel
+			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 
-				// create task
-				tm.runTaskInParallel(new DeleteFiles(selected));
+			// create task
+			tm.runTaskInParallel(new DeleteFiles(selected));
 
-				// hide pop-over
-				popOver.hide();
-			}
+			// hide pop-over
+			popOver.hide();
 		};
 
 		// show message
@@ -2756,12 +2753,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 	private void hide() {
 
 		// run later
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				owner_.getInputPanel().getFileTreeRoot().getChildren().removeAll(getSelectedItems());
-			}
-		});
+		Platform.runLater(() -> owner_.getInputPanel().getFileTreeRoot().getChildren().removeAll(getSelectedItems()));
 	}
 
 	/**

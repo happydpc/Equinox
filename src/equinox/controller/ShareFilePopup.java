@@ -77,7 +77,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
 
 /**
  * Class for share file panel controller.
@@ -141,7 +140,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 			if (size == 1) {
 				button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
 			}
-			else if (i == (size - 1)) {
+			else if (i == size - 1) {
 				button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
 			}
 			else {
@@ -201,22 +200,10 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 			popOver_.setAutoHide(true);
 
 			// set showing handler
-			popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = true;
-				}
-			});
+			popOver_.setOnShowing(event -> isShown_ = true);
 
 			// set hidden handler
-			popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-				@Override
-				public void handle(WindowEvent event) {
-					isShown_ = false;
-				}
-			});
+			popOver_.setOnHidden(event -> isShown_ = false);
 
 			// clear all selections
 			for (Node recipient : container_.getChildren()) {
@@ -252,34 +239,34 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 		ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
 
 		// spectrum
-		if ((item_ instanceof Spectrum) && (fileType_ == null)) {
+		if (item_ instanceof Spectrum && fileType_ == null) {
 			tm.runTaskInParallel(new ShareSpectrum((Spectrum) item_, recipients));
 		}
 
 		// spectrum file
-		else if ((item_ instanceof Spectrum) && (fileType_ != null)) {
+		else if (item_ instanceof Spectrum && fileType_ != null) {
 			tm.runTaskInParallel(new ShareSpectrumFile((Spectrum) item_, fileType_, recipients));
 		}
 
 		// aircraft model
-		else if ((item_ instanceof AircraftModel) && (fileType_ == null)) {
+		else if (item_ instanceof AircraftModel && fileType_ == null) {
 			tm.runTaskInParallel(new ShareAircraftModel((AircraftModel) item_, recipients));
 		}
 
 		// aircraft model file
-		else if ((item_ instanceof AircraftModel) && (fileType_ != null)) {
+		else if (item_ instanceof AircraftModel && fileType_ != null) {
 			tm.runTaskInParallel(new ShareAircraftModelFile((AircraftModel) item_, fileType_, recipients));
 		}
 
 		// stress sequence
-		else if ((item_ instanceof StressSequence) || (item_ instanceof ExternalStressSequence)) {
+		else if (item_ instanceof StressSequence || item_ instanceof ExternalStressSequence) {
 
 			// create working directory
 			Path workingDirectory = createWorkingDirectory("ShareSequence");
 
 			// create output file
 			Path output = null;
-			if ((item_ instanceof ExternalStressSequence) && (fileType_ != null)) {
+			if (item_ instanceof ExternalStressSequence && fileType_ != null) {
 				output = workingDirectory.resolve(FileType.appendExtension(Utility.correctFileName(item_.getName()), FileType.FLS));
 			}
 			else {
@@ -288,13 +275,13 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 
 			// create tasks
 			InternalEquinoxTask<?> saveTask = null;
-			if ((item_ instanceof StressSequence) && (fileType_ == null)) {
+			if (item_ instanceof StressSequence && fileType_ == null) {
 				saveTask = new SaveStressSequenceAsSTH((StressSequence) item_, output.toFile());
 			}
-			else if ((item_ instanceof ExternalStressSequence) && (fileType_ == null)) {
+			else if (item_ instanceof ExternalStressSequence && fileType_ == null) {
 				saveTask = new SaveExternalStressSequenceAsSTH((ExternalStressSequence) item_, output.toFile());
 			}
-			else if ((item_ instanceof ExternalStressSequence) && (fileType_ != null)) {
+			else if (item_ instanceof ExternalStressSequence && fileType_ != null) {
 				saveTask = new SaveExternalFLS(item_.getID(), output.toFile(), FileType.FLS);
 			}
 			ShareGeneratedItem share = new ShareGeneratedItem(output, recipients);
@@ -409,8 +396,8 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 		}
 
 		// equivalent stress
-		else if ((item_ instanceof FatigueEquivalentStress) || (item_ instanceof PreffasEquivalentStress) || (item_ instanceof LinearEquivalentStress) || (item_ instanceof ExternalFatigueEquivalentStress) || (item_ instanceof ExternalPreffasEquivalentStress)
-				|| (item_ instanceof ExternalLinearEquivalentStress) || (item_ instanceof FastFatigueEquivalentStress) || (item_ instanceof FastPreffasEquivalentStress) || (item_ instanceof FastLinearEquivalentStress)) {
+		else if (item_ instanceof FatigueEquivalentStress || item_ instanceof PreffasEquivalentStress || item_ instanceof LinearEquivalentStress || item_ instanceof ExternalFatigueEquivalentStress || item_ instanceof ExternalPreffasEquivalentStress || item_ instanceof ExternalLinearEquivalentStress
+				|| item_ instanceof FastFatigueEquivalentStress || item_ instanceof FastPreffasEquivalentStress || item_ instanceof FastLinearEquivalentStress) {
 
 			// analysis output files
 			if (fileType_ == null) {
@@ -503,13 +490,9 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 
 			// create confirmation action
 			PopOver popOver = new PopOver();
-			EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-					popOver.hide();
-				}
+			EventHandler<ActionEvent> handler = event -> {
+				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				popOver.hide();
 			};
 
 			// show question

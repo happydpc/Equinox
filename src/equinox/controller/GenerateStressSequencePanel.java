@@ -44,7 +44,6 @@ import equinox.task.GetDeltaPInfo.DeltaPInfoRequestingPanel;
 import equinox.task.SaveTask;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -130,34 +129,10 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 	public void initialize(URL arg0, ResourceBundle arg1) {
 
 		// bind components
-		segmentFactors_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<SegmentFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SegmentFactor> c) {
-				removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		segmentFactors_.getItems().addListener(new ListChangeListener<SegmentFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SegmentFactor> c) {
-				resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty());
-			}
-		});
-		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<LoadcaseFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LoadcaseFactor> c) {
-				removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		loadcaseFactors_.getItems().addListener(new ListChangeListener<LoadcaseFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LoadcaseFactor> c) {
-				resetLoadcaseFactors_.setDisable(loadcaseFactors_.getItems().isEmpty());
-			}
-		});
+		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));
+		segmentFactors_.getItems().addListener((ListChangeListener<SegmentFactor>) c -> resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty()));
+		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LoadcaseFactor>) c -> removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty()));
+		loadcaseFactors_.getItems().addListener((ListChangeListener<LoadcaseFactor>) c -> resetLoadcaseFactors_.setDisable(loadcaseFactors_.getItems().isEmpty()));
 
 		// set place holders for lists
 		segmentFactors_.setPlaceholder(new Label("No segment factor added."));
@@ -172,31 +147,21 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 		stressComponent_.getSelectionModel().select(0);
 
 		// add listener
-		stressComponent_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<StressComponent>() {
-
-			@Override
-			public void changed(ObservableValue<? extends StressComponent> observable, StressComponent oldValue, StressComponent newValue) {
-				rotation_.setDisable(!newValue.equals(StressComponent.ROTATED));
-			}
-		});
+		stressComponent_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<StressComponent>) (observable, oldValue, newValue) -> rotation_.setDisable(!newValue.equals(StressComponent.ROTATED)));
 
 		// add DT interpolations
 		dtInterpolation_.setItems(FXCollections.observableArrayList(DTInterpolation.values()));
 		dtInterpolation_.getSelectionModel().select(0);
 
 		// add listener
-		dtInterpolation_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DTInterpolation>() {
+		dtInterpolation_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<DTInterpolation>) (observable, oldValue, newValue) -> {
 
-			@Override
-			public void changed(ObservableValue<? extends DTInterpolation> observable, DTInterpolation oldValue, DTInterpolation newValue) {
+			// null
+			if (newValue == null)
+				return;
 
-				// null
-				if (newValue == null)
-					return;
-
-				// setup components
-				interpolationSelected(newValue);
-			}
+			// setup components
+			interpolationSelected(newValue);
 		});
 
 		// setup double validation fields
@@ -359,16 +324,16 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 		}
 
 		// set delta-p values
-		String dpLoadcase = (dpLoadcase_.getText() == null) || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
-		Double refDP = (refDPVal_.getText() == null) || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
+		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
+		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
 		input.setDPLoadcase(dpLoadcase);
 		input.setReferenceDP(refDP);
 
 		// set delta-t values
-		String dtLoadcaseSup = (dtLoadcaseSup_.getText() == null) || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
-		Double refDTSup = (refDTValSup_.getText() == null) || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
-		String dtLoadcaseInf = (dtLoadcaseInf_.getText() == null) || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
-		Double refDTInf = (refDTValInf_.getText() == null) || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
+		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
+		Double refDTSup = refDTValSup_.getText() == null || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
+		String dtLoadcaseInf = dtLoadcaseInf_.getText() == null || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
+		Double refDTInf = refDTValInf_.getText() == null || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		input.setDTInterpolation(dtInterpolation);
 		input.setDTLoadcaseSup(dtLoadcaseSup);
@@ -377,9 +342,9 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 		input.setReferenceDTInf(refDTInf);
 
 		// set generation options
-		input.setFileName((fileName_.getText() == null) || fileName_.getText().isEmpty() ? null : fileName_.getText());
+		input.setFileName(fileName_.getText() == null || fileName_.getText().isEmpty() ? null : fileName_.getText());
 		input.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
-		input.setRotationAngle((rotation_.getText() == null) || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
+		input.setRotationAngle(rotation_.getText() == null || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
 
 		// get selected items
 		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
@@ -575,17 +540,13 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 
 			// no delta-p loadcase given
 			String dpLoadcase = dpLoadcase_.getText();
-			if ((dpLoadcase == null) || dpLoadcase.trim().isEmpty()) {
+			if (dpLoadcase == null || dpLoadcase.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
-				EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						popOver.hide();
-						start(runNow, scheduleDate);
-					}
+				EventHandler<ActionEvent> handler = event -> {
+					popOver.hide();
+					start(runNow, scheduleDate);
 				};
 
 				// show question
@@ -601,17 +562,13 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 
 			// no reference delta-p given
 			String refDP = refDPVal_.getText();
-			if ((refDP == null) || refDP.trim().isEmpty()) {
+			if (refDP == null || refDP.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
-				EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						popOver.hide();
-						start(runNow, scheduleDate);
-					}
+				EventHandler<ActionEvent> handler = event -> {
+					popOver.hide();
+					start(runNow, scheduleDate);
 				};
 
 				// show question
@@ -764,7 +721,7 @@ public class GenerateStressSequencePanel implements InternalInputSubPanel, Delta
 			Spectrum set = ((STFFile) item).getParentItem();
 
 			// selected STF files are not from the same spectrum
-			if ((spectrum != null) && !spectrum.equals(set)) {
+			if (spectrum != null && !spectrum.equals(set)) {
 				spectrum = null;
 				break;
 			}

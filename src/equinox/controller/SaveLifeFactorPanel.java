@@ -166,7 +166,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 		SpectrumItem first = (SpectrumItem) selected.get(0);
 
 		// equivalent stress
-		if ((first instanceof FatigueEquivalentStress) || (first instanceof PreffasEquivalentStress) || (first instanceof LinearEquivalentStress)) {
+		if (first instanceof FatigueEquivalentStress || first instanceof PreffasEquivalentStress || first instanceof LinearEquivalentStress) {
 			ppName_.setDisable(false);
 			spectrumName_.setDisable(false);
 			sequenceName_.setDisable(false);
@@ -176,7 +176,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 		}
 
 		// external equivalent stress
-		else if ((first instanceof ExternalFatigueEquivalentStress) || (first instanceof ExternalPreffasEquivalentStress) || (first instanceof ExternalLinearEquivalentStress)) {
+		else if (first instanceof ExternalFatigueEquivalentStress || first instanceof ExternalPreffasEquivalentStress || first instanceof ExternalLinearEquivalentStress) {
 			ppName_.setDisable(true);
 			spectrumName_.setDisable(true);
 			ppName_.setSelected(false);
@@ -188,7 +188,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 		}
 
 		// fast equivalent stress
-		else if ((first instanceof FastFatigueEquivalentStress) || (first instanceof FastPreffasEquivalentStress) || (first instanceof FastLinearEquivalentStress)) {
+		else if (first instanceof FastFatigueEquivalentStress || first instanceof FastPreffasEquivalentStress || first instanceof FastLinearEquivalentStress) {
 			ppName_.setDisable(false);
 			spectrumName_.setDisable(false);
 			sequenceName_.setDisable(true);
@@ -445,13 +445,9 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 
 			// create confirmation action
 			PopOver popOver = new PopOver();
-			EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
-					popOver.hide();
-				}
+			EventHandler<ActionEvent> handler = event -> {
+				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				popOver.hide();
 			};
 
 			// show question
@@ -611,15 +607,15 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 				}
 			}
 			else if (i == SaveLifeFactors.PP_NAME) {
-				if ((selected instanceof FatigueEquivalentStress) || (selected instanceof PreffasEquivalentStress) || (selected instanceof LinearEquivalentStress) || (selected instanceof FastFatigueEquivalentStress) || (selected instanceof FastPreffasEquivalentStress)
-						|| (selected instanceof FastLinearEquivalentStress)) {
+				if (selected instanceof FatigueEquivalentStress || selected instanceof PreffasEquivalentStress || selected instanceof LinearEquivalentStress || selected instanceof FastFatigueEquivalentStress || selected instanceof FastPreffasEquivalentStress
+						|| selected instanceof FastLinearEquivalentStress) {
 					if (!options_[i].get()) {
 						options_[i].set(true);
 					}
 				}
 			}
 			else if (i == SaveLifeFactors.SEQ_NAME) {
-				if ((selected instanceof ExternalFatigueEquivalentStress) || (selected instanceof ExternalPreffasEquivalentStress) || (selected instanceof ExternalLinearEquivalentStress)) {
+				if (selected instanceof ExternalFatigueEquivalentStress || selected instanceof ExternalPreffasEquivalentStress || selected instanceof ExternalLinearEquivalentStress) {
 					if (!options_[i].get()) {
 						options_[i].set(true);
 					}

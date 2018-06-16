@@ -71,21 +71,15 @@ public class ScheduleTaskPanel implements Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// disable past days
-		final Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
+		final Callback<DatePicker, DateCell> dayCellFactory = datePicker -> new DateCell() {
 
 			@Override
-			public DateCell call(final DatePicker datePicker) {
-				return new DateCell() {
-
-					@Override
-					public void updateItem(LocalDate item, boolean empty) {
-						super.updateItem(item, empty);
-						if (item.isBefore(LocalDate.now())) {
-							setDisable(true);
-							setStyle("-fx-background-color: #ffc0cb;");
-						}
-					}
-				};
+			public void updateItem(LocalDate item, boolean empty) {
+				super.updateItem(item, empty);
+				if (item.isBefore(LocalDate.now())) {
+					setDisable(true);
+					setStyle("-fx-background-color: #ffc0cb;");
+				}
 			}
 		};
 		date_.setDayCellFactory(dayCellFactory);
@@ -103,7 +97,7 @@ public class ScheduleTaskPanel implements Initializable {
 
 			@Override
 			public LocalDate fromString(String string) {
-				return (string != null) && !string.isEmpty() ? LocalDate.parse(string, formatter_) : null;
+				return string != null && !string.isEmpty() ? LocalDate.parse(string, formatter_) : null;
 			}
 		});
 
@@ -132,7 +126,7 @@ public class ScheduleTaskPanel implements Initializable {
 		Integer minute = minute_.getValue();
 
 		// invalid values
-		if ((localDate == null) || (hour == null) || (minute == null)) {
+		if (localDate == null || hour == null || minute == null) {
 			String message = "Invalid date specified. Please select a valid date to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

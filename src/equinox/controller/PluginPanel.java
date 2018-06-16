@@ -214,20 +214,16 @@ public class PluginPanel implements Initializable {
 
 		// create confirmation action
 		PopOver popOver = new PopOver();
-		EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
+		EventHandler<ActionEvent> handler = event -> {
 
-			@Override
-			public void handle(ActionEvent event) {
+			// get task panel
+			ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
 
-				// get task panel
-				ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+			// delete
+			tm.runTaskInParallel(new DeletePluginFromGlobalDB(plugin_));
 
-				// delete
-				tm.runTaskInParallel(new DeletePluginFromGlobalDB(plugin_));
-
-				// hide pop-over
-				popOver.hide();
-			}
+			// hide pop-over
+			popOver.hide();
 		};
 
 		// show message

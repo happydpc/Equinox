@@ -38,10 +38,10 @@ import equinoxServer.remote.listener.AnalysisListener;
 import equinoxServer.remote.listener.DatabaseQueryListener;
 import equinoxServer.remote.listener.StandardMessageListener;
 import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.BigMessage;
 import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.NetworkMessage;
-import equinoxServer.remote.message.PartialMessage;
+import equinoxServer.remote.utility.BigMessage;
+import equinoxServer.remote.utility.NetworkMessage;
+import equinoxServer.remote.utility.PartialMessage;
 import equinoxServer.remote.utility.SplitMessage;
 import javafx.application.Platform;
 
@@ -193,51 +193,47 @@ public class NetworkWatcher {
 	synchronized public void sendMessage(NetworkMessage message) {
 
 		// submit new task
-		threadExecutor_.submit(new Runnable() {
+		threadExecutor_.submit(() -> {
 
-			@Override
-			public void run() {
+			try {
 
-				try {
-
-					// not a big message
-					if ((message instanceof BigMessage) == false) {
-						kryoNetClient_.sendTCP(message);
-						return;
-					}
-
-					// not big
-					if (!((BigMessage) message).isReallyBig()) {
-						kryoNetClient_.sendTCP(message);
-						return;
-					}
-
-					// split message into partial messages
-					PartialMessage[] parts = SplitMessage.splitMessage((BigMessage) message);
-
-					// no need to split message
-					if (parts == null) {
-						kryoNetClient_.sendTCP(message);
-						return;
-					}
-
-					// send parts
-					for (PartialMessage part : parts) {
-						kryoNetClient_.sendTCP(part);
-					}
+				// not a big message
+				if (message instanceof BigMessage == false) {
+					kryoNetClient_.sendTCP(message);
+					return;
 				}
 
-				// exception occurred during sending message
-				catch (Exception e) {
-
-					// log error
-					Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to exchange server.", e);
-
-					// show warning
-					String msg = "Exception occurred during sending network message to exchange server: " + e.getLocalizedMessage();
-					msg += " Click 'Details' for more information.";
-					owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				// not big
+				if (!((BigMessage) message).isReallyBig()) {
+					kryoNetClient_.sendTCP(message);
+					return;
 				}
+
+				// split message into partial messages
+				PartialMessage[] parts = SplitMessage.splitMessage((BigMessage) message);
+
+				// no need to split message
+				if (parts == null) {
+					kryoNetClient_.sendTCP(message);
+					return;
+				}
+
+				// send parts
+				for (PartialMessage part : parts) {
+					kryoNetClient_.sendTCP(part);
+				}
+			}
+
+			// exception occurred during sending message
+			catch (Exception e) {
+
+				// log error
+				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to exchange server.", e);
+
+				// show warning
+				String msg = "Exception occurred during sending network message to exchange server: " + e.getLocalizedMessage();
+				msg += " Click 'Details' for more information.";
+				owner_.getNotificationPane().showError("Problem encountered", msg, e);
 			}
 		});
 	}
@@ -345,55 +341,47 @@ public class NetworkWatcher {
 		public void received(Connection connection, final Object object) {
 
 			// unsupported protocol
-			if ((object == null) || ((object instanceof NetworkMessage) == false))
+			if (object == null || object instanceof NetworkMessage == false)
 				return;
 
 			// respond
-			threadExecutor_.submit(new Runnable() {
+			threadExecutor_.submit(() -> {
 
-				@Override
-				public void run() {
+				try {
 
-					try {
-
-						// partial message
-						if (object instanceof PartialMessage) {
-							receivePartialMessage((PartialMessage) object);
-						}
-
-						// analysis message
-						else if (object instanceof AnalysisMessage) {
-							respondToAnalysisMessage((AnalysisMessage) object);
-						}
-
-						// database query message
-						else if (object instanceof DatabaseQueryMessage) {
-							respondToDatabaseQueryMessage((DatabaseQueryMessage) object);
-						}
-
-						// standard message
-						else {
-							respondToStandardMessage((NetworkMessage) object);
-						}
+					// partial message
+					if (object instanceof PartialMessage) {
+						receivePartialMessage((PartialMessage) object);
 					}
 
-					// exception occurred during responding to message
-					catch (Exception e) {
-
-						// log warning
-						Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to exchange server message.", e);
-
-						// show warning
-						Platform.runLater(new Runnable() {
-
-							@Override
-							public void run() {
-								String message = "Exception occurred during responding to exchange server message: " + e.getLocalizedMessage();
-								message += " Click 'Details' for more information.";
-								owner_.getNotificationPane().showError("Problem encountered", message, e);
-							}
-						});
+					// analysis message
+					else if (object instanceof AnalysisMessage) {
+						respondToAnalysisMessage((AnalysisMessage) object);
 					}
+
+					// database query message
+					else if (object instanceof DatabaseQueryMessage) {
+						respondToDatabaseQueryMessage((DatabaseQueryMessage) object);
+					}
+
+					// standard message
+					else {
+						respondToStandardMessage((NetworkMessage) object);
+					}
+				}
+
+				// exception occurred during responding to message
+				catch (Exception e) {
+
+					// log warning
+					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to exchange server message.", e);
+
+					// show warning
+					Platform.runLater(() -> {
+						String message = "Exception occurred during responding to exchange server message: " + e.getLocalizedMessage();
+						message += " Click 'Details' for more information.";
+						owner_.getNotificationPane().showError("Problem encountered", message, e);
+					});
 				}
 			});
 		}
@@ -406,13 +394,9 @@ public class NetworkWatcher {
 				return;
 
 			// show warning
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					String message = "Connection to exchange server lost. Please check your network connection and try again.";
-					owner_.getNotificationPane().showWarning(message, null);
-				}
+			Platform.runLater(() -> {
+				String message = "Connection to exchange server lost. Please check your network connection and try again.";
+				owner_.getNotificationPane().showWarning(message, null);
 			});
 		}
 

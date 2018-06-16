@@ -16,7 +16,6 @@
 package equinox.task;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -25,14 +24,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
-import org.controlsfx.control.textfield.AutoCompletionBinding.AutoCompletionEvent;
 import org.controlsfx.control.textfield.TextFields;
 
 import equinox.Equinox;
 import equinox.data.ui.HelpItem;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -85,15 +82,11 @@ public class ReadHelpPages extends InternalEquinoxTask<ArrayList<TreeItem<String
 		ArrayList<TreeItem<String>> pages = new ArrayList<>();
 
 		// create HTML file filter
-		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
-
-			@Override
-			public boolean accept(Path file) throws IOException {
-				Path fileName = file.getFileName();
-				if (fileName == null)
-					return false;
-				return !Files.isDirectory(file) && fileName.toString().endsWith(".html") && !fileName.toString().equals("EmptyPage.html");
-			}
+		DirectoryStream.Filter<Path> filter = file -> {
+			Path fileName = file.getFileName();
+			if (fileName == null)
+				return false;
+			return !Files.isDirectory(file) && fileName.toString().endsWith(".html") && !fileName.toString().equals("EmptyPage.html");
 		};
 
 		// create directory stream
@@ -151,17 +144,13 @@ public class ReadHelpPages extends InternalEquinoxTask<ArrayList<TreeItem<String
 	private void addPagesToSearchField(ArrayList<TreeItem<String>> pages) {
 
 		// create search field binding
-		TextFields.bindAutoCompletion(searchField_, pages).setOnAutoCompleted(new EventHandler<AutoCompletionEvent<TreeItem<String>>>() {
-
-			@Override
-			public void handle(AutoCompletionEvent<TreeItem<String>> event) {
-				if (event == null)
-					return;
-				HelpItem item = (HelpItem) event.getCompletion();
-				if (item == null)
-					return;
-				taskPanel_.getOwner().getOwner().showHelp(item.getPage(), item.getLocation());
-			}
+		TextFields.bindAutoCompletion(searchField_, pages).setOnAutoCompleted(event -> {
+			if (event == null)
+				return;
+			HelpItem item = (HelpItem) event.getCompletion();
+			if (item == null)
+				return;
+			taskPanel_.getOwner().getOwner().showHelp(item.getPage(), item.getLocation());
 		});
 	}
 

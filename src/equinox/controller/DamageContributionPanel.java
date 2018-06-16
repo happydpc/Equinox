@@ -65,7 +65,6 @@ import equinox.utility.Utility;
 import equinoxServer.remote.data.FatigueMaterial;
 import equinoxServer.remote.data.Material;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -163,62 +162,14 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 		// bind components
 		omissionLevel_.disableProperty().bind(omission_.selectedProperty().not());
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<FatigueMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
-				removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		fatigueMaterials_.getItems().addListener(new ListChangeListener<FatigueMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
-				resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty());
-			}
-		});
-		damageContributions_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<DamageContribution>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends DamageContribution> c) {
-				removeDamageContributions_.setDisable(damageContributions_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		damageContributions_.getItems().addListener(new ListChangeListener<DamageContribution>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends DamageContribution> c) {
-				resetDamageContributions_.setDisable(damageContributions_.getItems().isEmpty());
-			}
-		});
-		segmentFactors_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<SegmentFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SegmentFactor> c) {
-				removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		segmentFactors_.getItems().addListener(new ListChangeListener<SegmentFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SegmentFactor> c) {
-				resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty());
-			}
-		});
-		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<LoadcaseFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LoadcaseFactor> c) {
-				removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		loadcaseFactors_.getItems().addListener(new ListChangeListener<LoadcaseFactor>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LoadcaseFactor> c) {
-				resetLoadcaseFactors_.setDisable(loadcaseFactors_.getItems().isEmpty());
-			}
-		});
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		damageContributions_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<DamageContribution>) c -> removeDamageContributions_.setDisable(damageContributions_.getSelectionModel().getSelectedItems().isEmpty()));
+		damageContributions_.getItems().addListener((ListChangeListener<DamageContribution>) c -> resetDamageContributions_.setDisable(damageContributions_.getItems().isEmpty()));
+		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));
+		segmentFactors_.getItems().addListener((ListChangeListener<SegmentFactor>) c -> resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty()));
+		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LoadcaseFactor>) c -> removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty()));
+		loadcaseFactors_.getItems().addListener((ListChangeListener<LoadcaseFactor>) c -> resetLoadcaseFactors_.setDisable(loadcaseFactors_.getItems().isEmpty()));
 
 		// set place holders for lists
 		fatigueMaterials_.setPlaceholder(new Label("No fatigue material added."));
@@ -256,31 +207,21 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 		stressComponent_.getSelectionModel().select(StressComponent.NORMAL_X);
 
 		// add listener
-		stressComponent_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<StressComponent>() {
-
-			@Override
-			public void changed(ObservableValue<? extends StressComponent> observable, StressComponent oldValue, StressComponent newValue) {
-				rotation_.setDisable(!newValue.equals(StressComponent.ROTATED));
-			}
-		});
+		stressComponent_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<StressComponent>) (observable, oldValue, newValue) -> rotation_.setDisable(!newValue.equals(StressComponent.ROTATED)));
 
 		// add DT interpolations
 		dtInterpolation_.setItems(FXCollections.observableArrayList(DTInterpolation.values()));
 		dtInterpolation_.getSelectionModel().select(0);
 
 		// add listener
-		dtInterpolation_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DTInterpolation>() {
+		dtInterpolation_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<DTInterpolation>) (observable, oldValue, newValue) -> {
 
-			@Override
-			public void changed(ObservableValue<? extends DTInterpolation> observable, DTInterpolation oldValue, DTInterpolation newValue) {
+			// null
+			if (newValue == null)
+				return;
 
-				// null
-				if (newValue == null)
-					return;
-
-				// setup components
-				interpolationSelected(newValue);
-			}
+			// setup components
+			interpolationSelected(newValue);
 		});
 
 		// expand first panes
@@ -467,16 +408,16 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 		}
 
 		// set delta-p values
-		String dpLoadcase = (dpLoadcase_.getText() == null) || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
-		Double refDP = (refDPVal_.getText() == null) || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
+		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
+		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
 		input.setDPLoadcase(dpLoadcase);
 		input.setReferenceDP(refDP);
 
 		// set delta-t values
-		String dtLoadcaseSup = (dtLoadcaseSup_.getText() == null) || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
-		Double refDTSup = (refDTValSup_.getText() == null) || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
-		String dtLoadcaseInf = (dtLoadcaseInf_.getText() == null) || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
-		Double refDTInf = (refDTValInf_.getText() == null) || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
+		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
+		Double refDTSup = refDTValSup_.getText() == null || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
+		String dtLoadcaseInf = dtLoadcaseInf_.getText() == null || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
+		Double refDTInf = refDTValInf_.getText() == null || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		if (!checkInputs(dtLoadcaseInf, refDTInf, dtLoadcaseSup, refDTSup, dtInterpolation))
 			return;
@@ -575,16 +516,16 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 		}
 
 		// set delta-p values
-		String dpLoadcase = (dpLoadcase_.getText() == null) || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
-		Double refDP = (refDPVal_.getText() == null) || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
+		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
+		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
 		input.setDPLoadcase(dpLoadcase);
 		input.setReferenceDP(refDP);
 
 		// set delta-t values
-		String dtLoadcaseSup = (dtLoadcaseSup_.getText() == null) || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
-		Double refDTSup = (refDTValSup_.getText() == null) || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
-		String dtLoadcaseInf = (dtLoadcaseInf_.getText() == null) || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
-		Double refDTInf = (refDTValInf_.getText() == null) || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
+		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
+		Double refDTSup = refDTValSup_.getText() == null || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
+		String dtLoadcaseInf = dtLoadcaseInf_.getText() == null || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
+		Double refDTInf = refDTValInf_.getText() == null || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		input.setDTInterpolation(dtInterpolation);
 		input.setDTLoadcaseSup(dtLoadcaseSup);
@@ -594,7 +535,7 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 		// set stress rotation
 		input.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
-		input.setRotationAngle((rotation_.getText() == null) || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
+		input.setRotationAngle(rotation_.getText() == null || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
 
 		// set omission inputs
 		boolean applyOmission = omission_.isSelected();
@@ -863,17 +804,13 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 			// no delta-p loadcase given
 			String dpLoadcase = dpLoadcase_.getText();
-			if ((dpLoadcase == null) || dpLoadcase.trim().isEmpty()) {
+			if (dpLoadcase == null || dpLoadcase.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
-				EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						popOver.hide();
-						start(runNow, scheduleDate);
-					}
+				EventHandler<ActionEvent> handler = event -> {
+					popOver.hide();
+					start(runNow, scheduleDate);
 				};
 
 				// show question
@@ -889,17 +826,13 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 			// no reference delta-p given
 			String refDP = refDPVal_.getText();
-			if ((refDP == null) || refDP.trim().isEmpty()) {
+			if (refDP == null || refDP.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
-				EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						popOver.hide();
-						start(runNow, scheduleDate);
-					}
+				EventHandler<ActionEvent> handler = event -> {
+					popOver.hide();
+					start(runNow, scheduleDate);
 				};
 
 				// show question
@@ -1269,7 +1202,7 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 			}
 
 			// selected STF files are not from the same spectrum
-			if ((spectrum != null) && !spectrum.equals(set)) {
+			if (spectrum != null && !spectrum.equals(set)) {
 				spectrum = null;
 				break;
 			}
