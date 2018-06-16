@@ -57,13 +57,13 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 		HashMap<String, String> connectionInfo = new HashMap<>();
 
 		// create path to connection settings file
-		Path connSettingsFile = getWorkingDirectory().resolve(FilerConnection.CONN_SETTINGS_FILE);
+		Path connSettingsFile = getWorkingDirectory().resolve(FilerConnection.EXCHANGE_SERVER_CONN_FILE);
 
 		// download connection settings file from filer
 		try (FilerConnection filer = getFilerConnection()) {
 
 			// get URL to connection settings file
-			String url = filer.getDirectoryPath(FilerConnection.SETTINGS) + "/" + FilerConnection.CONN_SETTINGS_FILE;
+			String url = filer.getDirectoryPath(FilerConnection.SETTINGS) + "/" + FilerConnection.EXCHANGE_SERVER_CONN_FILE;
 
 			// download
 			if (filer.fileExists(url)) {
@@ -109,7 +109,7 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 			HashMap<String, String> info = get();
 
 			// null info
-			if ((info == null) || info.isEmpty()) {
+			if (info == null || info.isEmpty()) {
 				String msg = "Exchange server connection information could not be obtained.";
 				Equinox.LOGGER.warning(msg);
 				taskPanel_.getOwner().getOwner().getNotificationPane().showWarning(msg, null);
