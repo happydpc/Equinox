@@ -34,6 +34,6 @@ mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
   -Dfile=/Users/aurora/EclipseWorkspace/EquinoxServer/equinoxServer.jar \
   -DgroupId=com.equinox-server \
   -DartifactId=equinox-server \
-  -Dversion=1.2.0 \
+  -Dversion=1.3.0 \
   -Dpackaging=jar \
   -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib

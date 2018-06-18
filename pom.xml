@@ -180,7 +180,7 @@
 		<dependency>
 			<groupId>com.equinox-server</groupId>
 			<artifactId>equinox-server</artifactId>
-			<version>1.2.0</version>
+			<version>1.3.0</version>
 		</dependency>
 		<!-- local repository: inf -->
 		<dependency>
