@@ -30,7 +30,7 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.StressSequence;
 import equinox.process.PlotMissionProfileProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot mission profile task.

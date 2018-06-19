@@ -30,7 +30,6 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointInfo;
 import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -39,6 +38,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DownloadPilotPointsRequest;
 import equinoxServer.remote.message.DownloadPilotPointsResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for downloading multiple tasks.
@@ -253,7 +253,7 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

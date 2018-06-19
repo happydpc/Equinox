@@ -26,7 +26,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.ServerPluginInfo;
 import equinoxServer.remote.data.ServerPluginInfo.PluginInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -34,6 +33,7 @@ import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DeletePluginRequest;
 import equinoxServer.remote.message.DeletePluginResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for delete plugin from global database task.
@@ -156,7 +156,7 @@ public class DeletePluginFromGlobalDB extends InternalEquinoxTask<Boolean> imple
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

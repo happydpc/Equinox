@@ -35,7 +35,7 @@ import equinox.data.SeriesKey;
 import equinox.data.fileType.Flight;
 import equinox.data.input.FlightPlotInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot STH flights task.
@@ -337,8 +337,8 @@ public class PlotTypicalFlights extends InternalEquinoxTask<XYDataset> implement
 		// segment already exists
 		boolean found = false;
 		for (Segment segment : segments) {
-			if (segment.getName().equals(segmentName) && (segment.getSegmentNumber() == segmentNum)) {
-				if (segment.getEndPeak() == (peakNum - 1)) {
+			if (segment.getName().equals(segmentName) && segment.getSegmentNumber() == segmentNum) {
+				if (segment.getEndPeak() == peakNum - 1) {
 					segment.setEndPeak(peakNum);
 					found = true;
 					break;

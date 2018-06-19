@@ -28,7 +28,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointImageType;
 import equinoxServer.remote.data.PilotPointInfo;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -37,6 +36,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.SavePilotPointImageRequest;
 import equinoxServer.remote.message.SavePilotPointImageResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save pilot point image to global database task.
@@ -171,7 +171,7 @@ public class SavePilotPointImageToGlobalDB extends InternalEquinoxTask<byte[]> i
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -220,7 +220,7 @@ public class SavePilotPointImageToGlobalDB extends InternalEquinoxTask<byte[]> i
 				}
 
 				// upload image data to filer
-				if (response.isUploadToFiler() && (imageFile_ != null)) {
+				if (response.isUploadToFiler() && imageFile_ != null) {
 					filer.getSftpChannel().put(imageFile_.toString(), imageUrl);
 				}
 			}

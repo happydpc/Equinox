@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import equinox.data.Settings;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableUploadAppUpdate;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for upload application update task.

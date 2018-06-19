@@ -23,7 +23,7 @@ import java.sql.Statement;
 import equinox.Equinox;
 import equinox.data.fileType.AircraftFatigueEquivalentStress;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;
@@ -269,7 +269,7 @@ public class SaveAircraftEquivalentStress extends InternalEquinoxTask<Void> impl
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

@@ -28,7 +28,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.ServerPluginInfo;
 import equinoxServer.remote.data.ServerPluginInfo.PluginInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -37,6 +36,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.GetPluginInfoRequest;
 import equinoxServer.remote.message.GetPluginInfoResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for get plugins task.
@@ -145,7 +145,7 @@ public class GetPlugins extends TemporaryFileCreatingTask<ArrayList<ClientPlugin
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

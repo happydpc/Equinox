@@ -31,7 +31,7 @@ import equinox.data.fileType.ExternalFlight;
 import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate external statistics task.
@@ -177,7 +177,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 		String sql = "select name, num_peaks from ext_sth_flights where ";
 		ArrayList<ExternalFlight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 		}
 		sql += " order by num_peaks " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -225,7 +225,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 		String sql = "select name, validity from ext_sth_flights where ";
 		ArrayList<ExternalFlight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 		}
 		sql += " order by validity " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -277,7 +277,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 		String sql = "select name, " + flightCol + " from ext_sth_flights where ";
 		ArrayList<ExternalFlight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 		}
 		sql += " order by " + flightCol + " " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());

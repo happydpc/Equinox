@@ -47,7 +47,7 @@ import equinox.data.input.GenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableGenerateStressSequence;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate stress sequence task.
@@ -137,7 +137,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 				stressSequence = start(connection);
 
 				// task cancelled
-				if (isCancelled() || (stressSequence == null) || Thread.currentThread().isInterrupted()) {
+				if (isCancelled() || stressSequence == null || Thread.currentThread().isInterrupted()) {
 					Thread.interrupted();
 					connection.rollback();
 					connection.setAutoCommit(true);
@@ -623,11 +623,11 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 
 		// compute and modify delta-t stress
 		double dtStress = dtInterpolator == null ? 0.0 : dtInterpolator.getStress(anaPeaks.getDouble("delta_t"));
-		if ((dtInterpolator != null) && (dtInterpolator instanceof DT1PointInterpolator)) {
+		if (dtInterpolator != null && dtInterpolator instanceof DT1PointInterpolator) {
 			DT1PointInterpolator onePoint = (DT1PointInterpolator) dtInterpolator;
 			dtStress = modifyStress(onePoint.getIssyCode(), segment, GenerateStressSequenceInput.DELTAT, dtStress);
 		}
-		else if ((dtInterpolator != null) && (dtInterpolator instanceof DT2PointsInterpolator)) {
+		else if (dtInterpolator != null && dtInterpolator instanceof DT2PointsInterpolator) {
 			DT2PointsInterpolator twoPoints = (DT2PointsInterpolator) dtInterpolator;
 			dtStress = modify2PointDTStress(twoPoints, segment, dtStress);
 		}
@@ -736,7 +736,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		for (int i = 0; i < 5; i++) {
 
 			// get increment block, direction number and factor number
-			String block = classCode.substring((2 * i) + 4, (2 * i) + 6);
+			String block = classCode.substring(2 * i + 4, 2 * i + 6);
 
 			// no increment
 			if (block.equals("00")) {
@@ -861,7 +861,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 					double x = resultSet.getDouble("stress_x");
 					double y = resultSet.getDouble("stress_y");
 					double xy = resultSet.getDouble("stress_xy");
-					return (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+					return 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 				}
 		}
 		return 0.0;
@@ -895,7 +895,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(stressType);
@@ -960,7 +960,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(GenerateStressSequenceInput.DELTAT);
@@ -1245,7 +1245,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1364,7 +1364,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1376,7 +1376,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		}
 
 		// delta-p load case could not be found
-		if ((input_.getDPLoadcase() != null) && (dpRatio == null)) {
+		if (input_.getDPLoadcase() != null && dpRatio == null) {
 			warnings_ += "Delta-P load case '" + input_.getDPLoadcase() + "' could not be found.\n";
 		}
 

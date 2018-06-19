@@ -29,9 +29,9 @@ import equinox.plugin.FileType;
 import equinox.plugin.Plugin;
 import equinox.plugin.PluginManager;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.ServerPluginInfo.PluginInfoType;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for install plugin task.

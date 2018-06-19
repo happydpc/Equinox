@@ -27,12 +27,12 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.PlotSpectrumSizeRequest;
 import equinoxServer.remote.message.PlotSpectrumSizeResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot spectrum size task.
@@ -156,7 +156,7 @@ public class PlotSpectrumSize extends InternalEquinoxTask<CategoryDataset> imple
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -181,7 +181,7 @@ public class PlotSpectrumSize extends InternalEquinoxTask<CategoryDataset> imple
 			String title = "Spectrum Size";
 			String subTitle = "";
 			subTitle += program_ == null ? "" : program_;
-			subTitle += section_ == null ? "" : (", " + section_);
+			subTitle += section_ == null ? "" : ", " + section_;
 			String yAxisLabel = "Size [MB]";
 			String xAxisLabel = null;
 			if (program_ == null) {

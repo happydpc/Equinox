@@ -19,7 +19,7 @@ import java.io.File;
 
 import equinox.task.AddNewUser;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import javafx.scene.control.TreeItem;
 
 /**

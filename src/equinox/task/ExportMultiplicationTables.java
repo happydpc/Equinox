@@ -26,7 +26,7 @@ import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableExportMultiplicationTables;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;
@@ -350,7 +350,7 @@ public class ExportMultiplicationTables extends TemporaryFileCreatingTask<Void> 
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct, boolean isScientific) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(isScientific ? NumberFormats.EXPONENTIAL : NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

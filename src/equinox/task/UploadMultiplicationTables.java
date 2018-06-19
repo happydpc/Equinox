@@ -31,13 +31,13 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.MultiplicationTableInfo;
 import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UploadMultiplicationTablesRequest;
 import equinoxServer.remote.message.UploadMultiplicationTablesResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 import jxl.Sheet;
 import jxl.Workbook;
 
@@ -162,7 +162,7 @@ public class UploadMultiplicationTables extends TemporaryFileCreatingTask<Boolea
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

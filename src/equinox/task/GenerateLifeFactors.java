@@ -40,7 +40,7 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LifeFactorComparisonInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate life factors task.
@@ -840,7 +840,7 @@ public class GenerateLifeFactors extends InternalEquinoxTask<CategoryDataset> im
 	 */
 	private static String getMaterialColumn(SpectrumItem item) throws Exception {
 		String materialCol = null;
-		if ((item instanceof FatigueEquivalentStress) || (item instanceof ExternalFatigueEquivalentStress) || (item instanceof FastFatigueEquivalentStress)) {
+		if (item instanceof FatigueEquivalentStress || item instanceof ExternalFatigueEquivalentStress || item instanceof FastFatigueEquivalentStress) {
 			materialCol = "material_p";
 		}
 		else {

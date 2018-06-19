@@ -27,13 +27,13 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.DownloadInfo;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointSearchInput;
 import equinoxServer.remote.message.AdvancedPilotPointSearchRequest;
 import equinoxServer.remote.message.AdvancedPilotPointSearchResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for advanced pilot point search task.
@@ -150,7 +150,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

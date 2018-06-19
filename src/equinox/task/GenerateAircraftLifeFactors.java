@@ -32,7 +32,7 @@ import equinox.data.ElementTypeForStress;
 import equinox.data.input.CompareAircraftLifeFactorsInput;
 import equinox.data.input.LifeFactorType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate A/C model life factors task.

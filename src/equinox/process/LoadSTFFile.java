@@ -42,7 +42,6 @@ import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointImageType;
 import equinoxServer.remote.data.PilotPointInfo;
 import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
@@ -52,6 +51,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.GetPilotPointImagesRequest;
 import equinoxServer.remote.message.GetPilotPointImagesResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for loading STF files.
@@ -283,61 +283,61 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 		}
 
 		// set info
-		if ((description == null) || description.trim().isEmpty()) {
+		if (description == null || description.trim().isEmpty()) {
 			insertFile.setNull(5, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(5, description.trim());
 		}
-		if ((elementType == null) || elementType.trim().isEmpty()) {
+		if (elementType == null || elementType.trim().isEmpty()) {
 			insertFile.setNull(6, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(6, elementType.trim());
 		}
-		if ((framePos == null) || framePos.trim().isEmpty()) {
+		if (framePos == null || framePos.trim().isEmpty()) {
 			insertFile.setNull(7, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(7, framePos.trim());
 		}
-		if ((stringerPos == null) || stringerPos.trim().isEmpty()) {
+		if (stringerPos == null || stringerPos.trim().isEmpty()) {
 			insertFile.setNull(8, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(8, stringerPos.trim());
 		}
-		if ((dataSource == null) || dataSource.trim().isEmpty()) {
+		if (dataSource == null || dataSource.trim().isEmpty()) {
 			insertFile.setNull(9, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(9, dataSource.trim());
 		}
-		if ((genSource == null) || genSource.trim().isEmpty()) {
+		if (genSource == null || genSource.trim().isEmpty()) {
 			insertFile.setNull(10, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(10, genSource.trim());
 		}
-		if ((delRef == null) || delRef.trim().isEmpty()) {
+		if (delRef == null || delRef.trim().isEmpty()) {
 			insertFile.setString(11, "DRAFT");
 		}
 		else {
 			insertFile.setString(11, delRef.trim());
 		}
-		if ((issue == null) || issue.trim().isEmpty()) {
+		if (issue == null || issue.trim().isEmpty()) {
 			insertFile.setNull(12, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(12, issue.trim());
 		}
-		if ((eid_ == null) || eid_.trim().isEmpty()) {
+		if (eid_ == null || eid_.trim().isEmpty()) {
 
 			// extract EID from STF file name
 			eid_ = STFFile.getEID(inputFileName.toString());
 
 			// no EID found
-			if ((eid_ == null) || eid_.trim().isEmpty()) {
+			if (eid_ == null || eid_.trim().isEmpty()) {
 				insertFile.setNull(13, java.sql.Types.VARCHAR);
 			}
 
@@ -349,19 +349,19 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 		else {
 			insertFile.setString(13, eid_.trim());
 		}
-		if ((fatigueMaterial == null) || fatigueMaterial.trim().isEmpty()) {
+		if (fatigueMaterial == null || fatigueMaterial.trim().isEmpty()) {
 			insertFile.setNull(14, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(14, fatigueMaterial.trim());
 		}
-		if ((preffasMaterial == null) || preffasMaterial.trim().isEmpty()) {
+		if (preffasMaterial == null || preffasMaterial.trim().isEmpty()) {
 			insertFile.setNull(15, java.sql.Types.VARCHAR);
 		}
 		else {
 			insertFile.setString(15, preffasMaterial.trim());
 		}
-		if ((linearMaterial == null) || linearMaterial.trim().isEmpty()) {
+		if (linearMaterial == null || linearMaterial.trim().isEmpty()) {
 			insertFile.setNull(16, java.sql.Types.VARCHAR);
 		}
 		else {
@@ -380,7 +380,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 		}
 
 		// set pilot point images
-		if ((id != -1) && (images != null)) {
+		if (id != -1 && images != null) {
 			Iterator<Entry<PilotPointImageType, byte[]>> iterator = images.entrySet().iterator();
 			while (iterator.hasNext()) {
 				Entry<PilotPointImageType, byte[]> entry = iterator.next();
@@ -422,7 +422,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 
 			// get pilot point id
 			Long id = (Long) info_.getInfo(PilotPointInfoType.ID);
-			if ((id == null) || (id < 0L))
+			if (id == null || id < 0L)
 				return null;
 
 			// create request message
@@ -471,7 +471,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 				HashMap<PilotPointImageType, String> imageUrls = ((GetPilotPointImagesResponse) message).getImageUrls();
 
 				// no image
-				if ((imageUrls == null) || imageUrls.isEmpty())
+				if (imageUrls == null || imageUrls.isEmpty())
 					return null;
 
 				// initialize byte array
@@ -516,7 +516,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -576,7 +576,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 			for (String col : split) {
 
 				// invalid value
-				if ((col == null) || col.isEmpty()) {
+				if (col == null || col.isEmpty()) {
 					continue;
 				}
 

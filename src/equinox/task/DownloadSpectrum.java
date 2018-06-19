@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SpectrumInfo;
 import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for download spectrum task.
@@ -121,7 +121,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 			Path cvtFileName = cvt.getFileName();
 			Path flsFileName = fls.getFileName();
 			Path xlsFileName = xls.getFileName();
-			if ((anaFileName == null) || (txtFileName == null) || (cvtFileName == null) || (flsFileName == null) || (xlsFileName == null))
+			if (anaFileName == null || txtFileName == null || cvtFileName == null || flsFileName == null || xlsFileName == null)
 				throw new Exception("Cannot find CDF set files in the spectrum archive.");
 
 			// create task

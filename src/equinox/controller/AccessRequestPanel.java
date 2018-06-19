@@ -29,9 +29,7 @@ import equinox.data.EquinoxTheme;
 import equinox.utility.Utility;
 import equinoxServer.remote.data.AccessRequest;
 import equinoxServer.remote.data.AccessRequest.AccessRequestInfo;
-import equinoxServer.remote.data.Permission;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -101,20 +99,8 @@ public class AccessRequestPanel implements Initializable {
 		grant_ = new Hyperlink("Grant", grantImage);
 
 		// set on action
-		reject_.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				closeRequest(reject_);
-			}
-		});
-		grant_.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				closeRequest(grant_);
-			}
-		});
+		reject_.setOnAction(event -> closeRequest(reject_));
+		grant_.setOnAction(event -> closeRequest(grant_));
 	}
 
 	/**
@@ -156,7 +142,7 @@ public class AccessRequestPanel implements Initializable {
 		status_.setText(status);
 		status_.setTextFill(status.equals(AccessRequest.PENDING) ? Color.FIREBRICK : Color.GREEN);
 		String closure = (String) request_.getInfo(AccessRequestInfo.CLOSURE);
-		if ((closure != null) && !closure.isEmpty()) {
+		if (closure != null && !closure.isEmpty()) {
 			closure_.setText("Closure:\n" + closure);
 			root_.getChildren().add(5, closure_);
 		}

@@ -45,7 +45,7 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import javafx.scene.control.TreeItem;
 
 /**
@@ -310,7 +310,7 @@ public class RenameFile extends InternalEquinoxTask<Void> implements ShortRunnin
 				ArrayList<PilotPoint> pps = folder.getPilotPoints();
 
 				// no pilot points
-				if ((pps == null) || pps.isEmpty()) {
+				if (pps == null || pps.isEmpty()) {
 					continue;
 				}
 

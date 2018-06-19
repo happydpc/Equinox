@@ -26,13 +26,13 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.HelpVideoInfo;
 import equinoxServer.remote.data.HelpVideoInfo.HelpVideoInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UploadHelpVideoRequest;
 import equinoxServer.remote.message.UploadHelpVideoResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for upload help video task.
@@ -177,7 +177,7 @@ public class UploadHelpVideo extends InternalEquinoxTask<Boolean> implements Lon
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

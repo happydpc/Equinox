@@ -41,7 +41,7 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LifeFactorComparisonInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate life factors with mission parameters task.
@@ -100,10 +100,10 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 			SpectrumItem item = input_.getEquivalentStresses().get(0);
 
 			// equivalent stress
-			if ((item instanceof FatigueEquivalentStress) || (item instanceof PreffasEquivalentStress) || (item instanceof LinearEquivalentStress) || (item instanceof FastFatigueEquivalentStress) || (item instanceof FastPreffasEquivalentStress) || (item instanceof FastLinearEquivalentStress)) {
+			if (item instanceof FatigueEquivalentStress || item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof FastFatigueEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
 				generateLifeFactors(connection, dataset);
 			}
-			else if ((item instanceof ExternalFatigueEquivalentStress) || (item instanceof ExternalPreffasEquivalentStress) || (item instanceof ExternalLinearEquivalentStress)) {
+			else if (item instanceof ExternalFatigueEquivalentStress || item instanceof ExternalPreffasEquivalentStress || item instanceof ExternalLinearEquivalentStress) {
 				generateExternalLifeFactors(connection, dataset);
 			}
 		}
@@ -463,7 +463,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 	 */
 	private static String getMaterialColumn(SpectrumItem item) throws Exception {
 		String materialCol = null;
-		if ((item instanceof FatigueEquivalentStress) || (item instanceof ExternalFatigueEquivalentStress) || (item instanceof FastFatigueEquivalentStress)) {
+		if (item instanceof FatigueEquivalentStress || item instanceof ExternalFatigueEquivalentStress || item instanceof FastFatigueEquivalentStress) {
 			materialCol = "material_p";
 		}
 		else {

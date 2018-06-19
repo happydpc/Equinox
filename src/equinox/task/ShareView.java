@@ -23,8 +23,8 @@ import javax.imageio.ImageIO;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SharedFileInfo;
+import equinoxServer.remote.utility.Permission;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.WritableImage;
 

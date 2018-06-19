@@ -24,7 +24,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointInfo;
 import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -32,6 +31,7 @@ import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UpdatePilotPointRequest;
 import equinoxServer.remote.message.UpdatePilotPointResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for update pilot point info in global database task.
@@ -154,7 +154,7 @@ public class UpdatePilotPointInfoInGlobalDB extends InternalEquinoxTask<Boolean>
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

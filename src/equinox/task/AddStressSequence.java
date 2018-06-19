@@ -26,7 +26,7 @@ import equinox.process.LoadSIGMAFile;
 import equinox.process.LoadSTHFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddStressSequence;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add stress sequence task.
@@ -111,7 +111,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 				}
 
 				// task cancelled
-				if (isCancelled() || (sequence == null)) {
+				if (isCancelled() || sequence == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;

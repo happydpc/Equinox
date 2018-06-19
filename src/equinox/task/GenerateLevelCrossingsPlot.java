@@ -83,7 +83,7 @@ import equinox.process.PlotLevelCrossingProcess;
 import equinox.process.Rainflow;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 
 /**
@@ -216,7 +216,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 		if (rainflow_ != null) {
@@ -231,7 +231,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		super.failed();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 		if (rainflow_ != null) {
@@ -262,7 +262,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 			Path sthFile = generateStressSequence(connection, statement, input, stfFile);
 
 			// task cancelled
-			if (isCancelled() || (sthFile == null))
+			if (isCancelled() || sthFile == null)
 				return;
 
 			// apply omission
@@ -760,7 +760,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 
 									// initialize variables
 									int rem = flightPeaks % NUM_COLS;
-									int numRows = (flightPeaks / NUM_COLS) + (rem == 0 ? 0 : 1);
+									int numRows = flightPeaks / NUM_COLS + (rem == 0 ? 0 : 1);
 									rowIndex_ = 0;
 									colIndex_ = 0;
 									line_ = "";
@@ -858,11 +858,11 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 
 		// compute and modify delta-t stress
 		double dtStress = dtInterpolator == null ? 0.0 : dtInterpolator.getStress(anaPeaks.getDouble("delta_t"));
-		if ((dtInterpolator != null) && (dtInterpolator instanceof DT1PointInterpolator)) {
+		if (dtInterpolator != null && dtInterpolator instanceof DT1PointInterpolator) {
 			DT1PointInterpolator onePoint = (DT1PointInterpolator) dtInterpolator;
 			dtStress = modifyStress(onePoint.getIssyCode(), segment, GenerateStressSequenceInput.DELTAT, dtStress, input);
 		}
-		else if ((dtInterpolator != null) && (dtInterpolator instanceof DT2PointsInterpolator)) {
+		else if (dtInterpolator != null && dtInterpolator instanceof DT2PointsInterpolator) {
 			DT2PointsInterpolator twoPoints = (DT2PointsInterpolator) dtInterpolator;
 			dtStress = modify2PointDTStress(twoPoints, segment, dtStress, input);
 		}
@@ -871,7 +871,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		double totalStress = onegStress.getStress() + incStress + dpStress + dtStress;
 
 		// last row
-		if (rowIndex_ == (numRows - 1)) {
+		if (rowIndex_ == numRows - 1) {
 
 			// add peaks
 			line_ += String.format("%10s", format_.format(totalStress));
@@ -933,7 +933,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input.getSegmentFactors() != null)) {
+		if (segment != null && input.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(GenerateStressSequenceInput.DELTAT);
@@ -1000,7 +1000,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		for (int i = 0; i < 5; i++) {
 
 			// get increment block
-			String block = classCode.substring((2 * i) + 4, (2 * i) + 6);
+			String block = classCode.substring(2 * i + 4, 2 * i + 6);
 
 			// no increment
 			if (block.equals("00")) {
@@ -1114,7 +1114,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input.getSegmentFactors() != null)) {
+		if (segment != null && input.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(stressType);
@@ -1182,7 +1182,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 					double x = resultSet.getDouble("stress_x");
 					double y = resultSet.getDouble("stress_y");
 					double xy = resultSet.getDouble("stress_xy");
-					return (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+					return 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 				}
 		}
 		return 0.0;
@@ -1317,7 +1317,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1440,7 +1440,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1452,7 +1452,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		}
 
 		// delta-p load case could not be found
-		if ((input.getDPLoadcase() != null) && (dpRatio == null)) {
+		if (input.getDPLoadcase() != null && dpRatio == null) {
 			warnings_ += "Delta-P load case '" + input.getDPLoadcase() + "' could not be found.\n";
 		}
 

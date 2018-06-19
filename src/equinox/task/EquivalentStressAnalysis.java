@@ -56,8 +56,8 @@ import equinox.utility.Utility;
 import equinoxServer.remote.data.FatigueMaterial;
 import equinoxServer.remote.data.LinearMaterial;
 import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PreffasMaterial;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 
 /**
@@ -363,7 +363,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 		if (rainflow_ != null) {
@@ -381,7 +381,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.failed();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 		if (rainflow_ != null) {
@@ -547,31 +547,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -580,7 +580,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(11, material.getP());
 			update.setDouble(12, material.getQ());
 			update.setDouble(13, material.getM());
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(14, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -647,31 +647,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -684,7 +684,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(15, material.getC());
 			update.setDouble(16, material.getFtu());
 			update.setDouble(17, material.getFty());
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(18, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -751,31 +751,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -788,7 +788,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(15, material.getC());
 			update.setDouble(16, material.getFtu());
 			update.setDouble(17, material.getFty());
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(18, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -854,31 +854,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -889,7 +889,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(13, material.getM());
 			String stressModifier = input_.getStressModificationValue() + " (" + input_.getStressModificationMethod() + ")";
 			update.setString(14, stressModifier);
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(15, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -957,31 +957,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -996,7 +996,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(17, material.getFty());
 			String stressModifier = input_.getStressModificationValue() + " (" + input_.getStressModificationMethod() + ")";
 			update.setString(18, stressModifier);
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(19, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1063,31 +1063,31 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			double omissionLevel = input_.applyOmission() ? input_.getOmissionLevel() : -1.0;
 			update.setDouble(4, omissionLevel); // omission level
 			update.setString(5, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1102,7 +1102,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			update.setDouble(17, material.getFty());
 			String stressModifier = input_.getStressModificationValue() + " (" + input_.getStressModificationMethod() + ")";
 			update.setString(18, stressModifier);
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(19, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1194,21 +1194,17 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		rainflow_ = new Rainflow(this, inputSTH, eqStress);
 
 		// run in a separate thread
-		new Thread(new Runnable() {
+		new Thread(() -> {
 
-			@Override
-			public void run() {
+			// start process
+			try {
+				rainflow_.start(connection);
+				rainflowCompleted(null);
+			}
 
-				// start process
-				try {
-					rainflow_.start(connection);
-					rainflowCompleted(null);
-				}
-
-				// process failed
-				catch (Exception e) {
-					rainflowCompleted(e);
-				}
+			// process failed
+			catch (Exception e) {
+				rainflowCompleted(e);
 			}
 		}).start();
 	}
@@ -1321,21 +1317,17 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		}
 
 		// run in a separate thread
-		new Thread(new Runnable() {
+		new Thread(() -> {
 
-			@Override
-			public void run() {
+			// start process
+			try {
+				equivalentStressAnalysis_.start(connection);
+				equivalentStressAnalysisCompleted(null);
+			}
 
-				// start process
-				try {
-					equivalentStressAnalysis_.start(connection);
-					equivalentStressAnalysisCompleted(null);
-				}
-
-				// process failed
-				catch (Exception e) {
-					equivalentStressAnalysisCompleted(e);
-				}
+			// process failed
+			catch (Exception e) {
+				equivalentStressAnalysisCompleted(e);
 			}
 		}).start();
 	}

@@ -35,7 +35,7 @@ import equinox.task.GetUserPermissions;
 import equinox.task.GetUserPermissions.UserPermissionRequestingPanel;
 import equinox.task.SaveTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -232,7 +232,7 @@ public class EditUserPermissionsPanel implements InternalInputSubPanel, Scheduli
 
 		// alias
 		String alias = alias_.getText();
-		if ((alias == null) || alias.trim().isEmpty()) {
+		if (alias == null || alias.trim().isEmpty()) {
 			String message = "Please enter valid user alias to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -261,7 +261,7 @@ public class EditUserPermissionsPanel implements InternalInputSubPanel, Scheduli
 	private boolean checkInputs(String alias, ObservableList<Permission> permissions) {
 
 		// alias
-		if ((alias == null) || alias.trim().isEmpty()) {
+		if (alias == null || alias.trim().isEmpty()) {
 			String message = "Please enter valid user alias to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -274,7 +274,7 @@ public class EditUserPermissionsPanel implements InternalInputSubPanel, Scheduli
 		}
 
 		// permissions
-		if ((permissions == null) || permissions.isEmpty()) {
+		if (permissions == null || permissions.isEmpty()) {
 			String message = "Please select at least one user permission to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

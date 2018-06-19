@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import equinox.controller.MainScreen;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for Equinox user.
@@ -174,7 +174,7 @@ public class User {
 
 	/**
 	 * Adds given permission to list of permissions.
-	 * 
+	 *
 	 * @param permissionName
 	 *            Name of permission to add.
 	 * @return If the permission is added.

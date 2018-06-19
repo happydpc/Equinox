@@ -48,8 +48,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointImageType;
+import equinoxServer.remote.utility.Permission;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -154,48 +154,44 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		super.succeeded();
 
 		// remove files from the file tree
-		Platform.runLater(new Runnable() {
+		Platform.runLater(() -> {
 
-			@Override
-			public void run() {
+			// clear file selection
+			taskPanel_.getOwner().getOwner().getInputPanel().clearFileSelection();
 
-				// clear file selection
-				taskPanel_.getOwner().getOwner().getInputPanel().clearFileSelection();
+			// create list to store parents
+			ArrayList<TreeItem<String>> parents = new ArrayList<>();
 
-				// create list to store parents
-				ArrayList<TreeItem<String>> parents = new ArrayList<>();
+			// loop over files
+			for (SpectrumItem file : files_) {
 
-				// loop over files
-				for (SpectrumItem file : files_) {
-
-					// delete pilot point links
-					if ((file instanceof STFFile) || (file instanceof Spectrum)) {
-						deleteLinkedPilotPointsFromFileTree(file);
-					}
-
-					// get parent
-					TreeItem<String> parent = file.getParent();
-
-					// already contained in parents list
-					if ((parent == null) || parents.contains(parent)) {
-						continue;
-					}
-
-					// get list of to-be-removed items
-					ArrayList<TreeItem<String>> toBeRemoved = new ArrayList<>();
-					for (SpectrumItem file2 : files_) {
-						TreeItem<String> parent2 = file2.getParent();
-						if ((parent2 != null) || parent.equals(parent2)) {
-							toBeRemoved.add(file2);
-						}
-					}
-
-					// add to parents list
-					parents.add(parent);
-
-					// remove to-be-removed items
-					parent.getChildren().removeAll(toBeRemoved);
+				// delete pilot point links
+				if (file instanceof STFFile || file instanceof Spectrum) {
+					deleteLinkedPilotPointsFromFileTree(file);
 				}
+
+				// get parent
+				TreeItem<String> parent = file.getParent();
+
+				// already contained in parents list
+				if (parent == null || parents.contains(parent)) {
+					continue;
+				}
+
+				// get list of to-be-removed items
+				ArrayList<TreeItem<String>> toBeRemoved = new ArrayList<>();
+				for (SpectrumItem file2 : files_) {
+					TreeItem<String> parent2 = file2.getParent();
+					if (parent2 != null || parent.equals(parent2)) {
+						toBeRemoved.add(file2);
+					}
+				}
+
+				// add to parents list
+				parents.add(parent);
+
+				// remove to-be-removed items
+				parent.getChildren().removeAll(toBeRemoved);
 			}
 		});
 	}
@@ -246,7 +242,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 				ArrayList<PilotPoint> pps = folder.getPilotPoints();
 
 				// no pilot points
-				if ((pps == null) || pps.isEmpty()) {
+				if (pps == null || pps.isEmpty()) {
 					continue;
 				}
 
@@ -1092,7 +1088,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove fatigue rainflow cycles
 		updateMessage("Deleting external fatigue rainflow cycles from database...");
 		ArrayList<ExternalFatigueEquivalentStress> fatigueEqStresses = file.getFatigueEquivalentStresses();
-		if ((fatigueEqStresses != null) && !fatigueEqStresses.isEmpty()) {
+		if (fatigueEqStresses != null && !fatigueEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from ext_fatigue_rainflow_cycles where stress_id = ?")) {
 				for (ExternalFatigueEquivalentStress eqStress : fatigueEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());
@@ -1104,7 +1100,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove preffas rainflow cycles
 		updateMessage("Deleting external preffas rainflow cycles from database...");
 		ArrayList<ExternalPreffasEquivalentStress> preffasEqStresses = file.getPreffasEquivalentStresses();
-		if ((preffasEqStresses != null) && !preffasEqStresses.isEmpty()) {
+		if (preffasEqStresses != null && !preffasEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from ext_preffas_rainflow_cycles where stress_id = ?")) {
 				for (ExternalPreffasEquivalentStress eqStress : preffasEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());
@@ -1116,7 +1112,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove linear rainflow cycles
 		updateMessage("Deleting external linear rainflow cycles from database...");
 		ArrayList<ExternalLinearEquivalentStress> linearEqStresses = file.getLinearEquivalentStresses();
-		if ((linearEqStresses != null) && !linearEqStresses.isEmpty()) {
+		if (linearEqStresses != null && !linearEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from ext_linear_rainflow_cycles where stress_id = ?")) {
 				for (ExternalLinearEquivalentStress eqStress : linearEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());
@@ -1182,7 +1178,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove fatigue rainflow cycles
 		updateMessage("Deleting fatigue rainflow cycles...");
 		ArrayList<FatigueEquivalentStress> fatigueEqStresses = file.getFatigueEquivalentStresses();
-		if ((fatigueEqStresses != null) && !fatigueEqStresses.isEmpty()) {
+		if (fatigueEqStresses != null && !fatigueEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from fatigue_rainflow_cycles where stress_id = ?")) {
 				for (FatigueEquivalentStress eqStress : fatigueEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());
@@ -1194,7 +1190,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove Preffas rainflow cycles
 		updateMessage("Deleting preffas rainflow cycles...");
 		ArrayList<PreffasEquivalentStress> preffasEqStresses = file.getPreffasEquivalentStresses();
-		if ((preffasEqStresses != null) && !preffasEqStresses.isEmpty()) {
+		if (preffasEqStresses != null && !preffasEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from preffas_rainflow_cycles where stress_id = ?")) {
 				for (PreffasEquivalentStress eqStress : preffasEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());
@@ -1206,7 +1202,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 		// remove linear rainflow cycles
 		updateMessage("Deleting linear rainflow cycles...");
 		ArrayList<LinearEquivalentStress> linearEqStresses = file.getLinearEquivalentStresses();
-		if ((linearEqStresses != null) && !linearEqStresses.isEmpty()) {
+		if (linearEqStresses != null && !linearEqStresses.isEmpty()) {
 			try (PreparedStatement removeRainflowCycles = connection.prepareStatement("delete from linear_rainflow_cycles where stress_id = ?")) {
 				for (LinearEquivalentStress eqStress : linearEqStresses) {
 					removeRainflowCycles.setInt(1, eqStress.getID());

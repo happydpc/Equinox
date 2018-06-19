@@ -28,7 +28,6 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.FatigueMaterial;
 import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PreffasMaterial;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
@@ -39,6 +38,7 @@ import equinoxServer.remote.message.GetLinearMaterialsRequest;
 import equinoxServer.remote.message.GetLinearMaterialsResponse;
 import equinoxServer.remote.message.GetPreffasMaterialsRequest;
 import equinoxServer.remote.message.GetPreffasMaterialsResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for update material library task.
@@ -464,7 +464,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 			serverMessageRef.set(null);
@@ -538,7 +538,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 			serverMessageRef.set(null);
@@ -612,7 +612,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 			serverMessageRef.set(null);

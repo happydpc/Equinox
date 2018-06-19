@@ -28,7 +28,7 @@ import java.text.DecimalFormat;
 import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save external stress sequence as SIGMA task.
@@ -215,7 +215,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 
 		// get peaks
 		int rem = numPeaks % NUM_COLS;
-		int numRows = (numPeaks / NUM_COLS) + (rem == 0 ? 0 : 1);
+		int numRows = numPeaks / NUM_COLS + (rem == 0 ? 0 : 1);
 		String line = "";
 		selectPeaks.setInt(1, flights.getInt("flight_id"));
 		try (ResultSet peaks = selectPeaks.executeQuery()) {
@@ -229,7 +229,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 					return;
 
 				// last row
-				if (rowIndex == (numRows - 1)) {
+				if (rowIndex == numRows - 1) {
 
 					// add peak
 					line += String.format("%14s", format_.format(peaks.getDouble("peak_val")));

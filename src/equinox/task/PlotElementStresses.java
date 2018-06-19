@@ -30,7 +30,7 @@ import equinox.data.Grid;
 import equinox.data.input.PlotElementStressesInput;
 import equinox.data.ui.LoadCaseFactorTableItem;
 import equinox.data.ui.PlotContour;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import inf.v3d.obj.PolygonOutlines;
 import inf.v3d.obj.Polygons;
 
@@ -244,10 +244,10 @@ public class PlotElementStresses extends Plot3DTask<Void> {
 									}
 
 									// check against bounds
-									if ((lowerBound != null) && (stress != null) && (stress < lowerBound)) {
+									if (lowerBound != null && stress != null && stress < lowerBound) {
 										stress = null;
 									}
-									if ((upperBound != null) && (stress != null) && (stress > upperBound)) {
+									if (upperBound != null && stress != null && stress > upperBound) {
 										stress = null;
 									}
 
@@ -552,10 +552,10 @@ public class PlotElementStresses extends Plot3DTask<Void> {
 									}
 
 									// check against bounds
-									if ((lowerBound != null) && (stress != null) && (stress < lowerBound)) {
+									if (lowerBound != null && stress != null && stress < lowerBound) {
 										stress = null;
 									}
-									if ((upperBound != null) && (stress != null) && (stress > upperBound)) {
+									if (upperBound != null && stress != null && stress > upperBound) {
 										stress = null;
 									}
 

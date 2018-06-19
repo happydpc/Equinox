@@ -30,7 +30,7 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.Histogram3DInput;
 import equinox.viewer.Label;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import inf.v3d.obj.Arrow;
 import inf.v3d.obj.BoundingBox;
 import inf.v3d.obj.Box;
@@ -221,7 +221,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 			double xi1 = (i + 1) * itv;
 
 			// coordinate is within the interval
-			if ((x >= xi) && (x <= xi1)) {
+			if (x >= xi && x <= xi1) {
 
 				// loop over grids in y direction
 				for (int j = 0; j < res; j++) {
@@ -231,7 +231,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 					double yj1 = (j + 1) * itv;
 
 					// coordinate is within the interval
-					if ((y >= yj) && (y <= yj1)) {
+					if (y >= yj && y <= yj1) {
 
 						// create box
 						Box b = new Box(xi, yj, 0.0);
@@ -446,7 +446,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 			gui.setOpacity(0.4);
 
 			// draw label
-			String val = formatDouble(maxMin[1][1] + (0.1 * (maxMin[1][0] - maxMin[1][1]) * i));
+			String val = formatDouble(maxMin[1][1] + 0.1 * (maxMin[1][0] - maxMin[1][1]) * i);
 			Label label = new Label(val, 1.0, i / 10.0, 0.0);
 			label.setScale(textScale * 0.02);
 			label.setColor(Color.red);
@@ -474,7 +474,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 			gui.setOpacity(0.4);
 
 			// draw label
-			double v = maxMin[2][1] + (0.1 * (maxMin[2][0] - maxMin[2][1]) * i);
+			double v = maxMin[2][1] + 0.1 * (maxMin[2][0] - maxMin[2][1]) * i;
 			String val = formatDouble(Math.pow(10, v));
 			Label label = new Label(val, 0.0, 1.0, i / 10.0);
 			label.setScale(textScale * 0.02);
@@ -489,7 +489,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 			gui.setOpacity(0.4);
 
 			// draw label
-			String val = formatDouble(maxMin[0][1] + (0.1 * (maxMin[0][0] - maxMin[0][1]) * i));
+			String val = formatDouble(maxMin[0][1] + 0.1 * (maxMin[0][0] - maxMin[0][1]) * i);
 			Label label = new Label(val, i / 10.0, 0, 1.0);
 			label.setScale(textScale * 0.02);
 			label.setColor(Color.red);
@@ -568,11 +568,11 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 		for (int i = 0; i < num; i++) {
 
 			// compute lower and upper bounds
-			double lower = min + (((max - min) * i) / num);
-			double upper = min + (((max - min) * (i + 1)) / num);
+			double lower = min + (max - min) * i / num;
+			double upper = min + (max - min) * (i + 1) / num;
 
 			// compare
-			if ((z >= lower) && (z <= upper))
+			if (z >= lower && z <= upper)
 				return COLORS[i].getRGBColorComponents(null);
 		}
 
@@ -589,7 +589,7 @@ public class Plot3DHistogram extends Plot3DTask<Void> {
 	 * @return The formatted string.
 	 */
 	private static String formatDouble(double number) {
-		if ((Math.abs(number) >= 1.00E-03) && (Math.abs(number) <= 1.00E+03))
+		if (Math.abs(number) >= 1.00E-03 && Math.abs(number) <= 1.00E+03)
 			return String.format("%." + 2 + "f", number);
 		return String.format("%." + 2 + "E", number);
 	}

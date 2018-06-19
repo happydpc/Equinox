@@ -30,12 +30,12 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.BugReport;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.SubmitBugReportRequest;
 import equinoxServer.remote.message.SubmitBugReportResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for submit bug report task.
@@ -122,14 +122,14 @@ public class SubmitBugReport extends InternalEquinoxTask<Boolean> implements Sho
 		// get system information
 		updateMessage("Collecting system information...");
 		String sysInfo = sysInfo_ ? getSystemInformation() : null;
-		if ((sysInfo != null) && (sysInfo.length() > BugReport.MAX_SYS_INFO_SIZE)) {
+		if (sysInfo != null && sysInfo.length() > BugReport.MAX_SYS_INFO_SIZE) {
 			sysInfo = sysInfo.substring(0, 400) + " and more...(rest is truncated due to maximum character limit).";
 		}
 
 		// get event log
 		updateMessage("Reading event log...");
 		String eventLog = eventLog_ ? getEventLog() : null;
-		if ((eventLog != null) && (eventLog.length() > BugReport.MAX_LOG_SIZE)) {
+		if (eventLog != null && eventLog.length() > BugReport.MAX_LOG_SIZE) {
 			eventLog = eventLog.substring(0, 400) + " and more...(rest is truncated due to maximum character limit).";
 		}
 
@@ -186,7 +186,7 @@ public class SubmitBugReport extends InternalEquinoxTask<Boolean> implements Sho
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -239,10 +239,10 @@ public class SubmitBugReport extends InternalEquinoxTask<Boolean> implements Sho
 			info += "java.runtime.version = " + System.getProperty("java.runtime.version") + "\n";
 			int mb = 1024 * 1024;
 			Runtime runtime = Runtime.getRuntime();
-			info += "used memory = " + ((runtime.totalMemory() - runtime.freeMemory()) / mb) + "\n";
-			info += "free memory = " + (runtime.freeMemory() / mb) + "\n";
-			info += "total memory = " + (runtime.totalMemory() / mb) + "\n";
-			info += "max memory = " + (runtime.maxMemory() / mb);
+			info += "used memory = " + (runtime.totalMemory() - runtime.freeMemory()) / mb + "\n";
+			info += "free memory = " + runtime.freeMemory() / mb + "\n";
+			info += "total memory = " + runtime.totalMemory() / mb + "\n";
+			info += "max memory = " + runtime.maxMemory() / mb;
 			return info;
 		}
 
@@ -275,7 +275,7 @@ public class SubmitBugReport extends InternalEquinoxTask<Boolean> implements Sho
 				while ((line = reader.readLine()) != null) {
 
 					// maximum character size reached
-					if ((log.length() + line.length()) >= (BugReport.MAX_LOG_SIZE - 70)) {
+					if (log.length() + line.length() >= BugReport.MAX_LOG_SIZE - 70) {
 						log += "and more...(rest is truncated due to maximum character limit).";
 						break;
 					}

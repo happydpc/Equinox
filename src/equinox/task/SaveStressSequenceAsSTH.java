@@ -22,7 +22,7 @@ import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.process.SaveSTH;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save spectrum as STH task.

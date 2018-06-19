@@ -26,12 +26,12 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.MultiplicationTableInfo;
 import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UpdateMultiplicationTableRequest;
 import equinoxServer.remote.message.UpdateMultiplicationTableResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for update multiplication table info in global database task.
@@ -154,7 +154,7 @@ public class UpdateMultiplicationTableInfoInGlobalDB extends InternalEquinoxTask
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

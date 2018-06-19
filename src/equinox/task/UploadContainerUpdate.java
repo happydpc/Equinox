@@ -31,13 +31,13 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.EquinoxUpdate;
 import equinoxServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UploadContainerUpdateRequest;
 import equinoxServer.remote.message.UploadContainerUpdateResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 
 /**

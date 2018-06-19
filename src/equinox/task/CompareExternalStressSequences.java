@@ -32,7 +32,7 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.input.ExternalStressSequenceComparisonInput;
 import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparisonCriteria;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare external stress sequences task.
@@ -323,7 +323,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 		String sql = "select file_id, num_flights from ext_sth_files where ";
 		ArrayList<ExternalStressSequence> sequences = input_.getStressSequences();
 		for (int i = 0; i < sequences.size(); i++) {
-			sql += "file_id = " + sequences.get(i).getID() + (i == (sequences.size() - 1) ? "" : " or ");
+			sql += "file_id = " + sequences.get(i).getID() + (i == sequences.size() - 1 ? "" : " or ");
 		}
 		sql += " order by num_flights " + (input_.getOrder() ? "desc" : "asc");
 

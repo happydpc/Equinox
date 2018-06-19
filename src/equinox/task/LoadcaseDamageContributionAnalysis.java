@@ -63,7 +63,7 @@ import equinox.task.serializableTask.SerializableLoadcaseDamageContributionAnaly
 import equinox.utility.Utility;
 import equinoxServer.remote.data.ContributionType;
 import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for loadcase damage contribution analysis task.
@@ -213,7 +213,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 				Path[] sthFiles = generateStressSequences(connection, validity);
 
 				// task cancelled
-				if (isCancelled() || (sthFiles == null)) {
+				if (isCancelled() || sthFiles == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -233,7 +233,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 				List<DamageContributionResult> results = damageAnalysis(sthFiles, flsFile, connection, validity);
 
 				// task cancelled
-				if (isCancelled() || (results == null) || results.isEmpty()) {
+				if (isCancelled() || results == null || results.isEmpty()) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -243,7 +243,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 				LoadcaseDamageContributions contributions = createDamageContributions(connection, results, validity);
 
 				// task cancelled
-				if (isCancelled() || (contributions == null)) {
+				if (isCancelled() || contributions == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -474,31 +474,31 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 			// material
 			update.setString(20, material_.getName());
-			if ((material_.getSpecification() == null) || material_.getSpecification().isEmpty()) {
+			if (material_.getSpecification() == null || material_.getSpecification().isEmpty()) {
 				update.setNull(21, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(21, material_.getSpecification());
 			}
-			if ((material_.getLibraryVersion() == null) || material_.getLibraryVersion().isEmpty()) {
+			if (material_.getLibraryVersion() == null || material_.getLibraryVersion().isEmpty()) {
 				update.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(22, material_.getLibraryVersion());
 			}
-			if ((material_.getFamily() == null) || material_.getFamily().isEmpty()) {
+			if (material_.getFamily() == null || material_.getFamily().isEmpty()) {
 				update.setNull(23, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(23, material_.getFamily());
 			}
-			if ((material_.getOrientation() == null) || material_.getOrientation().isEmpty()) {
+			if (material_.getOrientation() == null || material_.getOrientation().isEmpty()) {
 				update.setNull(24, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(24, material_.getOrientation());
 			}
-			if ((material_.getConfiguration() == null) || material_.getConfiguration().isEmpty()) {
+			if (material_.getConfiguration() == null || material_.getConfiguration().isEmpty()) {
 				update.setNull(25, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -507,7 +507,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			update.setDouble(26, material_.getP());
 			update.setDouble(27, material_.getQ());
 			update.setDouble(28, material_.getM());
-			if ((material_.getIsamiVersion() == null) || material_.getIsamiVersion().isEmpty()) {
+			if (material_.getIsamiVersion() == null || material_.getIsamiVersion().isEmpty()) {
 				update.setNull(29, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -901,7 +901,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 										// initialize variables
 										int rem = flightPeaks % NUM_COLS;
-										int numRows = (flightPeaks / NUM_COLS) + (rem == 0 ? 0 : 1);
+										int numRows = flightPeaks / NUM_COLS + (rem == 0 ? 0 : 1);
 										rowIndex_ = 0;
 										colIndex_ = 0;
 										for (int i = 0; i < lines_.length; i++) {
@@ -983,7 +983,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			String issyCodes = flightGAGPeaks[i].getIssyCodes();
 
 			// null events or issy codes
-			if ((events == null) || (issyCodes == null)) {
+			if (events == null || issyCodes == null) {
 				continue;
 			}
 
@@ -1110,11 +1110,11 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 		// compute and modify delta-t stress
 		double dtStress = dtInterpolator == null ? 0.0 : dtInterpolator.getStress(anaPeaks.getDouble("delta_t"));
-		if ((dtInterpolator != null) && (dtInterpolator instanceof DT1PointInterpolator)) {
+		if (dtInterpolator != null && dtInterpolator instanceof DT1PointInterpolator) {
 			DT1PointInterpolator onePoint = (DT1PointInterpolator) dtInterpolator;
 			dtStress = modify1GStress(onePoint.getIssyCode(), segment, GenerateStressSequenceInput.DELTAT, dtStress);
 		}
-		else if ((dtInterpolator != null) && (dtInterpolator instanceof DT2PointsInterpolator)) {
+		else if (dtInterpolator != null && dtInterpolator instanceof DT2PointsInterpolator) {
 			DT2PointsInterpolator twoPoints = (DT2PointsInterpolator) dtInterpolator;
 			dtStress = modify2PointDTStress(twoPoints, segment, dtStress);
 		}
@@ -1146,11 +1146,11 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		}
 
 		// last row
-		if (rowIndex_ == (numRows - 1)) {
+		if (rowIndex_ == numRows - 1) {
 
 			// add peaks
 			for (int i = 0; i < lines_.length; i++) {
-				if ((input_.getGAGContributionIndex() != -1) && (i == (input_.getGAGContributionIndex() + 1))) {
+				if (input_.getGAGContributionIndex() != -1 && i == input_.getGAGContributionIndex() + 1) {
 					continue;
 				}
 				lines_[i] += String.format("%10s", format_.format(totalStresses[i]));
@@ -1160,7 +1160,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			// last column
 			if (colIndex_ == (rem == 0 ? NUM_COLS : rem)) {
 				for (int i = 0; i < lines_.length; i++) {
-					if ((input_.getGAGContributionIndex() != -1) && (i == (input_.getGAGContributionIndex() + 1))) {
+					if (input_.getGAGContributionIndex() != -1 && i == input_.getGAGContributionIndex() + 1) {
 						continue;
 					}
 					writers[i].write(lines_[i]);
@@ -1177,7 +1177,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 			// add peaks
 			for (int i = 0; i < lines_.length; i++) {
-				if ((input_.getGAGContributionIndex() != -1) && (i == (input_.getGAGContributionIndex() + 1))) {
+				if (input_.getGAGContributionIndex() != -1 && i == input_.getGAGContributionIndex() + 1) {
 					continue;
 				}
 				lines_[i] += String.format("%10s", format_.format(totalStresses[i]));
@@ -1187,7 +1187,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			// last column
 			if (colIndex_ == NUM_COLS) {
 				for (int i = 0; i < lines_.length; i++) {
-					if ((input_.getGAGContributionIndex() != -1) && (i == (input_.getGAGContributionIndex() + 1))) {
+					if (input_.getGAGContributionIndex() != -1 && i == input_.getGAGContributionIndex() + 1) {
 						continue;
 					}
 					writers[i].write(lines_[i]);
@@ -1243,7 +1243,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(GenerateStressSequenceInput.DELTAT);
@@ -1311,7 +1311,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		for (int i = 0; i < 5; i++) {
 
 			// get increment block
-			String block = classCode.substring((2 * i) + 4, (2 * i) + 6);
+			String block = classCode.substring(2 * i + 4, 2 * i + 6);
 
 			// no increment
 			if (block.equals("00")) {
@@ -1384,7 +1384,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(GenerateStressSequenceInput.INCREMENT);
@@ -1511,7 +1511,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 					double x = resultSet.getDouble("stress_x");
 					double y = resultSet.getDouble("stress_y");
 					double xy = resultSet.getDouble("stress_xy");
-					return (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+					return 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 				}
 		}
 		return 0.0;
@@ -1545,7 +1545,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(stressType);
@@ -1629,7 +1629,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		for (int i = 0; i < writers.length; i++) {
 			writers[i].write(line1);
 			writers[i].newLine();
-			if ((line3 != null) && (i == (input_.getGAGContributionIndex() + 1))) {
+			if (line3 != null && i == input_.getGAGContributionIndex() + 1) {
 				writers[i].write(line3);
 			}
 			else {
@@ -1757,7 +1757,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1878,7 +1878,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 								double x = resultSet2.getDouble("stress_x");
 								double y = resultSet2.getDouble("stress_y");
 								double xy = resultSet2.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle)) + (xy * Math.sin(2 * angle));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle) + xy * Math.sin(2 * angle);
 							}
 					}
 
@@ -1890,7 +1890,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		}
 
 		// delta-p load case could not be found
-		if ((input_.getDPLoadcase() != null) && (dpRatio == null)) {
+		if (input_.getDPLoadcase() != null && dpRatio == null) {
 			warnings_ += "Delta-P load case '" + input_.getDPLoadcase() + "' could not be found.\n";
 		}
 

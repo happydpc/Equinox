@@ -30,7 +30,7 @@ import equinox.controller.ViewPanel;
 import equinox.data.ElementTypeForStress;
 import equinox.data.input.CompareElementStressesInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare element stresses task.

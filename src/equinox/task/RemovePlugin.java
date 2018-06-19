@@ -21,7 +21,7 @@ import equinox.Equinox;
 import equinox.controller.ViewPanel;
 import equinox.plugin.Plugin;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for remove plugin task.

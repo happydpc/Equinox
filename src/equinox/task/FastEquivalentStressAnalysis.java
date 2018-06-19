@@ -55,8 +55,8 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinoxServer.remote.data.FatigueMaterial;
 import equinoxServer.remote.data.LinearMaterial;
 import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PreffasMaterial;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for fast equivalent stress analysis task.
@@ -351,7 +351,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		Object[] contributions = runFlightDamageContributionAnalysis(connection);
 
 		// task cancelled
-		if (isCancelled() || (contributions == null) || (contributions.length == 0))
+		if (isCancelled() || contributions == null || contributions.length == 0)
 			return null;
 
 		try {
@@ -363,7 +363,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			FlightDamageContributions flightDamCont = createFlightDamageContribution(contributions, connection);
 
 			// task cancelled
-			if (isCancelled() || (flightDamCont == null)) {
+			if (isCancelled() || flightDamCont == null) {
 				connection.rollback();
 				connection.setAutoCommit(true);
 				return null;
@@ -483,31 +483,31 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 
 			// material info
 			insertDamageConts.setString(18, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				insertDamageConts.setNull(19, java.sql.Types.VARCHAR);
 			}
 			else {
 				insertDamageConts.setString(19, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				insertDamageConts.setNull(20, java.sql.Types.VARCHAR);
 			}
 			else {
 				insertDamageConts.setString(20, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				insertDamageConts.setNull(21, java.sql.Types.VARCHAR);
 			}
 			else {
 				insertDamageConts.setString(21, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				insertDamageConts.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
 				insertDamageConts.setString(22, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				insertDamageConts.setNull(23, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -516,7 +516,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			insertDamageConts.setDouble(24, material.getP());
 			insertDamageConts.setDouble(25, material.getQ());
 			insertDamageConts.setDouble(26, material.getM());
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				insertDamageConts.setNull(27, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -703,7 +703,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		FastESAOutput output = runEquivalentStressAnalysis(connection);
 
 		// task cancelled
-		if (isCancelled() || (output == null) || (output.getStress() == null))
+		if (isCancelled() || output == null || output.getStress() == null)
 			return null;
 
 		try {
@@ -715,7 +715,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			SpectrumItem eqStress = createEquivalentStress(output, connection);
 
 			// task cancelled
-			if (isCancelled() || (eqStress == null)) {
+			if (isCancelled() || eqStress == null) {
 				connection.rollback();
 				connection.setAutoCommit(true);
 				return null;
@@ -816,31 +816,31 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			double omissionLevel = applyOmission_ ? omissionLevel_ : -1.0;
 			update.setDouble(6, omissionLevel); // omission level
 			update.setString(7, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(10, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(11, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(11, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(12, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -873,7 +873,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 				update.setInt(21, output.getOutputFileID());
 			}
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -944,31 +944,31 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			double omissionLevel = applyOmission_ ? omissionLevel_ : -1.0;
 			update.setDouble(6, omissionLevel); // omission level
 			update.setString(7, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(10, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(11, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(11, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(12, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1001,7 +1001,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 				update.setInt(21, output.getOutputFileID());
 			}
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1071,31 +1071,31 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			double omissionLevel = applyOmission_ ? omissionLevel_ : -1.0;
 			update.setDouble(6, omissionLevel); // omission level
 			update.setString(7, material.getName());
-			if ((material.getSpecification() == null) || material.getSpecification().isEmpty()) {
+			if (material.getSpecification() == null || material.getSpecification().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, material.getSpecification());
 			}
-			if ((material.getLibraryVersion() == null) || material.getLibraryVersion().isEmpty()) {
+			if (material.getLibraryVersion() == null || material.getLibraryVersion().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(9, material.getLibraryVersion());
 			}
-			if ((material.getFamily() == null) || material.getFamily().isEmpty()) {
+			if (material.getFamily() == null || material.getFamily().isEmpty()) {
 				update.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(10, material.getFamily());
 			}
-			if ((material.getOrientation() == null) || material.getOrientation().isEmpty()) {
+			if (material.getOrientation() == null || material.getOrientation().isEmpty()) {
 				update.setNull(11, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(11, material.getOrientation());
 			}
-			if ((material.getConfiguration() == null) || material.getConfiguration().isEmpty()) {
+			if (material.getConfiguration() == null || material.getConfiguration().isEmpty()) {
 				update.setNull(12, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1124,7 +1124,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 				update.setInt(17, output.getOutputFileID());
 			}
-			if ((material.getIsamiVersion() == null) || material.getIsamiVersion().isEmpty()) {
+			if (material.getIsamiVersion() == null || material.getIsamiVersion().isEmpty()) {
 				update.setNull(18, java.sql.Types.VARCHAR);
 			}
 			else {

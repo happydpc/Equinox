@@ -45,7 +45,7 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableFastGenerateStressSequence;
 import equinox.utility.Utility;
 import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 
 /**
@@ -227,11 +227,11 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 			sequenceFile = generateStressSequence(connection, generateSigmaFile, validity);
 
 			// task cancelled
-			if (isCancelled() || (sequenceFile == null))
+			if (isCancelled() || sequenceFile == null)
 				return null;
 
 			// apply omission (if selected and not 0-level)
-			if (input_.isApplyOmission() && (input_.getOmissionLevel() > 0.0)) {
+			if (input_.isApplyOmission() && input_.getOmissionLevel() > 0.0) {
 				sequenceFile = applyOmission(sequenceFile);
 			}
 
@@ -277,7 +277,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 	}
@@ -289,7 +289,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		super.failed();
 
 		// destroy sub processes (if still running)
-		if ((omission_ != null) && omission_.isAlive()) {
+		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
 	}
@@ -586,7 +586,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 			if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
 
 				// none-zero omission to be applied
-				if (input_.isApplyOmission() && (input_.getOmissionLevel() > 0.0))
+				if (input_.isApplyOmission() && input_.getOmissionLevel() > 0.0)
 					return false;
 
 				// no omission or zero omission

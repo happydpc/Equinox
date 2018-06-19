@@ -26,7 +26,6 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SharedFileInfo;
 import equinoxServer.remote.data.SharedFileInfo.SharedFileInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -35,6 +34,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UploadMaterialsRequest;
 import equinoxServer.remote.message.UploadMaterialsResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for upload materials task.1
@@ -162,7 +162,7 @@ public class UploadMaterials extends TemporaryFileCreatingTask<Boolean> implemen
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

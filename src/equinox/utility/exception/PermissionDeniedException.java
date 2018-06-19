@@ -15,7 +15,7 @@
  */
 package equinox.utility.exception;
 
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for permission denied exception.

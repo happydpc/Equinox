@@ -38,7 +38,7 @@ import equinox.task.AddNewUser;
 import equinox.task.SaveTask;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -211,13 +211,9 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 
 		// animate file types
 		if (success && !toBeAnimated.isEmpty()) {
-			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					for (ImageView item : toBeAnimated) {
-						item.setImage(Utility.getImage("full.png"));
-					}
+			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				for (ImageView item : toBeAnimated) {
+					item.setImage(Utility.getImage("full.png"));
 				}
 			}, toBeAnimated).play();
 		}
@@ -233,7 +229,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -265,7 +261,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -304,7 +300,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 
 		// files
 		boolean success = false;
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// process files
 			success = processFiles(db.getFiles());
@@ -327,7 +323,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -429,7 +425,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 	private boolean checkInputs(String alias, String name, String organization, String email, ObservableList<Permission> permissions, Path image) {
 
 		// alias
-		if ((alias == null) || alias.trim().isEmpty()) {
+		if (alias == null || alias.trim().isEmpty()) {
 			String message = "Please enter valid user alias to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -442,7 +438,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		}
 
 		// name
-		if ((name == null) || name.trim().isEmpty()) {
+		if (name == null || name.trim().isEmpty()) {
 			String message = "Please enter valid user name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -455,7 +451,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		}
 
 		// organization
-		if ((organization == null) || organization.trim().isEmpty()) {
+		if (organization == null || organization.trim().isEmpty()) {
 			String message = "Please enter valid user organization to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -481,7 +477,7 @@ public class AddUserPanel implements InternalInputSubPanel, SchedulingPanel {
 		}
 
 		// permissions
-		if ((permissions == null) || permissions.isEmpty()) {
+		if (permissions == null || permissions.isEmpty()) {
 			String message = "Please select at least one user permission to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

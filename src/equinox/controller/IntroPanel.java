@@ -40,7 +40,7 @@ import equinox.task.ShowNewsFeed;
 import equinox.task.UpdateWorkspace;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;

@@ -26,12 +26,12 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.HelpVideoInfo;
 import equinoxServer.remote.data.HelpVideoInfo.HelpVideoInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DeleteHelpVideoRequest;
 import equinoxServer.remote.message.DeleteHelpVideoResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for delete help video from global database task.
@@ -154,7 +154,7 @@ public class DeleteHelpVideo extends InternalEquinoxTask<Boolean> implements Lon
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

@@ -27,12 +27,12 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.EquinoxUpdate;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.CheckForEquinoxUpdatesRequest;
 import equinoxServer.remote.message.CheckForEquinoxUpdatesResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for check for Equinox updates task.

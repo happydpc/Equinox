@@ -27,8 +27,8 @@ import equinox.process.SaveSTFFile;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SharedFileInfo;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share spectrum item task.

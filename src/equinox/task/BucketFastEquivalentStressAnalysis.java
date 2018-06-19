@@ -32,7 +32,7 @@ import equinox.data.input.FastEquivalentStressInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketFastEquivalentStressAnalysis;
 import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for fast equivalent stress analysis from STF file bucket task.

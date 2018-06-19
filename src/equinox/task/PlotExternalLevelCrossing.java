@@ -34,7 +34,7 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.ExternalLevelCrossingInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot external level crossing task.
@@ -217,7 +217,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 		// compute Nc values
 		for (int i = 0; i < N.size(); i++) {
 			for (int j = 0; j < 65; j++) {
-				if ((Smax.get(i) >= Class[j]) && (Smin.get(i) < Class[j])) {
+				if (Smax.get(i) >= Class[j] && Smin.get(i) < Class[j]) {
 					Nc[j] = N.get(i) + Nc[j];
 				}
 			}

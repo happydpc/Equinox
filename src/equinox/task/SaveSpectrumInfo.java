@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save spectrum info task.
@@ -130,13 +130,13 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Void> implements Short
 		String sql = "update cdf_sets set delivery_ref = ?, description = ? ";
 		sql += "where set_id = " + spectrum_.getID();
 		try (PreparedStatement update = connection.prepareStatement(sql)) {
-			if ((info_[GetSpectrumEditInfo.DELIVERY_REF] == null) || info_[GetSpectrumEditInfo.DELIVERY_REF].trim().isEmpty()) {
+			if (info_[GetSpectrumEditInfo.DELIVERY_REF] == null || info_[GetSpectrumEditInfo.DELIVERY_REF].trim().isEmpty()) {
 				update.setNull(1, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(1, info_[GetSpectrumEditInfo.DELIVERY_REF].trim());
 			}
-			if ((info_[GetSpectrumEditInfo.DESCRIPTION] == null) || info_[GetSpectrumEditInfo.DESCRIPTION].trim().isEmpty()) {
+			if (info_[GetSpectrumEditInfo.DESCRIPTION] == null || info_[GetSpectrumEditInfo.DESCRIPTION].trim().isEmpty()) {
 				update.setNull(2, java.sql.Types.VARCHAR);
 			}
 			else {

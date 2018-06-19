@@ -41,7 +41,7 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare equivalent stresses with mission parameters.
@@ -100,10 +100,10 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 			SpectrumItem item = input_.getEquivalentStresses().get(0);
 
 			// equivalent stress
-			if ((item instanceof FatigueEquivalentStress) || (item instanceof PreffasEquivalentStress) || (item instanceof LinearEquivalentStress) || (item instanceof FastFatigueEquivalentStress) || (item instanceof FastPreffasEquivalentStress) || (item instanceof FastLinearEquivalentStress)) {
+			if (item instanceof FatigueEquivalentStress || item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof FastFatigueEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
 				compareEquivalentStresses(connection, dataset);
 			}
-			else if ((item instanceof ExternalFatigueEquivalentStress) || (item instanceof ExternalPreffasEquivalentStress) || (item instanceof ExternalLinearEquivalentStress)) {
+			else if (item instanceof ExternalFatigueEquivalentStress || item instanceof ExternalPreffasEquivalentStress || item instanceof ExternalLinearEquivalentStress) {
 				compareExternalEquivalentStresses(connection, dataset);
 			}
 		}

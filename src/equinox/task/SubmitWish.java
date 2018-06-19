@@ -24,13 +24,13 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.Wish;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.SubmitWishRequest;
 import equinoxServer.remote.message.SubmitWishResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for submit wish task.
@@ -110,7 +110,7 @@ public class SubmitWish extends InternalEquinoxTask<Long> implements ShortRunnin
 		if (title_.length() > Wish.MAX_TITLE_SIZE) {
 			title_ = title_.substring(0, 85) + " and more...";
 		}
-		if ((description_ != null) && (description_.length() > Wish.MAX_DESCRIPTION_SIZE)) {
+		if (description_ != null && description_.length() > Wish.MAX_DESCRIPTION_SIZE) {
 			description_ = description_.substring(0, 900) + " and more...(rest is truncated due to maximum character limit).";
 		}
 
@@ -166,7 +166,7 @@ public class SubmitWish extends InternalEquinoxTask<Long> implements ShortRunnin
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

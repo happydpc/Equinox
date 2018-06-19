@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save pilot point info task.
@@ -129,55 +129,55 @@ public class SavePilotPointInfo extends InternalEquinoxTask<Void> implements Sho
 		String sql = "update stf_files set description = ?, element_type = ?, frame_rib_position = ?, ";
 		sql += "stringer_position = ?, data_source = ?, generation_source = ?, delivery_ref_num = ?, issue = ?, eid = ? where file_id = " + stfFile_.getID();
 		try (PreparedStatement update = connection.prepareStatement(sql)) {
-			if ((info_[GetSTFInfo2.DESCRIPTION] == null) || info_[GetSTFInfo2.DESCRIPTION].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.DESCRIPTION] == null || info_[GetSTFInfo2.DESCRIPTION].trim().isEmpty()) {
 				update.setNull(1, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(1, info_[GetSTFInfo2.DESCRIPTION].trim());
 			}
-			if ((info_[GetSTFInfo2.ELEMENT_TYPE] == null) || info_[GetSTFInfo2.ELEMENT_TYPE].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.ELEMENT_TYPE] == null || info_[GetSTFInfo2.ELEMENT_TYPE].trim().isEmpty()) {
 				update.setNull(2, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(2, info_[GetSTFInfo2.ELEMENT_TYPE].trim());
 			}
-			if ((info_[GetSTFInfo2.FRAME_RIB_POS] == null) || info_[GetSTFInfo2.FRAME_RIB_POS].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.FRAME_RIB_POS] == null || info_[GetSTFInfo2.FRAME_RIB_POS].trim().isEmpty()) {
 				update.setNull(3, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(3, info_[GetSTFInfo2.FRAME_RIB_POS].trim());
 			}
-			if ((info_[GetSTFInfo2.STRINGER_POS] == null) || info_[GetSTFInfo2.STRINGER_POS].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.STRINGER_POS] == null || info_[GetSTFInfo2.STRINGER_POS].trim().isEmpty()) {
 				update.setNull(4, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(4, info_[GetSTFInfo2.STRINGER_POS].trim());
 			}
-			if ((info_[GetSTFInfo2.DATA_SOURCE] == null) || info_[GetSTFInfo2.DATA_SOURCE].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.DATA_SOURCE] == null || info_[GetSTFInfo2.DATA_SOURCE].trim().isEmpty()) {
 				update.setNull(5, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(5, info_[GetSTFInfo2.DATA_SOURCE].trim());
 			}
-			if ((info_[GetSTFInfo2.GEN_SOURCE] == null) || info_[GetSTFInfo2.GEN_SOURCE].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.GEN_SOURCE] == null || info_[GetSTFInfo2.GEN_SOURCE].trim().isEmpty()) {
 				update.setNull(6, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(6, info_[GetSTFInfo2.GEN_SOURCE].trim());
 			}
-			if ((info_[GetSTFInfo2.DELIVERY_REF] == null) || info_[GetSTFInfo2.DELIVERY_REF].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.DELIVERY_REF] == null || info_[GetSTFInfo2.DELIVERY_REF].trim().isEmpty()) {
 				update.setNull(7, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(7, info_[GetSTFInfo2.DELIVERY_REF].trim());
 			}
-			if ((info_[GetSTFInfo2.ISSUE] == null) || info_[GetSTFInfo2.ISSUE].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.ISSUE] == null || info_[GetSTFInfo2.ISSUE].trim().isEmpty()) {
 				update.setNull(8, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(8, info_[GetSTFInfo2.ISSUE].trim());
 			}
-			if ((info_[GetSTFInfo2.EID] == null) || info_[GetSTFInfo2.EID].trim().isEmpty()) {
+			if (info_[GetSTFInfo2.EID] == null || info_[GetSTFInfo2.EID].trim().isEmpty()) {
 				update.setNull(9, java.sql.Types.VARCHAR);
 			}
 			else {

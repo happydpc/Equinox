@@ -24,7 +24,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.Wish;
 import equinoxServer.remote.data.Wish.WishInfo;
 import equinoxServer.remote.message.CloseWishRequest;
@@ -32,6 +31,7 @@ import equinoxServer.remote.message.CloseWishResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for close wish task.
@@ -161,7 +161,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

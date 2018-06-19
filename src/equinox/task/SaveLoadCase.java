@@ -29,7 +29,7 @@ import java.util.Date;
 import equinox.Equinox;
 import equinox.data.fileType.AircraftLoadCase;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save load case task.

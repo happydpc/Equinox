@@ -34,8 +34,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointImageType;
+import equinoxServer.remote.utility.Permission;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import jxl.CellType;
@@ -717,7 +717,7 @@ public class ExportMultipleSTFs extends InternalEquinoxTask<Void> implements Lon
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct, boolean isScientific) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(isScientific ? NumberFormats.EXPONENTIAL : NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

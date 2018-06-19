@@ -22,8 +22,8 @@ import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.serializableTask.SerializableShareGeneratedItem;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SharedFileInfo;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share generated item task.

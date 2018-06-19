@@ -23,13 +23,13 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DownloadSampleInputRequest;
 import equinoxServer.remote.message.DownloadSampleInputResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for download sample input task.
@@ -162,7 +162,7 @@ public class DownloadSampleInput extends InternalEquinoxTask<Void> implements Lo
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

@@ -30,7 +30,7 @@ import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketDamageContributionAnalysis;
 import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for bucket damage contribution analysis task.

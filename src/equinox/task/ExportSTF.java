@@ -33,8 +33,8 @@ import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointImageType;
+import equinoxServer.remote.utility.Permission;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import jxl.CellType;
@@ -489,7 +489,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct, boolean isScientific) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(isScientific ? NumberFormats.EXPONENTIAL : NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

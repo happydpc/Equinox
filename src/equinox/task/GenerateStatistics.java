@@ -32,7 +32,7 @@ import equinox.data.fileType.Flight;
 import equinox.data.input.StatisticsInput;
 import equinox.data.input.StatisticsInput.Statistic;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate statistics task.
@@ -212,7 +212,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 		String sql = "select name, num_peaks from sth_flights where ";
 		ArrayList<Flight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 		}
 		sql += " order by num_peaks " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -260,7 +260,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 		String sql = "select name, validity from sth_flights where ";
 		ArrayList<Flight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 		}
 		sql += " order by validity " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -317,7 +317,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 		sql += "upper(" + column + ") like upper('%" + input_.getLoadcases().get(0).getEventName() + "%')" + " and (";
 		ArrayList<Flight> flights = input_.getFlights();
 		for (int i = 0; i < flights.size(); i++) {
-			sql += "sth_peaks_" + sthID + ".flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? ") " : " or ");
+			sql += "sth_peaks_" + sthID + ".flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? ") " : " or ");
 		}
 		sql += "group by sth_flights.name, sth_flights.validity order by statistic " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -379,7 +379,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 			sql += "upper(" + column + ") like upper('%" + input_.getLoadcases().get(0).getEventName() + "%')" + " and (";
 			ArrayList<Flight> flights = input_.getFlights();
 			for (int i = 0; i < flights.size(); i++) {
-				sql += "sth_peaks_" + sthID + ".flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? ") " : " or ");
+				sql += "sth_peaks_" + sthID + ".flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? ") " : " or ");
 			}
 			sql += "group by sth_flights.name order by statistic " + (input_.getOrder() ? "desc" : "asc");
 			statement.setMaxRows(input_.getLimit());
@@ -411,7 +411,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 			String sql = "select name, " + flightCol + " from sth_flights where ";
 			ArrayList<Flight> flights = input_.getFlights();
 			for (int i = 0; i < flights.size(); i++) {
-				sql += "flight_id = " + flights.get(i).getID() + (i == (flights.size() - 1) ? "" : " or ");
+				sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
 			}
 			sql += " order by " + flightCol + " " + (input_.getOrder() ? "desc" : "asc");
 			statement.setMaxRows(input_.getLimit());
@@ -524,7 +524,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 		if (!loadcases.isEmpty()) {
 			sql += " and (";
 			for (int i = 0; i < loadcases.size(); i++) {
-				sql += "upper(" + column + ") like upper('%" + loadcases.get(i).getEventName() + "%')" + (i == (loadcases.size() - 1) ? ")" : " or ");
+				sql += "upper(" + column + ") like upper('%" + loadcases.get(i).getEventName() + "%')" + (i == loadcases.size() - 1 ? ")" : " or ");
 			}
 		}
 		sql += " group by " + column + " order by statistic " + (input_.getOrder() ? "desc" : "asc");
@@ -583,7 +583,7 @@ public class GenerateStatistics extends InternalEquinoxTask<CategoryDataset> imp
 		if (!loadcases.isEmpty()) {
 			sql += " and (";
 			for (int i = 0; i < loadcases.size(); i++) {
-				sql += "upper(" + column + ") like upper('%" + loadcases.get(i).getEventName() + "%')" + (i == (loadcases.size() - 1) ? ")" : " or ");
+				sql += "upper(" + column + ") like upper('%" + loadcases.get(i).getEventName() + "%')" + (i == loadcases.size() - 1 ? ")" : " or ");
 			}
 		}
 		sql += " group by " + column + ", sth_flights.validity order by statistic " + (input_.getOrder() ? "desc" : "asc");

@@ -21,8 +21,8 @@ import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinoxServer.remote.data.MultiplicationTableInfo;
 import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for download multiplication table task.
@@ -76,7 +76,7 @@ public class DownloadMultiplicationTable extends TemporaryFileCreatingTask<Void>
 		String name = (String) info_.getInfo(MultiplicationTableInfoType.NAME);
 
 		// no URL found
-		if ((url == null) || url.trim().isEmpty())
+		if (url == null || url.trim().isEmpty())
 			throw new Exception("No URL found for downloading multiplication table '" + name + "'.");
 
 		// check output file

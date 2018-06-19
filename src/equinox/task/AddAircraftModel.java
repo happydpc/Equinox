@@ -39,7 +39,7 @@ import equinox.task.serializableTask.SerializableAddAircraftModel;
 import equinox.utility.Utility;
 import equinoxServer.remote.data.AircraftModelInfo;
 import equinoxServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add A/C model task.
@@ -119,7 +119,7 @@ public class AddAircraftModel extends TemporaryFileCreatingTask<AircraftModel> i
 				AircraftModel acModel = createAircraftModel(connection, program, modelName);
 
 				// task cancelled
-				if (isCancelled() || (acModel == null)) {
+				if (isCancelled() || acModel == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -261,13 +261,13 @@ public class AddAircraftModel extends TemporaryFileCreatingTask<AircraftModel> i
 				}
 
 				// set info
-				if ((delRef == null) || delRef.trim().isEmpty()) {
+				if (delRef == null || delRef.trim().isEmpty()) {
 					update.setString(3, "DRAFT");
 				}
 				else {
 					update.setString(3, delRef.trim());
 				}
-				if ((description == null) || description.trim().isEmpty()) {
+				if (description == null || description.trim().isEmpty()) {
 					update.setNull(4, java.sql.Types.VARCHAR);
 				}
 				else {

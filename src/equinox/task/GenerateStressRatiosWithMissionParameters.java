@@ -41,7 +41,7 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate stress ratios with mission parameters task.
@@ -100,10 +100,10 @@ public class GenerateStressRatiosWithMissionParameters extends InternalEquinoxTa
 			SpectrumItem item = input_.getEquivalentStresses().get(0);
 
 			// equivalent stress
-			if ((item instanceof FatigueEquivalentStress) || (item instanceof PreffasEquivalentStress) || (item instanceof LinearEquivalentStress) || (item instanceof FastFatigueEquivalentStress) || (item instanceof FastPreffasEquivalentStress) || (item instanceof FastLinearEquivalentStress)) {
+			if (item instanceof FatigueEquivalentStress || item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof FastFatigueEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
 				generateStressRatios(connection, dataset);
 			}
-			else if ((item instanceof ExternalFatigueEquivalentStress) || (item instanceof ExternalPreffasEquivalentStress) || (item instanceof ExternalLinearEquivalentStress)) {
+			else if (item instanceof ExternalFatigueEquivalentStress || item instanceof ExternalPreffasEquivalentStress || item instanceof ExternalLinearEquivalentStress) {
 				generateExternalStressRatios(connection, dataset);
 			}
 		}

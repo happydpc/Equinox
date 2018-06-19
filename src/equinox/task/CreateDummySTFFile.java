@@ -33,7 +33,7 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for creating dummy STF files.
@@ -351,7 +351,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 						line = resultSet.getString("issy_code");
 
 						// automatic delta-p load case
-						if ((dpLC_ == null) && (resultSet.getShort("dp_case") == 1)) {
+						if (dpLC_ == null && resultSet.getShort("dp_case") == 1) {
 							for (int i = 0; i < index; i++) {
 								line += "\t" + deltaPStress_[i];
 							}
@@ -361,7 +361,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 						}
 
 						// given delta-p load case
-						else if ((dpLC_ != null) && dpLC_.equals(line)) {
+						else if (dpLC_ != null && dpLC_.equals(line)) {
 							for (int i = 0; i < index; i++) {
 								line += "\t" + deltaPStress_[i];
 							}
@@ -372,7 +372,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 						}
 
 						// delta-t superior load case
-						else if ((dtSupLC_ != null) && dtSupLC_.equals(line)) {
+						else if (dtSupLC_ != null && dtSupLC_.equals(line)) {
 							for (int i = 0; i < index; i++) {
 								line += "\t" + deltaTSupStress_[i];
 							}
@@ -383,7 +383,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 						}
 
 						// delta-t inferior load case
-						else if ((dtInfLC_ != null) && dtInfLC_.equals(line)) {
+						else if (dtInfLC_ != null && dtInfLC_.equals(line)) {
 							for (int i = 0; i < index; i++) {
 								line += "\t" + deltaTInfStress_[i];
 							}
@@ -415,13 +415,13 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 					}
 
 					// given load cases could not be found
-					if ((dpLC_ != null) && !dpLCFound) {
+					if (dpLC_ != null && !dpLCFound) {
 						warnings_ += "Delta-P load case '" + dpLC_ + "' could not be found.\n";
 					}
-					if ((dtSupLC_ != null) && !dtSupLCFound) {
+					if (dtSupLC_ != null && !dtSupLCFound) {
 						warnings_ += "Delta-T superior load case '" + dtSupLC_ + "' could not be found.\n";
 					}
-					if ((dtInfLC_ != null) && !dtInfLCFound) {
+					if (dtInfLC_ != null && !dtInfLCFound) {
 						warnings_ += "Delta-T inferior load case '" + dtInfLC_ + "' could not be found.\n";
 					}
 				}

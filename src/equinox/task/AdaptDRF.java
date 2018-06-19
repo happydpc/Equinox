@@ -31,7 +31,7 @@ import equinox.data.input.AdaptDRFInput;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAdaptDRF;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 
 /**
@@ -161,7 +161,7 @@ public class AdaptDRF extends InternalEquinoxTask<Void> implements LongRunningTa
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((process_ != null) && process_.isAlive()) {
+		if (process_ != null && process_.isAlive()) {
 			process_.destroyForcibly();
 		}
 	}

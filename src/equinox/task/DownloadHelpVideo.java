@@ -26,13 +26,13 @@ import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DownloadHelpVideoRequest;
 import equinoxServer.remote.message.DownloadHelpVideoResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for download help video task.
@@ -183,7 +183,7 @@ public class DownloadHelpVideo extends TemporaryFileCreatingTask<Path> implement
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

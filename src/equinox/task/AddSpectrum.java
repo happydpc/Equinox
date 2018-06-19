@@ -40,9 +40,9 @@ import equinox.process.LoadTXTFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddSpectrum;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SpectrumInfo;
 import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add spectrum task.
@@ -237,7 +237,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 
 				// load and add CVT file to CDF set
 				Path cvtFile = new LoadCVTFile(this, cvtFile_, spectrum).start(connection);
-				if ((cvtFile == null) || !Files.exists(cvtFile)) {
+				if (cvtFile == null || !Files.exists(cvtFile)) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -253,7 +253,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 				spectrum.setTXTFileID(txtID);
 
 				// create add STF files task
-				if ((stfFiles != null) && !stfFiles.isEmpty()) {
+				if (stfFiles != null && !stfFiles.isEmpty()) {
 					createAddSTFFilesTask(spectrum, stfFiles);
 				}
 
@@ -374,7 +374,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		ArrayList<Path> spectrumFiles = Utility.extractAllFilesFromZIP(specFile_, this, getWorkingDirectory());
 
 		// no file found in bundle
-		if ((spectrumFiles == null) || spectrumFiles.isEmpty())
+		if (spectrumFiles == null || spectrumFiles.isEmpty())
 			throw new Exception("No file found in spectrum bundle '" + specFileName.toString() + "'.");
 
 		// loop over files
@@ -430,7 +430,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		}
 
 		// missing file
-		if ((anaFile_ == null) || (txtFile_ == null) || (cvtFile_ == null) || (flsFile_ == null) || (conversionTable_ == null) || (sheet_ == null))
+		if (anaFile_ == null || txtFile_ == null || cvtFile_ == null || flsFile_ == null || conversionTable_ == null || sheet_ == null)
 			throw new Exception("Spectrum bundle '" + specFileName.toString() + "' does not contain all CDF set files.");
 
 		// return STF files (if any)
@@ -520,13 +520,13 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 			}
 
 			// set info
-			if ((delRef == null) || delRef.trim().isEmpty()) {
+			if (delRef == null || delRef.trim().isEmpty()) {
 				update.setString(2, "DRAFT");
 			}
 			else {
 				update.setString(2, delRef.trim());
 			}
-			if ((description == null) || description.trim().isEmpty()) {
+			if (description == null || description.trim().isEmpty()) {
 				update.setNull(3, java.sql.Types.VARCHAR);
 			}
 			else {

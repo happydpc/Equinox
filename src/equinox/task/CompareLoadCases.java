@@ -31,7 +31,7 @@ import equinox.data.ElementType;
 import equinox.data.fileType.AircraftLoadCase;
 import equinox.data.input.CompareLoadCasesInput;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare load cases task.

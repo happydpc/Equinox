@@ -28,7 +28,7 @@ import equinox.Equinox;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save ANA task.

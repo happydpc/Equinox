@@ -29,9 +29,7 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.ui.NotificationPanel;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.Permission;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import equinoxServer.remote.utility.Permission;
 import javafx.scene.image.Image;
 
 /**
@@ -127,24 +125,12 @@ public class PlotFastLevelCrossings extends InternalEquinoxTask<Image> implement
 				NotificationPanel np = taskPanel_.getOwner().getOwner().getNotificationPane();
 				np.showQuestion(title, message, "Yes", "No",
 
-						// yes
-						new EventHandler<ActionEvent>() {
-
-							@Override
-							public void handle(ActionEvent event) {
-								np.hide();
-								taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, true));
-							}
+						event -> {
+							np.hide();
+							taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, true));
 						},
 
-						// no
-						new EventHandler<ActionEvent>() {
-
-							@Override
-							public void handle(ActionEvent event) {
-								np.hide();
-							}
-						});
+						event -> np.hide());
 			}
 
 			// image found (set to image panel)

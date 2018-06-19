@@ -26,12 +26,12 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.BugReport;
 import equinoxServer.remote.data.BugReport.BugReportInfo;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.CloseBugReportRequest;
 import equinoxServer.remote.message.CloseBugReportResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for close bug report task.
@@ -161,7 +161,7 @@ public class CloseBugReport extends InternalEquinoxTask<Boolean> implements Shor
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

@@ -26,7 +26,7 @@ import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.GetContributionNames.DamageContributionRequester;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for export damage contributions task.
@@ -98,7 +98,7 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 		ArrayList<String> names = contributionNames_.get();
 
 		// couldn't get contribution names
-		if ((names == null) || names.isEmpty())
+		if (names == null || names.isEmpty())
 			throw new Exception("Couldn't get common contribution names. Aborting export process.");
 
 		// create options

@@ -28,12 +28,12 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.CheckForMaterialUpdatesRequest;
 import equinoxServer.remote.message.CheckForMaterialUpdatesResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for check for material updates task.
@@ -156,7 +156,7 @@ public class CheckForMaterialUpdates extends InternalEquinoxTask<ArrayList<Strin
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -175,7 +175,7 @@ public class CheckForMaterialUpdates extends InternalEquinoxTask<ArrayList<Strin
 			ArrayList<String> toBeDownloaded = get();
 
 			// no update available
-			if ((toBeDownloaded == null) || toBeDownloaded.isEmpty()) {
+			if (toBeDownloaded == null || toBeDownloaded.isEmpty()) {
 
 				// show information
 				if (showNoUpdateInfo_) {

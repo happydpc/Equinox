@@ -25,13 +25,13 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddNewUser;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.AddNewUserRequest;
 import equinoxServer.remote.message.AddNewUserResponse;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add new user task.
@@ -135,7 +135,7 @@ public class AddNewUser extends InternalEquinoxTask<Boolean> implements LongRunn
 
 			// set image URL
 			String imageUrl = null;
-			if ((image != null) && Files.exists(image)) {
+			if (image != null && Files.exists(image)) {
 
 				// get connection to filer
 				try (FilerConnection filer = getFilerConnection()) {
@@ -203,7 +203,7 @@ public class AddNewUser extends InternalEquinoxTask<Boolean> implements LongRunn
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

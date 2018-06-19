@@ -24,7 +24,6 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SpectrumInfo;
 import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -32,6 +31,7 @@ import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DeleteSpectrumRequest;
 import equinoxServer.remote.message.DeleteSpectrumResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for delete spectrum from global database task.
@@ -154,7 +154,7 @@ public class DeleteSpectrumFromGlobalDB extends InternalEquinoxTask<Boolean> imp
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

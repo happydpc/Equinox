@@ -26,12 +26,12 @@ import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.MultiplicationTableInfo;
 import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DeleteMultiplicationTableRequest;
 import equinoxServer.remote.message.DeleteMultiplicationTableResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for delete multiplication table from global database task.
@@ -154,7 +154,7 @@ public class DeleteMultiplicationTableFromGlobalDB extends InternalEquinoxTask<B
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

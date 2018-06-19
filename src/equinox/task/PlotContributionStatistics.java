@@ -28,13 +28,13 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.ContributionType;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.GetAircraftSectionsForPilotPointsRequest;
 import equinoxServer.remote.message.PlotContributionStatisticsRequest;
 import equinoxServer.remote.message.PlotContributionStatisticsResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot damage contribution statistics task.
@@ -179,7 +179,7 @@ public class PlotContributionStatistics extends InternalEquinoxTask<CategoryData
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

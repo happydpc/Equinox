@@ -30,7 +30,7 @@ import equinox.Equinox;
 import equinox.data.StressComponent;
 import equinox.data.fileType.STFFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save as 1D STF task.
@@ -138,7 +138,7 @@ public class SaveAs1DSTF extends InternalEquinoxTask<Void> implements LongRunnin
 								double x = resultSet.getDouble("stress_x");
 								double y = resultSet.getDouble("stress_y");
 								double xy = resultSet.getDouble("stress_xy");
-								stress = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * angle_)) + (xy * Math.sin(2 * angle_));
+								stress = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * angle_) + xy * Math.sin(2 * angle_);
 							}
 
 							// write line

@@ -23,7 +23,7 @@ import org.apache.commons.text.WordUtils;
 
 import equinox.data.EquinoxTheme;
 import equinox.task.SubmitAccessRequest;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

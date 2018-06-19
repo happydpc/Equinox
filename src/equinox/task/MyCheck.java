@@ -36,7 +36,7 @@ import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableMyCheck;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 import equinoxServer.remote.utility.ServerUtility;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -158,7 +158,7 @@ public class MyCheck extends InternalEquinoxTask<Void> implements LongRunningTas
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((process_ != null) && process_.isAlive()) {
+		if (process_ != null && process_.isAlive()) {
 			process_.destroyForcibly();
 		}
 	}
@@ -486,7 +486,7 @@ public class MyCheck extends InternalEquinoxTask<Void> implements LongRunningTas
 			// get file names
 			Path txtFileName = mission.getTXTFile().getFileName();
 			Path cvtFileName = mission.getCVTFile().getFileName();
-			if ((txtFileName == null) || (cvtFileName == null))
+			if (txtFileName == null || cvtFileName == null)
 				throw new Exception("Cannot get CDF set file name.");
 
 			// create mission directory
@@ -634,7 +634,7 @@ public class MyCheck extends InternalEquinoxTask<Void> implements LongRunningTas
 					String issyCode = sheet.getCell(3, i).getContents();
 
 					// no issy code found
-					if ((issyCode == null) || issyCode.trim().isEmpty()) {
+					if (issyCode == null || issyCode.trim().isEmpty()) {
 						continue;
 					}
 
@@ -642,7 +642,7 @@ public class MyCheck extends InternalEquinoxTask<Void> implements LongRunningTas
 					String flightPhase = sheet.getCell(4, i).getContents();
 
 					// no issy code found
-					if ((flightPhase == null) || flightPhase.trim().isEmpty()) {
+					if (flightPhase == null || flightPhase.trim().isEmpty()) {
 						continue;
 					}
 
@@ -650,7 +650,7 @@ public class MyCheck extends InternalEquinoxTask<Void> implements LongRunningTas
 					String event = sheet.getCell(5, i).getContents();
 
 					// no issy code found
-					if ((event == null) || event.trim().isEmpty()) {
+					if (event == null || event.trim().isEmpty()) {
 						continue;
 					}
 

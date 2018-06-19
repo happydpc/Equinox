@@ -27,12 +27,12 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 import equinoxServer.remote.data.BugReport;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.GetBugReportsRequest;
 import equinoxServer.remote.message.GetBugReportsResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for get bug reports task.
@@ -147,7 +147,7 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

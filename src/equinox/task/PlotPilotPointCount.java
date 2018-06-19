@@ -27,12 +27,12 @@ import equinox.network.NetworkWatcher;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.PlotPilotPointCountRequest;
 import equinoxServer.remote.message.PlotPilotPointCountResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot pilot point count task.
@@ -156,7 +156,7 @@ public class PlotPilotPointCount extends InternalEquinoxTask<CategoryDataset> im
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -181,7 +181,7 @@ public class PlotPilotPointCount extends InternalEquinoxTask<CategoryDataset> im
 			String title = "Pilot Point Count";
 			String subTitle = "";
 			subTitle += program_ == null ? "" : program_;
-			subTitle += section_ == null ? "" : (", " + section_);
+			subTitle += section_ == null ? "" : ", " + section_;
 			String yAxisLabel = "Amount";
 			String xAxisLabel = null;
 			if (program_ == null) {

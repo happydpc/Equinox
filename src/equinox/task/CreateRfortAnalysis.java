@@ -40,7 +40,7 @@ import equinox.data.ui.SerializableRfortPilotPoint;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.serializableTask.SerializableCreateRfortAnalysis;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for create RFORT analysis task.
@@ -284,7 +284,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				statement.setString(9, runTillFlight.toString());
 			}
 			String targetFlights = input_.getTargetFlights();
-			if ((targetFlights == null) || targetFlights.trim().isEmpty()) {
+			if (targetFlights == null || targetFlights.trim().isEmpty()) {
 				statement.setNull(10, java.sql.Types.VARCHAR);
 			}
 			else {

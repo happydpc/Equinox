@@ -26,8 +26,8 @@ import equinox.process.SaveSTFBucketProcess;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SharedFileInfo;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share STF file bucket task.

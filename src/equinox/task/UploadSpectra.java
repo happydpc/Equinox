@@ -29,7 +29,6 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.SpectrumInfo;
 import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinoxServer.remote.message.DatabaseQueryFailed;
@@ -38,6 +37,7 @@ import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.UploadSpectraRequest;
 import equinoxServer.remote.message.UploadSpectraResponse;
 import equinoxServer.remote.utility.FilerConnection;
+import equinoxServer.remote.utility.Permission;
 import jxl.Sheet;
 import jxl.Workbook;
 
@@ -199,7 +199,7 @@ public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}
@@ -297,7 +297,7 @@ public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements
 				info.setInfo(SpectrumInfoType.FLP_ISSUE, flpIssue);
 				info.setInfo(SpectrumInfoType.IFLP_ISSUE, iflpIssue);
 				info.setInfo(SpectrumInfoType.CDF_ISSUE, cdfIssue);
-				info.setInfo(SpectrumInfoType.DELIVERY_REF, (delRef == null) || delRef.isEmpty() ? "DRAFT" : delRef);
+				info.setInfo(SpectrumInfoType.DELIVERY_REF, delRef == null || delRef.isEmpty() ? "DRAFT" : delRef);
 				info.setInfo(SpectrumInfoType.DESCRIPTION, description);
 				info.setInfo(SpectrumInfoType.DATA_SIZE, spectrumFile.toFile().length());
 				info.setInfo(SpectrumInfoType.DATA_URL, url);
@@ -357,7 +357,7 @@ public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements
 		}
 
 		// check files
-		if ((anaFile == null) || (cvtFile == null) || (txtFile == null) || (flsFile == null) || (xlsFile == null)) {
+		if (anaFile == null || cvtFile == null || txtFile == null || flsFile == null || xlsFile == null) {
 			String message = "Spectrum contained in directory '" + directory.getFileName().toString() + "' in ";
 			message += "the ZIP archive '" + zipFile.toString() + "' does NOT contain all CDF set files. Aborting operation.";
 			throw new Exception(message);

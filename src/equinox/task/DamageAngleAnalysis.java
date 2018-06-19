@@ -60,7 +60,7 @@ import equinox.task.serializableTask.SerializableDamageAngleAnalysis;
 import equinox.utility.Utility;
 import equinoxServer.remote.data.FatigueMaterial;
 import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for damage angle analysis task.
@@ -234,7 +234,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				int[] incAngles = calculateIncrementalAngles();
 
 				// task cancelled
-				if (isCancelled() || (incAngles == null)) {
+				if (isCancelled() || incAngles == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -244,7 +244,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				Path[] sthFiles = generateStressSequences(connection, incAngles);
 
 				// task cancelled
-				if (isCancelled() || (sthFiles == null)) {
+				if (isCancelled() || sthFiles == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -264,7 +264,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				int validity = getValidity(connection);
 
 				// task cancelled
-				if (isCancelled() || (validity == -1)) {
+				if (isCancelled() || validity == -1) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -274,7 +274,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				Double[][] stresses = equivalentStressAnalysis(sthFiles, flsFile, incAngles, connection, validity);
 
 				// task cancelled
-				if (isCancelled() || (stresses == null)) {
+				if (isCancelled() || stresses == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -284,7 +284,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				DamageAngle angle = createDamageAngle(connection, stresses, incAngles, validity);
 
 				// task cancelled
-				if (isCancelled() || (angle == null)) {
+				if (isCancelled() || angle == null) {
 					connection.rollback();
 					connection.setAutoCommit(true);
 					return null;
@@ -588,7 +588,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		int start = input_.getStartAngle();
 		int end = input_.getEndAngle();
 		int inc = input_.getIncrementAngle();
-		int[] angles = new int[((end - start) / inc) + 1];
+		int[] angles = new int[(end - start) / inc + 1];
 		int k = start;
 		for (int i = 0; i < angles.length; i++) {
 			angles[i] = k;
@@ -695,7 +695,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 
 										// initialize variables
 										int rem = flightPeaks % NUM_COLS;
-										int numRows = (flightPeaks / NUM_COLS) + (rem == 0 ? 0 : 1);
+										int numRows = flightPeaks / NUM_COLS + (rem == 0 ? 0 : 1);
 										rowIndex_ = 0;
 										colIndex_ = 0;
 										for (int i = 0; i < lines_.length; i++) {
@@ -858,13 +858,13 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				dtStress[i] = dtInterpolators[i] == null ? 0.0 : dtInterpolators[i].getStress(temperature);
 
 				// modify stress for 1 point interpolation
-				if ((dtInterpolators[i] != null) && (dtInterpolators[i] instanceof DT1PointInterpolator)) {
+				if (dtInterpolators[i] != null && dtInterpolators[i] instanceof DT1PointInterpolator) {
 					DT1PointInterpolator onePoint = (DT1PointInterpolator) dtInterpolators[i];
 					dtStress[i] = modifyStress(onePoint.getIssyCode(), segment, GenerateStressSequenceInput.DELTAT, dtStress[i]);
 				}
 
 				// modify stress for 2 points interpolation
-				else if ((dtInterpolators[i] != null) && (dtInterpolators[i] instanceof DT2PointsInterpolator)) {
+				else if (dtInterpolators[i] != null && dtInterpolators[i] instanceof DT2PointsInterpolator) {
 					DT2PointsInterpolator twoPoints = (DT2PointsInterpolator) dtInterpolators[i];
 					dtStress[i] = modify2PointDTStress(twoPoints, segment, dtStress[i]);
 				}
@@ -875,13 +875,13 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		double[] totalStresses = new double[radians.length];
 		for (int i = 0; i < radians.length; i++) {
 			totalStresses[i] = onegStress.getStresses()[i] + incStress[i] + dpStress[i] + dtStress[i];
-			if ((totalStresses[i] < 0) && input_.isRemoveNegativeStresses()) {
+			if (totalStresses[i] < 0 && input_.isRemoveNegativeStresses()) {
 				totalStresses[i] = 0.0;
 			}
 		}
 
 		// last row
-		if (rowIndex_ == (numRows - 1)) {
+		if (rowIndex_ == numRows - 1) {
 
 			// add peaks
 			for (int i = 0; i < lines_.length; i++) {
@@ -951,7 +951,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		for (int i = 0; i < 5; i++) {
 
 			// get increment block
-			String block = classCode.substring((2 * i) + 4, (2 * i) + 6);
+			String block = classCode.substring(2 * i + 4, 2 * i + 6);
 
 			// no increment
 			if (block.equals("00")) {
@@ -1064,7 +1064,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 
 				// rotate stresses
 				for (int i = 0; i < stresses.length; i++) {
-					stresses[i] = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * radians[i])) + (xy * Math.sin(2 * radians[i]));
+					stresses[i] = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * radians[i]) + xy * Math.sin(2 * radians[i]);
 					stresses[i] = modifyStress(issyCode, segment, stressType, stresses[i]);
 				}
 			}
@@ -1100,7 +1100,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(stressType);
@@ -1165,7 +1165,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		}
 
 		// apply segment factors
-		if ((segment != null) && (input_.getSegmentFactors() != null)) {
+		if (segment != null && input_.getSegmentFactors() != null) {
 			for (SegmentFactor sFactor : input_.getSegmentFactors())
 				if (sFactor.getSegment().equals(segment)) {
 					method = sFactor.getModifierMethod(GenerateStressSequenceInput.DELTAT);
@@ -1318,7 +1318,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 
 							// compute delta-p ratio
 							for (int i = 0; i < radians.length; i++) {
-								stresses[i] = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * radians[i])) + (xy * Math.sin(2 * radians[i]));
+								stresses[i] = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * radians[i]) + xy * Math.sin(2 * radians[i]);
 							}
 						}
 					}
@@ -1444,7 +1444,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 
 								// compute delta-p ratio
 								for (int i = 0; i < radians.length; i++) {
-									stresses[i] = (0.5 * (x + y)) + (0.5 * (x - y) * Math.cos(2 * radians[i])) + (xy * Math.sin(2 * radians[i]));
+									stresses[i] = 0.5 * (x + y) + 0.5 * (x - y) * Math.cos(2 * radians[i]) + xy * Math.sin(2 * radians[i]);
 								}
 							}
 						}
@@ -1461,7 +1461,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		}
 
 		// delta-p load case could not be found
-		if ((input_.getDPLoadcase() != null) && (dpRatios[0] == null)) {
+		if (input_.getDPLoadcase() != null && dpRatios[0] == null) {
 			warnings_ += "Delta-P load case '" + input_.getDPLoadcase() + "' could not be found.\n";
 		}
 
@@ -1632,31 +1632,31 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			update.setBoolean(16, input_.isRemoveNegativeStresses()); // remove negative stresses
 			update.setDouble(17, input_.isApplyOmission() ? input_.getOmissionlevel() : -1.0); // omission level
 			update.setString(18, material_.getName());
-			if ((material_.getSpecification() == null) || material_.getSpecification().isEmpty()) {
+			if (material_.getSpecification() == null || material_.getSpecification().isEmpty()) {
 				update.setNull(19, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(19, material_.getSpecification());
 			}
-			if ((material_.getLibraryVersion() == null) || material_.getLibraryVersion().isEmpty()) {
+			if (material_.getLibraryVersion() == null || material_.getLibraryVersion().isEmpty()) {
 				update.setNull(20, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(20, material_.getLibraryVersion());
 			}
-			if ((material_.getFamily() == null) || material_.getFamily().isEmpty()) {
+			if (material_.getFamily() == null || material_.getFamily().isEmpty()) {
 				update.setNull(21, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(21, material_.getFamily());
 			}
-			if ((material_.getOrientation() == null) || material_.getOrientation().isEmpty()) {
+			if (material_.getOrientation() == null || material_.getOrientation().isEmpty()) {
 				update.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(22, material_.getOrientation());
 			}
-			if ((material_.getConfiguration() == null) || material_.getConfiguration().isEmpty()) {
+			if (material_.getConfiguration() == null || material_.getConfiguration().isEmpty()) {
 				update.setNull(23, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1665,7 +1665,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			update.setDouble(24, material_.getP());
 			update.setDouble(25, material_.getQ());
 			update.setDouble(26, material_.getM());
-			if ((material_.getIsamiVersion() == null) || material_.getIsamiVersion().isEmpty()) {
+			if (material_.getIsamiVersion() == null || material_.getIsamiVersion().isEmpty()) {
 				update.setNull(27, java.sql.Types.VARCHAR);
 			}
 			else {
@@ -1673,7 +1673,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			}
 
 			// no delta-t interpolation
-			if ((dtInterpolators_ == null) || (dtInterpolators_[0] == null)) {
+			if (dtInterpolators_ == null || dtInterpolators_[0] == null) {
 				update.setNull(11, java.sql.Types.VARCHAR); // dt_lc_inf
 				update.setNull(12, java.sql.Types.VARCHAR); // dt_lc_sup
 				update.setNull(13, java.sql.Types.DOUBLE); // ref_dt_inf
@@ -1681,7 +1681,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			}
 
 			// 1 point interpolation
-			else if ((dtInterpolators_[0] != null) && (dtInterpolators_[0] instanceof DT1PointInterpolator)) {
+			else if (dtInterpolators_[0] != null && dtInterpolators_[0] instanceof DT1PointInterpolator) {
 				DT1PointInterpolator onePoint = (DT1PointInterpolator) dtInterpolators_[0];
 				update.setString(12, onePoint.getIssyCode()); // dt_lc_sup
 				update.setDouble(14, onePoint.getReferenceTemperature()); // ref_dt_sup
@@ -1690,7 +1690,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			}
 
 			// 2 points interpolation
-			else if ((dtInterpolators_[0] != null) && (dtInterpolators_[0] instanceof DT2PointsInterpolator)) {
+			else if (dtInterpolators_[0] != null && dtInterpolators_[0] instanceof DT2PointsInterpolator) {
 				DT2PointsInterpolator twoPoints = (DT2PointsInterpolator) dtInterpolators_[0];
 				update.setString(12, twoPoints.getIssyCodeSup()); // dt_lc_sup
 				update.setDouble(14, twoPoints.getReferenceTemperatureSup()); // ref_dt_sup

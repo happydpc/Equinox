@@ -32,7 +32,7 @@ import equinox.data.input.DamageAngleInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketDamageAngleAnalysis;
 import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for bucket damage angle analysis task.

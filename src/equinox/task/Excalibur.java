@@ -35,7 +35,7 @@ import equinox.process.ExcaliburLoadLoadcaseCorrelations;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableExcalibur;
-import equinoxServer.remote.data.Permission;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for Excalibur stress sorting task.

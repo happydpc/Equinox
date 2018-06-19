@@ -30,11 +30,9 @@ import equinox.data.Settings;
 import equinox.task.LikeWish;
 import equinox.task.SaveSettings;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.Wish;
 import equinoxServer.remote.data.Wish.WishInfo;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -101,19 +99,15 @@ public class WishPanel implements Initializable {
 		close_ = new Hyperlink("Close", image);
 
 		// set on action
-		close_.setOnAction(new EventHandler<ActionEvent>() {
+		close_.setOnAction(event -> {
 
-			@Override
-			public void handle(ActionEvent event) {
-
-				// show popup
-				PopOver popOver = new PopOver();
-				popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
-				popOver.setTitle("Close Wish");
-				popOver.setContentNode(CloseWishPanel.load(popOver, WishPanel.this, wish_));
-				popOver.setHideOnEscape(true);
-				popOver.show(close_);
-			}
+			// show popup
+			PopOver popOver = new PopOver();
+			popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
+			popOver.setTitle("Close Wish");
+			popOver.setContentNode(CloseWishPanel.load(popOver, WishPanel.this, wish_));
+			popOver.setHideOnEscape(true);
+			popOver.show(close_);
 		});
 	}
 
@@ -149,7 +143,7 @@ public class WishPanel implements Initializable {
 		// setup components
 		title_.setText((String) wish_.getInfo(WishInfo.TITLE));
 		String description = (String) wish_.getInfo(WishInfo.DESCRIPTION);
-		if ((description != null) && !description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			description_.setText(description);
 		}
 		else {
@@ -159,7 +153,7 @@ public class WishPanel implements Initializable {
 		status_.setText(status);
 		status_.setTextFill(status.equals(Wish.OPEN) ? Color.GREEN : Color.FIREBRICK);
 		String closure = (String) wish_.getInfo(WishInfo.CLOSURE);
-		if ((closure != null) && !closure.isEmpty()) {
+		if (closure != null && !closure.isEmpty()) {
 			closure_.setText("Closure:\n" + closure);
 			root_.getChildren().add(2, closure_);
 		}

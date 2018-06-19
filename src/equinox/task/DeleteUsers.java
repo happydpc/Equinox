@@ -23,12 +23,12 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableDeleteUsers;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.message.DatabaseQueryFailed;
 import equinoxServer.remote.message.DatabaseQueryMessage;
 import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
 import equinoxServer.remote.message.DeleteUsersRequest;
 import equinoxServer.remote.message.DeleteUsersResponse;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for delete users task.
@@ -163,7 +163,7 @@ public class DeleteUsers extends InternalEquinoxTask<Boolean> implements LongRun
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
+			if (watcher != null && removeListener) {
 				watcher.removeDatabaseQueryListener(this);
 			}
 		}

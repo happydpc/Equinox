@@ -41,8 +41,8 @@ import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Permission;
 import equinoxServer.remote.data.PilotPointInfo;
+import equinoxServer.remote.utility.Permission;
 
 /**
  * Add STF files task.
@@ -313,7 +313,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 
 			// compute number of stress tables
 			int numTables = numFiles / MAX_STF_FILES_PER_TABLE;
-			numTables += (numFiles % MAX_STF_FILES_PER_TABLE) == 0 ? 0 : 1;
+			numTables += numFiles % MAX_STF_FILES_PER_TABLE == 0 ? 0 : 1;
 
 			// create arrays for storing stress table IDs and insert statements
 			int[] stressTableIDs = new int[numTables];
@@ -470,7 +470,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 
 			// compute number of stress tables
 			int numTables = numFiles / MAX_STF_FILES_PER_TABLE;
-			numTables += (numFiles % MAX_STF_FILES_PER_TABLE) == 0 ? 0 : 1;
+			numTables += numFiles % MAX_STF_FILES_PER_TABLE == 0 ? 0 : 1;
 
 			// create arrays for storing stress table IDs and insert statements
 			int[] stressTableIDs = new int[numTables];
