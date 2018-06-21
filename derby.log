@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Tue Jun 19 16:00:39 CEST 2018:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0164-1858-ee6f-0000197cd4e0 
+Thu Jun 21 00:45:29 CEST 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0164-1f5f-cb7f-0000192918c0 
 on database directory /Users/aurora/Temporary/newWorkspace.eqx with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@45283ce2 
 Loaded from file:/Users/aurora/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
 java.vendor=Oracle Corporation
@@ -12,5 +12,5 @@ os.version=10.13.5
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
 ----------------------------------------------------------------
-Tue Jun 19 16:01:39 CEST 2018:
-Shutting down instance a816c00e-0164-1858-ee6f-0000197cd4e0 on database directory /Users/aurora/Temporary/newWorkspace.eqx with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@45283ce2 
+Thu Jun 21 02:12:59 CEST 2018:
+Shutting down instance a816c00e-0164-1f5f-cb7f-0000192918c0 on database directory /Users/aurora/Temporary/newWorkspace.eqx with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@45283ce2 
