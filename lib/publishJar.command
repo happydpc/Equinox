@@ -31,9 +31,25 @@ mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
   -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib
 
 mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
-  -Dfile=/Users/aurora/EclipseWorkspace/EquinoxServer/equinoxServer.jar \
-  -DgroupId=com.equinox-server \
-  -DartifactId=equinox-server \
+  -Dfile=/Users/aurora/EclipseWorkspace/EquinoxServerUtilities/equinoxServerUtilities.jar \
+  -DgroupId=com.equinox \
+  -DartifactId=serverUtilities \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib
+
+mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
+  -Dfile=/Users/aurora/EclipseWorkspace/EquinoxAnalysisServer/equinoxAnalysisServer.jar \
+  -DgroupId=com.equinox \
+  -DartifactId=analysisServer \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib
+
+mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
+  -Dfile=/Users/aurora/EclipseWorkspace/EquinoxExchangeServer/equinoxExchangeServer.jar \
+  -DgroupId=com.equinox \
+  -DartifactId=exchangeServer \
   -Dversion=1.0.0 \
   -Dpackaging=jar \
   -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib

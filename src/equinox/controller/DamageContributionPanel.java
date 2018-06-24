@@ -162,8 +162,8 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 		// bind components
 		omissionLevel_.disableProperty().bind(omission_.selectedProperty().not());
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
 		damageContributions_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<DamageContribution>) c -> removeDamageContributions_.setDisable(damageContributions_.getSelectionModel().getSelectedItems().isEmpty()));
 		damageContributions_.getItems().addListener((ListChangeListener<DamageContribution>) c -> resetDamageContributions_.setDisable(damageContributions_.getItems().isEmpty()));
 		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));

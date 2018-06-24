@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import equinox.controller.MainScreen;
-import equinoxServer.remote.utility.Permission;
+import equinox.serverUtilities.Permission;
 
 /**
  * Class for Equinox user.

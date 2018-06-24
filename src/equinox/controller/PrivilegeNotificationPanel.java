@@ -22,8 +22,8 @@ import java.util.ResourceBundle;
 import org.apache.commons.text.WordUtils;
 
 import equinox.data.EquinoxTheme;
+import equinox.serverUtilities.Permission;
 import equinox.task.SubmitAccessRequest;
-import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

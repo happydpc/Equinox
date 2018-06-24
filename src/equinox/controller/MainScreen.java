@@ -25,25 +25,13 @@ import equinox.data.EquinoxPluginManager;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.data.ui.NotificationPanel;
-import equinox.network.NetworkWatcher;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.NetworkMessage;
+import equinox.serverUtilities.PermissionDenied;
 import equinox.task.DownloadSampleInput;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.listener.StandardMessageListener;
-import equinoxServer.remote.message.Announcement;
-import equinoxServer.remote.message.ChatMessage;
-import equinoxServer.remote.message.Handshake;
-import equinoxServer.remote.message.LoginFailed;
-import equinoxServer.remote.message.LoginSuccessful;
-import equinoxServer.remote.message.RoomChange;
-import equinoxServer.remote.message.ShareFile;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.message.WhoRequest;
-import equinoxServer.remote.message.WhoResponse;
-import equinoxServer.remote.utility.NetworkMessage;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.PermissionDenied;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -69,7 +57,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
  * @date Dec 6, 2013
  * @time 10:40:41 AM
  */
-public class MainScreen implements Initializable, StandardMessageListener {
+public class MainScreen implements Initializable {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -128,8 +116,8 @@ public class MainScreen implements Initializable, StandardMessageListener {
 	/** Initial directory for file chooser. */
 	private File initialDirectory_ = null;
 
-	/** The network watcher of the application. */
-	private NetworkWatcher networkWatcher_;
+	/** Analysis server manager. */
+	private AnalysisServerManager analysisServerManager_;
 
 	/** List containing the available users. */
 	private ObservableList<String> availableUsers_;
@@ -164,9 +152,8 @@ public class MainScreen implements Initializable, StandardMessageListener {
 		scheduledTasksPanel_ = ScheduledTasksPanel.load(this);
 		taskHistoryPanel_ = TaskHistoryPanel.load(this);
 
-		// create network watcher
-		networkWatcher_ = new NetworkWatcher(this);
-		networkWatcher_.setStandardMessageListener(this);
+		// create analysis server manager
+		analysisServerManager_ = new AnalysisServerManager(this);
 
 		// create available users list
 		availableUsers_ = FXCollections.observableArrayList();
@@ -218,8 +205,8 @@ public class MainScreen implements Initializable, StandardMessageListener {
 	 */
 	public void stop() {
 
-		// disconnect from server and stop network thread
-		networkWatcher_.stop();
+		// disconnect from servers and stop network threads
+		analysisServerManager_.stop();
 
 		// stop files panel
 		inputPanel_.stop();
@@ -577,12 +564,12 @@ public class MainScreen implements Initializable, StandardMessageListener {
 	}
 
 	/**
-	 * Returns the network watcher of the application.
+	 * Returns the analysis server manager of the application.
 	 *
-	 * @return The network watcher of the application.
+	 * @return The analysis server manager of the application.
 	 */
-	public NetworkWatcher getNetworkWatcher() {
-		return networkWatcher_;
+	public AnalysisServerManager getAnalysisServerManager() {
+		return analysisServerManager_;
 	}
 
 	/**

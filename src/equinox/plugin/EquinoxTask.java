@@ -21,8 +21,8 @@ import java.time.Instant;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import equinox.Equinox;
+import equinox.serverUtilities.Permission;
 import equinox.utility.exception.PermissionDeniedException;
-import equinoxServer.remote.utility.Permission;
 import javafx.concurrent.Task;
 
 /**

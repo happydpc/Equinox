@@ -185,12 +185,12 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 				linearMaterialsPane_.setExpanded(false);
 			}
 		});
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		preffasMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<PreffasMaterial>) c -> removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		linearMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LinearMaterial>) c -> removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
-		preffasMaterials_.getItems().addListener((ListChangeListener<PreffasMaterial>) c -> resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty()));
-		linearMaterials_.getItems().addListener((ListChangeListener<LinearMaterial>) c -> resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty()));
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		preffasMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<PreffasMaterial>) c -> removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		linearMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<LinearMaterial>) c -> removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		preffasMaterials_.getItems().addMessageListener((ListChangeListener<PreffasMaterial>) c -> resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty()));
+		linearMaterials_.getItems().addMessageListener((ListChangeListener<LinearMaterial>) c -> resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty()));
 		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));
 		segmentFactors_.getItems().addListener((ListChangeListener<SegmentFactor>) c -> resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty()));
 		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LoadcaseFactor>) c -> removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty()));

@@ -158,34 +158,46 @@
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
 		</dependency>
-		<!-- local repository: base64-all -->
+		<!-- local repository: com.base64.base64-all -->
 		<dependency>
 			<groupId>com.base64</groupId>
 			<artifactId>base64-all</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		<!-- local repository: container -->
-		<dependency>
-			<groupId>com.container</groupId>
-			<artifactId>container</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<!-- local repository: controls -->
+		<!-- local repository: com.controls.controls -->
 		<dependency>
 			<groupId>com.controls</groupId>
 			<artifactId>controls</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		<!-- local repository: equinox-server -->
-		<dependency>
-			<groupId>com.equinox-server</groupId>
-			<artifactId>equinox-server</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<!-- local repository: inf -->
+		<!-- local repository: com.inf.inf -->
 		<dependency>
 			<groupId>com.inf</groupId>
 			<artifactId>inf</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- local repository: com.container.container -->
+		<dependency>
+			<groupId>com.container</groupId>
+			<artifactId>container</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- local repository: com.equinox.serverUtilities -->
+		<dependency>
+			<groupId>com.equinox</groupId>
+			<artifactId>serverUtilities</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- local repository: com.equinox.analysisServer -->
+		<dependency>
+			<groupId>com.equinox</groupId>
+			<artifactId>analysisServer</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<!-- local repository: com.equinox.exchangeServer -->
+		<dependency>
+			<groupId>com.equinox</groupId>
+			<artifactId>exchangeServer</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 	</dependencies>

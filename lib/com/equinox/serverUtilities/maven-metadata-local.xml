@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-  <groupId>com.equinox-server</groupId>
-  <artifactId>equinox-server</artifactId>
+  <groupId>com.equinox</groupId>
+  <artifactId>serverUtilities</artifactId>
   <versioning>
     <release>1.0.0</release>
     <versions>
       <version>1.0.0</version>
     </versions>
-    <lastUpdated>20180620223815</lastUpdated>
+    <lastUpdated>20180624222558</lastUpdated>
   </versioning>
 </metadata>

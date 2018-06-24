@@ -154,42 +154,42 @@ public class EquivalentStressPanel implements InternalInputSubPanel, SchedulingP
 				}
 			}
 		});
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<FatigueMaterial>() {
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<FatigueMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
 				removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty());
 			}
 		});
-		preffasMaterials_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<PreffasMaterial>() {
+		preffasMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<PreffasMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends PreffasMaterial> c) {
 				removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty());
 			}
 		});
-		linearMaterials_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<LinearMaterial>() {
+		linearMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<LinearMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LinearMaterial> c) {
 				removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty());
 			}
 		});
-		fatigueMaterials_.getItems().addListener(new ListChangeListener<FatigueMaterial>() {
+		fatigueMaterials_.getItems().addMessageListener(new ListChangeListener<FatigueMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
 				resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty());
 			}
 		});
-		preffasMaterials_.getItems().addListener(new ListChangeListener<PreffasMaterial>() {
+		preffasMaterials_.getItems().addMessageListener(new ListChangeListener<PreffasMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends PreffasMaterial> c) {
 				resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty());
 			}
 		});
-		linearMaterials_.getItems().addListener(new ListChangeListener<LinearMaterial>() {
+		linearMaterials_.getItems().addMessageListener(new ListChangeListener<LinearMaterial>() {
 
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LinearMaterial> c) {
