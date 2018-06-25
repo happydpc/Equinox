@@ -35,6 +35,8 @@ import equinox.controller.MainScreen;
 import equinox.data.Settings;
 import equinox.exchangeServer.remote.Registry;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
+import equinox.exchangeServer.remote.message.CliecntToServerExchangeMessage;
+import equinox.exchangeServer.remote.message.ClientToClientExchangeMessage;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
 import equinox.exchangeServer.remote.message.HandshakeWithExchangeServer;
 import equinox.serverUtilities.BigMessage;
@@ -172,11 +174,11 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// connect to server
 		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME);
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT));
+			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be exchange server hostname
+			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be exchange server port number
 			kryoNetClient_.connect(5000, hostname, port);
 			HandshakeWithExchangeServer handshake = new HandshakeWithExchangeServer(Equinox.USER.getAlias());
-			handshake.setListenerId(hashCode());
+			handshake.setSenderHashCode(hashCode());
 			kryoNetClient_.sendTCP(handshake);
 			return true;
 		}
@@ -478,10 +480,30 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 					// get listener
 					ExchangeMessageListener c = i.next();
 
-					// listener hash code matches to message analysis ID
-					if (c.hashCode() == message.getListenerId()) {
-						c.respondToExchangeMessage(message);
-						break;
+					// client to server message
+					if (message instanceof CliecntToServerExchangeMessage) {
+
+						// cast
+						CliecntToServerExchangeMessage cts = (CliecntToServerExchangeMessage) message;
+
+						// listener hash code matches to message sender hash code
+						if (c.hashCode() == cts.getSenderHashCode()) {
+							c.respondToExchangeMessage(message);
+							break;
+						}
+					}
+
+					// client to client message
+					else if (message instanceof ClientToClientExchangeMessage) {
+
+						// cast
+						ClientToClientExchangeMessage ctc = (ClientToClientExchangeMessage) message;
+
+						// listener class name matches to message sender class name
+						if (c.getClass().getName().equals(ctc.getSenderClassName())) {
+							c.respondToExchangeMessage(message);
+							break;
+						}
 					}
 				}
 			}

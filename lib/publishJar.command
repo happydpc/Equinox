@@ -53,3 +53,11 @@ mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
   -Dversion=1.0.0 \
   -Dpackaging=jar \
   -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib
+
+mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file \
+  -Dfile=/Users/aurora/EclipseWorkspace/EquinoxDataServer/equinoxDataServer.jar \
+  -DgroupId=com.equinox \
+  -DartifactId=dataServer \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DlocalRepositoryPath=/Users/aurora/EclipseWorkspace/Equinox/lib

@@ -200,5 +200,11 @@
 			<artifactId>exchangeServer</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<!-- local repository: com.equinox.dataServer -->
+		<dependency>
+			<groupId>com.equinox</groupId>
+			<artifactId>dataServer</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

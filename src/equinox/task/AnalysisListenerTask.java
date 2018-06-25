@@ -18,9 +18,9 @@ package equinox.task;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import equinoxServer.remote.listener.AnalysisListener;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.AnalysisProgress;
+import equinox.analysisServer.remote.listener.AnalysisMessageListener;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.AnalysisProgress;
 
 /**
  * Interface for server analysis listener task.
@@ -29,7 +29,7 @@ import equinoxServer.remote.message.AnalysisProgress;
  * @date 24 Jan 2018
  * @time 13:33:50
  */
-public interface AnalysisListenerTask extends AnalysisListener {
+public interface AnalysisListenerTask extends AnalysisMessageListener {
 
 	/**
 	 * Waits for server analysis to complete.

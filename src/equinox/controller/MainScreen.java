@@ -25,7 +25,17 @@ import equinox.data.EquinoxPluginManager;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.data.ui.NotificationPanel;
+import equinox.dataServer.remote.message.LoginFailed;
+import equinox.dataServer.remote.message.LoginSuccessful;
+import equinox.exchangeServer.remote.message.Announcement;
+import equinox.exchangeServer.remote.message.ChatMessage;
+import equinox.exchangeServer.remote.message.ShareFile;
+import equinox.exchangeServer.remote.message.StatusChange;
+import equinox.exchangeServer.remote.message.WhoRequest;
+import equinox.exchangeServer.remote.message.WhoResponse;
 import equinox.network.AnalysisServerManager;
+import equinox.network.DataServerManager;
+import equinox.network.ExchangeServerManager;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PermissionDenied;
@@ -119,6 +129,12 @@ public class MainScreen implements Initializable {
 	/** Analysis server manager. */
 	private AnalysisServerManager analysisServerManager_;
 
+	/** Exchange server manager. */
+	private ExchangeServerManager exchangeServerManager_;
+
+	/** Data server manager. */
+	private DataServerManager dataServerManager_;
+
 	/** List containing the available users. */
 	private ObservableList<String> availableUsers_;
 
@@ -152,8 +168,10 @@ public class MainScreen implements Initializable {
 		scheduledTasksPanel_ = ScheduledTasksPanel.load(this);
 		taskHistoryPanel_ = TaskHistoryPanel.load(this);
 
-		// create analysis server manager
+		// create server managers
 		analysisServerManager_ = new AnalysisServerManager(this);
+		exchangeServerManager_ = new ExchangeServerManager(this);
+		dataServerManager_ = new DataServerManager(this);
 
 		// create available users list
 		availableUsers_ = FXCollections.observableArrayList();
@@ -207,6 +225,8 @@ public class MainScreen implements Initializable {
 
 		// disconnect from servers and stop network threads
 		analysisServerManager_.stop();
+		exchangeServerManager_.stop();
+		dataServerManager_.stop();
 
 		// stop files panel
 		inputPanel_.stop();
@@ -570,6 +590,24 @@ public class MainScreen implements Initializable {
 	 */
 	public AnalysisServerManager getAnalysisServerManager() {
 		return analysisServerManager_;
+	}
+
+	/**
+	 * Returns the exchange server manager of the application.
+	 *
+	 * @return The exchange server manager of the application.
+	 */
+	public ExchangeServerManager getExchangeServerManager() {
+		return exchangeServerManager_;
+	}
+
+	/**
+	 * Returns the data server manager of the application.
+	 *
+	 * @return The data server manager of the application.
+	 */
+	public DataServerManager getDataServerManager() {
+		return dataServerManager_;
 	}
 
 	/**

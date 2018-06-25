@@ -31,12 +31,12 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
-import equinox.analysisServer.remote.Registry;
-import equinox.analysisServer.remote.listener.AnalysisMessageListener;
-import equinox.analysisServer.remote.message.AnalysisMessage;
-import equinox.analysisServer.remote.message.HandshakeWithAnalysisServer;
 import equinox.controller.MainScreen;
 import equinox.data.Settings;
+import equinox.dataServer.remote.Registry;
+import equinox.dataServer.remote.listener.DataMessageListener;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.HandshakeWithDataServer;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
@@ -45,13 +45,13 @@ import equinox.utility.Utility;
 import javafx.application.Platform;
 
 /**
- * Class for analysis server manager.
+ * Class for data server manager.
  *
  * @author Murat Artim
- * @date 24 Jun 2018
- * @time 16:21:45
+ * @date 25 Jun 2018
+ * @time 13:46:41
  */
-public class AnalysisServerManager implements AnalysisMessageListener {
+public class DataServerManager implements DataMessageListener {
 
 	/** Serial id. */
 	private static final long serialVersionUID = 1L;
@@ -63,7 +63,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	private final MainScreen owner_;
 
 	/** Analysis message listeners. */
-	private List<AnalysisMessageListener> messageListeners_;
+	private List<DataMessageListener> messageListeners_;
 
 	/** Stop indicator of the network watcher. */
 	private volatile boolean isStopped_ = false;
@@ -75,12 +75,12 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	private final ConcurrentLinkedQueue<NetworkMessage> messageQueue_;
 
 	/**
-	 * Creates analysis server manager.
+	 * Creates data server manager.
 	 *
 	 * @param owner
 	 *            The owner main screen.
 	 */
-	public AnalysisServerManager(MainScreen owner) {
+	public DataServerManager(MainScreen owner) {
 
 		// set owner
 		owner_ = owner;
@@ -89,7 +89,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		messageQueue_ = new ConcurrentLinkedQueue<>();
 
 		// create analysis message listener list
-		messageListeners_ = Collections.synchronizedList(new ArrayList<AnalysisMessageListener>());
+		messageListeners_ = Collections.synchronizedList(new ArrayList<DataMessageListener>());
 
 		// create thread executor of the network watcher
 		threadExecutor_ = Executors.newSingleThreadExecutor();
@@ -101,35 +101,35 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		Registry.register(kryoNetClient_);
 
 		// add server handler (listener)
-		kryoNetClient_.addListener(new AnalysisServerListener());
+		kryoNetClient_.addListener(new DataServerListener());
 
 		// start client
 		kryoNetClient_.start();
 
 		// add this class to message listeners
 		addMessageListener(this);
-		Equinox.LOGGER.info("Analysis server client initialized.");
+		Equinox.LOGGER.info("Data server client initialized.");
 	}
 
 	/**
-	 * Adds given analysis message listener.
+	 * Adds given data message listener.
 	 *
 	 * @param listener
-	 *            Analysis message listener to add.
+	 *            Data message listener to add.
 	 */
-	public void addMessageListener(AnalysisMessageListener listener) {
+	public void addMessageListener(DataMessageListener listener) {
 		synchronized (messageListeners_) {
 			messageListeners_.add(listener);
 		}
 	}
 
 	/**
-	 * Removes the given analysis message listener.
+	 * Removes the given data message listener.
 	 *
 	 * @param listener
-	 *            Analysis message listener to remove.
+	 *            Data message listener to remove.
 	 */
-	public void removeMessageListener(AnalysisMessageListener listener) {
+	public void removeMessageListener(DataMessageListener listener) {
 		synchronized (messageListeners_) {
 			messageListeners_.remove(listener);
 		}
@@ -145,7 +145,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	}
 
 	/**
-	 * Connects to analysis server.
+	 * Connects to data server.
 	 *
 	 * @param message
 	 *            Message to be sent once the connection is established.
@@ -172,10 +172,10 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// connect to server
 		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be analysis server hostname
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be analysis server port number
+			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be data server hostname
+			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be data server port number
 			kryoNetClient_.connect(5000, hostname, port);
-			HandshakeWithAnalysisServer handshake = new HandshakeWithAnalysisServer(Equinox.USER.getAlias());
+			HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
 			handshake.setSenderHashCode(hashCode());
 			kryoNetClient_.sendTCP(handshake);
 			return true;
@@ -185,8 +185,8 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		catch (IOException e) {
 
 			// log error
-			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to analysis server.", e);
-			String msg = "Cannot connect to analysis server. Please check your network connection and analysis server connection settings.";
+			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to data server.", e);
+			String msg = "Cannot connect to data server. Please check your network connection and data server connection settings.";
 			owner_.getNotificationPane().showWarning(msg, null);
 			messageQueue_.clear();
 			return false;
@@ -247,10 +247,10 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			catch (Exception e) {
 
 				// log error
-				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to analysis server.", e);
+				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to data server.", e);
 
 				// show warning
-				String msg = "Exception occurred during sending message to analysis server: " + e.getLocalizedMessage();
+				String msg = "Exception occurred during sending message to data server: " + e.getLocalizedMessage();
 				msg += " Click 'Details' for more information.";
 				owner_.getNotificationPane().showError("Problem encountered", msg, e);
 			}
@@ -267,7 +267,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// disconnect kryonet client
 		kryoNetClient_.close();
-		Equinox.LOGGER.info("Disconnected from analysis server.");
+		Equinox.LOGGER.info("Disconnected from data server.");
 	}
 
 	/**
@@ -277,14 +277,14 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// stop thread executor
 		Utility.shutdownThreadExecutor(threadExecutor_);
-		Equinox.LOGGER.info("Analysis server manager network thread executor stopped.");
+		Equinox.LOGGER.info("Data server manager network thread executor stopped.");
 
 		// set stop indicator
 		isStopped_ = true;
 
 		// stop kryonet client
 		kryoNetClient_.stop();
-		Equinox.LOGGER.info("Disconnected from analysis server.");
+		Equinox.LOGGER.info("Disconnected from data server.");
 	}
 
 	/**
@@ -297,11 +297,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	}
 
 	@Override
-	public void respondToAnalysisMessage(AnalysisMessage message) throws Exception {
+	public void respondToDataMessage(DataMessage message) throws Exception {
 
 		// handshake
-		if (message instanceof HandshakeWithAnalysisServer) {
-			processHandshake((HandshakeWithAnalysisServer) message);
+		if (message instanceof HandshakeWithDataServer) {
+			processHandshake((HandshakeWithDataServer) message);
 		}
 	}
 
@@ -311,13 +311,13 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 * @param handshake
 	 *            Handshake message.
 	 */
-	private void processHandshake(HandshakeWithAnalysisServer handshake) {
+	private void processHandshake(HandshakeWithDataServer handshake) {
 
 		// successful
 		if (handshake.isHandshakeSuccessful()) {
 
 			// log
-			Equinox.LOGGER.info("Successfully connected to analysis server.");
+			Equinox.LOGGER.info("Successfully connected to data server.");
 
 			// send all queued message (if any)
 			NetworkMessage message;
@@ -328,20 +328,20 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// unsuccessful
 		else {
-			String text = "Cannot connect to analysis server. Please check your network connection and analysis server connection settings.";
+			String text = "Cannot connect to data server. Please check your network connection and data server connection settings.";
 			owner_.getNotificationPane().showWarning(text, null);
 			messageQueue_.clear();
 		}
 	}
 
 	/**
-	 * Inner class for analysis server listener. Server handler listens for incoming messages and passes them to registered listener.
+	 * Inner class for data server listener. Server handler listens for incoming messages and passes them to registered listener.
 	 *
 	 * @author Murat Artim
 	 * @time 5:51:08 PM
 	 * @date Jul 11, 2011
 	 */
-	private class AnalysisServerListener extends Listener {
+	private class DataServerListener extends Listener {
 
 		/** Map containing the partial messages and their ancestors' hash codes. */
 		private final HashMap<Integer, PartialMessage[]> partialMessages_ = new HashMap<>();
@@ -350,7 +350,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		public void connected(Connection connection) {
 
 			// log connection
-			Equinox.LOGGER.info("Successfully connected to analysis server.");
+			Equinox.LOGGER.info("Successfully connected to data server.");
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
@@ -374,8 +374,8 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 					}
 
 					// analysis message
-					else if (object instanceof AnalysisMessage) {
-						respond((AnalysisMessage) object);
+					else if (object instanceof DataMessage) {
+						respond((DataMessage) object);
 					}
 				}
 
@@ -383,11 +383,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 				catch (Exception e) {
 
 					// log warning
-					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to analysis server message.", e);
+					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to data server message.", e);
 
 					// show warning
 					Platform.runLater(() -> {
-						String message = "Exception occurred during responding to analysis server message: " + e.getLocalizedMessage();
+						String message = "Exception occurred during responding to data server message: " + e.getLocalizedMessage();
 						message += " Click 'Details' for more information.";
 						owner_.getNotificationPane().showError("Problem encountered", message, e);
 					});
@@ -404,7 +404,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 			// show warning
 			Platform.runLater(() -> {
-				String message = "Connection to analysis server lost. Please check your network connection.";
+				String message = "Connection to data server lost. Please check your network connection.";
 				owner_.getNotificationPane().showWarning(message, null);
 			});
 		}
@@ -447,9 +447,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			// combine parts and respond
 			BigMessage combinedMessage = SplitMessage.combineMessages(parts);
 
-			// analysis message
-			if (combinedMessage instanceof AnalysisMessage) {
-				respond((AnalysisMessage) combinedMessage);
+			// data message
+			if (combinedMessage instanceof DataMessage) {
+				respond((DataMessage) combinedMessage);
 			}
 
 			// remove parts
@@ -457,30 +457,30 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		}
 
 		/**
-		 * Responds to given analysis network message.
+		 * Responds to given data network message.
 		 *
 		 * @param message
-		 *            Analysis message to respond to.
+		 *            Data message to respond to.
 		 * @throws Exception
 		 *             If exception occurs during process.
 		 */
-		private void respond(AnalysisMessage message) throws Exception {
+		private void respond(DataMessage message) throws Exception {
 
 			// sync over listeners
 			synchronized (messageListeners_) {
 
 				// get listeners
-				Iterator<AnalysisMessageListener> i = messageListeners_.iterator();
+				Iterator<DataMessageListener> i = messageListeners_.iterator();
 
 				// loop over listeners
 				while (i.hasNext()) {
 
 					// get listener
-					AnalysisMessageListener c = i.next();
+					DataMessageListener c = i.next();
 
 					// listener hash code matches to message analysis ID
 					if (c.hashCode() == message.getSenderHashCode()) {
-						c.respondToAnalysisMessage(message);
+						c.respondToDataMessage(message);
 						break;
 					}
 				}
