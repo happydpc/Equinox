@@ -25,10 +25,10 @@ import org.controlsfx.control.ToggleSwitch;
 
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.message.GetBugReportsRequest;
 import equinox.task.GetBugReports;
 import equinox.task.SubmitBugReport;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.GetBugReportsRequest;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -130,7 +130,7 @@ public class BugReportPanel implements InternalInputSubPanel {
 		boolean eventLog = eventLog_.isSelected();
 
 		// no description given
-		if ((report == null) || report.isEmpty()) {
+		if (report == null || report.isEmpty()) {
 			String message = "No bug description given. Please describe the problem in order to proceed submitting your bug report.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

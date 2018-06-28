@@ -623,11 +623,6 @@
                      </graphic>
                   </Menu>
                   <SeparatorMenuItem disable="true" mnemonicParsing="false" />
-                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onStopServerClicked" text="Stop Network Server">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.stop" />
-                     </graphic>
-                  </MenuItem>
                   <MenuItem disable="true" mnemonicParsing="false" onAction="#onResetExchangeDatabaseClicked" text="Reset Exchange Database">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.power-off" />

@@ -29,8 +29,8 @@ import java.util.Date;
 
 import equinox.Equinox;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save external FLS file task.

@@ -27,13 +27,13 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.BasicSearchInput;
+import equinox.dataServer.remote.data.SearchItem;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
+import equinox.dataServer.remote.data.SpectrumSearchInput;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.BasicSpectrumSearch;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.BasicSearchInput;
-import equinoxServer.remote.data.SearchItem;
-import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
-import equinoxServer.remote.data.SpectrumSearchInput;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -176,43 +176,43 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 
 		// add search items
 		final String name = cdfName_.getText();
-		if ((name != null) && !name.isEmpty()) {
+		if (name != null && !name.isEmpty()) {
 			input.addInput(SpectrumInfoType.NAME, new SearchItem(name, getSelectedCriteria(nameCriteria_)));
 		}
 		final String acProgram = acProgram_.getText();
-		if ((acProgram != null) && !acProgram.isEmpty()) {
+		if (acProgram != null && !acProgram.isEmpty()) {
 			input.addInput(SpectrumInfoType.AC_PROGRAM, new SearchItem(acProgram, getSelectedCriteria(acProgramCriteria_)));
 		}
 		final String acSection = acSection_.getText();
-		if ((acSection != null) && !acSection.isEmpty()) {
+		if (acSection != null && !acSection.isEmpty()) {
 			input.addInput(SpectrumInfoType.AC_SECTION, new SearchItem(acSection, getSelectedCriteria(acSectionCriteria_)));
 		}
 		final String fatMission = fatMission_.getText();
-		if ((fatMission != null) && !fatMission.isEmpty()) {
+		if (fatMission != null && !fatMission.isEmpty()) {
 			input.addInput(SpectrumInfoType.FAT_MISSION, new SearchItem(fatMission, getSelectedCriteria(missionCriteria_)));
 		}
 		final String fatMissionIssue = fatMissionIssue_.getText();
-		if ((fatMissionIssue != null) && !fatMissionIssue.isEmpty()) {
+		if (fatMissionIssue != null && !fatMissionIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.FAT_MISSION_ISSUE, new SearchItem(fatMissionIssue, getSelectedCriteria(missionIssueCriteria_)));
 		}
 		final String flpIssue = flpIssue_.getText();
-		if ((flpIssue != null) && !flpIssue.isEmpty()) {
+		if (flpIssue != null && !flpIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.FLP_ISSUE, new SearchItem(flpIssue, getSelectedCriteria(flpIssueCriteria_)));
 		}
 		final String iflpIssue = iflpIssue_.getText();
-		if ((iflpIssue != null) && !iflpIssue.isEmpty()) {
+		if (iflpIssue != null && !iflpIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.IFLP_ISSUE, new SearchItem(iflpIssue, getSelectedCriteria(iflpIssueCriteria_)));
 		}
 		final String cdfIssue = cdfIssue_.getText();
-		if ((cdfIssue != null) && !cdfIssue.isEmpty()) {
+		if (cdfIssue != null && !cdfIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.CDF_ISSUE, new SearchItem(cdfIssue, getSelectedCriteria(cdfIssueCriteria_)));
 		}
 		final String deliveryRef = deliveryRef_.getText();
-		if ((deliveryRef != null) && !deliveryRef.isEmpty()) {
+		if (deliveryRef != null && !deliveryRef.isEmpty()) {
 			input.addInput(SpectrumInfoType.DELIVERY_REF, new SearchItem(deliveryRef, getSelectedCriteria(deliveryRefCriteria_)));
 		}
 		final String description = description_.getText();
-		if ((description != null) && !description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			input.addInput(SpectrumInfoType.DESCRIPTION, new SearchItem(description, getSelectedCriteria(descriptionCriteria_)));
 		}
 
@@ -242,7 +242,7 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 		final String keywords = keywords_.getText().trim();
 
 		// no keyword entered
-		if ((keywords == null) || keywords.isEmpty()) {
+		if (keywords == null || keywords.isEmpty()) {
 			showWarningMessage("No search keyword entered. Please enter keywords to proceed.", keywords_);
 			return;
 		}

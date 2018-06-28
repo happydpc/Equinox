@@ -38,9 +38,9 @@ import equinox.data.input.RfortExtendedInput;
 import equinox.data.ui.RfortOmission;
 import equinox.data.ui.SerializableRfortPilotPoint;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.serializableTask.SerializableCreateRfortAnalysis;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for create RFORT analysis task.

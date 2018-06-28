@@ -21,9 +21,9 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.PreffasMaterial;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.PreffasMaterial;
 
 /**
  * Class for serializable form of RFORT Extended tool table item.

@@ -26,8 +26,8 @@ import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.input.HistogramInput;
 import equinox.process.PlotHistogramProcess;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot histogram task.

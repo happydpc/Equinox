@@ -46,6 +46,7 @@ import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.plugin.FileType;
 import equinox.process.SaveBucketOutputFilesProcess;
 import equinox.task.DeleteTemporaryFiles;
@@ -66,7 +67,6 @@ import equinox.task.ShareSTFBucket;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.StatusChange;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -491,7 +491,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 				popOver.hide();
 			};
 

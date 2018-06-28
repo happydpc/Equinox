@@ -33,7 +33,7 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
-import equinoxServer.remote.utility.Permission;
+import equinox.serverUtilities.Permission;
 
 /**
  * Class for creating dummy STF files.

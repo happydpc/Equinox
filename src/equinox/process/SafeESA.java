@@ -37,6 +37,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.FullESAComplete;
+import equinox.analysisServer.remote.message.SafeESARequest;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -44,22 +48,18 @@ import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.EquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.FullESAComplete;
-import equinoxServer.remote.message.SafeESARequest;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for SAFE equivalent stress analysis process.
@@ -140,7 +140,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 	public Void start(Connection localConnection, PreparedStatement... preparedStatements) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
@@ -180,7 +180,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 			// initialize analysis request message
 			SafeESARequest request = new SafeESARequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setFastAnalysis(false);
 			request.setUploadOutputFiles(keepOutputs_);
@@ -204,8 +204,8 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -213,7 +213,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -246,8 +246,8 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}
@@ -256,7 +256,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
 	}
@@ -301,7 +301,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 		// save output file to database (if requested)
 		int outputFileID = -1;
-		if (keepOutputs_ && (message.getDownloadUrl() != null)) {
+		if (keepOutputs_ && message.getDownloadUrl() != null) {
 
 			// create path to local output file
 			task_.updateMessage("Downloading analysis output file from server...");
@@ -390,7 +390,7 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 		if (material_ instanceof FatigueMaterial) {
 			analysisType = "initiation";
 		}
-		else if ((material_ instanceof PreffasMaterial) || (material_ instanceof LinearMaterial)) {
+		else if (material_ instanceof PreffasMaterial || material_ instanceof LinearMaterial) {
 			analysisType = "propagation";
 		}
 
@@ -717,10 +717,10 @@ public class SafeESA implements ESAProcess<Void>, AnalysisListenerTask {
 		task_.updateMessage("Saving input FLS file...");
 
 		// equivalent stress
-		if ((eqStress_ instanceof FatigueEquivalentStress) || (eqStress_ instanceof PreffasEquivalentStress) || (eqStress_ instanceof LinearEquivalentStress)) {
+		if (eqStress_ instanceof FatigueEquivalentStress || eqStress_ instanceof PreffasEquivalentStress || eqStress_ instanceof LinearEquivalentStress) {
 			saveFLSForEquivalentStress(output, connection);
 		}
-		else if ((eqStress_ instanceof ExternalFatigueEquivalentStress) || (eqStress_ instanceof ExternalPreffasEquivalentStress) || (eqStress_ instanceof ExternalLinearEquivalentStress)) {
+		else if (eqStress_ instanceof ExternalFatigueEquivalentStress || eqStress_ instanceof ExternalPreffasEquivalentStress || eqStress_ instanceof ExternalLinearEquivalentStress) {
 			saveFLSForExternalEquivalentStress(output, connection);
 		}
 

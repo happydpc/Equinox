@@ -22,24 +22,21 @@ import java.util.ResourceBundle;
 import org.controlsfx.control.PopOver;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.PilotPointImageType;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.font.IconicFont;
-import equinoxServer.remote.data.PilotPointImageType;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 
 /**
  * Class for download pilot point info panel controller.
@@ -81,16 +78,12 @@ public class DownloadPilotPointInfoPanel implements Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// setup pagination page factory
-		pagination_.setPageFactory(new Callback<Integer, Node>() {
-
-			@Override
-			public Node call(Integer pageIndex) {
-				infoPages_[pageIndex].showing(info_);
-				if ((infoPages_[pageIndex] instanceof DownloadPilotPointInfoEditPage) == false) {
-					save_.setVisible(false);
-				}
-				return infoPages_[pageIndex].getRoot();
+		pagination_.setPageFactory(pageIndex -> {
+			infoPages_[pageIndex].showing(info_);
+			if (infoPages_[pageIndex] instanceof DownloadPilotPointInfoEditPage == false) {
+				save_.setVisible(false);
 			}
+			return infoPages_[pageIndex].getRoot();
 		});
 	}
 
@@ -243,17 +236,13 @@ public class DownloadPilotPointInfoPanel implements Initializable {
 			controller.infoPages_[12] = DownloadPilotPointImagePage.load(controller, PilotPointImageType.FLIGHT_DAMAGE_CONTRIBUTION, canEdit, popOver);
 
 			// listen for detach events
-			controller.popOver_.detachedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					if (newValue) {
-						controller.headerPane_.getChildren().remove(controller.save_);
-						controller.root_.getChildren().remove(controller.headerPane_);
-						StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
-						StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
-						controller.popOver_.getRoot().getChildren().add(controller.save_);
-					}
+			controller.popOver_.detachedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+				if (newValue) {
+					controller.headerPane_.getChildren().remove(controller.save_);
+					controller.root_.getChildren().remove(controller.headerPane_);
+					StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
+					StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
+					controller.popOver_.getRoot().getChildren().add(controller.save_);
 				}
 			});
 

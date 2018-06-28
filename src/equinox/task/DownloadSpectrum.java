@@ -20,13 +20,13 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
+import equinox.dataServer.remote.data.SpectrumInfo;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SpectrumInfo;
-import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for download spectrum task.

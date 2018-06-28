@@ -52,6 +52,10 @@ import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.font.IconicFont;
 import equinox.task.BucketFastEquivalentStressAnalysis;
 import equinox.task.EquivalentStressAnalysis;
@@ -63,10 +67,6 @@ import equinox.task.GetMaterials;
 import equinox.task.GetMaterials.MaterialRequestingPanel;
 import equinox.task.SaveTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -185,12 +185,12 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 				linearMaterialsPane_.setExpanded(false);
 			}
 		});
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		preffasMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<PreffasMaterial>) c -> removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		linearMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<LinearMaterial>) c -> removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		fatigueMaterials_.getItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
-		preffasMaterials_.getItems().addMessageListener((ListChangeListener<PreffasMaterial>) c -> resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty()));
-		linearMaterials_.getItems().addMessageListener((ListChangeListener<LinearMaterial>) c -> resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty()));
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		preffasMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<PreffasMaterial>) c -> removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		linearMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LinearMaterial>) c -> removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		preffasMaterials_.getItems().addListener((ListChangeListener<PreffasMaterial>) c -> resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty()));
+		linearMaterials_.getItems().addListener((ListChangeListener<LinearMaterial>) c -> resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty()));
 		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));
 		segmentFactors_.getItems().addListener((ListChangeListener<SegmentFactor>) c -> resetSegmentFactors_.setDisable(segmentFactors_.getItems().isEmpty()));
 		loadcaseFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LoadcaseFactor>) c -> removeLoadcaseFactors_.setDisable(loadcaseFactors_.getSelectionModel().getSelectedItems().isEmpty()));
@@ -476,16 +476,16 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 		}
 
 		// set delta-p values
-		String dpLoadcase = (dpLoadcase_.getText() == null) || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
-		Double refDP = (refDPVal_.getText() == null) || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
+		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
+		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
 		input.setDPLoadcase(dpLoadcase);
 		input.setReferenceDP(refDP);
 
 		// set delta-t values
-		String dtLoadcaseSup = (dtLoadcaseSup_.getText() == null) || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
-		Double refDTSup = (refDTValSup_.getText() == null) || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
-		String dtLoadcaseInf = (dtLoadcaseInf_.getText() == null) || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
-		Double refDTInf = (refDTValInf_.getText() == null) || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
+		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
+		Double refDTSup = refDTValSup_.getText() == null || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
+		String dtLoadcaseInf = dtLoadcaseInf_.getText() == null || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
+		Double refDTInf = refDTValInf_.getText() == null || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		input.setDTInterpolation(dtInterpolation);
 		input.setDTLoadcaseSup(dtLoadcaseSup);
@@ -495,7 +495,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 
 		// set stress rotation
 		input.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
-		input.setRotationAngle((rotation_.getText() == null) || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
+		input.setRotationAngle(rotation_.getText() == null || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
 
 		// set omission inputs
 		boolean removeNegativeStresses = removeNegative_.isSelected();
@@ -594,16 +594,16 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 		}
 
 		// set delta-p values
-		String dpLoadcase = (dpLoadcase_.getText() == null) || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
-		Double refDP = (refDPVal_.getText() == null) || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
+		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
+		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
 		generateStressSequenceInput.setDPLoadcase(dpLoadcase);
 		generateStressSequenceInput.setReferenceDP(refDP);
 
 		// set delta-t values
-		String dtLoadcaseSup = (dtLoadcaseSup_.getText() == null) || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
-		Double refDTSup = (refDTValSup_.getText() == null) || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
-		String dtLoadcaseInf = (dtLoadcaseInf_.getText() == null) || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
-		Double refDTInf = (refDTValInf_.getText() == null) || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
+		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
+		Double refDTSup = refDTValSup_.getText() == null || refDTValSup_.getText().isEmpty() ? null : Double.parseDouble(refDTValSup_.getText());
+		String dtLoadcaseInf = dtLoadcaseInf_.getText() == null || dtLoadcaseInf_.getText().isEmpty() ? null : dtLoadcaseInf_.getText();
+		Double refDTInf = refDTValInf_.getText() == null || refDTValInf_.getText().isEmpty() ? null : Double.parseDouble(refDTValInf_.getText());
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		generateStressSequenceInput.setDTInterpolation(dtInterpolation);
 		generateStressSequenceInput.setDTLoadcaseSup(dtLoadcaseSup);
@@ -613,10 +613,10 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 
 		// set stress rotation
 		generateStressSequenceInput.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
-		generateStressSequenceInput.setRotationAngle((rotation_.getText() == null) || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
+		generateStressSequenceInput.setRotationAngle(rotation_.getText() == null || rotation_.getText().isEmpty() ? 0.0 : Double.parseDouble(rotation_.getText()));
 
 		// set sequence name
-		generateStressSequenceInput.setFileName((fileName_.getText() == null) || fileName_.getText().isEmpty() ? null : fileName_.getText());
+		generateStressSequenceInput.setFileName(fileName_.getText() == null || fileName_.getText().isEmpty() ? null : fileName_.getText());
 
 		// get omission inputs
 		boolean removeNegativeStresses = removeNegative_.isSelected();
@@ -924,7 +924,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 
 			// no delta-p loadcase given
 			String dpLoadcase = dpLoadcase_.getText();
-			if ((dpLoadcase == null) || dpLoadcase.trim().isEmpty()) {
+			if (dpLoadcase == null || dpLoadcase.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
@@ -955,7 +955,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 
 			// no reference delta-p given
 			String refDP = refDPVal_.getText();
-			if ((refDP == null) || refDP.trim().isEmpty()) {
+			if (refDP == null || refDP.trim().isEmpty()) {
 
 				// create confirmation action
 				PopOver popOver = new PopOver();
@@ -1244,7 +1244,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 			}
 
 			// selected STF files are not from the same spectrum
-			if ((spectrum != null) && !spectrum.equals(set)) {
+			if (spectrum != null && !spectrum.equals(set)) {
 				spectrum = null;
 				break;
 			}

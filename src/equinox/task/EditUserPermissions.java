@@ -18,17 +18,17 @@ package equinox.task;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
+import equinox.dataServer.remote.message.EditUserPermissionsRequest;
+import equinox.dataServer.remote.message.EditUserPermissionsResponse;
+import equinox.network.DataServerManager;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableEditUserPermissions;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.message.EditUserPermissionsRequest;
-import equinoxServer.remote.message.EditUserPermissionsResponse;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for edit user permissions task.
@@ -52,7 +52,7 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates edit user permissions task.
@@ -85,8 +85,8 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, this, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 		updateMessage("Please wait...");
 
 		// initialize variables
-		NetworkWatcher watcher = null;
+		DataServerManager watcher = null;
 		boolean removeListener = false;
 		boolean isEdited = false;
 
@@ -108,7 +108,7 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 
 			// create request message
 			EditUserPermissionsRequest request = new EditUserPermissionsRequest();
-			request.setDatabaseQueryID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setAlias(alias);
 			request.setPermissions(permissions);
 
@@ -120,16 +120,16 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 			taskPanel_.updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = taskPanel_.getOwner().getOwner().getNetworkWatcher();
-			watcher.addDatabaseQueryListener(this);
+			watcher = taskPanel_.getOwner().getOwner().getDataServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(this, isQueryCompleted);
+			waitForServer(this, isQueryCompleted);
 
 			// remove from network watcher
-			watcher.removeDatabaseQueryListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -140,7 +140,7 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)
@@ -162,7 +162,7 @@ public class EditUserPermissions extends InternalEquinoxTask<Boolean> implements
 		// remove from network watcher
 		finally {
 			if (watcher != null && removeListener) {
-				watcher.removeDatabaseQueryListener(this);
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

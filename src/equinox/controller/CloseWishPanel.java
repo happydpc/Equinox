@@ -22,8 +22,8 @@ import java.util.ResourceBundle;
 import org.controlsfx.control.PopOver;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.Wish;
 import equinox.task.CloseWish;
-import equinoxServer.remote.data.Wish;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

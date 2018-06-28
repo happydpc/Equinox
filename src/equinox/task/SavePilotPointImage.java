@@ -27,9 +27,9 @@ import javax.imageio.stream.ImageInputStream;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
+import equinox.dataServer.remote.data.PilotPointImageType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.PilotPointImageType;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Task for saving pilot point image.

@@ -25,10 +25,10 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.data.EquinoxTheme;
 import equinox.data.fileType.Spectrum;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadPilotPoints;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

@@ -20,18 +20,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.controller.RoadmapPanel;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.Wish;
+import equinox.dataServer.remote.data.Wish.WishInfo;
+import equinox.dataServer.remote.message.CloseWishRequest;
+import equinox.dataServer.remote.message.CloseWishResponse;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
+import equinox.network.DataServerManager;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.Wish;
-import equinoxServer.remote.data.Wish.WishInfo;
-import equinoxServer.remote.message.CloseWishRequest;
-import equinoxServer.remote.message.CloseWishResponse;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for close wish task.
@@ -58,7 +58,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates like wish task.
@@ -89,8 +89,8 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, this, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 		updateMessage("Please wait...");
 
 		// initialize variables
-		NetworkWatcher watcher = null;
+		DataServerManager watcher = null;
 		boolean removeListener = false;
 		boolean isClosed = false;
 
@@ -112,7 +112,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 
 			// create request message
 			CloseWishRequest request = new CloseWishRequest();
-			request.setDatabaseQueryID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setWishId((long) wish_.getInfo(WishInfo.ID));
 			request.setClosure(closure_);
 
@@ -120,16 +120,16 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 			taskPanel_.updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = taskPanel_.getOwner().getOwner().getNetworkWatcher();
-			watcher.addDatabaseQueryListener(this);
+			watcher = taskPanel_.getOwner().getOwner().getDataServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(this, isQueryCompleted);
+			waitForServer(this, isQueryCompleted);
 
 			// remove from network watcher
-			watcher.removeDatabaseQueryListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -140,7 +140,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)
@@ -162,7 +162,7 @@ public class CloseWish extends InternalEquinoxTask<Boolean> implements ShortRunn
 		// remove from network watcher
 		finally {
 			if (watcher != null && removeListener) {
-				watcher.removeDatabaseQueryListener(this);
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

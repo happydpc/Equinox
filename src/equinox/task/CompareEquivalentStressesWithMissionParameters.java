@@ -40,8 +40,8 @@ import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressComparisonInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare equivalent stresses with mission parameters.

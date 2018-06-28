@@ -26,11 +26,11 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.StressSequence;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
@@ -246,7 +246,7 @@ public class GetMaterials extends InternalEquinoxTask<Material[]> implements Sho
 		}
 
 		// no material or more than 1 type of material
-		if ((fatigueCount != 1) && (preffasCount != 1) && (linearCount != 1))
+		if (fatigueCount != 1 && preffasCount != 1 && linearCount != 1)
 			return;
 
 		// set material info
@@ -369,7 +369,7 @@ public class GetMaterials extends InternalEquinoxTask<Material[]> implements Sho
 		}
 
 		// no material or more than 1 type of material
-		if ((fatigueCount != 1) && (preffasCount != 1) && (linearCount != 1))
+		if (fatigueCount != 1 && preffasCount != 1 && linearCount != 1)
 			return;
 
 		// set material info
@@ -493,7 +493,7 @@ public class GetMaterials extends InternalEquinoxTask<Material[]> implements Sho
 		}
 
 		// no material or more than 1 type of material
-		if ((fatigueCount != 1) && (preffasCount != 1) && (linearCount != 1))
+		if (fatigueCount != 1 && preffasCount != 1 && linearCount != 1)
 			return;
 
 		// set material info
@@ -616,7 +616,7 @@ public class GetMaterials extends InternalEquinoxTask<Material[]> implements Sho
 		}
 
 		// no material or more than 1 type of material
-		if ((fatigueCount != 1) && (preffasCount != 1) && (linearCount != 1))
+		if (fatigueCount != 1 && preffasCount != 1 && linearCount != 1)
 			return;
 
 		// get material info

@@ -31,8 +31,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.STFFile;
 import equinox.data.ui.STFTableItem;
 import equinox.data.ui.TableItem;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.PilotPointImageType;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 
@@ -158,37 +158,37 @@ public class GetSTFInfo1 extends InternalEquinoxTask<Void> implements ShortRunni
 				// pilot point info
 				TreeItem<TableItem> ppInfo = new TreeItem<>(new TableItem("Pilot point info", ""));
 				String info = resultSet.getString("description");
-				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Description", (info == null) || info.isEmpty() ? "-" : info)));
+				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Description", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("data_source");
-				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Data source", (info == null) || info.isEmpty() ? "-" : info)));
+				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Data source", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("generation_source");
-				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Gen. source", (info == null) || info.isEmpty() ? "-" : info)));
+				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Gen. source", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("delivery_ref_num");
-				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Delivery ref.", (info == null) || info.isEmpty() ? "-" : info)));
+				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Delivery ref.", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("issue");
-				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Issue", (info == null) || info.isEmpty() ? "-" : info)));
+				ppInfo.getChildren().add(new TreeItem<>(new TableItem("Issue", info == null || info.isEmpty() ? "-" : info)));
 				info_.add(ppInfo);
 
 				// location info
 				TreeItem<TableItem> locationInfo = new TreeItem<>(new TableItem("Location info", ""));
 				info = resultSet.getString("eid");
-				locationInfo.getChildren().add(new TreeItem<>(new TableItem("EID/LIQ/SG", (info == null) || info.isEmpty() ? "-" : info)));
+				locationInfo.getChildren().add(new TreeItem<>(new TableItem("EID/LIQ/SG", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("element_type");
-				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Element type", (info == null) || info.isEmpty() ? "-" : info)));
+				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Element type", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("frame_rib_position");
-				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Frame/Rib", (info == null) || info.isEmpty() ? "-" : info)));
+				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Frame/Rib", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("stringer_position");
-				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Stringer", (info == null) || info.isEmpty() ? "-" : info)));
+				locationInfo.getChildren().add(new TreeItem<>(new TableItem("Stringer", info == null || info.isEmpty() ? "-" : info)));
 				info_.add(locationInfo);
 
 				// material info
 				TreeItem<TableItem> materialInfo = new TreeItem<>(new TableItem("Material info", ""));
 				info = resultSet.getString("fatigue_material");
-				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Fatigue", (info == null) || info.isEmpty() ? "-" : info)));
+				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Fatigue", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("preffas_material");
-				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Preffas", (info == null) || info.isEmpty() ? "-" : info)));
+				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Preffas", info == null || info.isEmpty() ? "-" : info)));
 				info = resultSet.getString("linear_material");
-				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Linear", (info == null) || info.isEmpty() ? "-" : info)));
+				materialInfo.getChildren().add(new TreeItem<>(new TableItem("Linear", info == null || info.isEmpty() ? "-" : info)));
 				info_.add(materialInfo);
 			}
 		}

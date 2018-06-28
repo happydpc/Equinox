@@ -27,8 +27,8 @@ import java.text.DecimalFormat;
 
 import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save stress sequence as SIGMA file task.

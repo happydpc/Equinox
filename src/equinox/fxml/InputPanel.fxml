@@ -8,8 +8,10 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
@@ -68,7 +70,55 @@
     </ToolBar>
       <ToolBar fx:id="statusbar_" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-1.0" prefHeight="30.0" styleClass="statusBar">
          <items>
-            <ImageView fx:id="logo_" fitHeight="20.0" fitWidth="83.0" pickOnBounds="true" preserveRatio="true" />
+            <HBox spacing="8.0">
+               <children>
+                  <Label fx:id="dataServiceLabel_" contentDisplay="GRAPHIC_ONLY" text="Label">
+                     <graphic>
+                        <ImageView fx:id="dataServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/dataServer_16_off.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip fx:id="dataServiceTooltip_" text="Data Service: Not available" />
+                     </tooltip>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Label>
+                  <Label fx:id="analysisServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" text="Label">
+                     <graphic>
+                        <ImageView fx:id="analysisServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/analysisServer_16_off.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip fx:id="analysisServiceTooltip_" text="Analysis Service: Not available" />
+                     </tooltip>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Label>
+                  <Label contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" text="Label">
+                     <graphic>
+                        <ImageView fx:id="dataServer_11" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/exchangeServer_16_off.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Collaboration Service: Not available" />
+                     </tooltip>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Label>
+               </children>
+            </HBox>
             <Region fx:id="region2_" prefHeight="-1.0" prefWidth="-1.0" />
             <Label fx:id="statusLabel_" alignment="CENTER_RIGHT" contentDisplay="RIGHT" focusTraversable="false" maxWidth="-Infinity" minWidth="-Infinity" mouseTransparent="true" prefWidth="130.0" style="-fx-background-radius: 5;" textFill="WHITE" />
          </items>

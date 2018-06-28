@@ -23,9 +23,9 @@ import equinox.Equinox;
 import equinox.data.fileType.STFFile;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save STF task.

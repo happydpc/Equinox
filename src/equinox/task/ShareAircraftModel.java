@@ -33,11 +33,11 @@ import java.util.Date;
 import equinox.Equinox;
 import equinox.data.fileType.AircraftModel;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share aircraft model task.

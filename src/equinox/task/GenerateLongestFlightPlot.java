@@ -58,10 +58,10 @@ import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.plugin.FileType;
 import equinox.process.PlotFlightProcess;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.CrosshairListenerXYPlot;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate longest typical flight plot task.

@@ -33,13 +33,13 @@ import equinox.data.fileType.STFFile;
 import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.task.ExportSTF;
 import equinox.task.GetSTFInfo2;
 import equinox.task.GetSTFInfo2.STFInfoRequestingPanel;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointImageType;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -53,7 +53,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 
 /**
  * Class for export STF panel controller.
@@ -96,13 +95,7 @@ public class ExportSTFPanel implements InternalInputSubPanel, STFInfoRequestingP
 		imageType_.getSelectionModel().select(PilotPointImageType.IMAGE);
 
 		// setup pagination page factory
-		pagination_.setPageFactory(new Callback<Integer, Node>() {
-
-			@Override
-			public Node call(Integer pageIndex) {
-				return imagePanels_[pageIndex].getRoot();
-			}
-		});
+		pagination_.setPageFactory(pageIndex -> imagePanels_[pageIndex].getRoot());
 
 		// expand first pane
 		accordion_.setExpandedPane(accordion_.getPanes().get(0));
@@ -313,19 +306,19 @@ public class ExportSTFPanel implements InternalInputSubPanel, STFInfoRequestingP
 	private boolean checkInputs(String ppName, String spectrumName, String mission, String[] info) {
 
 		// check missing inputs
-		if ((ppName == null) || ppName.trim().isEmpty())
+		if (ppName == null || ppName.trim().isEmpty())
 			return showMissingInputWarning(ppName_, "Please supply pilot point name to proceed.");
-		if ((spectrumName == null) || spectrumName.trim().isEmpty())
+		if (spectrumName == null || spectrumName.trim().isEmpty())
 			return showMissingInputWarning(spectrumName_, "Please supply spectrum name to proceed.");
-		if ((mission == null) || mission.trim().isEmpty())
+		if (mission == null || mission.trim().isEmpty())
 			return showMissingInputWarning(mission_, "Please supply fatigue mission to proceed.");
-		if ((info[GetSTFInfo2.DESCRIPTION] == null) || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
+		if (info[GetSTFInfo2.DESCRIPTION] == null || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
 			return showMissingInputWarning(description_, "Please supply pilot point description to proceed.");
-		if ((info[GetSTFInfo2.DATA_SOURCE] == null) || info[GetSTFInfo2.DATA_SOURCE].trim().isEmpty())
+		if (info[GetSTFInfo2.DATA_SOURCE] == null || info[GetSTFInfo2.DATA_SOURCE].trim().isEmpty())
 			return showMissingInputWarning(dataSource_, "Please supply data source to proceed.");
-		if ((info[GetSTFInfo2.GEN_SOURCE] == null) || info[GetSTFInfo2.GEN_SOURCE].trim().isEmpty())
+		if (info[GetSTFInfo2.GEN_SOURCE] == null || info[GetSTFInfo2.GEN_SOURCE].trim().isEmpty())
 			return showMissingInputWarning(genSource_, "Please supply generation source to proceed.");
-		if ((info[GetSTFInfo2.ISSUE] == null) || info[GetSTFInfo2.ISSUE].trim().isEmpty())
+		if (info[GetSTFInfo2.ISSUE] == null || info[GetSTFInfo2.ISSUE].trim().isEmpty())
 			return showMissingInputWarning(issue_, "Please supply pilot point issue to proceed.");
 
 		// check pilot point name for Windows OS
@@ -361,29 +354,29 @@ public class ExportSTFPanel implements InternalInputSubPanel, STFInfoRequestingP
 			return showInputLengthWarning(spectrumName_, 100);
 		if (mission.trim().length() > 50)
 			return showInputLengthWarning(mission_, 50);
-		if ((info[GetSTFInfo2.DESCRIPTION] != null) && (info[GetSTFInfo2.DESCRIPTION].trim().length() > 200))
+		if (info[GetSTFInfo2.DESCRIPTION] != null && info[GetSTFInfo2.DESCRIPTION].trim().length() > 200)
 			return showInputLengthWarning(description_, 200);
-		if ((info[GetSTFInfo2.DATA_SOURCE] != null) && (info[GetSTFInfo2.DATA_SOURCE].trim().length() > 50))
+		if (info[GetSTFInfo2.DATA_SOURCE] != null && info[GetSTFInfo2.DATA_SOURCE].trim().length() > 50)
 			return showInputLengthWarning(dataSource_, 50);
-		if ((info[GetSTFInfo2.GEN_SOURCE] != null) && (info[GetSTFInfo2.GEN_SOURCE].trim().length() > 50))
+		if (info[GetSTFInfo2.GEN_SOURCE] != null && info[GetSTFInfo2.GEN_SOURCE].trim().length() > 50)
 			return showInputLengthWarning(genSource_, 50);
-		if ((info[GetSTFInfo2.DELIVERY_REF] != null) && (info[GetSTFInfo2.DELIVERY_REF].trim().length() > 50))
+		if (info[GetSTFInfo2.DELIVERY_REF] != null && info[GetSTFInfo2.DELIVERY_REF].trim().length() > 50)
 			return showInputLengthWarning(deliveryRef_, 50);
-		if ((info[GetSTFInfo2.ISSUE] != null) && (info[GetSTFInfo2.ISSUE].trim().length() > 50))
+		if (info[GetSTFInfo2.ISSUE] != null && info[GetSTFInfo2.ISSUE].trim().length() > 50)
 			return showInputLengthWarning(issue_, 50);
-		if ((info[GetSTFInfo2.ELEMENT_TYPE] != null) && (info[GetSTFInfo2.ELEMENT_TYPE].trim().length() > 50))
+		if (info[GetSTFInfo2.ELEMENT_TYPE] != null && info[GetSTFInfo2.ELEMENT_TYPE].trim().length() > 50)
 			return showInputLengthWarning(elementType_, 50);
-		if ((info[GetSTFInfo2.FRAME_RIB_POS] != null) && (info[GetSTFInfo2.FRAME_RIB_POS].trim().length() > 50))
+		if (info[GetSTFInfo2.FRAME_RIB_POS] != null && info[GetSTFInfo2.FRAME_RIB_POS].trim().length() > 50)
 			return showInputLengthWarning(framePos_, 50);
-		if ((info[GetSTFInfo2.STRINGER_POS] != null) && (info[GetSTFInfo2.STRINGER_POS].trim().length() > 50))
+		if (info[GetSTFInfo2.STRINGER_POS] != null && info[GetSTFInfo2.STRINGER_POS].trim().length() > 50)
 			return showInputLengthWarning(stringerPos_, 50);
-		if ((info[GetSTFInfo2.EID] != null) && (info[GetSTFInfo2.EID].trim().length() > 50))
+		if (info[GetSTFInfo2.EID] != null && info[GetSTFInfo2.EID].trim().length() > 50)
 			return showInputLengthWarning(eid_, 50);
-		if ((info[GetSTFInfo2.FATIGUE_MATERIAL] != null) && (info[GetSTFInfo2.FATIGUE_MATERIAL].trim().length() > 500))
+		if (info[GetSTFInfo2.FATIGUE_MATERIAL] != null && info[GetSTFInfo2.FATIGUE_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(fatigueMaterial_, 500);
-		if ((info[GetSTFInfo2.PREFFAS_MATERIAL] != null) && (info[GetSTFInfo2.PREFFAS_MATERIAL].trim().length() > 500))
+		if (info[GetSTFInfo2.PREFFAS_MATERIAL] != null && info[GetSTFInfo2.PREFFAS_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(preffasMaterial_, 500);
-		if ((info[GetSTFInfo2.LINEAR_MATERIAL] != null) && (info[GetSTFInfo2.LINEAR_MATERIAL].trim().length() > 500))
+		if (info[GetSTFInfo2.LINEAR_MATERIAL] != null && info[GetSTFInfo2.LINEAR_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(linearMaterial_, 500);
 
 		// valid inputs

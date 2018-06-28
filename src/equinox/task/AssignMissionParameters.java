@@ -25,8 +25,8 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for assign mission parameters task.

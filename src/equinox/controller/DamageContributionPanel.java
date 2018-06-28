@@ -51,6 +51,8 @@ import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.data.material.FatigueMaterialItem;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.Material;
 import equinox.font.IconicFont;
 import equinox.task.BucketDamageContributionAnalysis;
 import equinox.task.BucketFastEquivalentStressAnalysis;
@@ -62,8 +64,6 @@ import equinox.task.GetMaterials.MaterialRequestingPanel;
 import equinox.task.LoadcaseDamageContributionAnalysis;
 import equinox.task.SaveTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.Material;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -162,8 +162,8 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 		// bind components
 		omissionLevel_.disableProperty().bind(omission_.selectedProperty().not());
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
-		fatigueMaterials_.getItems().addMessageListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
 		damageContributions_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<DamageContribution>) c -> removeDamageContributions_.setDisable(damageContributions_.getSelectionModel().getSelectedItems().isEmpty()));
 		damageContributions_.getItems().addListener((ListChangeListener<DamageContribution>) c -> resetDamageContributions_.setDisable(damageContributions_.getItems().isEmpty()));
 		segmentFactors_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<SegmentFactor>) c -> removeSegmentFactors_.setDisable(segmentFactors_.getSelectionModel().getSelectedItems().isEmpty()));

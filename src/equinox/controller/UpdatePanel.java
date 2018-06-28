@@ -22,9 +22,9 @@ import java.util.ResourceBundle;
 import org.apache.commons.text.WordUtils;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.EquinoxUpdate;
 import equinox.task.DownloadContainerUpdate;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.EquinoxUpdate;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

@@ -26,6 +26,9 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.controller.DataInsightsPanel.DataInsightsSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.DataInsightType;
+import equinox.dataServer.remote.data.ContributionType;
+import equinox.dataServer.remote.message.GetAircraftSectionsForPilotPointsRequest;
+import equinox.dataServer.remote.message.GetFatigueMissionsForPilotPointsRequest;
 import equinox.task.GetAircraftProgramsForPilotPoints;
 import equinox.task.GetAircraftProgramsForPilotPoints.PilotPointAircraftProgramRequestingPanel;
 import equinox.task.GetAircraftSectionsForPilotPoints;
@@ -35,9 +38,6 @@ import equinox.task.GetFatigueMissionsForPilotPoints.PilotPointFatigueMissionReq
 import equinox.task.PlotContributionStatistics;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ContributionType;
-import equinoxServer.remote.message.GetAircraftSectionsForPilotPointsRequest;
-import equinoxServer.remote.message.GetFatigueMissionsForPilotPointsRequest;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -136,21 +136,17 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 		if (container_.getChildren().contains(mission_)) {
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					if (container_.getChildren().contains(limitContainer_)) {
-						container_.getChildren().remove(limitContainer_);
-					}
-					contribution_.getSelectionModel().clearSelection();
-					if (container_.getChildren().contains(contribution_)) {
-						container_.getChildren().remove(contribution_);
-					}
-					mission_.getItems().clear();
-					if (container_.getChildren().contains(mission_)) {
-						container_.getChildren().remove(mission_);
-					}
+			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+				if (container_.getChildren().contains(limitContainer_)) {
+					container_.getChildren().remove(limitContainer_);
+				}
+				contribution_.getSelectionModel().clearSelection();
+				if (container_.getChildren().contains(contribution_)) {
+					container_.getChildren().remove(contribution_);
+				}
+				mission_.getItems().clear();
+				if (container_.getChildren().contains(mission_)) {
+					container_.getChildren().remove(mission_);
 				}
 			}, limitContainer_, contribution_, mission_).play();
 		}
@@ -162,12 +158,8 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 			container_.getChildren().add(section_);
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					// no implementation
-				}
+			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				// no implementation
 			}, section_).play();
 		}
 	}
@@ -187,17 +179,13 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 		if (container_.getChildren().contains(contribution_)) {
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					if (container_.getChildren().contains(limitContainer_)) {
-						container_.getChildren().remove(limitContainer_);
-					}
-					contribution_.getSelectionModel().clearSelection();
-					if (container_.getChildren().contains(contribution_)) {
-						container_.getChildren().remove(contribution_);
-					}
+			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+				if (container_.getChildren().contains(limitContainer_)) {
+					container_.getChildren().remove(limitContainer_);
+				}
+				contribution_.getSelectionModel().clearSelection();
+				if (container_.getChildren().contains(contribution_)) {
+					container_.getChildren().remove(contribution_);
 				}
 			}, limitContainer_, contribution_).play();
 		}
@@ -209,12 +197,8 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 			container_.getChildren().add(mission_);
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					// no implementation
-				}
+			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				// no implementation
 			}, mission_).play();
 		}
 	}
@@ -255,27 +239,23 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 	private void onResetClicked() {
 
 		// animate
-		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				if (container_.getChildren().contains(limitContainer_)) {
-					container_.getChildren().remove(limitContainer_);
-				}
-				contribution_.getSelectionModel().clearSelection();
-				if (container_.getChildren().contains(contribution_)) {
-					container_.getChildren().remove(contribution_);
-				}
-				mission_.getItems().clear();
-				if (container_.getChildren().contains(mission_)) {
-					container_.getChildren().remove(mission_);
-				}
-				section_.getItems().clear();
-				if (container_.getChildren().contains(section_)) {
-					container_.getChildren().remove(section_);
-				}
-				program_.getSelectionModel().clearSelection();
+		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+			if (container_.getChildren().contains(limitContainer_)) {
+				container_.getChildren().remove(limitContainer_);
 			}
+			contribution_.getSelectionModel().clearSelection();
+			if (container_.getChildren().contains(contribution_)) {
+				container_.getChildren().remove(contribution_);
+			}
+			mission_.getItems().clear();
+			if (container_.getChildren().contains(mission_)) {
+				container_.getChildren().remove(mission_);
+			}
+			section_.getItems().clear();
+			if (container_.getChildren().contains(section_)) {
+				container_.getChildren().remove(section_);
+			}
+			program_.getSelectionModel().clearSelection();
 		}, limitContainer_, contribution_, mission_, section_).play();
 	}
 
@@ -309,7 +289,7 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 		String program = program_.getSelectionModel().getSelectedItem();
 
 		// nothing selected
-		if ((section == null) || (program == null))
+		if (section == null || program == null)
 			return;
 
 		// get missions
@@ -333,23 +313,15 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 			container_.getChildren().add(contribution_);
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					// no implementation
-				}
+			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				// no implementation
 			}, contribution_).play();
 		}
 
 		// animate
-		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				if (container_.getChildren().contains(limitContainer_)) {
-					container_.getChildren().remove(limitContainer_);
-				}
+		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+			if (container_.getChildren().contains(limitContainer_)) {
+				container_.getChildren().remove(limitContainer_);
 			}
 		}, limitContainer_).play();
 	}
@@ -375,12 +347,8 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 				container_.getChildren().add(limitContainer_);
 
 				// animate
-				Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-					@Override
-					public void handle(ActionEvent event) {
-						// no implementation
-					}
+				Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+					// no implementation
 				}, limitContainer_).play();
 			}
 		}
@@ -389,13 +357,9 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 		else {
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					if (container_.getChildren().contains(limitContainer_)) {
-						container_.getChildren().remove(limitContainer_);
-					}
+			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+				if (container_.getChildren().contains(limitContainer_)) {
+					container_.getChildren().remove(limitContainer_);
 				}
 			}, limitContainer_).play();
 		}
@@ -456,7 +420,7 @@ public class DataInsightsDamageContributionPanel implements DataInsightsSubPanel
 		}
 
 		// no contribution type selected (and all sections are selected)
-		if ((contributionType == null) && section.equals(GetAircraftSectionsForPilotPointsRequest.ALL_SECTIONS)) {
+		if (contributionType == null && section.equals(GetAircraftSectionsForPilotPointsRequest.ALL_SECTIONS)) {
 			String message = "Please select a contribution type to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

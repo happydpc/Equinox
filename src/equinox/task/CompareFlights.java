@@ -25,8 +25,8 @@ import equinox.controller.CompareFlightsViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.input.FlightComparisonInput;
 import equinox.process.CompareFlightsProcess;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare flights task.

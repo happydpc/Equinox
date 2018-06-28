@@ -21,8 +21,8 @@ import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
+import equinox.serverUtilities.FilerConnection;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Class for get user profile image task.

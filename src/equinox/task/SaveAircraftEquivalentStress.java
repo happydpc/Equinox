@@ -22,8 +22,8 @@ import java.sql.Statement;
 
 import equinox.Equinox;
 import equinox.data.fileType.AircraftFatigueEquivalentStress;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;

@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 import equinox.controller.DataInsightsPanel.DataInsightsSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.DataInsightType;
+import equinox.dataServer.remote.message.GetFatigueMissionsForPilotPointsRequest;
 import equinox.task.GetAircraftProgramsForSpectra;
 import equinox.task.GetAircraftProgramsForSpectra.SpectrumAircraftProgramRequestingPanel;
 import equinox.task.GetAircraftSectionsForSpectra;
@@ -32,7 +33,6 @@ import equinox.task.GetFatigueMissionsForSpectra.SpectrumFatigueMissionRequestin
 import equinox.task.PlotSpectrumCount;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.GetFatigueMissionsForPilotPointsRequest;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -110,12 +110,8 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 			container_.getChildren().add(section_);
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					// no implementation
-				}
+			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				// no implementation
 			}, section_).play();
 		}
 	}
@@ -135,12 +131,8 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 			container_.getChildren().add(mission_);
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					// no implementation
-				}
+			Animator.bouncingScale(20.0, 120.0, 0.0, 0.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				// no implementation
 			}, mission_).play();
 		}
 	}
@@ -155,15 +147,15 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 
 		// get inputs
 		String program = program_.getSelectionModel().getSelectedItem();
-		if ((program_.getSelectionModel().getSelectedIndex() == 0) || (program_.getSelectionModel().getSelectedIndex() == -1)) {
+		if (program_.getSelectionModel().getSelectedIndex() == 0 || program_.getSelectionModel().getSelectedIndex() == -1) {
 			program = null;
 		}
 		String section = section_.getSelectionModel().getSelectedItem();
-		if ((section_.getSelectionModel().getSelectedIndex() == 0) || (section_.getSelectionModel().getSelectedIndex() == -1)) {
+		if (section_.getSelectionModel().getSelectedIndex() == 0 || section_.getSelectionModel().getSelectedIndex() == -1) {
 			section = null;
 		}
 		String mission = mission_.getSelectionModel().getSelectedItem();
-		if ((mission_.getSelectionModel().getSelectedIndex() == 0) || (mission_.getSelectionModel().getSelectedIndex() == -1)) {
+		if (mission_.getSelectionModel().getSelectedIndex() == 0 || mission_.getSelectionModel().getSelectedIndex() == -1) {
 			mission = null;
 		}
 
@@ -180,20 +172,16 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 	private void onResetClicked() {
 
 		// animate
-		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				mission_.getItems().clear();
-				if (container_.getChildren().contains(mission_)) {
-					container_.getChildren().remove(mission_);
-				}
-				section_.getItems().clear();
-				if (container_.getChildren().contains(section_)) {
-					container_.getChildren().remove(section_);
-				}
-				program_.getSelectionModel().select(0);
+		Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+			mission_.getItems().clear();
+			if (container_.getChildren().contains(mission_)) {
+				container_.getChildren().remove(mission_);
 			}
+			section_.getItems().clear();
+			if (container_.getChildren().contains(section_)) {
+				container_.getChildren().remove(section_);
+			}
+			program_.getSelectionModel().select(0);
 		}, mission_, section_).play();
 	}
 
@@ -215,18 +203,14 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 		if (program.equals(GetAircraftProgramsForSpectra.ALL_PROGRAMS)) {
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					section_.getItems().clear();
-					if (container_.getChildren().contains(section_)) {
-						container_.getChildren().remove(section_);
-					}
-					mission_.getItems().clear();
-					if (container_.getChildren().contains(mission_)) {
-						container_.getChildren().remove(mission_);
-					}
+			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+				section_.getItems().clear();
+				if (container_.getChildren().contains(section_)) {
+					container_.getChildren().remove(section_);
+				}
+				mission_.getItems().clear();
+				if (container_.getChildren().contains(mission_)) {
+					container_.getChildren().remove(mission_);
 				}
 			}, mission_, section_).play();
 			return;
@@ -254,14 +238,10 @@ public class DataInsightsSpectrumCountPanel implements DataInsightsSubPanel, Spe
 		if (section.equals(GetAircraftSectionsForSpectra.ALL_SECTIONS)) {
 
 			// animate
-			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					mission_.getItems().clear();
-					if (container_.getChildren().contains(mission_)) {
-						container_.getChildren().remove(mission_);
-					}
+			Animator.bouncingScale(20.0, 120.0, 1.0, 0.5, 0.0, (EventHandler<ActionEvent>) event -> {
+				mission_.getItems().clear();
+				if (container_.getChildren().contains(mission_)) {
+					container_.getChildren().remove(mission_);
 				}
 			}, mission_).play();
 			return;

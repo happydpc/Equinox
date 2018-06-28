@@ -17,10 +17,10 @@ package equinox.task;
 
 import java.nio.file.Path;
 
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.SharedFileInfo;
+import equinox.serverUtilities.SharedFileInfo.SharedFileInfoType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.data.SharedFileInfo.SharedFileInfoType;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Class for download shared file task.

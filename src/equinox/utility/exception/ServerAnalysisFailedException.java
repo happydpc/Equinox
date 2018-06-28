@@ -15,7 +15,7 @@
  */
 package equinox.utility.exception;
 
-import equinoxServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisFailed;
 
 /**
  * Class for server analysis failed exception.
@@ -62,11 +62,11 @@ public class ServerAnalysisFailedException extends Exception {
 	}
 
 	/**
-	 * Returns the analysis ID. Analysis ID is the hash code of the analysis listener object on the client.
+	 * Returns the listener hash code.
 	 *
-	 * @return Analysis ID.
+	 * @return Listener hash code.
 	 */
-	public int getAnalysisID() {
-		return serverMessage_.getAnalysisID();
+	public int getListenerHashCode() {
+		return serverMessage_.getListenerHashCode();
 	}
 }

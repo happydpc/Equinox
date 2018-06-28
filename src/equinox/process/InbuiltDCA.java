@@ -30,8 +30,8 @@ import java.util.concurrent.Future;
 import equinox.Equinox;
 import equinox.data.DamageContribution;
 import equinox.data.DamageContributionResult;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.LoadcaseDamageContributionAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
 
 /**
  * Class for inbuilt damage contribution analysis process.
@@ -121,7 +121,7 @@ public class InbuiltDCA implements ESAProcess<List<DamageContributionResult>> {
 
 		// create incremental sub tasks
 		incrementTasks_ = new ArrayList<>();
-		for (int i = 0; i < (contributions_.size() + 1); i++) {
+		for (int i = 0; i < contributions_.size() + 1; i++) {
 			String name = i == 0 ? "full" : contributions_.get(i - 1).getName();
 			incrementTasks_.add(new InbuiltDCAIncrement(task_, sthFiles_[i], flsFile_, materialFile, name, i, validity_, useExtended_, applyOmission_, omissionLevel_));
 		}
@@ -156,7 +156,7 @@ public class InbuiltDCA implements ESAProcess<List<DamageContributionResult>> {
 	public void cancel() {
 
 		// cancel incremental tasks
-		if ((incrementTasks_ != null) && !incrementTasks_.isEmpty()) {
+		if (incrementTasks_ != null && !incrementTasks_.isEmpty()) {
 			for (InbuiltDCAIncrement increment : incrementTasks_) {
 				increment.cancel();
 			}

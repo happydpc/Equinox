@@ -28,9 +28,9 @@ import equinox.controller.CompareDamageContributionsViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.input.CompareDamageContributionsInput;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.ContributionType;
 
 /**
  * Class for plot damage comparison task.
@@ -118,10 +118,10 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 									// get damage percentage
 									double damage = resultSet1.getDouble("stress");
 									if (name.equals(ContributionType.GAG.getName())) {
-										damage = (damage * 100.0) / totalDamage;
+										damage = damage * 100.0 / totalDamage;
 									}
 									else {
-										damage = ((totalDamage - damage) * 100.0) / totalDamage;
+										damage = (totalDamage - damage) * 100.0 / totalDamage;
 									}
 									damage = Math.floor(damage);
 									totalCont += damage;

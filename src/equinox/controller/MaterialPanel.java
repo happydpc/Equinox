@@ -32,11 +32,11 @@ import equinox.data.Settings;
 import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
+import equinox.dataServer.remote.data.Material;
 import equinox.task.GetMaterials;
 import equinox.task.GetMaterials.MaterialRequestingPanel;
 import equinox.task.SaveMaterialInfo;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Material;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -185,11 +185,11 @@ public class MaterialPanel implements InternalInputSubPanel, FatigueMaterialAddi
 	private boolean checkInputs(String[] materials) {
 
 		// check input lengths
-		if ((materials[GetMaterials.FATIGUE_MATERIAL] != null) && (materials[GetMaterials.FATIGUE_MATERIAL].trim().length() > 500))
+		if (materials[GetMaterials.FATIGUE_MATERIAL] != null && materials[GetMaterials.FATIGUE_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(fatigueMaterial_, 500);
-		if ((materials[GetMaterials.PREFFAS_MATERIAL] != null) && (materials[GetMaterials.PREFFAS_MATERIAL].trim().length() > 500))
+		if (materials[GetMaterials.PREFFAS_MATERIAL] != null && materials[GetMaterials.PREFFAS_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(preffasMaterial_, 500);
-		if ((materials[GetMaterials.LINEAR_MATERIAL] != null) && (materials[GetMaterials.LINEAR_MATERIAL].trim().length() > 500))
+		if (materials[GetMaterials.LINEAR_MATERIAL] != null && materials[GetMaterials.LINEAR_MATERIAL].trim().length() > 500)
 			return showInputLengthWarning(linearMaterial_, 500);
 
 		// valid inputs

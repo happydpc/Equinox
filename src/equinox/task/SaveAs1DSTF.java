@@ -29,8 +29,8 @@ import java.util.Date;
 import equinox.Equinox;
 import equinox.data.StressComponent;
 import equinox.data.fileType.STFFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save as 1D STF task.

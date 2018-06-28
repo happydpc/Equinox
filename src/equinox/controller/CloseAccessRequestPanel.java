@@ -23,8 +23,8 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.AccessRequest;
 import equinox.task.CloseAccessRequest;
-import equinoxServer.remote.data.AccessRequest;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -70,7 +70,7 @@ public class CloseAccessRequestPanel implements Initializable {
 		String closure = closureText_.getText();
 
 		// no title given
-		if ((closure == null) || closure.trim().isEmpty()) {
+		if (closure == null || closure.trim().isEmpty()) {
 			String message = "Please enter reason for closure in order to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

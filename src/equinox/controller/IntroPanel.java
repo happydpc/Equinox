@@ -29,6 +29,8 @@ import equinox.Equinox;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.CheckForEquinoxUpdates;
 import equinox.task.CreateWorkspace;
 import equinox.task.GetServerConnectionInfo;
@@ -40,8 +42,6 @@ import equinox.task.ShowNewsFeed;
 import equinox.task.UpdateWorkspace;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -229,7 +229,7 @@ public class IntroPanel implements Initializable {
 		else {
 
 			// get server connection info
-			owner_.getActiveTasksPanel().runTaskSilently(new GetServerConnectionInfo(), false);
+			owner_.getActiveTasksPanel().runTasksSequentially(new GetServerConnectionInfo());
 
 			// show setup workspace dialog
 			PauseTransition pause = new PauseTransition(Duration.millis(WAIT_DURATION));

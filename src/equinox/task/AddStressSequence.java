@@ -24,9 +24,9 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.plugin.FileType;
 import equinox.process.LoadSIGMAFile;
 import equinox.process.LoadSTHFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddStressSequence;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add stress sequence task.

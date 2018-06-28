@@ -25,8 +25,8 @@ import equinox.controller.LevelCrossingViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.input.LevelCrossingInput;
 import equinox.process.PlotLevelCrossingProcess;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot level crossing task.

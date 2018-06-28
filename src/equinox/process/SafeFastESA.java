@@ -34,23 +34,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.FastESAComplete;
+import equinox.analysisServer.remote.message.SafeESARequest;
 import equinox.data.FastESAOutput;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.FastEquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.FastESAComplete;
-import equinoxServer.remote.message.SafeESARequest;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for SAFE fast equivalent stress analysis process.
@@ -122,7 +122,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 	public FastESAOutput start(Connection localConnection, PreparedStatement... preparedStatements) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
@@ -162,7 +162,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 
 			// initialize analysis request message
 			SafeESARequest request = new SafeESARequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setFastAnalysis(true);
 			request.setUploadOutputFiles(keepOutputs_);
@@ -186,8 +186,8 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -195,7 +195,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -229,8 +229,8 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}
@@ -239,7 +239,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
 	}
@@ -264,7 +264,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 
 		// save output file to database (if requested)
 		Integer outputFileID = null;
-		if (keepOutputs_ && (message.getDownloadUrl() != null)) {
+		if (keepOutputs_ && message.getDownloadUrl() != null) {
 
 			// create path to local output file
 			task_.updateMessage("Downloading analysis output file from server...");
@@ -369,7 +369,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 		if (material_ instanceof FatigueMaterial) {
 			analysisType = "initiation";
 		}
-		else if ((material_ instanceof PreffasMaterial) || (material_ instanceof LinearMaterial)) {
+		else if (material_ instanceof PreffasMaterial || material_ instanceof LinearMaterial) {
 			analysisType = "propagation";
 		}
 

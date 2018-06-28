@@ -31,8 +31,8 @@ import equinox.data.LoadcaseItem;
 import equinox.data.fileType.Flight;
 import equinox.data.input.StatisticsInput;
 import equinox.data.input.StatisticsInput.Statistic;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate statistics task.

@@ -23,11 +23,11 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.MultiplicationTableInfo;
+import equinox.dataServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
 import equinox.font.IconicFont;
 import equinox.task.UpdateMultiplicationTableInfoInGlobalDB;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.MultiplicationTableInfo;
-import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -124,7 +124,7 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 
 		// check required fields
 		String spectrumName = (String) info.getInfo(MultiplicationTableInfoType.SPECTRUM_NAME);
-		if ((spectrumName == null) || spectrumName.trim().isEmpty()) {
+		if (spectrumName == null || spectrumName.trim().isEmpty()) {
 			String message = "Please supply spectrum name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -136,7 +136,7 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 			return false;
 		}
 		String ppName = (String) info.getInfo(MultiplicationTableInfoType.PILOT_POINT_NAME);
-		if ((ppName == null) || ppName.trim().isEmpty()) {
+		if (ppName == null || ppName.trim().isEmpty()) {
 			String message = "Please supply pilot point name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -148,7 +148,7 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 			return false;
 		}
 		String program = (String) info.getInfo(MultiplicationTableInfoType.AC_PROGRAM);
-		if ((program == null) || program.trim().isEmpty()) {
+		if (program == null || program.trim().isEmpty()) {
 			String message = "Please supply A/C program to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -160,7 +160,7 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 			return false;
 		}
 		String section = (String) info.getInfo(MultiplicationTableInfoType.AC_SECTION);
-		if ((section == null) || section.trim().isEmpty()) {
+		if (section == null || section.trim().isEmpty()) {
 			String message = "Please supply A/C section to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -172,7 +172,7 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 			return false;
 		}
 		String mission = (String) info.getInfo(MultiplicationTableInfoType.FAT_MISSION);
-		if ((mission == null) || mission.trim().isEmpty()) {
+		if (mission == null || mission.trim().isEmpty()) {
 			String message = "Please supply fatigue mission to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -224,13 +224,13 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 		if (mission.trim().length() > 50)
 			return showInputLengthWarning(mission_, 50);
 		String issue = (String) info.getInfo(MultiplicationTableInfoType.ISSUE);
-		if ((issue != null) && (issue.trim().length() > 50))
+		if (issue != null && issue.trim().length() > 50)
 			return showInputLengthWarning(issue_, 50);
 		String delRef = (String) info.getInfo(MultiplicationTableInfoType.DELIVERY_REF);
-		if ((delRef != null) && (delRef.trim().length() > 50))
+		if (delRef != null && delRef.trim().length() > 50)
 			return showInputLengthWarning(deliveryRef_, 50);
 		String description = (String) info.getInfo(MultiplicationTableInfoType.DESCRIPTION);
-		if ((description != null) && (description.trim().length() > 200))
+		if (description != null && description.trim().length() > 200)
 			return showInputLengthWarning(description_, 200);
 
 		// valid inputs
@@ -361,32 +361,28 @@ public class DownloadMultiplicationTableInfoEditPanel implements Initializable {
 			controller.name_.setText((String) info.getInfo(MultiplicationTableInfoType.NAME));
 			controller.spectrumName_.setText((String) info.getInfo(MultiplicationTableInfoType.SPECTRUM_NAME));
 			String ppName = (String) info.getInfo(MultiplicationTableInfoType.PILOT_POINT_NAME);
-			controller.ppName_.setText((ppName == null) || ppName.trim().isEmpty() ? "-" : ppName);
+			controller.ppName_.setText(ppName == null || ppName.trim().isEmpty() ? "-" : ppName);
 			controller.program_.setText((String) info.getInfo(MultiplicationTableInfoType.AC_PROGRAM));
 			controller.section_.setText((String) info.getInfo(MultiplicationTableInfoType.AC_SECTION));
 			controller.mission_.setText((String) info.getInfo(MultiplicationTableInfoType.FAT_MISSION));
 			String issue = (String) info.getInfo(MultiplicationTableInfoType.ISSUE);
-			controller.issue_.setText((issue == null) || issue.trim().isEmpty() ? "-" : issue);
+			controller.issue_.setText(issue == null || issue.trim().isEmpty() ? "-" : issue);
 			String deliveryRef = (String) info.getInfo(MultiplicationTableInfoType.DELIVERY_REF);
-			controller.deliveryRef_.setText((deliveryRef == null) || deliveryRef.trim().isEmpty() ? "-" : deliveryRef);
+			controller.deliveryRef_.setText(deliveryRef == null || deliveryRef.trim().isEmpty() ? "-" : deliveryRef);
 			String description = (String) info.getInfo(MultiplicationTableInfoType.DESCRIPTION);
-			controller.description_.setText((description == null) || description.trim().isEmpty() ? "-" : description);
+			controller.description_.setText(description == null || description.trim().isEmpty() ? "-" : description);
 
 			// listen for changes in info
 			controller.setupInfoListeners();
 
 			// listen for detach events
-			controller.popOver_.detachedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					if (newValue) {
-						controller.headerPane_.getChildren().remove(controller.save_);
-						controller.root_.getChildren().remove(controller.headerPane_);
-						StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
-						StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
-						controller.popOver_.getRoot().getChildren().add(controller.save_);
-					}
+			controller.popOver_.detachedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+				if (newValue) {
+					controller.headerPane_.getChildren().remove(controller.save_);
+					controller.root_.getChildren().remove(controller.headerPane_);
+					StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
+					StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
+					controller.popOver_.getRoot().getChildren().add(controller.save_);
 				}
 			});
 

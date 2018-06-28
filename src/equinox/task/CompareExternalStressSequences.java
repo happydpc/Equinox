@@ -31,8 +31,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.input.ExternalStressSequenceComparisonInput;
 import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparisonCriteria;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare external stress sequences task.

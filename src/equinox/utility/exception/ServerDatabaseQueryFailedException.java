@@ -15,7 +15,7 @@
  */
 package equinox.utility.exception;
 
-import equinoxServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
 
 /**
  * Class for server database query failed exception.
@@ -48,11 +48,11 @@ public class ServerDatabaseQueryFailedException extends Exception {
 	}
 
 	/**
-	 * Returns the database query ID. Database query ID is the hash code of the database query listener object on the client.
+	 * Returns the listener hash code.
 	 *
-	 * @return Database query ID.
+	 * @return Listener hash code.
 	 */
-	public int getDatabaseQueryID() {
-		return serverMessage.getDatabaseQueryID();
+	public int getListenerHashCode() {
+		return serverMessage.getListenerHashCode();
 	}
 }

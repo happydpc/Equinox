@@ -26,9 +26,9 @@ import equinox.controller.IntroPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 

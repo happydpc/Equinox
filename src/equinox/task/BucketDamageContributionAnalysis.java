@@ -27,10 +27,10 @@ import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.LoadcaseDamageContributionInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketDamageContributionAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for bucket damage contribution analysis task.

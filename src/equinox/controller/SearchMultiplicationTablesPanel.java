@@ -27,13 +27,13 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.BasicSearchInput;
+import equinox.dataServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
+import equinox.dataServer.remote.data.MultiplicationTableSearchInput;
+import equinox.dataServer.remote.data.SearchItem;
 import equinox.task.AdvancedMultiplicationTableSearch;
 import equinox.task.BasicMultiplicationTableSearch;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.BasicSearchInput;
-import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
-import equinoxServer.remote.data.MultiplicationTableSearchInput;
-import equinoxServer.remote.data.SearchItem;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -199,7 +199,7 @@ public class SearchMultiplicationTablesPanel implements InternalInputSubPanel {
 		String keywords = keywords_.getText().trim();
 
 		// no keyword entered
-		if ((keywords == null) || keywords.isEmpty()) {
+		if (keywords == null || keywords.isEmpty()) {
 			showWarningMessage("No search keyword entered. Please enter keywords to proceed.", keywords_);
 			return;
 		}
@@ -262,39 +262,39 @@ public class SearchMultiplicationTablesPanel implements InternalInputSubPanel {
 
 		// add search items
 		String name = name_.getText();
-		if ((name != null) && !name.isEmpty()) {
+		if (name != null && !name.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.NAME, new SearchItem(name, getSelectedCriteria(nameCriteria_)));
 		}
 		String spectrumName = cdfName_.getText();
-		if ((spectrumName != null) && !spectrumName.isEmpty()) {
+		if (spectrumName != null && !spectrumName.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.SPECTRUM_NAME, new SearchItem(spectrumName, getSelectedCriteria(cdfCriteria_)));
 		}
 		String ppName = ppName_.getText();
-		if ((ppName != null) && !ppName.isEmpty()) {
+		if (ppName != null && !ppName.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.PILOT_POINT_NAME, new SearchItem(ppName, getSelectedCriteria(ppCriteria_)));
 		}
 		String acProgram = acProgram_.getText();
-		if ((acProgram != null) && !acProgram.isEmpty()) {
+		if (acProgram != null && !acProgram.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.AC_PROGRAM, new SearchItem(acProgram, getSelectedCriteria(acProgramCriteria_)));
 		}
 		String acSection = acSection_.getText();
-		if ((acSection != null) && !acSection.isEmpty()) {
+		if (acSection != null && !acSection.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.AC_SECTION, new SearchItem(acSection, getSelectedCriteria(acSectionCriteria_)));
 		}
 		String fatMission = fatMission_.getText();
-		if ((fatMission != null) && !fatMission.isEmpty()) {
+		if (fatMission != null && !fatMission.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.FAT_MISSION, new SearchItem(fatMission, getSelectedCriteria(missionCriteria_)));
 		}
 		String issue = issue_.getText();
-		if ((issue != null) && !issue.isEmpty()) {
+		if (issue != null && !issue.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.ISSUE, new SearchItem(issue, getSelectedCriteria(issueCriteria_)));
 		}
 		String deliveryRef = deliveryRef_.getText();
-		if ((deliveryRef != null) && !deliveryRef.isEmpty()) {
+		if (deliveryRef != null && !deliveryRef.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.DELIVERY_REF, new SearchItem(deliveryRef, getSelectedCriteria(deliveryRefCriteria_)));
 		}
 		String description = description_.getText();
-		if ((description != null) && !description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			input.addInput(MultiplicationTableInfoType.DESCRIPTION, new SearchItem(description, getSelectedCriteria(descriptionCriteria_)));
 		}
 

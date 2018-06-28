@@ -32,8 +32,8 @@ import equinox.data.SeriesKey;
 import equinox.data.fileType.ExternalFlight;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.input.ExternalFlightPlotInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot external typical flights task.

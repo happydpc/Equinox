@@ -20,8 +20,8 @@ import java.nio.file.Files;
 import equinox.Equinox;
 import equinox.controller.ViewPanel;
 import equinox.plugin.Plugin;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for remove plugin task.

@@ -22,11 +22,10 @@ import java.util.ResourceBundle;
 import org.controlsfx.control.PopOver;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.MultiplicationTableInfo;
+import equinox.dataServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
 import equinox.font.IconicFont;
-import equinoxServer.remote.data.MultiplicationTableInfo;
-import equinoxServer.remote.data.MultiplicationTableInfo.MultiplicationTableInfoType;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -91,25 +90,21 @@ public class DownloadMultiplicationTableInfoPanel implements Initializable {
 			controller.name_.setText((String) info.getInfo(MultiplicationTableInfoType.NAME));
 			controller.spectrumName_.setText((String) info.getInfo(MultiplicationTableInfoType.SPECTRUM_NAME));
 			String ppName = (String) info.getInfo(MultiplicationTableInfoType.PILOT_POINT_NAME);
-			controller.ppName_.setText((ppName == null) || ppName.trim().isEmpty() ? "-" : ppName);
+			controller.ppName_.setText(ppName == null || ppName.trim().isEmpty() ? "-" : ppName);
 			controller.program_.setText((String) info.getInfo(MultiplicationTableInfoType.AC_PROGRAM));
 			controller.section_.setText((String) info.getInfo(MultiplicationTableInfoType.AC_SECTION));
 			controller.mission_.setText((String) info.getInfo(MultiplicationTableInfoType.FAT_MISSION));
 			String issue = (String) info.getInfo(MultiplicationTableInfoType.ISSUE);
-			controller.issue_.setText((issue == null) || issue.trim().isEmpty() ? "-" : issue);
+			controller.issue_.setText(issue == null || issue.trim().isEmpty() ? "-" : issue);
 			String deliveryRef = (String) info.getInfo(MultiplicationTableInfoType.DELIVERY_REF);
-			controller.deliveryRef_.setText((deliveryRef == null) || deliveryRef.trim().isEmpty() ? "-" : deliveryRef);
+			controller.deliveryRef_.setText(deliveryRef == null || deliveryRef.trim().isEmpty() ? "-" : deliveryRef);
 			String description = (String) info.getInfo(MultiplicationTableInfoType.DESCRIPTION);
-			controller.description_.setText((description == null) || description.trim().isEmpty() ? "-" : description);
+			controller.description_.setText(description == null || description.trim().isEmpty() ? "-" : description);
 
 			// listen for detach events
-			controller.popOver_.detachedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					if (newValue) {
-						controller.root_.getChildren().remove(controller.headerPane_);
-					}
+			controller.popOver_.detachedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+				if (newValue) {
+					controller.root_.getChildren().remove(controller.headerPane_);
 				}
 			});
 

@@ -32,9 +32,9 @@ import java.util.concurrent.Callable;
 import equinox.Equinox;
 import equinox.data.DamageContributionResult;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.LoadcaseDamageContributionAnalysis;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for inbuilt damage contribution increment process.
@@ -145,13 +145,13 @@ public class InbuiltDCAIncrement implements Callable<DamageContributionResult> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((omissionProcess_ != null) && omissionProcess_.isAlive()) {
+		if (omissionProcess_ != null && omissionProcess_.isAlive()) {
 			omissionProcess_.destroyForcibly();
 		}
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
-		if ((analysisProcess_ != null) && analysisProcess_.isAlive()) {
+		if (analysisProcess_ != null && analysisProcess_.isAlive()) {
 			analysisProcess_.destroyForcibly();
 		}
 
@@ -185,7 +185,7 @@ public class InbuiltDCAIncrement implements Callable<DamageContributionResult> {
 	private DamageContributionResult processIncrement(Path workingDir, DamageContributionResult results) throws Exception {
 
 		// apply omission
-		if (applyOmission_ && (omissionLevel_ > 0.0)) {
+		if (applyOmission_ && omissionLevel_ > 0.0) {
 			sthFile_ = applyOmission(workingDir);
 		}
 

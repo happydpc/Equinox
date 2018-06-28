@@ -22,8 +22,8 @@ import java.util.ResourceBundle;
 import org.controlsfx.control.PopOver;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.BugReport;
 import equinox.task.CloseBugReport;
-import equinoxServer.remote.data.BugReport;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

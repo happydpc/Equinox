@@ -35,15 +35,15 @@ import java.text.DecimalFormat;
 
 import equinox.Equinox;
 import equinox.data.FastESAOutput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.FastEquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.InternalEngineAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for inbuilt fast equivalent stress analysis process.
@@ -146,7 +146,7 @@ public class InbuiltFastESA implements ESAProcess<FastESAOutput> {
 		catch (Exception e) {
 
 			// set output files as permanent
-			if ((outputFiles_ != null) && keepOutputs_) {
+			if (outputFiles_ != null && keepOutputs_) {
 				for (File file : outputFiles_) {
 					task_.setFileAsPermanent(file.toPath());
 				}
@@ -161,10 +161,10 @@ public class InbuiltFastESA implements ESAProcess<FastESAOutput> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
-		if ((analysisProcess_ != null) && analysisProcess_.isAlive()) {
+		if (analysisProcess_ != null && analysisProcess_.isAlive()) {
 			analysisProcess_.destroyForcibly();
 		}
 	}
@@ -226,15 +226,15 @@ public class InbuiltFastESA implements ESAProcess<FastESAOutput> {
 		}
 
 		// cannot find fatigue equivalent stress
-		if ((material_ instanceof FatigueMaterial) && (fatigue == -1.0))
+		if (material_ instanceof FatigueMaterial && fatigue == -1.0)
 			throw new Exception("Cannot find fatigue equivalent stress in output dossier file.");
 
 		// cannot find preffas equivalent stress
-		if ((material_ instanceof PreffasMaterial) && (cgPreffas == -1.0))
+		if (material_ instanceof PreffasMaterial && cgPreffas == -1.0)
 			throw new Exception("Cannot find preffas equivalent stress in output dossier file.");
 
 		// cannot find linear equivalent stress
-		if ((material_ instanceof LinearMaterial) && (cgLinEff == -1.0))
+		if (material_ instanceof LinearMaterial && cgLinEff == -1.0)
 			throw new Exception("Cannot find linear propagation equivalent stress in output dossier file.");
 
 		// set stress and table name
@@ -250,7 +250,7 @@ public class InbuiltFastESA implements ESAProcess<FastESAOutput> {
 			double a = material.getA();
 			double b = material.getB();
 			double m = material.getM();
-			double c = 0.9 * (a + (b * 0.1));
+			double c = 0.9 * (a + b * 0.1);
 			stress = Math.pow(cgLinEff / validity, 1.0 / m) / c;
 		}
 
@@ -386,7 +386,7 @@ public class InbuiltFastESA implements ESAProcess<FastESAOutput> {
 		if (material_ instanceof FatigueMaterial) {
 			analysisType = "AMORCAGE";
 		}
-		else if ((material_ instanceof PreffasMaterial) || (material_ instanceof LinearMaterial)) {
+		else if (material_ instanceof PreffasMaterial || material_ instanceof LinearMaterial) {
 			analysisType = "PROPAGATION";
 		}
 

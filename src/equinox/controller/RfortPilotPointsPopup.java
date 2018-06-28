@@ -30,18 +30,17 @@ import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
 import equinox.data.ui.RfortPilotPoint;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.plugin.FileType;
 import equinox.task.GetFatigueMaterials.FatigueMaterialRequestingPanel;
 import equinox.task.GetLinearMaterials.LinearMaterialRequestingPanel;
 import equinox.task.GetPreffasMaterials.PreffasMaterialRequestingPanel;
 import equinox.utility.RfortMaterialTableCell;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.PreffasMaterial;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -66,7 +65,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
 /**
@@ -146,13 +144,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 
 		// bind components
 		delete_.setDisable(true);
-		table_.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<RfortPilotPoint>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends RfortPilotPoint> c) {
-				delete_.setDisable(table_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
+		table_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<RfortPilotPoint>) c -> delete_.setDisable(table_.getSelectionModel().getSelectedItems().isEmpty()));
 
 		// setup table
 		table_.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -192,33 +184,25 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		popOver_.setContentNode(root_);
 
 		// set showing handler
-		popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				owner_.getOwner().getRoot().setMouseTransparent(true);
-				isShown_ = true;
-			}
+		popOver_.setOnShowing(event -> {
+			owner_.getOwner().getRoot().setMouseTransparent(true);
+			isShown_ = true;
 		});
 
 		// set hidden handler
-		popOver_.setOnHidden(new EventHandler<WindowEvent>() {
+		popOver_.setOnHidden(event -> {
 
-			@Override
-			public void handle(WindowEvent event) {
+			// get pilot points
+			ObservableList<RfortPilotPoint> pps = table_.getItems();
 
-				// get pilot points
-				ObservableList<RfortPilotPoint> pps = table_.getItems();
-
-				// check inputs
-				if (!checkInputs(pps, false)) {
-					table_.getItems().clear();
-				}
-
-				// enable owner panel
-				owner_.getOwner().getRoot().setMouseTransparent(false);
-				isShown_ = false;
+			// check inputs
+			if (!checkInputs(pps, false)) {
+				table_.getItems().clear();
 			}
+
+			// enable owner panel
+			owner_.getOwner().getRoot().setMouseTransparent(false);
+			isShown_ = false;
 		});
 
 		// setup material column visibilities
@@ -240,13 +224,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		}
 
 		// set cell factory
-		fatigueMaterialColumn_.setCellFactory(new Callback<TableColumn<RfortPilotPoint, FatigueMaterial>, TableCell<RfortPilotPoint, FatigueMaterial>>() {
-
-			@Override
-			public TableCell<RfortPilotPoint, FatigueMaterial> call(TableColumn<RfortPilotPoint, FatigueMaterial> param) {
-				return new RfortMaterialTableCell<>(materials, "Select fatigue material...");
-			}
-		});
+		fatigueMaterialColumn_.setCellFactory(param -> new RfortMaterialTableCell<>(materials, "Select fatigue material..."));
 	}
 
 	@Override
@@ -299,7 +277,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		ObservableList<RfortPilotPoint> pps = table_.getItems();
 
 		// no items
-		if ((pps == null) || pps.isEmpty()) {
+		if (pps == null || pps.isEmpty()) {
 			popOver_.hide();
 			return;
 		}
@@ -388,7 +366,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 			}
 
 			// no fatigue material
-			if (fatigue && (pp.getFatigueMaterial() == null)) {
+			if (fatigue && pp.getFatigueMaterial() == null) {
 				if (showWarning) {
 					String message = "Pilot point '" + pp.getName() + "' has no fatigue material. Please select a fatigue material.";
 					PopOver popOver = new PopOver();
@@ -403,7 +381,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 			}
 
 			// no preffas material
-			if (preffas && (pp.getPreffasMaterial() == null)) {
+			if (preffas && pp.getPreffasMaterial() == null) {
 				if (showWarning) {
 					String message = "Pilot point '" + pp.getName() + "' has no preffas material. Please select a preffas material.";
 					PopOver popOver = new PopOver();
@@ -418,7 +396,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 			}
 
 			// no linear material
-			if (linear && (pp.getLinearMaterial() == null)) {
+			if (linear && pp.getLinearMaterial() == null) {
 				if (showWarning) {
 					String message = "Pilot point '" + pp.getName() + "' has no linear propagation material. Please select a linear propagation material.";
 					PopOver popOver = new PopOver();
@@ -462,7 +440,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -476,7 +454,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != table_) && db.hasFiles()) {
+		if (event.getGestureSource() != table_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -508,7 +486,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != table_) && db.hasFiles()) {
+		if (event.getGestureSource() != table_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -547,7 +525,7 @@ public class RfortPilotPointsPopup implements Initializable, FatigueMaterialRequ
 
 		// files
 		boolean success = false;
-		if ((event.getGestureSource() != table_) && db.hasFiles()) {
+		if (event.getGestureSource() != table_ && db.hasFiles()) {
 
 			// process files
 			success = processFiles(db.getFiles());

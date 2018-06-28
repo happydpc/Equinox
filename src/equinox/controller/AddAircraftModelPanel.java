@@ -31,14 +31,14 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.controller.ScheduleTaskPanel.SchedulingPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.AircraftModelInfo;
+import equinox.dataServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.task.AddAircraftModel;
 import equinox.task.SaveTask;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.AircraftModelInfo;
-import equinoxServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -207,13 +207,9 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 
 		// animate file types
 		if (success && !toBeAnimated.isEmpty()) {
-			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					for (ImageView item : toBeAnimated) {
-						item.setImage(Utility.getImage("full.png"));
-					}
+			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				for (ImageView item : toBeAnimated) {
+					item.setImage(Utility.getImage("full.png"));
 				}
 			}, toBeAnimated).play();
 		}
@@ -229,7 +225,7 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -261,7 +257,7 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -300,7 +296,7 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 
 		// files
 		boolean success = false;
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// process files
 			success = processFiles(db.getFiles());
@@ -323,7 +319,7 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory
@@ -414,23 +410,23 @@ public class AddAircraftModelPanel implements InternalInputSubPanel, SchedulingP
 		Node node = null;
 
 		// check
-		if ((f07File == null) || !Files.exists(f07File)) {
+		if (f07File == null || !Files.exists(f07File)) {
 			message = "Please select a valid F07 file to proceed.";
 			node = f07_;
 		}
-		else if ((f06File == null) || !Files.exists(f06File)) {
+		else if (f06File == null || !Files.exists(f06File)) {
 			message = "Please select a valid F06 file to proceed.";
 			node = f06_;
 		}
-		else if ((grpFile != null) && !Files.exists(grpFile)) {
+		else if (grpFile != null && !Files.exists(grpFile)) {
 			message = "Please select a valid GRP file to proceed.";
 			node = grp_;
 		}
-		else if ((program == null) || program.trim().isEmpty()) {
+		else if (program == null || program.trim().isEmpty()) {
 			message = "Please enter an A/C program to proceed.";
 			node = program_;
 		}
-		else if ((modelName == null) || modelName.trim().isEmpty()) {
+		else if (modelName == null || modelName.trim().isEmpty()) {
 			message = "Please enter an A/C model name to proceed.";
 			node = modelName_;
 		}

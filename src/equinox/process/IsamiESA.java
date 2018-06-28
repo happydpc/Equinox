@@ -30,6 +30,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
+import equinox.analysisServer.remote.data.IsamiMaterial;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.FullESAComplete;
+import equinox.analysisServer.remote.message.IsamiESARequest;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
@@ -40,22 +45,17 @@ import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.EquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.IsamiMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.FullESAComplete;
-import equinoxServer.remote.message.IsamiESARequest;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Class for ISAMI equivalent stress analysis process.
@@ -164,7 +164,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 	public Void start(Connection localConnection, PreparedStatement... preparedStatements) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager manager = null;
 		boolean removeListener = false;
 
 		try {
@@ -197,7 +197,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 			// initialize analysis request message
 			IsamiESARequest request = new IsamiESARequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setFastAnalysis(false);
 			request.setUploadOutputFiles(keepOutputs_);
@@ -236,16 +236,16 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			manager = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			manager.addMessageListener(this);
 			removeListener = true;
-			watcher.sendMessage(request);
+			manager.sendMessage(request);
 
 			// wait for analysis to complete
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			manager.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -278,8 +278,8 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (manager != null && removeListener) {
+				manager.removeMessageListener(this);
 			}
 		}
 	}
@@ -329,7 +329,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 		// save output file to database (if requested)
 		int outputFileID = -1;
-		if (keepOutputs_ && (message.getDownloadUrl() != null)) {
+		if (keepOutputs_ && message.getDownloadUrl() != null) {
 
 			// create path to local output file
 			task_.updateMessage("Downloading analysis output file from server...");
@@ -525,7 +525,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 
 		// initialize variables
 		int rem = numPeaks_ % NUM_COLS;
-		int numRows = (numPeaks_ / NUM_COLS) + (rem == 0 ? 0 : 1);
+		int numRows = numPeaks_ / NUM_COLS + (rem == 0 ? 0 : 1);
 		rowIndex_ = 0;
 		colIndex_ = 0;
 		sigmaLine_ = "";
@@ -555,7 +555,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 			for (String col : split) {
 
 				// invalid value
-				if ((col == null) || col.isEmpty()) {
+				if (col == null || col.isEmpty()) {
 					continue;
 				}
 
@@ -571,7 +571,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 				peakVal = Double.parseDouble(col);
 
 				// last row
-				if (rowIndex_ == (numRows - 1)) {
+				if (rowIndex_ == numRows - 1) {
 
 					// add peaks
 					sigmaLine_ += String.format("%14s", format_.format(peakVal));
@@ -638,7 +638,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 		for (String col : split) {
 
 			// invalid value
-			if ((col == null) || col.isEmpty()) {
+			if (col == null || col.isEmpty()) {
 				continue;
 			}
 
@@ -676,7 +676,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 		for (String col : split) {
 
 			// invalid value
-			if ((col == null) || col.isEmpty()) {
+			if (col == null || col.isEmpty()) {
 				continue;
 			}
 

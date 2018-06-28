@@ -16,11 +16,10 @@
 package equinox.utility;
 
 import equinox.data.ui.RfortPilotPoint;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.PreffasMaterial;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
@@ -65,20 +64,16 @@ public class RfortMaterialTableCell<S, T> extends TableCell<S, T> {
 		setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
 		// set change listener
-		comboBox_.valueProperty().addListener(new ChangeListener<T>() {
-
-			@Override
-			public void changed(ObservableValue<? extends T> obs, T oldValue, T newValue) {
-				RfortPilotPoint item = (RfortPilotPoint) getTableView().getItems().get(getIndex());
-				if (newValue instanceof FatigueMaterial) {
-					item.setFatigueMaterial((FatigueMaterial) newValue);
-				}
-				else if (newValue instanceof PreffasMaterial) {
-					item.setPreffasMaterial((PreffasMaterial) newValue);
-				}
-				else if (newValue instanceof LinearMaterial) {
-					item.setLinearMaterial((LinearMaterial) newValue);
-				}
+		comboBox_.valueProperty().addListener((ChangeListener<T>) (obs, oldValue, newValue) -> {
+			RfortPilotPoint item = (RfortPilotPoint) getTableView().getItems().get(getIndex());
+			if (newValue instanceof FatigueMaterial) {
+				item.setFatigueMaterial((FatigueMaterial) newValue);
+			}
+			else if (newValue instanceof PreffasMaterial) {
+				item.setPreffasMaterial((PreffasMaterial) newValue);
+			}
+			else if (newValue instanceof LinearMaterial) {
+				item.setLinearMaterial((LinearMaterial) newValue);
 			}
 		});
 	}

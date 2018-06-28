@@ -23,9 +23,9 @@ import java.util.ArrayList;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFileBucket;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableSaveBucketDamageContributions;
-import equinoxServer.remote.data.ContributionType;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;
@@ -366,7 +366,7 @@ public class SaveBucketDamageContributions extends InternalEquinoxTask<Void> imp
 					while (getContInfo.next()) {
 						double value = totalStress - getContInfo.getDouble("stress");
 						if (options_[SaveDamageContributions.PERCENT]) {
-							value = (value * 100) / totalStress;
+							value = value * 100 / totalStress;
 						}
 						sheet.addCell(new jxl.write.Number(column, row, value, getDataFormat(row, CellType.NUMBER)));
 						column++;
@@ -414,7 +414,7 @@ public class SaveBucketDamageContributions extends InternalEquinoxTask<Void> imp
 					if (getContInfo.next()) {
 						value = isComplement ? totalStress - getContInfo.getDouble("stress") : getContInfo.getDouble("stress");
 						if (options_[SaveDamageContributions.PERCENT]) {
-							value = (value * 100) / totalStress;
+							value = value * 100 / totalStress;
 						}
 					}
 				}
@@ -623,7 +623,7 @@ public class SaveBucketDamageContributions extends InternalEquinoxTask<Void> imp
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

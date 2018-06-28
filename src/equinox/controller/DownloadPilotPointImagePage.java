@@ -26,12 +26,12 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.controller.DownloadPilotPointInfoPanel.InfoPage;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.PilotPointImageType;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.plugin.FileType;
 import equinox.task.GetPilotPointImage;
 import equinox.task.SavePilotPointImageToGlobalDB;
-import equinoxServer.remote.data.PilotPointImageType;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -279,7 +279,7 @@ public class DownloadPilotPointImagePage implements InfoPage {
 		File file = fileChooser.showOpenDialog(owner_.getOwner().getOwner().getOwner().getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((file == null) || !file.exists())
+		if (file == null || !file.exists())
 			return;
 
 		// process image

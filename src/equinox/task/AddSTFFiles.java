@@ -37,12 +37,12 @@ import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
+import equinox.dataServer.remote.data.PilotPointInfo;
 import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Add STF files task.

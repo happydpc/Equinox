@@ -23,7 +23,7 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-import equinoxServer.remote.data.ServerPluginInfo.PluginInfoType;
+import equinox.dataServer.remote.data.ServerPluginInfo.PluginInfoType;
 import javafx.scene.image.Image;
 
 /**

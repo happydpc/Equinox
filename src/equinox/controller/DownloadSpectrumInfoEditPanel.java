@@ -23,10 +23,10 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.SpectrumInfo;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.font.IconicFont;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SpectrumInfo;
-import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -118,7 +118,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 
 		// check required fields
 		String program = (String) info.getInfo(SpectrumInfoType.AC_PROGRAM);
-		if ((program == null) || program.trim().isEmpty()) {
+		if (program == null || program.trim().isEmpty()) {
 			String message = "Please supply A/C program to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -130,7 +130,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String section = (String) info.getInfo(SpectrumInfoType.AC_SECTION);
-		if ((section == null) || section.trim().isEmpty()) {
+		if (section == null || section.trim().isEmpty()) {
 			String message = "Please supply A/C section to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -142,7 +142,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String mission = (String) info.getInfo(SpectrumInfoType.FAT_MISSION);
-		if ((mission == null) || mission.trim().isEmpty()) {
+		if (mission == null || mission.trim().isEmpty()) {
 			String message = "Please supply fatigue mission to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -154,7 +154,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String missionIssue = (String) info.getInfo(SpectrumInfoType.FAT_MISSION_ISSUE);
-		if ((missionIssue == null) || missionIssue.trim().isEmpty()) {
+		if (missionIssue == null || missionIssue.trim().isEmpty()) {
 			String message = "Please supply fatigue mission issue to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -166,7 +166,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String flpIssue = (String) info.getInfo(SpectrumInfoType.FLP_ISSUE);
-		if ((flpIssue == null) || flpIssue.trim().isEmpty()) {
+		if (flpIssue == null || flpIssue.trim().isEmpty()) {
 			String message = "Please supply FLP issue to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -178,7 +178,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String iflpIssue = (String) info.getInfo(SpectrumInfoType.IFLP_ISSUE);
-		if ((iflpIssue == null) || iflpIssue.trim().isEmpty()) {
+		if (iflpIssue == null || iflpIssue.trim().isEmpty()) {
 			String message = "Please supply IFLP issue to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -190,7 +190,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String cdfIssue = (String) info.getInfo(SpectrumInfoType.CDF_ISSUE);
-		if ((cdfIssue == null) || cdfIssue.trim().isEmpty()) {
+		if (cdfIssue == null || cdfIssue.trim().isEmpty()) {
 			String message = "Please supply CDF issue to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -202,7 +202,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String delRef = (String) info.getInfo(SpectrumInfoType.DELIVERY_REF);
-		if ((delRef == null) || delRef.trim().isEmpty()) {
+		if (delRef == null || delRef.trim().isEmpty()) {
 			String message = "Please supply delivery reference to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -214,7 +214,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			return false;
 		}
 		String description = (String) info.getInfo(SpectrumInfoType.DESCRIPTION);
-		if ((description == null) || description.trim().isEmpty()) {
+		if (description == null || description.trim().isEmpty()) {
 			String message = "Please supply description to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -356,7 +356,7 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			controller.cdfIssue_.setText((String) info.getInfo(SpectrumInfoType.CDF_ISSUE));
 			controller.deliveryRef_.setText((String) info.getInfo(SpectrumInfoType.DELIVERY_REF));
 			String description = (String) info.getInfo(SpectrumInfoType.DESCRIPTION);
-			controller.description_.setText((description == null) || description.trim().isEmpty() ? "-" : description);
+			controller.description_.setText(description == null || description.trim().isEmpty() ? "-" : description);
 			controller.pilotPoints_.setText(Integer.toString((int) info.getInfo(SpectrumInfoType.PILOT_POINTS)));
 			controller.multiplicationTables_.setText(Integer.toString((int) info.getInfo(SpectrumInfoType.MULT_TABLES)));
 
@@ -368,17 +368,13 @@ public class DownloadSpectrumInfoEditPanel implements Initializable {
 			controller.setupInfoListeners();
 
 			// listen for detach events
-			controller.popOver_.detachedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					if (newValue) {
-						controller.headerPane_.getChildren().remove(controller.save_);
-						controller.root_.getChildren().remove(controller.headerPane_);
-						StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
-						StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
-						controller.popOver_.getRoot().getChildren().add(controller.save_);
-					}
+			controller.popOver_.detachedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+				if (newValue) {
+					controller.headerPane_.getChildren().remove(controller.save_);
+					controller.root_.getChildren().remove(controller.headerPane_);
+					StackPane.setAlignment(controller.save_, Pos.TOP_RIGHT);
+					StackPane.setMargin(controller.save_, new Insets(4.0, 10.0, 0.0, 0.0));
+					controller.popOver_.getRoot().getChildren().add(controller.save_);
 				}
 			});
 

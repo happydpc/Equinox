@@ -23,10 +23,10 @@ import equinox.Equinox;
 import equinox.controller.ViewPanel.InternalViewSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.TableItem;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.Plot3DTask;
 import equinox.utility.Utility;
 import equinox.viewer.Equinox3DViewer;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -108,7 +108,7 @@ public class ObjectViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		if ((viewer_ != null) && !viewer_.isVisible() && !taskRunning_) {
+		if (viewer_ != null && !viewer_.isVisible() && !taskRunning_) {
 
 			// set bounds
 			Pagination pagination = owner_.getPagination();
@@ -131,7 +131,7 @@ public class ObjectViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void hiding() {
-		if ((viewer_ != null) && viewer_.isVisible()) {
+		if (viewer_ != null && viewer_.isVisible()) {
 			viewer_.setVisible(false);
 		}
 	}
@@ -196,23 +196,19 @@ public class ObjectViewPanel implements InternalViewSubPanel {
 		taskRunning_ = isRunning;
 
 		// set place holder
-		Platform.runLater(new Runnable() {
+		Platform.runLater(() -> {
 
-			@Override
-			public void run() {
-
-				// bind task to progress indicator
-				if (taskRunning_) {
-					progressPanel_.getProgress().progressProperty().unbind();
-					progressPanel_.getProgress().progressProperty().bind(task.progressProperty());
-				}
-				else {
-					progressPanel_.getProgress().progressProperty().unbind();
-				}
-
-				// set place holder
-				table_.setPlaceholder(taskRunning_ ? progressPanel_.getRoot() : null);
+			// bind task to progress indicator
+			if (taskRunning_) {
+				progressPanel_.getProgress().progressProperty().unbind();
+				progressPanel_.getProgress().progressProperty().bind(task.progressProperty());
 			}
+			else {
+				progressPanel_.getProgress().progressProperty().unbind();
+			}
+
+			// set place holder
+			table_.setPlaceholder(taskRunning_ ? progressPanel_.getRoot() : null);
 		});
 	}
 

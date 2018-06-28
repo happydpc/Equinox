@@ -34,8 +34,8 @@ import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save rainflow task.

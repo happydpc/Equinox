@@ -33,8 +33,8 @@ import equinox.data.fileType.ExternalPreffasEquivalentStress;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.ExternalLevelCrossingInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot external level crossing task.

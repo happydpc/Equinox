@@ -30,10 +30,10 @@ import equinox.data.EquinoxTheme;
 import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.font.IconicFont;
 import equinox.task.UpdatePilotPointInfoInGlobalDB;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -283,7 +283,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 
 		// check required fields
 		String spectrumName = (String) info.getInfo(PilotPointInfoType.SPECTRUM_NAME);
-		if ((spectrumName == null) || spectrumName.trim().isEmpty()) {
+		if (spectrumName == null || spectrumName.trim().isEmpty()) {
 			String message = "Please supply spectrum name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -295,7 +295,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String program = (String) info.getInfo(PilotPointInfoType.AC_PROGRAM);
-		if ((program == null) || program.trim().isEmpty()) {
+		if (program == null || program.trim().isEmpty()) {
 			String message = "Please supply A/C program to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -307,7 +307,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String section = (String) info.getInfo(PilotPointInfoType.AC_SECTION);
-		if ((section == null) || section.trim().isEmpty()) {
+		if (section == null || section.trim().isEmpty()) {
 			String message = "Please supply A/C section to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -319,7 +319,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String mission = (String) info.getInfo(PilotPointInfoType.FAT_MISSION);
-		if ((mission == null) || mission.trim().isEmpty()) {
+		if (mission == null || mission.trim().isEmpty()) {
 			String message = "Please supply fatigue mission to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -331,7 +331,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String description = (String) info.getInfo(PilotPointInfoType.DESCRIPTION);
-		if ((description == null) || description.trim().isEmpty()) {
+		if (description == null || description.trim().isEmpty()) {
 			String message = "Please supply pilot point description to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -343,7 +343,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String dataSource = (String) info.getInfo(PilotPointInfoType.DATA_SOURCE);
-		if ((dataSource == null) || dataSource.trim().isEmpty()) {
+		if (dataSource == null || dataSource.trim().isEmpty()) {
 			String message = "Please supply data source to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -355,7 +355,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String genSource = (String) info.getInfo(PilotPointInfoType.GENERATION_SOURCE);
-		if ((genSource == null) || genSource.trim().isEmpty()) {
+		if (genSource == null || genSource.trim().isEmpty()) {
 			String message = "Please supply generation source to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -367,7 +367,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String delRef = (String) info.getInfo(PilotPointInfoType.DELIVERY_REF_NUM);
-		if ((delRef == null) || delRef.trim().isEmpty()) {
+		if (delRef == null || delRef.trim().isEmpty()) {
 			String message = "Please supply delivery reference to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -379,7 +379,7 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 			return false;
 		}
 		String issue = (String) info.getInfo(PilotPointInfoType.ISSUE);
-		if ((issue == null) || issue.trim().isEmpty()) {
+		if (issue == null || issue.trim().isEmpty()) {
 			String message = "Please supply pilot point issue to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -411,25 +411,25 @@ public class DownloadPilotPointInfoEditPage implements InfoPage, FatigueMaterial
 		if (issue.trim().length() > 50)
 			return showInputLengthWarning(issue_, 50);
 		String elType = (String) info.getInfo(PilotPointInfoType.ELEMENT_TYPE);
-		if ((elType != null) && (elType.trim().length() > 50))
+		if (elType != null && elType.trim().length() > 50)
 			return showInputLengthWarning(elementType_, 50);
 		String framePos = (String) info.getInfo(PilotPointInfoType.FRAME_RIB_POSITION);
-		if ((framePos != null) && (framePos.trim().length() > 50))
+		if (framePos != null && framePos.trim().length() > 50)
 			return showInputLengthWarning(framePos_, 50);
 		String stringerPos = (String) info.getInfo(PilotPointInfoType.STRINGER_POSITION);
-		if ((stringerPos != null) && (stringerPos.trim().length() > 50))
+		if (stringerPos != null && stringerPos.trim().length() > 50)
 			return showInputLengthWarning(stringerPos_, 50);
 		String fatigueMaterial = (String) info.getInfo(PilotPointInfoType.FATIGUE_MATERIAL);
-		if ((fatigueMaterial != null) && (fatigueMaterial.trim().length() > 500))
+		if (fatigueMaterial != null && fatigueMaterial.trim().length() > 500)
 			return showInputLengthWarning(fatigueMaterial_, 500);
 		String preffasMaterial = (String) info.getInfo(PilotPointInfoType.PREFFAS_MATERIAL);
-		if ((preffasMaterial != null) && (preffasMaterial.trim().length() > 500))
+		if (preffasMaterial != null && preffasMaterial.trim().length() > 500)
 			return showInputLengthWarning(preffasMaterial_, 500);
 		String linearMaterial = (String) info.getInfo(PilotPointInfoType.LINEAR_MATERIAL);
-		if ((linearMaterial != null) && (linearMaterial.trim().length() > 500))
+		if (linearMaterial != null && linearMaterial.trim().length() > 500)
 			return showInputLengthWarning(linearMaterial_, 500);
 		String eid = (String) info.getInfo(PilotPointInfoType.EID);
-		if ((eid != null) && (eid.trim().length() > 50))
+		if (eid != null && eid.trim().length() > 50)
 			return showInputLengthWarning(eid_, 50);
 
 		// valid inputs

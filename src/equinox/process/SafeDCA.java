@@ -25,8 +25,8 @@ import java.util.concurrent.Future;
 import equinox.Equinox;
 import equinox.data.DamageContribution;
 import equinox.data.DamageContributionResult;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.LoadcaseDamageContributionAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
 
 /**
  * Class for SAFE damage contribution analysis.
@@ -97,7 +97,7 @@ public class SafeDCA implements ESAProcess<List<DamageContributionResult>> {
 
 		// create incremental sub tasks
 		incrementTasks_ = new ArrayList<>();
-		for (int i = 0; i < (contributions_.size() + 1); i++) {
+		for (int i = 0; i < contributions_.size() + 1; i++) {
 			String name = i == 0 ? "full" : contributions_.get(i - 1).getName();
 			incrementTasks_.add(new SafeDCAIncrement(task_, sthFiles_[i], flsFile_, name, i, material_, applyOmission_, omissionLevel_));
 		}
@@ -138,7 +138,7 @@ public class SafeDCA implements ESAProcess<List<DamageContributionResult>> {
 	public void cancel() {
 
 		// cancel incremental tasks
-		if ((incrementTasks_ != null) && !incrementTasks_.isEmpty()) {
+		if (incrementTasks_ != null && !incrementTasks_.isEmpty()) {
 			for (SafeDCAIncrement increment : incrementTasks_) {
 				increment.cancel();
 			}

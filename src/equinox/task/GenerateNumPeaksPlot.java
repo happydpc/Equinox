@@ -44,8 +44,8 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate number of peaks statistics plot task.

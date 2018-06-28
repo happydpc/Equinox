@@ -26,12 +26,11 @@ import equinox.Equinox;
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.SavedTaskItem;
 import equinox.font.IconicFont;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.DeleteSavedTasks;
 import equinox.task.RunSavedTasks;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -42,7 +41,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
 
 /**
  * Class for saved tasks panel controller.
@@ -88,13 +86,7 @@ public class SavedTasksPanel implements Initializable {
 		runSavedTasks_.disableProperty().bind(savedTasksList_.getSelectionModel().selectedItemProperty().isNull());
 
 		// bind no tasks label
-		savedTasksList_.getItems().addListener(new ListChangeListener<SavedTaskItem>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SavedTaskItem> c) {
-				noSavedTaskLabel_.setVisible(savedTasksList_.getItems().isEmpty());
-			}
-		});
+		savedTasksList_.getItems().addListener((ListChangeListener<SavedTaskItem>) c -> noSavedTaskLabel_.setVisible(savedTasksList_.getItems().isEmpty()));
 
 		// windows OS
 		if (Equinox.OS_TYPE.equals(ServerUtility.WINDOWS)) {
@@ -151,22 +143,10 @@ public class SavedTasksPanel implements Initializable {
 		popOver_.setStyle("-fx-base: #ececec;");
 
 		// set showing handler
-		popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				isShown_ = true;
-			}
-		});
+		popOver_.setOnShowing(event -> isShown_ = true);
 
 		// set hidden handler
-		popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				isShown_ = false;
-			}
-		});
+		popOver_.setOnHidden(event -> isShown_ = false);
 
 		// show
 		popOver_.show(node);

@@ -26,8 +26,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.data.GAGEvent;
 import equinox.data.Segment;
 import equinox.data.fileType.LoadcaseDamageContributions;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask;
-import equinoxServer.remote.data.ContributionType;
 
 /**
  * Class for plot damage contributions process.
@@ -94,10 +94,10 @@ public class PlotDamageContributionsProcess implements EquinoxProcess<DefaultCat
 					// get damage percentage
 					double damage = resultSet1.getDouble("stress");
 					if (type.equals(ContributionType.GAG.getName())) {
-						damage = (damage * 100.0) / totalDamage;
+						damage = damage * 100.0 / totalDamage;
 					}
 					else {
-						damage = ((totalDamage - damage) * 100.0) / totalDamage;
+						damage = (totalDamage - damage) * 100.0 / totalDamage;
 					}
 					damage = Math.floor(damage);
 

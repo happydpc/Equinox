@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import equinox.Equinox;
 import equinox.data.fileType.STFFileBucket;
 import equinox.process.SaveSTFBucketProcess;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share STF file bucket task.

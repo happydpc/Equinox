@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableExportMultiplicationTables;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;

@@ -29,8 +29,8 @@ import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.data.ElementTypeForStress;
 import equinox.data.input.CompareElementStressesInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare element stresses task.

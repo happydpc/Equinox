@@ -32,12 +32,12 @@ import equinox.data.input.MyCheckInput;
 import equinox.data.ui.MyCheckMission;
 import equinox.data.ui.MyCheckMission.MissionType;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableMyCheck;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 import jxl.Sheet;
 import jxl.Workbook;
 

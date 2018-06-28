@@ -42,6 +42,10 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.EquivalentStressInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.plugin.FileType;
 import equinox.process.ESAProcess;
 import equinox.process.InbuiltESA;
@@ -50,15 +54,11 @@ import equinox.process.Rainflow;
 import equinox.process.SafeESA;
 import equinox.process.SaveExternalSTH;
 import equinox.process.SaveSTH;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableEquivalentStressAnalysis;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for equivalent stress analysis task.
@@ -1266,7 +1266,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			else {
 
 				// connected to server (ISAMI engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					equivalentStressAnalysis_ = new IsamiESA(this, inputSTH, stressSequence_, eqStress, flsFileID, input_.getMaterial(), keepOutputs, outputFileName, isamiVersion_, isamiSubVersion_, applyCompression_);
 				}
 
@@ -1295,7 +1295,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			else {
 
 				// connected to server (SAFE engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					equivalentStressAnalysis_ = new SafeESA(this, inputSTH, eqStress, flsFileID, input_.getMaterial(), keepOutputs, outputFileName);
 				}
 

@@ -18,10 +18,10 @@ package equinox.task.serializableTask;
 import java.io.File;
 import java.nio.file.Path;
 
+import equinox.dataServer.remote.data.AircraftModelInfo;
+import equinox.dataServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
 import equinox.task.AddAircraftModel;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.AircraftModelInfo;
-import equinoxServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
 import javafx.scene.control.TreeItem;
 
 /**

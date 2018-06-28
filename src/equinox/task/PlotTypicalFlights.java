@@ -34,8 +34,8 @@ import equinox.data.Segment;
 import equinox.data.SeriesKey;
 import equinox.data.fileType.Flight;
 import equinox.data.input.FlightPlotInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for plot STH flights task.

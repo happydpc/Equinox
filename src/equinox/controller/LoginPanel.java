@@ -26,10 +26,10 @@ import encoder.Base64Encoder;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.message.Login;
+import equinox.dataServer.remote.message.LoginSuccessful;
+import equinox.serverUtilities.Permission;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.Login;
-import equinoxServer.remote.message.LoginSuccessful;
-import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -143,7 +143,7 @@ public class LoginPanel implements InternalInputSubPanel {
 			return;
 
 		// send login request
-		owner_.getOwner().getNetworkWatcher().sendMessage(new Login(Base64Encoder.encodeString(password)));
+		owner_.getOwner().getDataServerManager().sendMessage(new Login(Base64Encoder.encodeString(password)));
 	}
 
 	@FXML

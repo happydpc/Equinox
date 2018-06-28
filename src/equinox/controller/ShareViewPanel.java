@@ -25,9 +25,9 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.plugin.ViewSubPanel;
 import equinox.task.ShareView;
-import equinoxServer.remote.message.StatusChange;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -197,7 +197,7 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 				popOver.hide();
 			};
 

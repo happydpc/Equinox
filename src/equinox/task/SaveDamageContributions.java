@@ -23,9 +23,9 @@ import java.util.ArrayList;
 
 import equinox.Equinox;
 import equinox.data.fileType.LoadcaseDamageContributions;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableSaveDamageContributions;
-import equinoxServer.remote.data.ContributionType;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;
@@ -320,7 +320,7 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 					while (getContInfo.next()) {
 						value = totalStress - getContInfo.getDouble("stress");
 						if (options_[PERCENT]) {
-							value = (value * 100) / totalStress;
+							value = value * 100 / totalStress;
 						}
 					}
 					sheet.addCell(new jxl.write.Number(column, row, value, getDataFormat(row, CellType.NUMBER)));
@@ -368,7 +368,7 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 					if (getContInfo.next()) {
 						value = isComplement ? totalStress - getContInfo.getDouble("stress") : getContInfo.getDouble("stress");
 						if (options_[PERCENT]) {
-							value = (value * 100) / totalStress;
+							value = value * 100 / totalStress;
 						}
 					}
 				}
@@ -577,7 +577,7 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

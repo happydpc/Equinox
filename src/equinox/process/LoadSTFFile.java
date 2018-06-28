@@ -35,23 +35,23 @@ import javax.imageio.stream.ImageInputStream;
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.PilotPointImageType;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
+import equinox.dataServer.remote.message.GetPilotPointImagesRequest;
+import equinox.dataServer.remote.message.GetPilotPointImagesResponse;
+import equinox.network.DataServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.Permission;
 import equinox.task.DatabaseQueryListenerTask;
 import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.PilotPointImageType;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.message.GetPilotPointImagesRequest;
-import equinoxServer.remote.message.GetPilotPointImagesResponse;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for loading STF files.
@@ -93,7 +93,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates load STF file process.
@@ -141,8 +141,8 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, task_, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, task_, serverMessageRef, isQueryCompleted);
 	}
 
 	/**
@@ -415,7 +415,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 		task_.updateMessage("Please wait...");
 
 		// initialize variables
-		NetworkWatcher watcher = null;
+		DataServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
@@ -427,23 +427,23 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 
 			// create request message
 			GetPilotPointImagesRequest request = new GetPilotPointImagesRequest();
-			request.setDatabaseQueryID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setPilotPointId(id);
 
 			// disable task canceling
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addDatabaseQueryListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getDataServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(task_, isQueryCompleted);
+			waitForServer(task_, isQueryCompleted);
 
 			// remove from network watcher
-			watcher.removeDatabaseQueryListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -454,7 +454,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)
@@ -517,7 +517,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 		// remove from network watcher
 		finally {
 			if (watcher != null && removeListener) {
-				watcher.removeDatabaseQueryListener(this);
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

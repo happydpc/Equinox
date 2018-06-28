@@ -24,9 +24,9 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.FastEquivalentStressInput;
+import equinox.dataServer.remote.data.Material;
 import equinox.task.FastGenerateStressSequence;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.Material;
 import javafx.scene.control.TreeItem;
 
 /**

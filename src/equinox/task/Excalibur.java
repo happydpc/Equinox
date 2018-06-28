@@ -32,10 +32,10 @@ import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.input.ExcaliburInput;
 import equinox.process.ExcaliburLoadElementStresses;
 import equinox.process.ExcaliburLoadLoadcaseCorrelations;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableExcalibur;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for Excalibur stress sorting task.

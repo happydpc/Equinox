@@ -36,18 +36,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
-import equinox.network.NetworkWatcher;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.FlightDCAComplete;
+import equinox.analysisServer.remote.message.SafeFlightDCARequest;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.network.AnalysisServerManager;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.FastEquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.FlightDCAComplete;
-import equinoxServer.remote.message.SafeFlightDCARequest;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for SAFE flight damage contribution analysis process.
@@ -120,7 +120,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 	public Object[] start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
@@ -160,7 +160,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 
 			// initialize analysis request message
 			SafeFlightDCARequest request = new SafeFlightDCARequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setUploadOutputFiles(keepFailedOutputs_);
 
@@ -168,8 +168,8 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -177,7 +177,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -211,8 +211,8 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}
@@ -221,7 +221,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
 	}
@@ -294,7 +294,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 		Iterator<Entry<String, Double>> iteratorWithOccurrences = withOccurrences.entrySet().iterator();
 		while (iteratorWithOccurrences.hasNext()) {
 			Entry<String, Double> entry = iteratorWithOccurrences.next();
-			withOccurrences.put(entry.getKey(), (entry.getValue() * 100) / totalDamageWithOccurrences);
+			withOccurrences.put(entry.getKey(), entry.getValue() * 100 / totalDamageWithOccurrences);
 		}
 
 		// replace damages with damage percentages without occurrences
@@ -306,7 +306,7 @@ public class SafeFlightDCA implements ESAProcess<Object[]>, AnalysisListenerTask
 		Iterator<Entry<String, Double>> iteratorWithoutOccurrences1 = withoutOccurrences.entrySet().iterator();
 		while (iteratorWithoutOccurrences1.hasNext()) {
 			Entry<String, Double> entry = iteratorWithoutOccurrences1.next();
-			withoutOccurrences.put(entry.getKey(), (entry.getValue() * 100) / totalDamageWithoutOccurrences);
+			withoutOccurrences.put(entry.getKey(), entry.getValue() * 100 / totalDamageWithoutOccurrences);
 		}
 
 		// sort in descending order

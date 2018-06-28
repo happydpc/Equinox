@@ -43,9 +43,9 @@ import equinox.data.ui.RfortOmission;
 import equinox.data.ui.RfortPercentOmission;
 import equinox.data.ui.SerializableRfortPilotPoint;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for RFORT analysis task.
@@ -146,14 +146,14 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 		Path[] inputFiles = copyInputFiles();
 
 		// task cancelled
-		if (isCancelled() || (inputFiles == null))
+		if (isCancelled() || inputFiles == null)
 			return null;
 
 		// write input file
 		Path inputFile = writeInputFile(inputFiles);
 
 		// task cancelled
-		if (isCancelled() || (inputFile == null))
+		if (isCancelled() || inputFile == null)
 			return null;
 
 		// run tool
@@ -214,7 +214,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 		super.cancelled();
 
 		// destroy sub processes (if still running)
-		if ((process_ != null) && process_.isAlive()) {
+		if (process_ != null && process_.isAlive()) {
 			process_.destroyForcibly();
 		}
 	}
@@ -426,7 +426,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 		Path ppDirName = inputFiles[STFS].getFileName();
 		Path txtFileName = inputFiles[TXT].getFileName();
 		Path anaFileName = inputFiles[ANA].getFileName();
-		if ((ppDirName == null) || (txtFileName == null) || (anaFileName == null))
+		if (ppDirName == null || txtFileName == null || anaFileName == null)
 			throw new Exception("Cannot get input file name(s).");
 
 		// create path to input file (same location as ANA file)
@@ -532,7 +532,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 		// percent omission
 		if (omission_ instanceof RfortPercentOmission) {
 			RfortPercentOmission percentOmission = (RfortPercentOmission) omission_;
-			return (maxStressAmp * percentOmission.getPercentOmission()) / 100.0;
+			return maxStressAmp * percentOmission.getPercentOmission() / 100.0;
 		}
 
 		// direct omission

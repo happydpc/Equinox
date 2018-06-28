@@ -81,10 +81,10 @@ import equinox.process.ESAProcess;
 import equinox.process.PlotHistogramProcess;
 import equinox.process.PlotLevelCrossingProcess;
 import equinox.process.Rainflow;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for generate level crossings plot task.

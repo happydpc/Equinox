@@ -32,14 +32,12 @@ import equinox.data.LoadcaseFactor;
 import equinox.data.LoadcaseItem;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.GetLoadcases;
 import equinox.task.GetLoadcases.LoadcaseRequestingPanel;
-import equinoxServer.remote.data.ContributionType;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -51,8 +49,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
-import javafx.util.Callback;
 
 /**
  * Class for damage contributions popup controller.
@@ -99,23 +95,18 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 	@FXML
 	private JFXTabPane loadcaseTypeTab_;
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// bind components
-		loadcaseTypeTab_.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				boolean isSteady = loadcaseTypeTab_.getSelectionModel().getSelectedIndex() == 0;
-				if (isSteady) {
-					contributionName_.clear();
-					contributionName_.setDisable(true);
-				}
-				else {
-					contributionName_.setDisable(false);
-				}
+		loadcaseTypeTab_.getSelectionModel().selectedIndexProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> {
+			boolean isSteady = loadcaseTypeTab_.getSelectionModel().getSelectedIndex() == 0;
+			if (isSteady) {
+				contributionName_.clear();
+				contributionName_.setDisable(true);
+			}
+			else {
+				contributionName_.setDisable(false);
 			}
 		});
 
@@ -134,13 +125,7 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 		incTable_.setPlaceholder(NoResultsPanel.load("Your search did not match any loadcase.", null));
 
 		// set automatic column sizing for tables
-		incTable_.setColumnResizePolicy(new Callback<TableView.ResizeFeatures, Boolean>() {
-
-			@Override
-			public Boolean call(TableView.ResizeFeatures param) {
-				return true;
-			}
-		});
+		incTable_.setColumnResizePolicy(param -> true);
 
 		// setup tables
 		incTable_.setItems(incLoadcases_);
@@ -157,15 +142,11 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 		steadyList_.setPlaceholder(NoResultsPanel.load("Your search did not match any steady case.", null));
 
 		// setup search field
-		search_.textProperty().addListener(new ChangeListener<String>() {
-
-			@Override
-			public void changed(ObservableValue<? extends String> ov, String old_Val, String new_val) {
-				boolean isSteady = loadcaseTypeTab_.getSelectionModel().getSelectedIndex() == 0;
-				search(old_Val, new_val, isSteady);
-				if (!isSteady) {
-					contributionName_.setText(new_val);
-				}
+		search_.textProperty().addListener((ChangeListener<String>) (ov, old_Val, new_val) -> {
+			boolean isSteady = loadcaseTypeTab_.getSelectionModel().getSelectedIndex() == 0;
+			search(old_Val, new_val, isSteady);
+			if (!isSteady) {
+				contributionName_.setText(new_val);
 			}
 		});
 	}
@@ -225,23 +206,15 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 		popOver_.setContentNode(root_);
 
 		// set showing handler
-		popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				owner_.getOwner().getRoot().setMouseTransparent(true);
-				isShown_ = true;
-			}
+		popOver_.setOnShowing(event -> {
+			owner_.getOwner().getRoot().setMouseTransparent(true);
+			isShown_ = true;
 		});
 
 		// set hidden handler
-		popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				owner_.getOwner().getRoot().setMouseTransparent(false);
-				isShown_ = false;
-			}
+		popOver_.setOnHidden(event -> {
+			owner_.getOwner().getRoot().setMouseTransparent(false);
+			isShown_ = false;
 		});
 
 		// request loadcases
@@ -374,7 +347,7 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 
 		// no contribution name given
 		String name = contributionName_.getText();
-		if ((name == null) || name.trim().isEmpty()) {
+		if (name == null || name.trim().isEmpty()) {
 			String message = "No name for contribution given. Please enter a name for loadcase contribution to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -466,7 +439,7 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 		// steady cases
 		if (isSteady) {
 			steadyList_.getSelectionModel().clearSelection();
-			if ((old_Val != null) && (new_Val.length() < old_Val.length())) {
+			if (old_Val != null && new_Val.length() < old_Val.length()) {
 				steadyList_.setItems(steadyCases_);
 			}
 			String value = new_Val.toUpperCase();
@@ -487,7 +460,7 @@ public class DamageContributionsPopup implements InputPopup, LoadcaseRequestingP
 		// increment cases
 		else {
 			incTable_.getSelectionModel().clearSelection();
-			if ((old_Val != null) && (new_Val.length() < old_Val.length())) {
+			if (old_Val != null && new_Val.length() < old_Val.length()) {
 				incTable_.setItems(incLoadcases_);
 			}
 			String value = new_Val.toUpperCase();

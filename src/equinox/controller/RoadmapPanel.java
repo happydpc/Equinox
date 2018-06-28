@@ -25,11 +25,11 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
+import equinox.dataServer.remote.message.GetWishesRequest;
 import equinox.task.GetWishes;
 import equinox.task.SaveSettings;
 import equinox.task.SubmitWish;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.GetWishesRequest;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -138,7 +138,7 @@ public class RoadmapPanel implements InternalInputSubPanel {
 		String description = description_.getText().isEmpty() ? null : description_.getText();
 
 		// no title given
-		if ((title == null) || title.isEmpty()) {
+		if (title == null || title.isEmpty()) {
 			String message = "No title given. Please enter a title in order to proceed submitting your wish.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

@@ -40,6 +40,7 @@ import equinox.data.Settings;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
+import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -72,7 +73,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	private final ExecutorService threadExecutor_;
 
 	/** Message queue. */
-	private final ConcurrentLinkedQueue<NetworkMessage> messageQueue_;
+	private final ConcurrentLinkedQueue<AnalysisMessage> messageQueue_;
 
 	/**
 	 * Creates analysis server manager.
@@ -105,8 +106,6 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// start client
 		kryoNetClient_.start();
-
-		// add this class to message listeners
 		addMessageListener(this);
 		Equinox.LOGGER.info("Analysis server client initialized.");
 	}
@@ -148,11 +147,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 * Connects to analysis server.
 	 *
 	 * @param message
-	 *            Message to be sent once the connection is established.
+	 *            Message to be sent once the connection is established. Can be <code>null</code>.
 	 *
 	 * @return True if successfully connected to server.
 	 */
-	public boolean connect(NetworkMessage message) {
+	public boolean connect(AnalysisMessage message) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -172,11 +171,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		// connect to server
 		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be analysis server hostname
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be analysis server port number
+			String hostname = (String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_HOSTNAME);
+			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_PORT));
 			kryoNetClient_.connect(5000, hostname, port);
 			HandshakeWithAnalysisServer handshake = new HandshakeWithAnalysisServer(Equinox.USER.getAlias());
-			handshake.setSenderHashCode(hashCode());
+			handshake.setListenerHashCode(hashCode());
 			kryoNetClient_.sendTCP(handshake);
 			return true;
 		}
@@ -199,7 +198,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 * @param message
 	 *            Message to send.
 	 */
-	synchronized public void sendMessage(NetworkMessage message) {
+	synchronized public void sendMessage(AnalysisMessage message) {
 
 		// null message
 		if (message == null)
@@ -320,7 +319,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			Equinox.LOGGER.info("Successfully connected to analysis server.");
 
 			// send all queued message (if any)
-			NetworkMessage message;
+			AnalysisMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
 			}
@@ -373,6 +372,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 						receivePartialMessage((PartialMessage) object);
 					}
 
+					// permission denied message
+					else if (object instanceof PermissionDenied) {
+						owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+					}
+
 					// analysis message
 					else if (object instanceof AnalysisMessage) {
 						respond((AnalysisMessage) object);
@@ -401,6 +405,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			// stopped by the user
 			if (isStopped_)
 				return;
+
+			// log warning
+			Equinox.LOGGER.log(Level.WARNING, "Connection to analysis server lost.");
 
 			// show warning
 			Platform.runLater(() -> {
@@ -479,7 +486,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 					AnalysisMessageListener c = i.next();
 
 					// listener hash code matches to message analysis ID
-					if (c.hashCode() == message.getSenderHashCode()) {
+					if (c.hashCode() == message.getListenerHashCode()) {
 						c.respondToAnalysisMessage(message);
 						break;
 					}

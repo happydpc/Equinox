@@ -28,11 +28,11 @@ import java.util.Date;
 
 import equinox.Equinox;
 import equinox.data.input.AdaptDRFInput;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAdaptDRF;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for adapt DRF plugin task.

@@ -32,19 +32,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
-import equinox.network.NetworkWatcher;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.DAAIncrementComplete;
+import equinox.analysisServer.remote.message.SafeDAAIncrementRequest;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.DamageAngleAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.DAAIncrementComplete;
-import equinoxServer.remote.message.SafeDAAIncrementRequest;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for SAFE damage angle analysis increment process.
@@ -169,10 +169,10 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((omissionProcess_ != null) && omissionProcess_.isAlive()) {
+		if (omissionProcess_ != null && omissionProcess_.isAlive()) {
 			omissionProcess_.destroyForcibly();
 		}
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
 
@@ -233,13 +233,13 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 	private void processIncrement(Path workingDir, Double[] results) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
 
 			// apply omission
-			if (applyOmission_ && (omissionLevel_ > 0.0)) {
+			if (applyOmission_ && omissionLevel_ > 0.0) {
 				sthFile_ = applyOmission(workingDir);
 			}
 
@@ -284,7 +284,7 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 
 			// initialize analysis request message
 			SafeDAAIncrementRequest request = new SafeDAAIncrementRequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setUploadOutputFiles(false);
 
@@ -292,8 +292,8 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -301,7 +301,7 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -329,8 +329,8 @@ public class SafeDAAIncrement implements Callable<Double[]>, AnalysisListenerTas
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

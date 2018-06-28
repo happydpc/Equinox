@@ -32,7 +32,6 @@ import equinox.data.EquinoxTheme;
 import equinox.font.IconicFont;
 import equinox.task.ShowServerDiagnostics;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ServerStatistic;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

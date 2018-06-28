@@ -30,16 +30,16 @@ import equinox.data.fileType.AircraftEquivalentStresses;
 import equinox.data.fileType.AircraftLoadCases;
 import equinox.data.fileType.AircraftModel;
 import equinox.data.fileType.PilotPoints;
+import equinox.dataServer.remote.data.AircraftModelInfo;
+import equinox.dataServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
 import equinox.plugin.FileType;
 import equinox.process.LoadElementDataFile;
 import equinox.process.LoadElementGroupsFile;
 import equinox.process.LoadGridDataFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddAircraftModel;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.AircraftModelInfo;
-import equinoxServer.remote.data.AircraftModelInfo.AircraftModelInfoType;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add A/C model task.

@@ -32,20 +32,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.DCAIncrementComplete;
+import equinox.analysisServer.remote.message.SafeDCAIncrementRequest;
 import equinox.data.DamageContributionResult;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.LoadcaseDamageContributionAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.DCAIncrementComplete;
-import equinoxServer.remote.message.SafeDCAIncrementRequest;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for damage contribution increment process.
@@ -172,10 +172,10 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((omissionProcess_ != null) && omissionProcess_.isAlive()) {
+		if (omissionProcess_ != null && omissionProcess_.isAlive()) {
 			omissionProcess_.destroyForcibly();
 		}
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
 
@@ -237,13 +237,13 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 	private DamageContributionResult processIncrement(Path workingDir, DamageContributionResult results) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
 
 			// apply omission
-			if (applyOmission_ && (omissionLevel_ > 0.0)) {
+			if (applyOmission_ && omissionLevel_ > 0.0) {
 				sthFile_ = applyOmission(workingDir);
 			}
 
@@ -288,7 +288,7 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 
 			// initialize analysis request message
 			SafeDCAIncrementRequest request = new SafeDCAIncrementRequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setUploadOutputFiles(false);
 
@@ -296,8 +296,8 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -305,7 +305,7 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -329,7 +329,7 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 				DCAIncrementComplete completeMessage = (DCAIncrementComplete) message;
 
 				// null results
-				if ((completeMessage.getDamage() == null) || (completeMessage.getStress() == null))
+				if (completeMessage.getDamage() == null || completeMessage.getStress() == null)
 					throw new Exception("Null fatigue damage and/or equivalent stress value computed.");
 
 				// extract results
@@ -345,8 +345,8 @@ public class SafeDCAIncrement implements Callable<DamageContributionResult>, Ana
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

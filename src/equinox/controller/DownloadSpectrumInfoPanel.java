@@ -22,12 +22,11 @@ import java.util.ResourceBundle;
 import org.controlsfx.control.PopOver;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.SpectrumInfo;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.font.IconicFont;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SpectrumInfo;
-import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -100,18 +99,14 @@ public class DownloadSpectrumInfoPanel implements Initializable {
 			controller.cdfIssue_.setText((String) info.getInfo(SpectrumInfoType.CDF_ISSUE));
 			controller.deliveryRef_.setText((String) info.getInfo(SpectrumInfoType.DELIVERY_REF));
 			String description = (String) info.getInfo(SpectrumInfoType.DESCRIPTION);
-			controller.description_.setText((description == null) || description.trim().isEmpty() ? "-" : description);
+			controller.description_.setText(description == null || description.trim().isEmpty() ? "-" : description);
 			controller.pilotPoints_.setText(Integer.toString((int) info.getInfo(SpectrumInfoType.PILOT_POINTS)));
 			controller.multiplicationTables_.setText(Integer.toString((int) info.getInfo(SpectrumInfoType.MULT_TABLES)));
 
 			// listen for detach events
-			controller.popOver_.detachedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					if (newValue) {
-						controller.root_.getChildren().remove(controller.headerPane_);
-					}
+			controller.popOver_.detachedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+				if (newValue) {
+					controller.root_.getChildren().remove(controller.headerPane_);
 				}
 			});
 

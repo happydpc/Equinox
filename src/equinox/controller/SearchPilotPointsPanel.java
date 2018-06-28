@@ -27,13 +27,13 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.BasicSearchInput;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
+import equinox.dataServer.remote.data.PilotPointSearchInput;
+import equinox.dataServer.remote.data.SearchItem;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.BasicPilotPointSearch;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.BasicSearchInput;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
-import equinoxServer.remote.data.PilotPointSearchInput;
-import equinoxServer.remote.data.SearchItem;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -201,7 +201,7 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 		String keywords = keywords_.getText().trim();
 
 		// no keyword entered
-		if ((keywords == null) || keywords.isEmpty()) {
+		if (keywords == null || keywords.isEmpty()) {
 			showWarningMessage("No search keyword entered. Please enter keywords to proceed.", keywords_);
 			return;
 		}
@@ -264,67 +264,67 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 
 		// add search items
 		String pilotPointName = pilotPointName_.getText();
-		if ((pilotPointName != null) && !pilotPointName.isEmpty()) {
+		if (pilotPointName != null && !pilotPointName.isEmpty()) {
 			input.addInput(PilotPointInfoType.NAME, new SearchItem(pilotPointName, getSelectedCriteria(ppNameCriteria_)));
 		}
 		String spectrumName = spectrumName_.getText();
-		if ((spectrumName != null) && !spectrumName.isEmpty()) {
+		if (spectrumName != null && !spectrumName.isEmpty()) {
 			input.addInput(PilotPointInfoType.SPECTRUM_NAME, new SearchItem(spectrumName, getSelectedCriteria(spectrumNameCriteria_)));
 		}
 		String program = acProgram_.getText();
-		if ((program != null) && !program.isEmpty()) {
+		if (program != null && !program.isEmpty()) {
 			input.addInput(PilotPointInfoType.AC_PROGRAM, new SearchItem(program, getSelectedCriteria(acProgramCriteria_)));
 		}
 		String section = acSection_.getText();
-		if ((section != null) && !section.isEmpty()) {
+		if (section != null && !section.isEmpty()) {
 			input.addInput(PilotPointInfoType.AC_SECTION, new SearchItem(section, getSelectedCriteria(acSectionCriteria_)));
 		}
 		String mission = fatMission_.getText();
-		if ((mission != null) && !mission.isEmpty()) {
+		if (mission != null && !mission.isEmpty()) {
 			input.addInput(PilotPointInfoType.FAT_MISSION, new SearchItem(mission, getSelectedCriteria(missionCriteria_)));
 		}
 		String framePos = framePos_.getText();
-		if ((framePos != null) && !framePos.isEmpty()) {
+		if (framePos != null && !framePos.isEmpty()) {
 			input.addInput(PilotPointInfoType.FRAME_RIB_POSITION, new SearchItem(framePos, getSelectedCriteria(framePosCriteria_)));
 		}
 		String stringerPos = stringerPos_.getText();
-		if ((stringerPos != null) && !stringerPos.isEmpty()) {
+		if (stringerPos != null && !stringerPos.isEmpty()) {
 			input.addInput(PilotPointInfoType.STRINGER_POSITION, new SearchItem(stringerPos, getSelectedCriteria(stringerPosCriteria_)));
 		}
 		String dataSource = dataSource_.getText();
-		if ((dataSource != null) && !dataSource.isEmpty()) {
+		if (dataSource != null && !dataSource.isEmpty()) {
 			input.addInput(PilotPointInfoType.DATA_SOURCE, new SearchItem(dataSource, getSelectedCriteria(dataSourceCriteria_)));
 		}
 		String genSource = genSource_.getText();
-		if ((genSource != null) && !genSource.isEmpty()) {
+		if (genSource != null && !genSource.isEmpty()) {
 			input.addInput(PilotPointInfoType.GENERATION_SOURCE, new SearchItem(genSource, getSelectedCriteria(genSourceCriteria_)));
 		}
 		String deliveryRef = deliveryRef_.getText();
-		if ((deliveryRef != null) && !deliveryRef.isEmpty()) {
+		if (deliveryRef != null && !deliveryRef.isEmpty()) {
 			input.addInput(PilotPointInfoType.DELIVERY_REF_NUM, new SearchItem(deliveryRef, getSelectedCriteria(deliveryRefCriteria_)));
 		}
 		String description = description_.getText();
-		if ((description != null) && !description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			input.addInput(PilotPointInfoType.DESCRIPTION, new SearchItem(description, getSelectedCriteria(descriptionCriteria_)));
 		}
 		String issue = issue_.getText();
-		if ((issue != null) && !issue.isEmpty()) {
+		if (issue != null && !issue.isEmpty()) {
 			input.addInput(PilotPointInfoType.ISSUE, new SearchItem(issue, getSelectedCriteria(issueCriteria_)));
 		}
 		String fatigueMaterial = fatigueMaterial_.getText();
-		if ((fatigueMaterial != null) && !fatigueMaterial.isEmpty()) {
+		if (fatigueMaterial != null && !fatigueMaterial.isEmpty()) {
 			input.addInput(PilotPointInfoType.FATIGUE_MATERIAL, new SearchItem(fatigueMaterial, getSelectedCriteria(fatigueMaterialCriteria_)));
 		}
 		String preffasMaterial = preffasMaterial_.getText();
-		if ((preffasMaterial != null) && !preffasMaterial.isEmpty()) {
+		if (preffasMaterial != null && !preffasMaterial.isEmpty()) {
 			input.addInput(PilotPointInfoType.PREFFAS_MATERIAL, new SearchItem(preffasMaterial, getSelectedCriteria(preffasMaterialCriteria_)));
 		}
 		String linearMaterial = linearMaterial_.getText();
-		if ((linearMaterial != null) && !linearMaterial.isEmpty()) {
+		if (linearMaterial != null && !linearMaterial.isEmpty()) {
 			input.addInput(PilotPointInfoType.LINEAR_MATERIAL, new SearchItem(linearMaterial, getSelectedCriteria(linearMaterialCriteria_)));
 		}
 		String eid = eid_.getText();
-		if ((eid != null) && !eid.isEmpty()) {
+		if (eid != null && !eid.isEmpty()) {
 			input.addInput(PilotPointInfoType.EID, new SearchItem(eid, getSelectedCriteria(eidCriteria_)));
 		}
 

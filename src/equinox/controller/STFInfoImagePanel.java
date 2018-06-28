@@ -30,11 +30,11 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.task.SavePilotPointImage;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointImageType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -128,7 +128,7 @@ public class STFInfoImagePanel implements Initializable {
 		File file = fileChooser.showOpenDialog(owner_.getOwner().getOwner().getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((file == null) || !file.exists())
+		if (file == null || !file.exists())
 			return;
 
 		// process image

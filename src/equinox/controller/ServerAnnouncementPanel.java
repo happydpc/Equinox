@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 import org.apache.commons.text.WordUtils;
 
 import equinox.data.EquinoxTheme;
-import equinoxServer.remote.message.Announcement;
+import equinox.exchangeServer.remote.message.Announcement;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

@@ -30,7 +30,7 @@ import equinox.data.Grid;
 import equinox.data.input.PlotElementStressesInput;
 import equinox.data.ui.LoadCaseFactorTableItem;
 import equinox.data.ui.PlotContour;
-import equinoxServer.remote.utility.Permission;
+import equinox.serverUtilities.Permission;
 import inf.v3d.obj.PolygonOutlines;
 import inf.v3d.obj.Polygons;
 

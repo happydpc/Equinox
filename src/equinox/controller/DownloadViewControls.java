@@ -27,8 +27,8 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.controller.DownloadViewPanel.DownloadItemPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.PilotPointInfo;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointInfo;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

@@ -37,9 +37,14 @@ import equinox.dataServer.remote.Registry;
 import equinox.dataServer.remote.listener.DataMessageListener;
 import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.HandshakeWithDataServer;
+import equinox.dataServer.remote.message.LoginFailed;
+import equinox.dataServer.remote.message.LoginSuccessful;
+import equinox.exchangeServer.remote.message.WhoRequest;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -72,7 +77,7 @@ public class DataServerManager implements DataMessageListener {
 	private final ExecutorService threadExecutor_;
 
 	/** Message queue. */
-	private final ConcurrentLinkedQueue<NetworkMessage> messageQueue_;
+	private final ConcurrentLinkedQueue<DataMessage> messageQueue_;
 
 	/**
 	 * Creates data server manager.
@@ -148,11 +153,11 @@ public class DataServerManager implements DataMessageListener {
 	 * Connects to data server.
 	 *
 	 * @param message
-	 *            Message to be sent once the connection is established.
+	 *            Message to be sent once the connection is established. Can be <code>null</code>.
 	 *
 	 * @return True if successfully connected to server.
 	 */
-	public boolean connect(NetworkMessage message) {
+	public boolean connect(DataMessage message) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -172,11 +177,11 @@ public class DataServerManager implements DataMessageListener {
 
 		// connect to server
 		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be data server hostname
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be data server port number
+			String hostname = (String) owner_.getSettings().getValue(Settings.DATA_SERVER_HOSTNAME);
+			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.DATA_SERVER_PORT));
 			kryoNetClient_.connect(5000, hostname, port);
 			HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
-			handshake.setSenderHashCode(hashCode());
+			handshake.setListenerHashCode(hashCode());
 			kryoNetClient_.sendTCP(handshake);
 			return true;
 		}
@@ -199,7 +204,7 @@ public class DataServerManager implements DataMessageListener {
 	 * @param message
 	 *            Message to send.
 	 */
-	synchronized public void sendMessage(NetworkMessage message) {
+	synchronized public void sendMessage(DataMessage message) {
 
 		// null message
 		if (message == null)
@@ -319,8 +324,23 @@ public class DataServerManager implements DataMessageListener {
 			// log
 			Equinox.LOGGER.info("Successfully connected to data server.");
 
+			// set user attributes
+			Equinox.USER.setUsername(handshake.getUsername());
+			Equinox.USER.setAsAdministrator(handshake.isAdministrator());
+
+			// add non-administrative permissions
+			handshake.getPermissionNames().forEach(p -> Equinox.USER.addPermission(p));
+
+			// send who request
+			if (Equinox.USER.hasPermission(Permission.SEE_CONNECTED_USERS, false, null)) {
+				owner_.getExchangeServerManager().sendMessage(new WhoRequest());
+			}
+
+			// setup administrator menu
+			owner_.getMenuBarPanel().setupAdministratorMenu(handshake.isAdministrator());
+
 			// send all queued message (if any)
-			NetworkMessage message;
+			DataMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
 			}
@@ -373,6 +393,11 @@ public class DataServerManager implements DataMessageListener {
 						receivePartialMessage((PartialMessage) object);
 					}
 
+					// permission denied message
+					else if (object instanceof PermissionDenied) {
+						owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+					}
+
 					// analysis message
 					else if (object instanceof DataMessage) {
 						respond((DataMessage) object);
@@ -401,6 +426,9 @@ public class DataServerManager implements DataMessageListener {
 			// stopped by the user
 			if (isStopped_)
 				return;
+
+			// log warning
+			Equinox.LOGGER.log(Level.WARNING, "Connection to data server lost.");
 
 			// show warning
 			Platform.runLater(() -> {
@@ -466,22 +494,31 @@ public class DataServerManager implements DataMessageListener {
 		 */
 		private void respond(DataMessage message) throws Exception {
 
-			// sync over listeners
-			synchronized (messageListeners_) {
+			// login message
+			if (message instanceof LoginSuccessful || message instanceof LoginFailed) {
+				owner_.respondToDataMessage(message);
+			}
 
-				// get listeners
-				Iterator<DataMessageListener> i = messageListeners_.iterator();
+			// other message
+			else {
 
-				// loop over listeners
-				while (i.hasNext()) {
+				// sync over listeners
+				synchronized (messageListeners_) {
 
-					// get listener
-					DataMessageListener c = i.next();
+					// get listeners
+					Iterator<DataMessageListener> i = messageListeners_.iterator();
 
-					// listener hash code matches to message analysis ID
-					if (c.hashCode() == message.getSenderHashCode()) {
-						c.respondToDataMessage(message);
-						break;
+					// loop over listeners
+					while (i.hasNext()) {
+
+						// get listener
+						DataMessageListener c = i.next();
+
+						// listener hash code matches to message analysis ID
+						if (c.hashCode() == message.getListenerHashCode()) {
+							c.respondToDataMessage(message);
+							break;
+						}
 					}
 				}
 			}

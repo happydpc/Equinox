@@ -23,7 +23,7 @@ import equinox.data.DamageContribution;
 import equinox.data.LoadcaseFactor;
 import equinox.data.SegmentFactor;
 import equinox.data.StressComponent;
-import equinoxServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.ContributionType;
 import javafx.collections.ObservableList;
 
 /**

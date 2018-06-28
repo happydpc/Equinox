@@ -24,16 +24,16 @@ import java.util.ResourceBundle;
 
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.Notification;
+import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.SharedFileInfo;
+import equinox.serverUtilities.SharedFileInfo.SharedFileInfoType;
 import equinox.task.DownloadSharedFile;
 import equinox.task.DownloadSharedSpectrum;
 import equinox.task.DownloadSharedView;
 import equinox.task.GetUserProfileImage;
 import equinox.task.GetUserProfileImage.UserProfileImageRequestingPanel;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.data.SharedFileInfo.SharedFileInfoType;
-import equinoxServer.remote.message.ShareFile;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -125,7 +125,7 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 		}
 
 		// file or workspace
-		else if ((fileType == SharedFileInfo.FILE) || (fileType == SharedFileInfo.WORKSPACE)) {
+		else if (fileType == SharedFileInfo.FILE || fileType == SharedFileInfo.WORKSPACE) {
 
 			// get file chooser
 			FileChooser fileChooser = mainScreen_.getFileChooser(FileType.ZIP.getExtensionFilter());

@@ -29,12 +29,12 @@ import javax.imageio.ImageIO;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointImageType;
-import equinoxServer.remote.utility.Permission;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import jxl.CellType;

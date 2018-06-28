@@ -26,9 +26,9 @@ import java.sql.Statement;
 
 import equinox.Equinox;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save TXT file task.

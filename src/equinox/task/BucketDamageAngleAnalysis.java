@@ -29,10 +29,10 @@ import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.DamageAngleInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketDamageAngleAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for bucket damage angle analysis task.

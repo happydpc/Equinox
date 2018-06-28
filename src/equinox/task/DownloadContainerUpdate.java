@@ -19,14 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import equinox.Equinox;
+import equinox.dataServer.remote.data.EquinoxUpdate;
+import equinox.dataServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.DirectoryOutputtingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.EquinoxUpdate;
-import equinoxServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.application.Platform;
 
 /**

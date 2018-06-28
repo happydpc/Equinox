@@ -22,17 +22,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.controller.BugReportViewPanel;
 import equinox.controller.ViewPanel;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.BugReport;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
+import equinox.dataServer.remote.message.GetBugReportsRequest;
+import equinox.dataServer.remote.message.GetBugReportsResponse;
+import equinox.network.DataServerManager;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.BugReport;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.message.GetBugReportsRequest;
-import equinoxServer.remote.message.GetBugReportsResponse;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for get bug reports task.
@@ -53,7 +53,7 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates get bug reports task.
@@ -78,8 +78,8 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, this, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
 	}
 
 	@Override
@@ -93,30 +93,30 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 		updateMessage("Please wait...");
 
 		// initialize variables
-		NetworkWatcher watcher = null;
+		DataServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
 
 			// create request message
 			GetBugReportsRequest request = new GetBugReportsRequest();
-			request.setDatabaseQueryID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setStatus(status_);
 
 			// disable task canceling
 			taskPanel_.updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = taskPanel_.getOwner().getOwner().getNetworkWatcher();
-			watcher.addDatabaseQueryListener(this);
+			watcher = taskPanel_.getOwner().getOwner().getDataServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(this, isQueryCompleted);
+			waitForServer(this, isQueryCompleted);
 
 			// remove from network watcher
-			watcher.removeDatabaseQueryListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -127,7 +127,7 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)
@@ -148,7 +148,7 @@ public class GetBugReports extends InternalEquinoxTask<ArrayList<BugReport>> imp
 		// remove from network watcher
 		finally {
 			if (watcher != null && removeListener) {
-				watcher.removeDatabaseQueryListener(this);
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

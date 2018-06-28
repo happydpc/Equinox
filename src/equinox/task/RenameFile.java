@@ -44,8 +44,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 import javafx.scene.control.TreeItem;
 
 /**

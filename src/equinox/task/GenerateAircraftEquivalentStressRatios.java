@@ -31,8 +31,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.ElementTypeForStress;
 import equinox.data.input.CompareAircraftEquivalentStressRatiosInput;
 import equinox.data.input.EquivalentStressRatioType;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate A/C model equivalent stress ratios task.

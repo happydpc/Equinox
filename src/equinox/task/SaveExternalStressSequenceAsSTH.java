@@ -21,8 +21,8 @@ import java.sql.Connection;
 import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.process.SaveExternalSTH;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save external stress sequence as STH task.

@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import equinox.Equinox;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.DamageAngleAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
 
 /**
  * Class for inbuilt damage angle analysis.
@@ -154,7 +154,7 @@ public class InbuiltDAA implements ESAProcess<Double[][]> {
 	public void cancel() {
 
 		// cancel incremental tasks
-		if ((incrementTasks_ != null) && !incrementTasks_.isEmpty()) {
+		if (incrementTasks_ != null && !incrementTasks_.isEmpty()) {
 			for (InbuiltDAAIncrement increment : incrementTasks_) {
 				increment.cancel();
 			}

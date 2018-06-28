@@ -51,16 +51,16 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.input.DamageAngleInput;
 import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.Material;
 import equinox.plugin.FileType;
 import equinox.process.ESAProcess;
 import equinox.process.InbuiltDAA;
 import equinox.process.SafeDAA;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableDamageAngleAnalysis;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for damage angle analysis task.
@@ -503,7 +503,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 			else {
 
 				// connected to server (SAFE engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					equivalentStressAnalysis_ = new SafeDAA(this, sthFiles, flsFile, incAngles, material_, input_.isApplyOmission(), input_.getOmissionlevel());
 				}
 

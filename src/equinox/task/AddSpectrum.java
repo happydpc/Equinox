@@ -30,6 +30,8 @@ import java.util.concurrent.ExecutionException;
 import equinox.Equinox;
 import equinox.data.ConversionTableSheetName;
 import equinox.data.fileType.Spectrum;
+import equinox.dataServer.remote.data.SpectrumInfo;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
 import equinox.process.GenerateTXTFile;
 import equinox.process.LoadANAFile;
@@ -37,12 +39,10 @@ import equinox.process.LoadCVTFile;
 import equinox.process.LoadConversionTable;
 import equinox.process.LoadFLSFile;
 import equinox.process.LoadTXTFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableAddSpectrum;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SpectrumInfo;
-import equinoxServer.remote.data.SpectrumInfo.SpectrumInfoType;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for add spectrum task.

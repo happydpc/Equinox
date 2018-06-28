@@ -18,7 +18,7 @@ package equinox.data.material;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import equinoxServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 

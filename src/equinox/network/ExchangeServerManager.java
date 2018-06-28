@@ -35,13 +35,13 @@ import equinox.controller.MainScreen;
 import equinox.data.Settings;
 import equinox.exchangeServer.remote.Registry;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
-import equinox.exchangeServer.remote.message.CliecntToServerExchangeMessage;
-import equinox.exchangeServer.remote.message.ClientToClientExchangeMessage;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
+import equinox.exchangeServer.remote.message.ExchangeServerStatisticsMessage;
 import equinox.exchangeServer.remote.message.HandshakeWithExchangeServer;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
+import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -64,8 +64,8 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	/** The owner of the network watcher. */
 	private final MainScreen owner_;
 
-	/** Exchange message listeners. */
-	private List<ExchangeMessageListener> messageListeners_;
+	/** Server statistics message listeners. */
+	private List<ExchangeMessageListener> statisticsMessageListeners_;
 
 	/** Stop indicator of the network watcher. */
 	private volatile boolean isStopped_ = false;
@@ -74,7 +74,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	private final ExecutorService threadExecutor_;
 
 	/** Message queue. */
-	private final ConcurrentLinkedQueue<NetworkMessage> messageQueue_;
+	private final ConcurrentLinkedQueue<ExchangeMessage> messageQueue_;
 
 	/**
 	 * Creates exchange server manager.
@@ -91,7 +91,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		messageQueue_ = new ConcurrentLinkedQueue<>();
 
 		// create exchange message listener list
-		messageListeners_ = Collections.synchronizedList(new ArrayList<ExchangeMessageListener>());
+		statisticsMessageListeners_ = Collections.synchronizedList(new ArrayList<ExchangeMessageListener>());
 
 		// create thread executor of the network watcher
 		threadExecutor_ = Executors.newSingleThreadExecutor();
@@ -107,9 +107,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// start client
 		kryoNetClient_.start();
-
-		// add this class to message listeners
-		addMessageListener(this);
 		Equinox.LOGGER.info("Exchange server client initialized.");
 	}
 
@@ -119,9 +116,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @param listener
 	 *            Exchange message listener to add.
 	 */
-	public void addMessageListener(ExchangeMessageListener listener) {
-		synchronized (messageListeners_) {
-			messageListeners_.add(listener);
+	public void addStatisticsMessageListener(ExchangeMessageListener listener) {
+		synchronized (statisticsMessageListeners_) {
+			statisticsMessageListeners_.add(listener);
 		}
 	}
 
@@ -131,9 +128,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @param listener
 	 *            Exchange message listener to remove.
 	 */
-	public void removeMessageListener(ExchangeMessageListener listener) {
-		synchronized (messageListeners_) {
-			messageListeners_.remove(listener);
+	public void removeStatisticsMessageListener(ExchangeMessageListener listener) {
+		synchronized (statisticsMessageListeners_) {
+			statisticsMessageListeners_.remove(listener);
 		}
 	}
 
@@ -150,11 +147,11 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * Connects to analysis server.
 	 *
 	 * @param message
-	 *            Message to be sent once the connection is established.
+	 *            Message to be sent once the connection is established. Can be <code>null</code>.
 	 *
 	 * @return True if successfully connected to server.
 	 */
-	public boolean connect(NetworkMessage message) {
+	public boolean connect(ExchangeMessage message) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -174,11 +171,10 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// connect to server
 		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.NETWORK_HOSTNAME); // FIXME This should be exchange server hostname
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.NETWORK_PORT)); // FIXME This should be exchange server port number
+			String hostname = (String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_HOSTNAME);
+			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_PORT));
 			kryoNetClient_.connect(5000, hostname, port);
 			HandshakeWithExchangeServer handshake = new HandshakeWithExchangeServer(Equinox.USER.getAlias());
-			handshake.setSenderHashCode(hashCode());
 			kryoNetClient_.sendTCP(handshake);
 			return true;
 		}
@@ -201,7 +197,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @param message
 	 *            Message to send.
 	 */
-	synchronized public void sendMessage(NetworkMessage message) {
+	synchronized public void sendMessage(ExchangeMessage message) {
 
 		// null message
 		if (message == null)
@@ -322,7 +318,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			Equinox.LOGGER.info("Successfully connected to exchange server.");
 
 			// send all queued message (if any)
-			NetworkMessage message;
+			ExchangeMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
 			}
@@ -375,6 +371,11 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 						receivePartialMessage((PartialMessage) object);
 					}
 
+					// permission denied message
+					else if (object instanceof PermissionDenied) {
+						owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+					}
+
 					// exchange message
 					else if (object instanceof ExchangeMessage) {
 						respond((ExchangeMessage) object);
@@ -403,6 +404,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			// stopped by the user
 			if (isStopped_)
 				return;
+
+			// log warning
+			Equinox.LOGGER.log(Level.WARNING, "Connection to exchange server lost.");
 
 			// show warning
 			Platform.runLater(() -> {
@@ -468,44 +472,41 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		 */
 		private void respond(ExchangeMessage message) throws Exception {
 
-			// sync over listeners
-			synchronized (messageListeners_) {
+			// handshake (respond with this server manager)
+			if (message instanceof HandshakeWithExchangeServer) {
+				respondToExchangeMessage(message);
+			}
 
-				// get listeners
-				Iterator<ExchangeMessageListener> i = messageListeners_.iterator();
+			// statistics message (respond with specified listener)
+			else if (message instanceof ExchangeServerStatisticsMessage) {
 
-				// loop over listeners
-				while (i.hasNext()) {
+				// cast
+				ExchangeServerStatisticsMessage statisticMessage = (ExchangeServerStatisticsMessage) message;
 
-					// get listener
-					ExchangeMessageListener c = i.next();
+				// sync over listeners
+				synchronized (statisticsMessageListeners_) {
 
-					// client to server message
-					if (message instanceof CliecntToServerExchangeMessage) {
+					// get listeners
+					Iterator<ExchangeMessageListener> i = statisticsMessageListeners_.iterator();
 
-						// cast
-						CliecntToServerExchangeMessage cts = (CliecntToServerExchangeMessage) message;
+					// loop over listeners
+					while (i.hasNext()) {
+
+						// get listener
+						ExchangeMessageListener c = i.next();
 
 						// listener hash code matches to message sender hash code
-						if (c.hashCode() == cts.getSenderHashCode()) {
-							c.respondToExchangeMessage(message);
-							break;
-						}
-					}
-
-					// client to client message
-					else if (message instanceof ClientToClientExchangeMessage) {
-
-						// cast
-						ClientToClientExchangeMessage ctc = (ClientToClientExchangeMessage) message;
-
-						// listener class name matches to message sender class name
-						if (c.getClass().getName().equals(ctc.getSenderClassName())) {
+						if (c.hashCode() == statisticMessage.getListenerHashCode()) {
 							c.respondToExchangeMessage(message);
 							break;
 						}
 					}
 				}
+			}
+
+			// other exchange messages (respond with main screen)
+			else {
+				owner_.respondToExchangeMessage(message);
 			}
 		}
 	}

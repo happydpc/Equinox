@@ -26,10 +26,10 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.AccessRequest;
+import equinox.dataServer.remote.data.AccessRequest.AccessRequestInfo;
+import equinox.serverUtilities.Permission;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.AccessRequest;
-import equinoxServer.remote.data.AccessRequest.AccessRequestInfo;
-import equinoxServer.remote.utility.Permission;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

@@ -40,8 +40,8 @@ import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LifeFactorComparisonInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate life factors with mission parameters task.

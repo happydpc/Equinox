@@ -44,6 +44,10 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.plugin.FileType;
 import equinox.process.ESAProcess;
 import equinox.process.InbuiltFastESA;
@@ -51,12 +55,8 @@ import equinox.process.InbuiltFlightDCA;
 import equinox.process.IsamiFastESA;
 import equinox.process.SafeFastESA;
 import equinox.process.SafeFlightDCA;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for fast equivalent stress analysis task.
@@ -663,7 +663,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 
 				// connected to server (SAFE engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					analysisProcess_ = new SafeFlightDCA(this, sequenceFile_, flsFile_, flsID_, (FatigueMaterial) material_, keepFailedOutputs);
 				}
 
@@ -1183,7 +1183,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 
 				// connected to server (ISAMI engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					analysisProcess_ = new IsamiFastESA(this, sequenceFile_, material_, keepOutputs, outputFileName, anaID_, flsID_, validity_, isamiVersion_, isamiSubVersion_, applyCompression_);
 				}
 
@@ -1212,7 +1212,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 			else {
 
 				// connected to server (SAFE engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					analysisProcess_ = new SafeFastESA(this, sequenceFile_, flsFile_, material_, keepOutputs, outputFileName);
 				}
 

@@ -22,9 +22,9 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.DamageAngleInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.DamageAngleAnalysis;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.FatigueMaterial;
 import javafx.scene.control.TreeItem;
 
 /**

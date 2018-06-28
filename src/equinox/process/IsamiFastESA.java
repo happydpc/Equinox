@@ -30,25 +30,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
+import equinox.analysisServer.remote.data.IsamiMaterial;
+import equinox.analysisServer.remote.message.AnalysisFailed;
+import equinox.analysisServer.remote.message.AnalysisMessage;
+import equinox.analysisServer.remote.message.FastESAComplete;
+import equinox.analysisServer.remote.message.IsamiESARequest;
 import equinox.data.FastESAOutput;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.network.AnalysisServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
 import equinox.task.AnalysisListenerTask;
 import equinox.task.FastEquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.ServerAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.IsamiMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.message.AnalysisFailed;
-import equinoxServer.remote.message.AnalysisMessage;
-import equinoxServer.remote.message.FastESAComplete;
-import equinoxServer.remote.message.IsamiESARequest;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Class for ISAMI fast equivalent stress analysis process.
@@ -154,7 +154,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 	public FastESAOutput start(Connection localConnection, PreparedStatement... preparedStatements) throws Exception {
 
 		// declare network watcher
-		NetworkWatcher watcher = null;
+		AnalysisServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
@@ -187,7 +187,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 
 			// initialize analysis request message
 			IsamiESARequest request = new IsamiESARequest();
-			request.setAnalysisID(hashCode());
+			request.setListenerHashCode(hashCode());
 			request.setDownloadUrl(downloadUrl);
 			request.setFastAnalysis(true);
 			request.setUploadOutputFiles(keepOutputs_);
@@ -226,8 +226,8 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 			task_.getTaskPanel().updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = task_.getTaskPanel().getOwner().getOwner().getNetworkWatcher();
-			watcher.addAnalysisListener(this);
+			watcher = task_.getTaskPanel().getOwner().getOwner().getAnalysisServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
@@ -235,7 +235,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 			waitForAnalysis(task_, isAnalysisCompleted);
 
 			// remove from network watcher
-			watcher.removeAnalysisListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -269,8 +269,8 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 
 		// remove from network watcher
 		finally {
-			if ((watcher != null) && removeListener) {
-				watcher.removeAnalysisListener(this);
+			if (watcher != null && removeListener) {
+				watcher.removeMessageListener(this);
 			}
 		}
 	}
@@ -300,7 +300,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 
 		// save output file to database (if requested)
 		Integer outputFileID = null;
-		if (keepOutputs_ && (message.getDownloadUrl() != null)) {
+		if (keepOutputs_ && message.getDownloadUrl() != null) {
 
 			// create path to local output file
 			task_.updateMessage("Downloading analysis output file from server...");
@@ -473,7 +473,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 
 		// initialize variables
 		int rem = numPeaks_ % NUM_COLS;
-		int numRows = (numPeaks_ / NUM_COLS) + (rem == 0 ? 0 : 1);
+		int numRows = numPeaks_ / NUM_COLS + (rem == 0 ? 0 : 1);
 		rowIndex_ = 0;
 		colIndex_ = 0;
 		sigmaLine_ = "";
@@ -503,7 +503,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 			for (String col : split) {
 
 				// invalid value
-				if ((col == null) || col.isEmpty()) {
+				if (col == null || col.isEmpty()) {
 					continue;
 				}
 
@@ -519,7 +519,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 				peakVal = Double.parseDouble(col);
 
 				// last row
-				if (rowIndex_ == (numRows - 1)) {
+				if (rowIndex_ == numRows - 1) {
 
 					// add peaks
 					sigmaLine_ += String.format("%14s", format_.format(peakVal));
@@ -586,7 +586,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 		for (String col : split) {
 
 			// invalid value
-			if ((col == null) || col.isEmpty()) {
+			if (col == null || col.isEmpty()) {
 				continue;
 			}
 
@@ -624,7 +624,7 @@ public class IsamiFastESA implements ESAProcess<FastESAOutput>, AnalysisListener
 		for (String col : split) {
 
 			// invalid value
-			if ((col == null) || col.isEmpty()) {
+			if (col == null || col.isEmpty()) {
 				continue;
 			}
 

@@ -25,11 +25,9 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.BugReport;
+import equinox.dataServer.remote.data.BugReport.BugReportInfo;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.BugReport;
-import equinoxServer.remote.data.BugReport.BugReportInfo;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -96,19 +94,15 @@ public class BugPanel implements Initializable {
 		close_ = new Hyperlink("Close", image);
 
 		// set on action
-		close_.setOnAction(new EventHandler<ActionEvent>() {
+		close_.setOnAction(event -> {
 
-			@Override
-			public void handle(ActionEvent event) {
-
-				// show popup
-				PopOver popOver = new PopOver();
-				popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
-				popOver.setTitle("Close Bug Report");
-				popOver.setContentNode(CloseBugReportPanel.load(popOver, BugPanel.this, report_));
-				popOver.setHideOnEscape(true);
-				popOver.show(close_);
-			}
+			// show popup
+			PopOver popOver = new PopOver();
+			popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
+			popOver.setTitle("Close Bug Report");
+			popOver.setContentNode(CloseBugReportPanel.load(popOver, BugPanel.this, report_));
+			popOver.setHideOnEscape(true);
+			popOver.show(close_);
 		});
 	}
 
@@ -144,7 +138,7 @@ public class BugPanel implements Initializable {
 		// setup components
 		title_.setText(report_.getTitle());
 		String description = (String) report_.getInfo(BugReportInfo.REPORT);
-		if ((description != null) && !description.isEmpty()) {
+		if (description != null && !description.isEmpty()) {
 			description_.setText(description);
 		}
 		else {
@@ -154,7 +148,7 @@ public class BugPanel implements Initializable {
 		status_.setText(status);
 		status_.setTextFill(status.equals(BugReport.OPEN) ? Color.GREEN : Color.FIREBRICK);
 		String solution = (String) report_.getInfo(BugReportInfo.SOLUTION);
-		if ((solution != null) && !solution.isEmpty()) {
+		if (solution != null && !solution.isEmpty()) {
 			closure_.setText("Closure:\n" + solution);
 			root_.getChildren().add(2, closure_);
 		}

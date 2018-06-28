@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import equinox.controller.ServerAnalysisFailedPanel;
+import equinox.serverUtilities.FilerConnection;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Class for download failed analysis outputs task.

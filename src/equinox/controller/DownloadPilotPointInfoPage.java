@@ -21,9 +21,9 @@ import java.util.ResourceBundle;
 
 import equinox.controller.DownloadPilotPointInfoPanel.InfoPage;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.font.IconicFont;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;

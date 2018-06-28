@@ -34,11 +34,11 @@ import equinox.data.ProgramArguments;
 import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.Settings;
 import equinox.font.IconicFont;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.LoadSettings;
 import equinox.task.RewriteCFGFile;
 import equinox.task.SaveSettings;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -79,7 +79,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 	private VBox root_;
 
 	@FXML
-	private TextField networkHostname_, networkPort_, webHostname_, webPort_, webPath_, filerRootPath_, filerHostname_, filerPort_, filerUsername_;
+	private TextField dataHostname_, dataPort_, analysisHostname_, analysisPort_, exchangeHostname_, exchangePort_, webHostname_, webPort_, webPath_, filerRootPath_, filerHostname_, filerPort_, filerUsername_;
 
 	@FXML
 	private PasswordField filerPassword_;
@@ -217,8 +217,12 @@ public class SettingsPanel implements InternalInputSubPanel {
 		boolean notifyEquinoxUpdates = notifyEquinoxUpdates_.isSelected();
 		boolean notifyPluginUpdates = notifyPluginUpdates_.isSelected();
 		boolean notifyMaterialUpdates = notifyMaterialUpdates_.isSelected();
-		String networkHostname = networkHostname_.getText();
-		String networkPort = networkPort_.getText();
+		String dataHostname = dataHostname_.getText();
+		String dataPort = dataPort_.getText();
+		String analysisHostname = analysisHostname_.getText();
+		String analysisPort = analysisPort_.getText();
+		String exchangeHostname = exchangeHostname_.getText();
+		String exchangePort = exchangePort_.getText();
 		String webHostname = webHostname_.getText();
 		String webPort = webPort_.getText();
 		String webPath = webPath_.getText();
@@ -277,13 +281,29 @@ public class SettingsPanel implements InternalInputSubPanel {
 			message = "Invalid filer password given. Please supply a valid password.";
 			node = filerPassword_;
 		}
-		else if (networkHostname == null || networkHostname.isEmpty()) {
-			message = "Invalid network server hostname given. Please supply a valid hostname.";
-			node = networkHostname_;
+		else if (dataHostname == null || dataHostname.isEmpty()) {
+			message = "Invalid data service hostname given. Please supply a valid hostname.";
+			node = dataHostname_;
 		}
-		else if (networkPort == null || networkPort.isEmpty()) {
-			message = "Invalid network server port given. Please supply a valid port.";
-			node = networkPort_;
+		else if (dataPort == null || dataPort.isEmpty()) {
+			message = "Invalid data service port given. Please supply a valid port.";
+			node = dataPort_;
+		}
+		else if (analysisHostname == null || analysisHostname.isEmpty()) {
+			message = "Invalid analysis service hostname given. Please supply a valid hostname.";
+			node = analysisHostname_;
+		}
+		else if (analysisPort == null || analysisPort.isEmpty()) {
+			message = "Invalid analysis service port given. Please supply a valid port.";
+			node = analysisPort_;
+		}
+		else if (exchangeHostname == null || exchangeHostname.isEmpty()) {
+			message = "Invalid collaboration service hostname given. Please supply a valid hostname.";
+			node = exchangeHostname_;
+		}
+		else if (exchangePort == null || exchangePort.isEmpty()) {
+			message = "Invalid collaboration service port given. Please supply a valid port.";
+			node = exchangePort_;
 		}
 		else if (webHostname == null || webHostname.isEmpty()) {
 			message = "Invalid web server hostname given. Please supply a valid hostname.";
@@ -344,10 +364,22 @@ public class SettingsPanel implements InternalInputSubPanel {
 		if (settings_.setValue(Settings.NOTIFY_MATERIAL_UPDATES, notifyMaterialUpdates)) {
 			restart = true;
 		}
-		if (settings_.setValue(Settings.NETWORK_HOSTNAME, networkHostname)) {
+		if (settings_.setValue(Settings.DATA_SERVER_HOSTNAME, dataHostname)) {
 			restart = true;
 		}
-		if (settings_.setValue(Settings.NETWORK_PORT, networkPort)) {
+		if (settings_.setValue(Settings.DATA_SERVER_PORT, dataPort)) {
+			restart = true;
+		}
+		if (settings_.setValue(Settings.ANALYSIS_SERVER_HOSTNAME, analysisHostname)) {
+			restart = true;
+		}
+		if (settings_.setValue(Settings.ANALYSIS_SERVER_PORT, analysisPort)) {
+			restart = true;
+		}
+		if (settings_.setValue(Settings.EXCHANGE_SERVER_HOSTNAME, exchangeHostname)) {
+			restart = true;
+		}
+		if (settings_.setValue(Settings.EXCHANGE_SERVER_PORT, exchangePort)) {
 			restart = true;
 		}
 		if (settings_.setValue(Settings.WEB_HOSTNAME, webHostname)) {
@@ -496,9 +528,13 @@ public class SettingsPanel implements InternalInputSubPanel {
 		filerUsername_.setText((String) settings_.getValue(Settings.FILER_USERNAME));
 		filerPassword_.setText((String) settings_.getValue(Settings.FILER_PASSWORD));
 
-		// network server settings
-		networkHostname_.setText((String) settings_.getValue(Settings.NETWORK_HOSTNAME));
-		networkPort_.setText((String) settings_.getValue(Settings.NETWORK_PORT));
+		// microservices settings
+		dataHostname_.setText((String) settings_.getValue(Settings.DATA_SERVER_HOSTNAME));
+		dataPort_.setText((String) settings_.getValue(Settings.DATA_SERVER_PORT));
+		exchangeHostname_.setText((String) settings_.getValue(Settings.EXCHANGE_SERVER_HOSTNAME));
+		exchangePort_.setText((String) settings_.getValue(Settings.EXCHANGE_SERVER_PORT));
+		analysisHostname_.setText((String) settings_.getValue(Settings.ANALYSIS_SERVER_HOSTNAME));
+		analysisPort_.setText((String) settings_.getValue(Settings.ANALYSIS_SERVER_PORT));
 
 		// web server settings
 		webHostname_.setText((String) settings_.getValue(Settings.WEB_HOSTNAME));

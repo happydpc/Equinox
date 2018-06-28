@@ -25,10 +25,10 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InputPopup;
 import equinox.data.EquinoxTheme;
-import equinoxServer.remote.message.ChatMessage;
-import equinoxServer.remote.message.ShareFile;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.utility.Permission;
+import equinox.exchangeServer.remote.message.ChatMessage;
+import equinox.exchangeServer.remote.message.ShareFile;
+import equinox.exchangeServer.remote.message.StatusChange;
+import equinox.serverUtilities.Permission;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -200,7 +200,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 		message.setSender(Equinox.USER.getUsername(), Equinox.USER.getAlias());
 
 		// send message
-		owner_.getOwner().getNetworkWatcher().sendMessage(message);
+		owner_.getOwner().getExchangeServerManager().sendMessage(message);
 
 		// clear text area
 		message_.clear();
@@ -227,7 +227,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 				popOver.hide();
 			};
 

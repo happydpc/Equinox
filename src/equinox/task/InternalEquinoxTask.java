@@ -27,12 +27,12 @@ import com.jcraft.jsch.JSchException;
 
 import equinox.Equinox;
 import equinox.controller.TaskPanel;
+import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.plugin.EquinoxTask;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.SharedFileInfo;
+import equinox.serverUtilities.SharedFileInfo.SharedFileInfoType;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.data.SharedFileInfo.SharedFileInfoType;
-import equinoxServer.remote.message.ShareFile;
-import equinoxServer.remote.utility.FilerConnection;
 
 /**
  * Abstract class for internal Equinox tasks.
@@ -360,7 +360,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 			}
 
 			// send message
-			task.taskPanel_.getOwner().getOwner().getNetworkWatcher().sendMessage(message);
+			task.taskPanel_.getOwner().getOwner().getExchangeServerManager().sendMessage(message);
 		}
 	}
 }

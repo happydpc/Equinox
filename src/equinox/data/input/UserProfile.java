@@ -15,7 +15,7 @@
  */
 package equinox.data.input;
 
-import equinoxServer.remote.utility.Permission;
+import equinox.serverUtilities.Permission;
 
 /**
  * Enumeration for user profile.

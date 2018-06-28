@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import equinox.Equinox;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.DamageAngleAnalysis;
-import equinoxServer.remote.data.FatigueMaterial;
 
 /**
  * Class for SAFE damage angle analysis.
@@ -136,7 +136,7 @@ public class SafeDAA implements ESAProcess<Double[][]> {
 	public void cancel() {
 
 		// cancel incremental tasks
-		if ((incrementTasks_ != null) && !incrementTasks_.isEmpty()) {
+		if (incrementTasks_ != null && !incrementTasks_.isEmpty()) {
 			for (SafeDAAIncrement increment : incrementTasks_) {
 				increment.cancel();
 			}

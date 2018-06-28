@@ -44,15 +44,15 @@ import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.EquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.InternalEngineAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for inbuilt equivalent stress analysis process.
@@ -161,7 +161,7 @@ public class InbuiltESA implements ESAProcess<Void> {
 		catch (Exception e) {
 
 			// set output files as permanent
-			if ((outputFiles_ != null) && keepOutputs_) {
+			if (outputFiles_ != null && keepOutputs_) {
 				for (File file : outputFiles_) {
 					task_.setFileAsPermanent(file.toPath());
 				}
@@ -176,10 +176,10 @@ public class InbuiltESA implements ESAProcess<Void> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
-		if ((analysisProcess_ != null) && analysisProcess_.isAlive()) {
+		if (analysisProcess_ != null && analysisProcess_.isAlive()) {
 			analysisProcess_.destroyForcibly();
 		}
 	}
@@ -430,7 +430,7 @@ public class InbuiltESA implements ESAProcess<Void> {
 		if (material_ instanceof FatigueMaterial) {
 			analysisType = "AMORCAGE";
 		}
-		else if ((material_ instanceof PreffasMaterial) || (material_ instanceof LinearMaterial)) {
+		else if (material_ instanceof PreffasMaterial || material_ instanceof LinearMaterial) {
 			analysisType = "PROPAGATION";
 		}
 
@@ -633,15 +633,15 @@ public class InbuiltESA implements ESAProcess<Void> {
 		}
 
 		// cannot find fatigue equivalent stress
-		if ((material_ instanceof FatigueMaterial) && (fatigue == -1.0))
+		if (material_ instanceof FatigueMaterial && fatigue == -1.0)
 			throw new Exception("Analysis failed! Cannot find fatigue equivalent stress in output dossier file.");
 
 		// cannot find preffas equivalent stress
-		if ((material_ instanceof PreffasMaterial) && (cgPreffas == -1.0))
+		if (material_ instanceof PreffasMaterial && cgPreffas == -1.0)
 			throw new Exception("Analysis failed! Cannot find preffas equivalent stress in output dossier file.");
 
 		// cannot find linear equivalent stress
-		if ((material_ instanceof LinearMaterial) && (cgLinEff == -1.0))
+		if (material_ instanceof LinearMaterial && cgLinEff == -1.0)
 			throw new Exception("Analysis failed! Cannot find linear propagation equivalent stress in output dossier file.");
 
 		// set stress and table name
@@ -660,7 +660,7 @@ public class InbuiltESA implements ESAProcess<Void> {
 			double a = material.getA();
 			double b = 1.0 - a;
 			double m = material.getM();
-			double c = 0.9 * (a + (b * 0.1));
+			double c = 0.9 * (a + b * 0.1);
 			stress = Math.pow(cgLinEff / validity, 1.0 / m) / c;
 			tableName = "linear_equivalent_stresses";
 		}
@@ -677,7 +677,7 @@ public class InbuiltESA implements ESAProcess<Void> {
 			double a = material.getA();
 			double b = material.getB();
 			double m = material.getM();
-			double c = 0.9 * (a + (b * 0.1));
+			double c = 0.9 * (a + b * 0.1);
 			stress = Math.pow(cgLinEff / validity, 1.0 / m) / c;
 			tableName = "ext_linear_equivalent_stresses";
 		}
@@ -752,11 +752,11 @@ public class InbuiltESA implements ESAProcess<Void> {
 
 			// set table name, column name and FLS file ID
 			String tableName = null, colName = null;
-			if ((eqStress_ instanceof FatigueEquivalentStress) || (eqStress_ instanceof PreffasEquivalentStress) || (eqStress_ instanceof LinearEquivalentStress)) {
+			if (eqStress_ instanceof FatigueEquivalentStress || eqStress_ instanceof PreffasEquivalentStress || eqStress_ instanceof LinearEquivalentStress) {
 				tableName = "fls_flights";
 				colName = "file_id";
 			}
-			else if ((eqStress_ instanceof ExternalFatigueEquivalentStress) || (eqStress_ instanceof ExternalPreffasEquivalentStress) || (eqStress_ instanceof ExternalLinearEquivalentStress)) {
+			else if (eqStress_ instanceof ExternalFatigueEquivalentStress || eqStress_ instanceof ExternalPreffasEquivalentStress || eqStress_ instanceof ExternalLinearEquivalentStress) {
 				tableName = "ext_fls_flights";
 				colName = "sth_id";
 			}
@@ -794,10 +794,10 @@ public class InbuiltESA implements ESAProcess<Void> {
 		task_.updateMessage("Saving input FLS file...");
 
 		// equivalent stress
-		if ((eqStress_ instanceof FatigueEquivalentStress) || (eqStress_ instanceof PreffasEquivalentStress) || (eqStress_ instanceof LinearEquivalentStress)) {
+		if (eqStress_ instanceof FatigueEquivalentStress || eqStress_ instanceof PreffasEquivalentStress || eqStress_ instanceof LinearEquivalentStress) {
 			saveFLSForEquivalentStress(output, connection);
 		}
-		else if ((eqStress_ instanceof ExternalFatigueEquivalentStress) || (eqStress_ instanceof ExternalPreffasEquivalentStress) || (eqStress_ instanceof ExternalLinearEquivalentStress)) {
+		else if (eqStress_ instanceof ExternalFatigueEquivalentStress || eqStress_ instanceof ExternalPreffasEquivalentStress || eqStress_ instanceof ExternalLinearEquivalentStress) {
 			saveFLSForExternalEquivalentStress(output, connection);
 		}
 

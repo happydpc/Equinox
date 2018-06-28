@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import equinox.Equinox;
-import equinoxServer.remote.utility.ServerUtility;
+import equinox.serverUtilities.ServerUtility;
 
 /**
  * Class for program arguments.

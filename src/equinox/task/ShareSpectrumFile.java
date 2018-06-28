@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for share core spectrum file task.

@@ -15,9 +15,9 @@
  */
 package equinox.task.serializableTask;
 
+import equinox.serverUtilities.Permission;
 import equinox.task.EditUserPermissions;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.utility.Permission;
 import javafx.scene.control.TreeItem;
 
 /**

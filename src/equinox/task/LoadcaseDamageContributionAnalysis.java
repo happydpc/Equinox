@@ -54,16 +54,16 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.LoadcaseDamageContributionInput;
+import equinox.dataServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.plugin.FileType;
 import equinox.process.ESAProcess;
 import equinox.process.InbuiltDCA;
 import equinox.process.SafeDCA;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableLoadcaseDamageContributionAnalysis;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ContributionType;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for loadcase damage contribution analysis task.
@@ -719,7 +719,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			else {
 
 				// connected to server (SAFE engine)
-				if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 					damageAnalysis_ = new SafeDCA(this, sthFiles, flsFile, input_.getContributions(), material_, input_.isApplyOmission(), input_.getOmissionLevel());
 				}
 

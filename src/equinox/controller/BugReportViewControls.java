@@ -20,8 +20,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.message.GetBugReportsRequest;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.GetBugReportsRequest;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

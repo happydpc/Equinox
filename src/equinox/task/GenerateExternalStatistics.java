@@ -30,8 +30,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.ExternalFlight;
 import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate external statistics task.

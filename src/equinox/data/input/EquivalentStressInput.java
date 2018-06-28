@@ -17,7 +17,7 @@ package equinox.data.input;
 
 import java.io.Serializable;
 
-import equinoxServer.remote.data.Material;
+import equinox.dataServer.remote.data.Material;
 
 /**
  * Class for equivalent stress analysis input.

@@ -25,20 +25,22 @@ import equinox.data.EquinoxPluginManager;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.data.ui.NotificationPanel;
+import equinox.dataServer.remote.listener.DataMessageListener;
+import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.LoginFailed;
 import equinox.dataServer.remote.message.LoginSuccessful;
+import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
 import equinox.exchangeServer.remote.message.Announcement;
 import equinox.exchangeServer.remote.message.ChatMessage;
+import equinox.exchangeServer.remote.message.ExchangeMessage;
+import equinox.exchangeServer.remote.message.RoomChange;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.exchangeServer.remote.message.StatusChange;
-import equinox.exchangeServer.remote.message.WhoRequest;
 import equinox.exchangeServer.remote.message.WhoResponse;
 import equinox.network.AnalysisServerManager;
 import equinox.network.DataServerManager;
 import equinox.network.ExchangeServerManager;
 import equinox.plugin.FileType;
-import equinox.serverUtilities.NetworkMessage;
-import equinox.serverUtilities.PermissionDenied;
 import equinox.task.DownloadSampleInput;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
@@ -67,7 +69,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
  * @date Dec 6, 2013
  * @time 10:40:41 AM
  */
-public class MainScreen implements Initializable {
+public class MainScreen implements Initializable, ExchangeMessageListener, DataMessageListener {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -233,18 +235,31 @@ public class MainScreen implements Initializable {
 	}
 
 	@Override
-	public void respond(NetworkMessage message) throws Exception {
+	public void respondToDataMessage(DataMessage message) throws Exception {
 
 		// run in javafx thread
 		Platform.runLater(() -> {
 
-			// handshake
-			if (message instanceof Handshake) {
-				processHandshake((Handshake) message);
+			// login successful
+			if (message instanceof LoginSuccessful) {
+				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginSuccessful((LoginSuccessful) message);
 			}
 
+			// login failed
+			else if (message instanceof LoginFailed) {
+				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginFailed();
+			}
+		});
+	}
+
+	@Override
+	public void respondToExchangeMessage(ExchangeMessage message) throws Exception {
+
+		// run in javafx thread
+		Platform.runLater(() -> {
+
 			// who
-			else if (message instanceof WhoResponse) {
+			if (message instanceof WhoResponse) {
 				processWho((WhoResponse) message);
 			}
 
@@ -271,21 +286,6 @@ public class MainScreen implements Initializable {
 			// announcement
 			else if (message instanceof Announcement) {
 				notificationPane_.showServerAnnouncement((Announcement) message);
-			}
-
-			// permission denied
-			else if (message instanceof PermissionDenied) {
-				notificationPane_.showPermissionDenied(((PermissionDenied) message).getPermission());
-			}
-
-			// login successful
-			else if (message instanceof LoginSuccessful) {
-				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginSuccessful((LoginSuccessful) message);
-			}
-
-			// login failed
-			else if (message instanceof LoginFailed) {
-				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginFailed();
 			}
 		});
 	}
@@ -629,43 +629,6 @@ public class MainScreen implements Initializable {
 	}
 
 	/**
-	 * Processes handshake message from the server.
-	 *
-	 * @param message
-	 *            Handshake message.
-	 */
-	private void processHandshake(Handshake message) {
-
-		// successful
-		if (message.isHandshakeSuccessful()) {
-
-			// log info
-			Equinox.LOGGER.info("Server handshake successfully completed.");
-
-			// set user attributes
-			Equinox.USER.setUsername(message.getUsername());
-			Equinox.USER.setAsAdministrator(message.isAdministrator());
-
-			// add non-administrative permissions
-			message.getPermissionNames().forEach(p -> Equinox.USER.addPermission(p));
-
-			// send who request
-			if (Equinox.USER.hasPermission(Permission.SEE_CONNECTED_USERS, false, null)) {
-				networkWatcher_.sendMessage(new WhoRequest());
-			}
-
-			// setup administrator menu
-			menuBarPanel_.setupAdministratorMenu(message.isAdministrator());
-		}
-
-		// unsuccessful
-		else {
-			String text = "Cannot connect to network server. Please check your network connection and try again.";
-			notificationPane_.showWarning(text, null);
-		}
-	}
-
-	/**
 	 * Processes who message from the server.
 	 *
 	 * @param message
@@ -788,4 +751,9 @@ public class MainScreen implements Initializable {
 			throw new RuntimeException(e);
 		}
 	}
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see equinox.dataServer.remote.listener.DataMessageListener#respondToDataMessage(equinox.dataServer.remote.message.DataMessage)
+	 */
 }

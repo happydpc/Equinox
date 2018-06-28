@@ -44,10 +44,10 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableGenerateStressSequence;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate stress sequence task.

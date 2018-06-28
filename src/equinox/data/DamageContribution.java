@@ -18,7 +18,7 @@ package equinox.data;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import equinoxServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.ContributionType;
 
 /**
  * Class for damage contribution data.

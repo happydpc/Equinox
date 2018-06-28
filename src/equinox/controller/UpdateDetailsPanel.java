@@ -22,9 +22,9 @@ import java.text.SimpleDateFormat;
 import java.util.ResourceBundle;
 
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.EquinoxUpdate;
+import equinox.dataServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.EquinoxUpdate;
-import equinoxServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

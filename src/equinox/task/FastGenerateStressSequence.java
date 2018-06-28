@@ -37,16 +37,16 @@ import equinox.data.Settings;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.FastEquivalentStressInput;
+import equinox.dataServer.remote.data.Material;
 import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
 import equinox.process.FastGenerateSigma;
 import equinox.process.FastGenerateSth;
+import equinox.serverUtilities.Permission;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableFastGenerateStressSequence;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for fast generate stress sequence task.
@@ -541,7 +541,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		if (analysisEngine_.equals(AnalysisEngine.ISAMI)) {
 
 			// connected to server (ISAMI engine)
-			if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected())
+			if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected())
 				return true;
 
 			// not connected (Equinox engine)
@@ -583,7 +583,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		if (analysisEngine_.equals(AnalysisEngine.ISAMI)) {
 
 			// connected to server (ISAMI engine)
-			if (taskPanel_.getOwner().getOwner().getNetworkWatcher().isConnected()) {
+			if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
 
 				// none-zero omission to be applied
 				if (input_.isApplyOmission() && input_.getOmissionLevel() > 0.0)

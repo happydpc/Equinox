@@ -30,8 +30,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.StressComponent;
 import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.ui.TableItem;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.ContributionType;
 import javafx.scene.control.TreeItem;
 
 /**
@@ -237,10 +237,10 @@ public class GetDamageContributionInfo extends InternalEquinoxTask<ArrayList<Tre
 							double damage = resultSet1.getDouble("stress");
 							Double damagePer = null;
 							if (type.equals(ContributionType.GAG.getName())) {
-								damagePer = (damage * 100.0) / totalDamage;
+								damagePer = damage * 100.0 / totalDamage;
 							}
 							else {
-								damagePer = ((totalDamage - damage) * 100.0) / totalDamage;
+								damagePer = (totalDamage - damage) * 100.0 / totalDamage;
 							}
 							String value = null;
 							if (type.equals(ContributionType.GAG.getName())) {

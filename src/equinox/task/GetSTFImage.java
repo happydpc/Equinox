@@ -24,8 +24,8 @@ import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.data.PilotPointImageType;
 import javafx.scene.image.Image;
 
 /**

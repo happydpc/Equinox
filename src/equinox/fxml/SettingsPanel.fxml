@@ -24,7 +24,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="595.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SettingsPanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="584.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SettingsPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" pannable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="scrollPane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
@@ -128,11 +128,11 @@
                               </VBox>
                            </content>
                         </TitledPane>
-                        <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Hub Server Connection">
+                        <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Microservices">
                            <content>
-                              <VBox spacing="8.0">
+                              <VBox spacing="10.0">
                                  <children>
-                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="Hub server enables you to communicate with all servers in the AF-Twin cloud." textFill="SLATEGRAY" wrapText="true">
+                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="Connection settings for all microservices hosted by the AF-Twin cloud." textFill="SLATEGRAY" wrapText="true">
                                        <font>
                                           <Font size="12.0" />
                                        </font>
@@ -144,23 +144,113 @@
                                           </ImageView>
                                        </graphic>
                                     </Label>
-                                    <Separator prefWidth="200.0" />
-                                    <GridPane hgap="5.0" vgap="5.0" VBox.vgrow="NEVER">
-                                       <children>
-                                          <Label text="Server hostname:" HBox.hgrow="NEVER" />
-                                          <TextField fx:id="networkHostname_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" HBox.hgrow="ALWAYS" />
-                                          <Label text="Server port:" GridPane.rowIndex="1" HBox.hgrow="NEVER" />
-                                          <TextField fx:id="networkPort_" layoutX="115.0" layoutY="12.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                       </children>
-                                       <columnConstraints>
-                                          <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="155.0" minWidth="-Infinity" prefWidth="110.0" />
-                                          <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="112.0" />
-                                       </columnConstraints>
-                                       <rowConstraints>
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                       </rowConstraints>
-                                    </GridPane>
+                                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="-Infinity" minHeight="-Infinity" pannable="true" prefHeight="145.0">
+                                       <content>
+                                          <VBox spacing="10.0">
+                                             <children>
+                                                <StackPane maxWidth="1.7976931348623157E308">
+                                                   <children>
+                                                      <Separator maxWidth="1.7976931348623157E308" StackPane.alignment="CENTER" />
+                                                      <Label styleClass="borderTitle" text="Data Service" StackPane.alignment="CENTER_LEFT">
+                                                         <padding>
+                                                            <Insets right="3.0" />
+                                                         </padding>
+                                                         <StackPane.margin>
+                                                            <Insets bottom="3.0" />
+                                                         </StackPane.margin>
+                                                      </Label>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="-5.0" top="10.0" />
+                                                   </VBox.margin>
+                                                </StackPane>
+                                                <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                                   <children>
+                                                      <Label layoutX="10.0" layoutY="87.0" text="Hostname:" />
+                                                      <Label layoutX="10.0" layoutY="17.0" text="Port number:" GridPane.rowIndex="1" />
+                                                      <TextField fx:id="dataHostname_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+                                                      <TextField fx:id="dataPort_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                   </children>
+                                                   <columnConstraints>
+                                                      <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="85.0" minWidth="85.0" prefWidth="85.0" />
+                                                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
+                                                   </columnConstraints>
+                                                   <rowConstraints>
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                   </rowConstraints>
+                                                </GridPane>
+                                                <StackPane maxWidth="1.7976931348623157E308">
+                                                   <children>
+                                                      <Separator maxWidth="1.7976931348623157E308" StackPane.alignment="CENTER" />
+                                                      <Label styleClass="borderTitle" text="Analysis Service" StackPane.alignment="CENTER_LEFT">
+                                                         <padding>
+                                                            <Insets right="3.0" />
+                                                         </padding>
+                                                         <StackPane.margin>
+                                                            <Insets bottom="3.0" />
+                                                         </StackPane.margin>
+                                                      </Label>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="-5.0" top="10.0" />
+                                                   </VBox.margin>
+                                                </StackPane>
+                                                <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                                   <children>
+                                                      <Label layoutX="10.0" layoutY="87.0" text="Hostname:" />
+                                                      <Label layoutX="10.0" layoutY="17.0" text="Port number:" GridPane.rowIndex="1" />
+                                                      <TextField fx:id="analysisHostname_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+                                                      <TextField fx:id="analysisPort_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                   </children>
+                                                   <columnConstraints>
+                                                      <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="85.0" minWidth="85.0" prefWidth="85.0" />
+                                                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
+                                                   </columnConstraints>
+                                                   <rowConstraints>
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                   </rowConstraints>
+                                                </GridPane>
+                                                <StackPane maxWidth="1.7976931348623157E308">
+                                                   <children>
+                                                      <Separator maxWidth="1.7976931348623157E308" StackPane.alignment="CENTER" />
+                                                      <Label styleClass="borderTitle" text="Collaboration Service" StackPane.alignment="CENTER_LEFT">
+                                                         <padding>
+                                                            <Insets right="3.0" />
+                                                         </padding>
+                                                         <StackPane.margin>
+                                                            <Insets bottom="3.0" />
+                                                         </StackPane.margin>
+                                                      </Label>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="-5.0" top="10.0" />
+                                                   </VBox.margin>
+                                                </StackPane>
+                                                <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                                   <children>
+                                                      <Label layoutX="10.0" layoutY="87.0" text="Hostname:" />
+                                                      <Label layoutX="10.0" layoutY="17.0" text="Port number:" GridPane.rowIndex="1" />
+                                                      <TextField fx:id="exchangeHostname_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
+                                                      <TextField fx:id="exchangePort_" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                   </children>
+                                                   <columnConstraints>
+                                                      <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="85.0" minWidth="85.0" prefWidth="85.0" />
+                                                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
+                                                   </columnConstraints>
+                                                   <rowConstraints>
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                   </rowConstraints>
+                                                </GridPane>
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+                                             </padding>
+                                          </VBox>
+                                       </content>
+                                    </ScrollPane>
                                  </children>
                                  <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -168,7 +258,7 @@
                               </VBox>
                            </content>
                         </TitledPane>
-      <TitledPane minWidth="-Infinity" prefWidth="20.0" text="File Server Connection">
+      <TitledPane minWidth="-Infinity" prefWidth="20.0" text="File Server">
       <content>
       <VBox spacing="10.0">
       <padding>
@@ -227,7 +317,7 @@
       </VBox>
       </content>
       </TitledPane>
-                        <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Web Server Connection">
+                        <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Web Server">
                            <content>
                               <VBox spacing="8.0">
                                  <children>
@@ -270,7 +360,7 @@
                               </VBox>
                            </content>
                         </TitledPane>
-      <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Update Check">
+      <TitledPane expanded="false" minWidth="-Infinity" prefWidth="20.0" text="Updates">
       <content>
       <VBox spacing="10.0">
       <padding>

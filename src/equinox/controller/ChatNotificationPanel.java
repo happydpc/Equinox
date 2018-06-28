@@ -25,10 +25,10 @@ import org.apache.commons.text.WordUtils;
 
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.Notification;
+import equinox.exchangeServer.remote.message.ChatMessage;
 import equinox.task.GetUserProfileImage;
 import equinox.task.GetUserProfileImage.UserProfileImageRequestingPanel;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.ChatMessage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;

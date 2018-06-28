@@ -35,13 +35,13 @@ import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.controller.ScheduleTaskPanel.SchedulingPanel;
 import equinox.data.ClientPluginInfo;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.ServerPluginInfo.PluginInfoType;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.task.SaveTask;
 import equinox.task.UploadPlugin;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ServerPluginInfo.PluginInfoType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -146,7 +146,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// check developer name
 		String developerName = developerName_.getText();
-		if ((developerName == null) || developerName.isEmpty()) {
+		if (developerName == null || developerName.isEmpty()) {
 			String message = "Please enter developer name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -176,7 +176,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// check name
 		String name = name_.getText();
-		if ((name == null) || name.isEmpty()) {
+		if (name == null || name.isEmpty()) {
 			String message = "Please enter plugin name to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -205,7 +205,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// check description
 		String description = description_.getText();
-		if ((description == null) || description.isEmpty()) {
+		if (description == null || description.isEmpty()) {
 			message = "Please enter plugin description to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -233,7 +233,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// check image
 		Path image = (Path) png_.getUserData();
-		if ((image == null) || !Files.exists(image)) {
+		if (image == null || !Files.exists(image)) {
 			message = "Please supply plugin image to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -260,7 +260,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// check jar file
 		Path jar = (Path) jar_.getUserData();
-		if ((jar == null) || !Files.exists(jar)) {
+		if (jar == null || !Files.exists(jar)) {
 			message = "Please supply plugin jar file to proceed.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -288,7 +288,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// set sample inputs (if any)
 		Path sampleInputs = (Path) zip_.getUserData();
-		if ((sampleInputs != null) && Files.exists(sampleInputs)) {
+		if (sampleInputs != null && Files.exists(sampleInputs)) {
 			info.setSampleInputs(sampleInputs.toFile());
 		}
 		else {
@@ -365,13 +365,9 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// animate file types
 		if (success && !toBeAnimated.isEmpty()) {
-			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					for (ImageView item : toBeAnimated) {
-						item.setImage(Utility.getImage("full.png"));
-					}
+			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				for (ImageView item : toBeAnimated) {
+					item.setImage(Utility.getImage("full.png"));
 				}
 			}, toBeAnimated).play();
 		}
@@ -387,7 +383,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -419,7 +415,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 		Dragboard db = event.getDragboard();
 
 		// files
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// check file types
 			for (File file : db.getFiles()) {
@@ -458,7 +454,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 
 		// files
 		boolean success = false;
-		if ((event.getGestureSource() != dropZone_) && db.hasFiles()) {
+		if (event.getGestureSource() != dropZone_ && db.hasFiles()) {
 
 			// process files
 			success = processFiles(db.getFiles());
@@ -481,7 +477,7 @@ public class UploadPluginPanel implements InternalInputSubPanel, SchedulingPanel
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// set initial directory

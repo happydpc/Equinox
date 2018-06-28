@@ -35,8 +35,11 @@ import equinox.data.EquinoxTheme;
 import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
+import equinox.dataServer.remote.data.ContributionType;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.GetContributionNames;
 import equinox.task.GetContributionNames.DamageContributionRequester;
@@ -46,9 +49,6 @@ import equinox.task.SaveDamageContributions;
 import equinox.task.SaveTask;
 import equinox.task.ShareGeneratedItem;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ContributionType;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.utility.Permission;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -421,7 +421,7 @@ public class SaveDamageContributionsPanel implements InternalInputSubPanel, Dama
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 				popOver.hide();
 			};
 

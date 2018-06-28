@@ -31,9 +31,9 @@ import java.util.concurrent.Callable;
 
 import equinox.Equinox;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.DamageAngleAnalysis;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for inbuilt damage angle analysis increment process.
@@ -145,13 +145,13 @@ public class InbuiltDAAIncrement implements Callable<Double[]> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((omissionProcess_ != null) && omissionProcess_.isAlive()) {
+		if (omissionProcess_ != null && omissionProcess_.isAlive()) {
 			omissionProcess_.destroyForcibly();
 		}
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
-		if ((analysisProcess_ != null) && analysisProcess_.isAlive()) {
+		if (analysisProcess_ != null && analysisProcess_.isAlive()) {
 			analysisProcess_.destroyForcibly();
 		}
 
@@ -184,7 +184,7 @@ public class InbuiltDAAIncrement implements Callable<Double[]> {
 	private void processIncrement(Path workingDir, Double[] results) throws Exception {
 
 		// apply omission
-		if (applyOmission_ && (omissionLevel_ > 0.0)) {
+		if (applyOmission_ && omissionLevel_ > 0.0) {
 			sthFile_ = applyOmission(workingDir);
 		}
 

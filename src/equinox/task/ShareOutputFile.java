@@ -23,10 +23,10 @@ import equinox.Equinox;
 import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveOutputFileProcess;
+import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.SharedFileInfo;
 
 /**
  * Class for share analysis output file task.

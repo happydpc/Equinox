@@ -31,7 +31,9 @@ import equinox.Equinox;
 import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.fileType.Rfort;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.GenerateRfortReport;
 import equinox.task.GetRfortOmissions;
@@ -41,8 +43,6 @@ import equinox.task.GetRfortPilotPoints.RfortPilotPointsRequestingPanel;
 import equinox.task.GetRfortTypicalFlights;
 import equinox.task.ShareGeneratedItem;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.utility.Permission;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -514,7 +514,7 @@ public class RfortReportPanel implements InternalInputSubPanel, RfortPilotPoints
 				// create confirmation action
 				PopOver popOver = new PopOver();
 				EventHandler<ActionEvent> handler = event -> {
-					owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+					owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 					popOver.hide();
 				};
 

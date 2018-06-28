@@ -37,10 +37,10 @@ import org.jfree.util.TableOrder;
 import equinox.controller.ViewPanel.InternalViewSubPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.ui.PieLabelGenerator;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.plugin.FileType;
 import equinox.task.SaveImage;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.ContributionType;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -110,15 +110,11 @@ public class CompareDamageContributionsViewPanel implements InternalViewSubPanel
 		splot.setExplodePercent("Rest", 0.20);
 
 		// create swing node content
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				ChartPanel panel = new ChartPanel(chart_);
-				panel.setPopupMenu(null);
-				panel.setMouseWheelEnabled(true);
-				container_.setContent(panel);
-			}
+		SwingUtilities.invokeLater(() -> {
+			ChartPanel panel = new ChartPanel(chart_);
+			panel.setPopupMenu(null);
+			panel.setMouseWheelEnabled(true);
+			container_.setContent(panel);
 		});
 	}
 

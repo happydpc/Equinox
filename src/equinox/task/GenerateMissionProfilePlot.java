@@ -62,10 +62,10 @@ import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.plugin.FileType;
 import equinox.process.PlotMissionProfileProcess;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.CrosshairListenerXYPlot;
 import equinox.utility.Utility;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for generate mission profile plot task.

@@ -18,18 +18,18 @@ package equinox.task;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import equinoxServer.remote.listener.DatabaseQueryListener;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryProgress;
+import equinox.dataServer.remote.listener.DataMessageListener;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryProgress;
 
 /**
  * Interface for server database query listener task.
- * 
+ *
  * @author Murat Artim
  * @date 24 Jan 2018
  * @time 11:58:48
  */
-public interface DatabaseQueryListenerTask extends DatabaseQueryListener {
+public interface DatabaseQueryListenerTask extends DataMessageListener {
 
 	/**
 	 * Waits for server database query to complete.
@@ -41,7 +41,7 @@ public interface DatabaseQueryListenerTask extends DatabaseQueryListener {
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	default void waitForQuery(InternalEquinoxTask<?> task, AtomicBoolean isQueryCompleted) throws Exception {
+	default void waitForServer(InternalEquinoxTask<?> task, AtomicBoolean isQueryCompleted) throws Exception {
 
 		// loop while query is running
 		while (!isQueryCompleted.get()) {
@@ -77,7 +77,7 @@ public interface DatabaseQueryListenerTask extends DatabaseQueryListener {
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	default void processServerDatabaseQueryMessage(DatabaseQueryMessage serverMessage, InternalEquinoxTask<?> task, AtomicReference<DatabaseQueryMessage> serverMessageRef, AtomicBoolean isQueryCompleted) throws Exception {
+	default void processServerDataMessage(DataMessage serverMessage, InternalEquinoxTask<?> task, AtomicReference<DataMessage> serverMessageRef, AtomicBoolean isQueryCompleted) throws Exception {
 
 		// database query progress
 		if (serverMessage instanceof DatabaseQueryProgress) {

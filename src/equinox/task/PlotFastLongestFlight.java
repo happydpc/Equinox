@@ -28,8 +28,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.ui.NotificationPanel;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 import javafx.scene.image.Image;
 
 /**

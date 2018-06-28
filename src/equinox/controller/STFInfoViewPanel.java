@@ -33,19 +33,17 @@ import equinox.data.EquinoxTheme;
 import equinox.data.fileType.STFFile;
 import equinox.data.ui.STFTableItem;
 import equinox.data.ui.TableItem;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.font.IconicFont;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.PilotPointImageType;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
@@ -56,7 +54,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import javafx.util.Duration;
 
 /**
@@ -107,18 +104,11 @@ public class STFInfoViewPanel implements Initializable {
 	@FXML
 	private Pagination pagination_;
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// setup pagination page factory
-		pagination_.setPageFactory(new Callback<Integer, Node>() {
-
-			@Override
-			public Node call(Integer pageIndex) {
-				return imagePanels_[pageIndex].getRoot();
-			}
-		});
+		pagination_.setPageFactory(pageIndex -> imagePanels_[pageIndex].getRoot());
 
 		// initialize file info table
 		TreeTableColumn<TableItem, String> fileInfoLabelCol = new TreeTableColumn<>("Label");
@@ -175,13 +165,7 @@ public class STFInfoViewPanel implements Initializable {
 		eventcommentCol_.setPrefWidth(150.0);
 
 		// Listen for changes to the table's filters
-		contentTable_.addEventHandler(ColumnFilterEvent.FILTER_CHANGED_EVENT, new EventHandler<ColumnFilterEvent>() {
-
-			@Override
-			public void handle(ColumnFilterEvent t) {
-				applyFilters();
-			}
-		});
+		contentTable_.addEventHandler(ColumnFilterEvent.FILTER_CHANGED_EVENT, t -> applyFilters());
 
 		// create timeline animation for pilot point images
 		imageTimeline_ = new Timeline();

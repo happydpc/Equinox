@@ -24,21 +24,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.data.fileType.Spectrum;
-import equinox.network.NetworkWatcher;
+import equinox.dataServer.remote.data.PilotPointInfo;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
+import equinox.dataServer.remote.message.DownloadPilotPointsRequest;
+import equinox.dataServer.remote.message.DownloadPilotPointsResponse;
+import equinox.network.DataServerManager;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.FilerConnection;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.PilotPointInfo;
-import equinoxServer.remote.data.PilotPointInfo.PilotPointInfoType;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.message.DownloadPilotPointsRequest;
-import equinoxServer.remote.message.DownloadPilotPointsResponse;
-import equinoxServer.remote.utility.FilerConnection;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for downloading multiple tasks.
@@ -62,7 +62,7 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates download pilot points task.
@@ -90,8 +90,8 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, this, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
 	}
 
 	@Override
@@ -194,14 +194,14 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 		updateMessage("Downloading pilot point URLs...");
 
 		// initialize variables
-		NetworkWatcher watcher = null;
+		DataServerManager watcher = null;
 		boolean removeListener = false;
 
 		try {
 
 			// create request message
 			DownloadPilotPointsRequest request = new DownloadPilotPointsRequest();
-			request.setDatabaseQueryID(hashCode());
+			request.setListenerHashCode(hashCode());
 
 			// add pilot point ids
 			for (PilotPointInfo info : info_) {
@@ -213,16 +213,16 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 			taskPanel_.updateCancelState(false);
 
 			// register to network watcher and send analysis request
-			watcher = taskPanel_.getOwner().getOwner().getNetworkWatcher();
-			watcher.addDatabaseQueryListener(this);
+			watcher = taskPanel_.getOwner().getOwner().getDataServerManager();
+			watcher.addMessageListener(this);
 			removeListener = true;
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(this, isQueryCompleted);
+			waitForServer(this, isQueryCompleted);
 
 			// remove from network watcher
-			watcher.removeDatabaseQueryListener(this);
+			watcher.removeMessageListener(this);
 			removeListener = false;
 
 			// enable task canceling
@@ -233,7 +233,7 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)
@@ -254,7 +254,7 @@ public class DownloadPilotPoints extends TemporaryFileCreatingTask<AddSTFFiles> 
 		// remove from network watcher
 		finally {
 			if (watcher != null && removeListener) {
-				watcher.removeDatabaseQueryListener(this);
+				watcher.removeMessageListener(this);
 			}
 		}
 	}

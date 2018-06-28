@@ -31,8 +31,8 @@ import equinox.controller.ViewPanel;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare stress sequences task.

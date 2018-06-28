@@ -34,9 +34,9 @@ import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.exception.InternalEngineAnalysisFailedException;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for rainflow process.
@@ -139,7 +139,7 @@ public class Rainflow implements ESAProcess<Void> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((rainflowProcess_ != null) && rainflowProcess_.isAlive()) {
+		if (rainflowProcess_ != null && rainflowProcess_.isAlive()) {
 			rainflowProcess_.destroyForcibly();
 		}
 	}
@@ -297,7 +297,7 @@ public class Rainflow implements ESAProcess<Void> {
 					for (String col : split) {
 
 						// invalid value
-						if ((col == null) || col.isEmpty()) {
+						if (col == null || col.isEmpty()) {
 							continue;
 						}
 

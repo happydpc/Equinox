@@ -23,9 +23,9 @@ import equinox.data.IsamiVersion;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.FastEquivalentStressInput;
+import equinox.dataServer.remote.data.Material;
 import equinox.task.BucketFastEquivalentStressAnalysis;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.Material;
 import javafx.scene.control.TreeItem;
 
 /**

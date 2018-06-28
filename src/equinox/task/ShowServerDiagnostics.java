@@ -30,17 +30,14 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 import equinox.controller.TimeStatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.dataServer.remote.message.DataMessage;
+import equinox.dataServer.remote.message.DatabaseQueryFailed;
+import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.NetworkWatcher;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
-import equinoxServer.remote.data.ServerStatistic;
-import equinoxServer.remote.message.DatabaseQueryFailed;
-import equinoxServer.remote.message.DatabaseQueryMessage;
-import equinoxServer.remote.message.DatabaseQueryPermissionDenied;
-import equinoxServer.remote.message.ShowServerDiagnosticsRequest;
-import equinoxServer.remote.message.ShowServerDiagnosticsResponse;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for show server diagnostics task.
@@ -65,7 +62,7 @@ public class ShowServerDiagnostics extends InternalEquinoxTask<TimeSeriesCollect
 	private final AtomicBoolean isQueryCompleted;
 
 	/** Server query message. */
-	private final AtomicReference<DatabaseQueryMessage> serverMessageRef;
+	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/**
 	 * Creates show server statistics task.
@@ -96,8 +93,8 @@ public class ShowServerDiagnostics extends InternalEquinoxTask<TimeSeriesCollect
 	}
 
 	@Override
-	public void respondToDatabaseQueryMessage(DatabaseQueryMessage message) throws Exception {
-		processServerDatabaseQueryMessage(message, this, serverMessageRef, isQueryCompleted);
+	public void respondToDataMessage(DataMessage message) throws Exception {
+		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
 	}
 
 	@Override
@@ -133,7 +130,7 @@ public class ShowServerDiagnostics extends InternalEquinoxTask<TimeSeriesCollect
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForQuery(this, isQueryCompleted);
+			waitForServer(this, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeDatabaseQueryListener(this);
@@ -147,7 +144,7 @@ public class ShowServerDiagnostics extends InternalEquinoxTask<TimeSeriesCollect
 				return null;
 
 			// get query message
-			DatabaseQueryMessage message = serverMessageRef.get();
+			DataMessage message = serverMessageRef.get();
 
 			// permission denied
 			if (message instanceof DatabaseQueryPermissionDenied)

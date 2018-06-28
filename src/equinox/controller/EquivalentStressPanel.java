@@ -42,18 +42,17 @@ import equinox.data.input.EquivalentStressInput;
 import equinox.data.material.FatigueMaterialItem;
 import equinox.data.material.LinearMaterialItem;
 import equinox.data.material.PreffasMaterialItem;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.LinearMaterial;
+import equinox.dataServer.remote.data.Material;
+import equinox.dataServer.remote.data.PreffasMaterial;
 import equinox.font.IconicFont;
 import equinox.task.EquivalentStressAnalysis;
 import equinox.task.GetMaterials;
 import equinox.task.GetMaterials.MaterialRequestingPanel;
 import equinox.task.SaveTask;
 import equinox.utility.Utility;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.data.LinearMaterial;
-import equinoxServer.remote.data.Material;
-import equinoxServer.remote.data.PreffasMaterial;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -124,78 +123,30 @@ public class EquivalentStressPanel implements InternalInputSubPanel, SchedulingP
 
 		// bind components
 		omissionLevel_.disableProperty().bind(omission_.selectedProperty().not());
-		fatigueAnalysis_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				fatigueMaterialsPane_.setDisable(!newValue);
-				if (fatigueMaterialsPane_.isDisabled()) {
-					fatigueMaterialsPane_.setExpanded(false);
-				}
+		fatigueAnalysis_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			fatigueMaterialsPane_.setDisable(!newValue);
+			if (fatigueMaterialsPane_.isDisabled()) {
+				fatigueMaterialsPane_.setExpanded(false);
 			}
 		});
-		preffasAnalysis_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				preffasMaterialsPane_.setDisable(!newValue);
-				if (preffasMaterialsPane_.isDisabled()) {
-					preffasMaterialsPane_.setExpanded(false);
-				}
+		preffasAnalysis_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			preffasMaterialsPane_.setDisable(!newValue);
+			if (preffasMaterialsPane_.isDisabled()) {
+				preffasMaterialsPane_.setExpanded(false);
 			}
 		});
-		linearAnalysis_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				linearMaterialsPane_.setDisable(!newValue);
-				if (linearMaterialsPane_.isDisabled()) {
-					linearMaterialsPane_.setExpanded(false);
-				}
+		linearAnalysis_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			linearMaterialsPane_.setDisable(!newValue);
+			if (linearMaterialsPane_.isDisabled()) {
+				linearMaterialsPane_.setExpanded(false);
 			}
 		});
-		fatigueMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<FatigueMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
-				removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		preffasMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<PreffasMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends PreffasMaterial> c) {
-				removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		linearMaterials_.getSelectionModel().getSelectedItems().addMessageListener(new ListChangeListener<LinearMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LinearMaterial> c) {
-				removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty());
-			}
-		});
-		fatigueMaterials_.getItems().addMessageListener(new ListChangeListener<FatigueMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends FatigueMaterial> c) {
-				resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty());
-			}
-		});
-		preffasMaterials_.getItems().addMessageListener(new ListChangeListener<PreffasMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends PreffasMaterial> c) {
-				resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty());
-			}
-		});
-		linearMaterials_.getItems().addMessageListener(new ListChangeListener<LinearMaterial>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends LinearMaterial> c) {
-				resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty());
-			}
-		});
+		fatigueMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<FatigueMaterial>) c -> removeFatigueMaterials_.setDisable(fatigueMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		preffasMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<PreffasMaterial>) c -> removePreffasMaterials_.setDisable(preffasMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		linearMaterials_.getSelectionModel().getSelectedItems().addListener((ListChangeListener<LinearMaterial>) c -> removeLinearMaterials_.setDisable(linearMaterials_.getSelectionModel().getSelectedItems().isEmpty()));
+		fatigueMaterials_.getItems().addListener((ListChangeListener<FatigueMaterial>) c -> resetFatigueMaterials_.setDisable(fatigueMaterials_.getItems().isEmpty()));
+		preffasMaterials_.getItems().addListener((ListChangeListener<PreffasMaterial>) c -> resetPreffasMaterials_.setDisable(preffasMaterials_.getItems().isEmpty()));
+		linearMaterials_.getItems().addListener((ListChangeListener<LinearMaterial>) c -> resetLinearMaterials_.setDisable(linearMaterials_.getItems().isEmpty()));
 
 		// enable multiple selection for lists
 		fatigueMaterials_.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

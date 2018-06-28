@@ -36,11 +36,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import equinox.Equinox;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.FastEquivalentStressAnalysis;
 import equinox.utility.Utility;
 import equinox.utility.exception.InternalEngineAnalysisFailedException;
-import equinoxServer.remote.data.FatigueMaterial;
-import equinoxServer.remote.utility.ServerUtility;
 
 /**
  * Class for inbuilt typical flight damage contribution analysis process.
@@ -140,7 +140,7 @@ public class InbuiltFlightDCA implements ESAProcess<Object[]> {
 		catch (Exception e) {
 
 			// set output files as permanent
-			if ((outputFiles_ != null) && keepFailedOutputs_) {
+			if (outputFiles_ != null && keepFailedOutputs_) {
 				for (File file : outputFiles_) {
 					task_.setFileAsPermanent(file.toPath());
 				}
@@ -155,10 +155,10 @@ public class InbuiltFlightDCA implements ESAProcess<Object[]> {
 	public void cancel() {
 
 		// destroy sub processes (if still running)
-		if ((writeSigmaProcess_ != null) && writeSigmaProcess_.isAlive()) {
+		if (writeSigmaProcess_ != null && writeSigmaProcess_.isAlive()) {
 			writeSigmaProcess_.destroyForcibly();
 		}
-		if ((analysisProcess_ != null) && analysisProcess_.isAlive()) {
+		if (analysisProcess_ != null && analysisProcess_.isAlive()) {
 			analysisProcess_.destroyForcibly();
 		}
 	}
@@ -246,7 +246,7 @@ public class InbuiltFlightDCA implements ESAProcess<Object[]> {
 		Iterator<Entry<String, Double>> iteratorWithOccurrences = withOccurrences.entrySet().iterator();
 		while (iteratorWithOccurrences.hasNext()) {
 			Entry<String, Double> entry = iteratorWithOccurrences.next();
-			withOccurrences.put(entry.getKey(), (entry.getValue() * 100) / totalDamageWithOccurrences);
+			withOccurrences.put(entry.getKey(), entry.getValue() * 100 / totalDamageWithOccurrences);
 		}
 
 		// replace damages with damage percentages without occurrences
@@ -258,7 +258,7 @@ public class InbuiltFlightDCA implements ESAProcess<Object[]> {
 		Iterator<Entry<String, Double>> iteratorWithoutOccurrences1 = withoutOccurrences.entrySet().iterator();
 		while (iteratorWithoutOccurrences1.hasNext()) {
 			Entry<String, Double> entry = iteratorWithoutOccurrences1.next();
-			withoutOccurrences.put(entry.getKey(), (entry.getValue() * 100) / totalDamageWithoutOccurrences);
+			withoutOccurrences.put(entry.getKey(), entry.getValue() * 100 / totalDamageWithoutOccurrences);
 		}
 
 		// sort in descending order

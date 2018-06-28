@@ -20,8 +20,8 @@ import java.sql.PreparedStatement;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for save pilot point info task.

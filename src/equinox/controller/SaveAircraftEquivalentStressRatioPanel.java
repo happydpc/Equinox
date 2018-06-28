@@ -33,8 +33,10 @@ import equinox.controller.InputPanel.InternalInputSubPanel;
 import equinox.controller.ScheduleTaskPanel.SchedulingPanel;
 import equinox.data.EquinoxTheme;
 import equinox.data.fileType.AircraftFatigueEquivalentStress;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.Permission;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.GetMissions;
 import equinox.task.GetMissions.MissionRequestingPanel;
@@ -42,8 +44,6 @@ import equinox.task.SaveAircraftEquivalentStressRatios;
 import equinox.task.SaveTask;
 import equinox.task.ShareGeneratedItem;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.utility.Permission;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -459,7 +459,7 @@ public class SaveAircraftEquivalentStressRatioPanel implements InternalInputSubP
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 				popOver.hide();
 			};
 

@@ -30,8 +30,8 @@ import equinox.data.ElementStress;
 import equinox.data.ElementType;
 import equinox.data.fileType.AircraftLoadCase;
 import equinox.data.input.CompareLoadCasesInput;
+import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinoxServer.remote.utility.Permission;
 
 /**
  * Class for compare load cases task.

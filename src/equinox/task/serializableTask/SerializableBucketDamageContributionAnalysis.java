@@ -19,9 +19,9 @@ import equinox.data.AnalysisEngine;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LoadcaseDamageContributionInput;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.BucketDamageContributionAnalysis;
 import equinox.task.SerializableTask;
-import equinoxServer.remote.data.FatigueMaterial;
 import javafx.scene.control.TreeItem;
 
 /**

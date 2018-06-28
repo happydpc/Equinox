@@ -32,8 +32,11 @@ import equinox.data.ActionHandler;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.data.ui.NotificationPanel;
+import equinox.dataServer.remote.message.GetAccessRequestsRequest;
+import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
+import equinox.serverUtilities.ServerUtility;
 import equinox.task.AdaptDRF;
 import equinox.task.AddStressSequence;
 import equinox.task.BackupWorkspace;
@@ -59,11 +62,6 @@ import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSampleInputs;
 import equinox.task.UploadSpectra;
 import equinox.utility.Utility;
-import equinoxServer.remote.message.GetAccessRequestsRequest;
-import equinoxServer.remote.message.StatusChange;
-import equinoxServer.remote.message.StopServer;
-import equinoxServer.remote.utility.Permission;
-import equinoxServer.remote.utility.ServerUtility;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
@@ -296,7 +294,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private void onAvailableSelected() {
-		owner_.getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
 	}
 
 	@FXML
@@ -343,7 +341,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private void onBusySelected() {
-		owner_.getNetworkWatcher().sendMessage(new StatusChange(Equinox.USER.getUsername(), false));
+		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), false));
 	}
 
 	@Override
@@ -828,27 +826,6 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 		popOver.setContentNode(ShortcutsPanel.load(menuBar_));
 		popOver.setHideOnEscape(true);
 		popOver.show(owner_.getOwner().getStage());
-	}
-
-	@FXML
-	private void onStopServerClicked() {
-
-		// check user privileges
-		if (!Equinox.USER.hasPermission(Permission.STOP_EXCHANGE_SERVER, true, owner_))
-			return;
-
-		// get notification pane
-		NotificationPanel np = owner_.getNotificationPane();
-
-		// setup notification title and message
-		String title = "Stop network server";
-		String message = "Are you sure you want to stop network server?";
-
-		// show notification
-		np.showQuestion(title, message, "Yes", "No", event -> {
-			owner_.getNetworkWatcher().sendMessage(new StopServer());
-			np.hide();
-		}, event -> np.hide());
 	}
 
 	@FXML
