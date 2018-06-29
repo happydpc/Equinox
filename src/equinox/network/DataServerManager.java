@@ -374,6 +374,9 @@ public class DataServerManager implements DataMessageListener {
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
+
+			// notify UI
+			owner_.getInputPanel().dataServiceConnectionStatusChanged(true);
 		}
 
 		@Override
@@ -422,6 +425,9 @@ public class DataServerManager implements DataMessageListener {
 
 		@Override
 		public void disconnected(Connection connection) {
+
+			// notify UI
+			owner_.getInputPanel().dataServiceConnectionStatusChanged(false);
 
 			// stopped by the user
 			if (isStopped_)

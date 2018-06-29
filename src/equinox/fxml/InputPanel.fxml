@@ -9,13 +9,14 @@
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
@@ -70,14 +71,17 @@
     </ToolBar>
       <ToolBar fx:id="statusbar_" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-1.0" prefHeight="30.0" styleClass="statusBar">
          <items>
-            <HBox spacing="8.0">
+            <HBox fx:id="services_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="64.0" spacing="8.0">
                <children>
-                  <Label fx:id="dataServiceLabel_" contentDisplay="GRAPHIC_ONLY" text="Label">
+                  <Label fx:id="dataServiceLabel_" contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConnectToDataServiceClicked" text="Label">
                      <graphic>
                         <ImageView fx:id="dataServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../image/dataServer_16_off.png" />
                            </image>
+                           <effect>
+                              <DropShadow />
+                           </effect>
                         </ImageView>
                      </graphic>
                      <tooltip>
@@ -87,12 +91,15 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                   </Label>
-                  <Label fx:id="analysisServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" text="Label">
+                  <Label fx:id="analysisServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" onMouseClicked="#onConnectToAnalysisServiceClicked" text="Label">
                      <graphic>
                         <ImageView fx:id="analysisServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../image/analysisServer_16_off.png" />
                            </image>
+                           <effect>
+                              <DropShadow />
+                           </effect>
                         </ImageView>
                      </graphic>
                      <tooltip>
@@ -102,16 +109,19 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                   </Label>
-                  <Label contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" text="Label">
+                  <Label fx:id="exchangeServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" onMouseClicked="#onConnectToExchangeServiceClicked" text="Label">
                      <graphic>
-                        <ImageView fx:id="dataServer_11" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="exchangeServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../image/exchangeServer_16_off.png" />
                            </image>
+                           <effect>
+                              <DropShadow />
+                           </effect>
                         </ImageView>
                      </graphic>
                      <tooltip>
-                        <Tooltip text="Collaboration Service: Not available" />
+                        <Tooltip fx:id="exchangeServiceTooltip_" text="Collaboration Service: Not available" />
                      </tooltip>
                      <cursor>
                         <Cursor fx:constant="HAND" />

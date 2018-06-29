@@ -352,6 +352,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
+
+			// notify UI
+			owner_.getInputPanel().exchangeServiceConnectionStatusChanged(true);
 		}
 
 		@Override
@@ -400,6 +403,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		@Override
 		public void disconnected(Connection connection) {
+
+			// notify UI
+			owner_.getInputPanel().exchangeServiceConnectionStatusChanged(false);
 
 			// stopped by the user
 			if (isStopped_)

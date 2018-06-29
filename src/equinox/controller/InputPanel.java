@@ -41,8 +41,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -92,7 +94,7 @@ public class InputPanel implements Initializable {
 	private VBox root_;
 
 	@FXML
-	private Label header_, statusLabel_;
+	private Label header_, statusLabel_, dataServiceLabel_, exchangeServiceLabel_, analysisServiceLabel_;
 
 	@FXML
 	private SplitMenuButton addButton_;
@@ -104,7 +106,13 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private ImageView logo_;
+	private ImageView dataServiceImage_, exchangeServiceImage_, analysisServiceImage_;
+
+	@FXML
+	private Tooltip dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+
+	@FXML
+	private HBox services_;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -242,11 +250,11 @@ public class InputPanel implements Initializable {
 
 		// set minimum toolbar width
 		toolbar_.minWidthProperty().set(header_.getWidth() + addButton_.getWidth() + 2 * 11.0 + 2 * 4.0);
-		statusbar_.minWidthProperty().set(logo_.getFitWidth() + statusLabel_.getWidth() + 2 * 11.0 + 2 * 4.0);
+		statusbar_.minWidthProperty().set(services_.getWidth() + statusLabel_.getWidth() + 2 * 11.0 + 2 * 4.0);
 
 		// bind region width to tool bar width
 		region_.prefWidthProperty().bind(toolbar_.widthProperty().subtract(header_.widthProperty()).subtract(addButton_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
-		region2_.prefWidthProperty().bind(statusbar_.widthProperty().subtract(logo_.fitWidthProperty()).subtract(statusLabel_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
+		region2_.prefWidthProperty().bind(statusbar_.widthProperty().subtract(services_.widthProperty()).subtract(statusLabel_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
 
 		// start internal sub panels
 		for (InputSubPanel panel : subPanels_.values())
@@ -410,6 +418,84 @@ public class InputPanel implements Initializable {
 	 */
 	public Label getStatusLabel() {
 		return statusLabel_;
+	}
+
+	/**
+	 * Called when data service connection status changes.
+	 *
+	 * @param isConnected
+	 *            True if connected to service.
+	 */
+	public void dataServiceConnectionStatusChanged(boolean isConnected) {
+		dataServiceImage_.setImage(Utility.getImage(isConnected ? "dataServer_16_on.png" : "dataServer_16_off.png"));
+		dataServiceTooltip_.setText(isConnected ? "Data Service: Available" : "Data Service: Not available");
+	}
+
+	/**
+	 * Called when analysis service connection status changes.
+	 *
+	 * @param isConnected
+	 *            True if connected to service.
+	 */
+	public void analysisServiceConnectionStatusChanged(boolean isConnected) {
+		analysisServiceImage_.setImage(Utility.getImage(isConnected ? "analysisServer_16_on.png" : "analysisServer_16_off.png"));
+		analysisServiceTooltip_.setText(isConnected ? "Analysis Service: Available" : "Analysis Service: Not available");
+	}
+
+	/**
+	 * Called when exchange service connection status changes.
+	 *
+	 * @param isConnected
+	 *            True if connected to service.
+	 */
+	public void exchangeServiceConnectionStatusChanged(boolean isConnected) {
+		exchangeServiceImage_.setImage(Utility.getImage(isConnected ? "exchangeServer_16_on.png" : "exchangeServer_16_off.png"));
+		exchangeServiceTooltip_.setText(isConnected ? "Collaboration Service: Available" : "Collaboration Service: Not available");
+	}
+
+	@FXML
+	private void onConnectToAnalysisServiceClicked() {
+
+		// already connected
+		if (owner_.getAnalysisServerManager().isConnected()) {
+			String title = "No operation";
+			String msg = "Already connected to Analysis Service.";
+			owner_.getNotificationPane().showInfo(title, msg);
+			return;
+		}
+
+		// connect
+		owner_.getAnalysisServerManager().connect(null);
+	}
+
+	@FXML
+	private void onConnectToDataServiceClicked() {
+
+		// already connected
+		if (owner_.getDataServerManager().isConnected()) {
+			String title = "No operation";
+			String msg = "Already connected to Data Service.";
+			owner_.getNotificationPane().showInfo(title, msg);
+			return;
+		}
+
+		// connect
+		owner_.getDataServerManager().connect(null);
+	}
+
+	@FXML
+	private void onConnectToExchangeServiceClicked() {
+
+		// already connected
+		if (owner_.getExchangeServerManager().isConnected()) {
+			String title = "No operation";
+			String msg = "Already connected to Collaboration Service.";
+			owner_.getNotificationPane().showInfo(title, msg);
+			return;
+		}
+
+		// connect
+		owner_.getExchangeServerManager().connect(null);
 	}
 
 	@FXML

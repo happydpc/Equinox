@@ -191,7 +191,9 @@ public class User {
 				return false;
 
 			// add permission
-			permissions.add(permission);
+			if (!permissions.contains(permission)) {
+				permissions.add(permission);
+			}
 			return true;
 		}
 

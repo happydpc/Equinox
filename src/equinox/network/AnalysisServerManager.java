@@ -353,6 +353,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
+
+			// notify UI
+			owner_.getInputPanel().analysisServiceConnectionStatusChanged(true);
 		}
 
 		@Override
@@ -401,6 +404,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 		@Override
 		public void disconnected(Connection connection) {
+
+			// notify UI
+			owner_.getInputPanel().analysisServiceConnectionStatusChanged(false);
 
 			// stopped by the user
 			if (isStopped_)

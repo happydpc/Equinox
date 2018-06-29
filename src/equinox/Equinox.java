@@ -52,7 +52,7 @@ import javafx.stage.Stage;
 public class Equinox extends EmbeddedApplication {
 
 	/** Application version. */
-	public static final Version VERSION = Version.MARS;
+	public static final Version VERSION = Version.EARTH;
 
 	/** Current operating system type and architecture. */
 	public static String OS_TYPE, OS_ARCH;

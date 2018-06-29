@@ -109,6 +109,11 @@ public class UpdateWorkspace extends InternalEquinoxTask<Void> {
 					dbVersion = updateTo38(connection);
 				}
 
+				// update to v3.9
+				if (dbVersion < 3.9) {
+					dbVersion = updateTo39(connection);
+				}
+
 				// update version number
 				updateVersionNumber(connection, createVersionTable, dbVersion);
 
@@ -133,6 +138,24 @@ public class UpdateWorkspace extends InternalEquinoxTask<Void> {
 
 		// return
 		return null;
+	}
+
+	/**
+	 * Updates the database to version 3.9.
+	 *
+	 * @param connection
+	 *            Database connection.
+	 * @return New version number.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private double updateTo39(Connection connection) throws Exception {
+
+		// update info
+		updateMessage("Updating workspace to version 3.9");
+
+		// return new version number
+		return 3.9;
 	}
 
 	/**

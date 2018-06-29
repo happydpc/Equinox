@@ -24,7 +24,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="584.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SettingsPanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="584.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SettingsPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" pannable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="scrollPane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
@@ -132,14 +132,14 @@
                            <content>
                               <VBox spacing="10.0">
                                  <children>
-                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="Connection settings for all microservices hosted by the AF-Twin cloud." textFill="SLATEGRAY" wrapText="true">
+                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="Connection settings to all microservices in the AF-Twin cloud." textFill="SLATEGRAY" wrapText="true">
                                        <font>
                                           <Font size="12.0" />
                                        </font>
                                        <graphic>
                                           <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../image/hub.png" />
+                                                <Image url="@../image/microservices.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
@@ -265,7 +265,7 @@
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
       </padding>
       <children>
-                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="SFTP file server enables you to access airframe fatigue twin metadata." textFill="SLATEGRAY" wrapText="true">
+                                    <Label alignment="TOP_LEFT" graphicTextGap="8.0" text="SFTP file server enables you to access airframe fatigue twin binary data." textFill="SLATEGRAY" wrapText="true">
                                        <font>
                                           <Font size="12.0" />
                                        </font>
