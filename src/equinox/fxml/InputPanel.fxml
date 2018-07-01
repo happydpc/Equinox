@@ -2,6 +2,7 @@
 
 <?import java.net.URL?>
 <?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuItem?>
@@ -9,14 +10,13 @@
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
@@ -71,62 +71,68 @@
     </ToolBar>
       <ToolBar fx:id="statusbar_" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-1.0" prefHeight="30.0" styleClass="statusBar">
          <items>
-            <HBox fx:id="services_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="64.0" spacing="8.0">
+            <HBox fx:id="services_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="92.0" spacing="4.0">
                <children>
-                  <Label fx:id="dataServiceLabel_" contentDisplay="GRAPHIC_ONLY" onMouseClicked="#onConnectToDataServiceClicked" text="Label">
+                  <Button fx:id="authenticationService_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToAuthenticationServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
                      <graphic>
-                        <ImageView fx:id="dataServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../image/dataServer_16_off.png" />
+                              <Image url="@../image/authenticationService.png" />
                            </image>
-                           <effect>
-                              <DropShadow />
-                           </effect>
                         </ImageView>
                      </graphic>
-                     <tooltip>
-                        <Tooltip fx:id="dataServiceTooltip_" text="Data Service: Not available" />
-                     </tooltip>
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
-                  </Label>
-                  <Label fx:id="analysisServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" onMouseClicked="#onConnectToAnalysisServiceClicked" text="Label">
+                     <tooltip>
+                        <Tooltip text="Authentication Service: Expired" />
+                     </tooltip>
+                  </Button>
+                  <Button fx:id="dataService_" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToDataServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
                      <graphic>
-                        <ImageView fx:id="analysisServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../image/analysisServer_16_off.png" />
+                              <Image url="@../image/dataService.png" />
                            </image>
-                           <effect>
-                              <DropShadow />
-                           </effect>
                         </ImageView>
                      </graphic>
-                     <tooltip>
-                        <Tooltip fx:id="analysisServiceTooltip_" text="Analysis Service: Not available" />
-                     </tooltip>
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
-                  </Label>
-                  <Label fx:id="exchangeServiceLabel_" contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" onMouseClicked="#onConnectToExchangeServiceClicked" text="Label">
+                     <tooltip>
+                        <Tooltip text="Data Service: Not available" />
+                     </tooltip>
+                  </Button>
+                  <Button fx:id="analysisService_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToAnalysisServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
                      <graphic>
-                        <ImageView fx:id="exchangeServiceImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../image/exchangeServer_16_off.png" />
+                              <Image url="@../image/analysisService.png" />
                            </image>
-                           <effect>
-                              <DropShadow />
-                           </effect>
                         </ImageView>
                      </graphic>
-                     <tooltip>
-                        <Tooltip fx:id="exchangeServiceTooltip_" text="Collaboration Service: Not available" />
-                     </tooltip>
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor>
-                  </Label>
+                     <tooltip>
+                        <Tooltip text="Analysis Service: Not available" />
+                     </tooltip>
+                  </Button>
+                  <Button fx:id="exchangeService_" contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToExchangeServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/exchangeService.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <tooltip>
+                        <Tooltip text="Collaboration Service: Not available" />
+                     </tooltip>
+                  </Button>
                </children>
             </HBox>
             <Region fx:id="region2_" prefHeight="-1.0" prefWidth="-1.0" />

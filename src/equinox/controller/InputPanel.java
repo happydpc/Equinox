@@ -37,13 +37,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -94,7 +94,7 @@ public class InputPanel implements Initializable {
 	private VBox root_;
 
 	@FXML
-	private Label header_, statusLabel_, dataServiceLabel_, exchangeServiceLabel_, analysisServiceLabel_;
+	private Label header_, statusLabel_;
 
 	@FXML
 	private SplitMenuButton addButton_;
@@ -106,10 +106,10 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private ImageView dataServiceImage_, exchangeServiceImage_, analysisServiceImage_;
+	private Button authenticationService_, dataService_, analysisService_, exchangeService_;
 
 	@FXML
-	private Tooltip dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+	private Tooltip authenticationServiceTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
 
 	@FXML
 	private HBox services_;
