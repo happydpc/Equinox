@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
@@ -71,23 +71,8 @@
     </ToolBar>
       <ToolBar fx:id="statusbar_" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-1.0" prefHeight="30.0" styleClass="statusBar">
          <items>
-            <HBox fx:id="services_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="92.0" spacing="4.0">
+            <HBox fx:id="services_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="68.0" spacing="4.0">
                <children>
-                  <Button fx:id="authenticationService_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToAuthenticationServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/authenticationService.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                     <tooltip>
-                        <Tooltip text="Authentication Service: Expired" />
-                     </tooltip>
-                  </Button>
                   <Button fx:id="dataService_" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToDataServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -100,7 +85,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <tooltip>
-                        <Tooltip text="Data Service: Not available" />
+                        <Tooltip fx:id="dataServiceTooltip_" text="Data Service: Not available" />
                      </tooltip>
                   </Button>
                   <Button fx:id="analysisService_" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToAnalysisServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
@@ -115,7 +100,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <tooltip>
-                        <Tooltip text="Analysis Service: Not available" />
+                        <Tooltip fx:id="analysisServiceTooltip_" text="Analysis Service: Not available" />
                      </tooltip>
                   </Button>
                   <Button fx:id="exchangeService_" contentDisplay="GRAPHIC_ONLY" layoutX="34.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToExchangeServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
@@ -130,7 +115,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <tooltip>
-                        <Tooltip text="Collaboration Service: Not available" />
+                        <Tooltip fx:id="exchangeServiceTooltip_" text="Collaboration Service: Not available" />
                      </tooltip>
                   </Button>
                </children>

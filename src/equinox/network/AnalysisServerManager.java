@@ -26,6 +26,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -36,6 +39,7 @@ import equinox.analysisServer.remote.listener.AnalysisMessageListener;
 import equinox.analysisServer.remote.message.AnalysisMessage;
 import equinox.analysisServer.remote.message.HandshakeWithAnalysisServer;
 import equinox.controller.MainScreen;
+import equinox.controller.NotificationPanel1;
 import equinox.data.Settings;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
@@ -148,10 +152,10 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 *
 	 * @param message
 	 *            Message to be sent once the connection is established. Can be <code>null</code>.
-	 *
-	 * @return True if successfully connected to server.
+	 * @param showWarning
+	 *            True to show warning if exception occurs during connecting.
 	 */
-	public boolean connect(AnalysisMessage message) {
+	public void connect(AnalysisMessage message, boolean showWarning) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -161,35 +165,45 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			if (message != null) {
 				sendMessage(message);
 			}
-			return true;
+			return;
 		}
 
-		// add message to queue
-		if (message != null) {
-			messageQueue_.add(message);
-		}
+		// submit new task
+		threadExecutor_.submit(() -> {
 
-		// connect to server
-		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_HOSTNAME);
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_PORT));
-			kryoNetClient_.connect(5000, hostname, port);
-			HandshakeWithAnalysisServer handshake = new HandshakeWithAnalysisServer(Equinox.USER.getAlias());
-			handshake.setListenerHashCode(hashCode());
-			kryoNetClient_.sendTCP(handshake);
-			return true;
-		}
+			// add message to queue
+			if (message != null) {
+				messageQueue_.add(message);
+			}
 
-		// exception occurred during connecting to server
-		catch (IOException e) {
+			// connect to server
+			try {
+				String hostname = (String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_HOSTNAME);
+				int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.ANALYSIS_SERVER_PORT));
+				kryoNetClient_.connect(5000, hostname, port);
+				HandshakeWithAnalysisServer handshake = new HandshakeWithAnalysisServer(Equinox.USER.getAlias());
+				handshake.setListenerHashCode(hashCode());
+				kryoNetClient_.sendTCP(handshake);
+				return true;
+			}
 
-			// log error
-			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to analysis server.", e);
-			String msg = "Cannot connect to analysis server. Please check your network connection and analysis server connection settings.";
-			owner_.getNotificationPane().showWarning(msg, null);
-			messageQueue_.clear();
-			return false;
-		}
+			// exception occurred during connecting to server
+			catch (IOException e) {
+
+				// log error
+				Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to analysis server.", e);
+
+				// notify UI
+				if (showWarning) {
+					Platform.runLater(() -> {
+						String msg = "Cannot connect to analysis server. Please check your network connection and analysis server connection settings.";
+						owner_.getNotificationPane().showWarning(msg, null);
+						messageQueue_.clear();
+					});
+				}
+				return false;
+			}
+		});
 	}
 
 	/**
@@ -204,16 +218,25 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		if (message == null)
 			return;
 
+		// not connected
+		if (!kryoNetClient_.isConnected()) {
+			Platform.runLater(() -> {
+				String msg = "Analysis service is currently not available. Please connect to the service and try again.";
+				PopOver popOver = new PopOver();
+				popOver.setArrowLocation(ArrowLocation.BOTTOM_LEFT);
+				popOver.setDetachable(false);
+				popOver.setContentNode(NotificationPanel1.load(msg, 40, NotificationPanel1.WARNING));
+				popOver.setHideOnEscape(true);
+				popOver.setAutoHide(true);
+				popOver.show(owner_.getInputPanel().getAnalysisServiceButton());
+			});
+			return;
+		}
+
 		// submit new task
 		threadExecutor_.submit(() -> {
 
 			try {
-
-				// not connected
-				if (!kryoNetClient_.isConnected()) {
-					connect(message);
-					return;
-				}
 
 				// not a big message
 				if (message instanceof BigMessage == false) {
@@ -249,9 +272,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to analysis server.", e);
 
 				// show warning
-				String msg = "Exception occurred during sending message to analysis server: " + e.getLocalizedMessage();
-				msg += " Click 'Details' for more information.";
-				owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				Platform.runLater(() -> {
+					String msg = "Exception occurred during sending message to analysis server: " + e.getLocalizedMessage();
+					msg += " Click 'Details' for more information.";
+					owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				});
 			}
 		});
 	}
@@ -355,7 +380,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			connection.setTimeout(20000);
 
 			// notify UI
-			owner_.getInputPanel().analysisServiceConnectionStatusChanged(true);
+			Platform.runLater(() -> {
+				owner_.getInputPanel().analysisServiceConnectionStatusChanged(true);
+			});
 		}
 
 		@Override
@@ -405,21 +432,12 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		@Override
 		public void disconnected(Connection connection) {
 
-			// notify UI
-			owner_.getInputPanel().analysisServiceConnectionStatusChanged(false);
-
 			// stopped by the user
 			if (isStopped_)
 				return;
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to analysis server lost.");
-
-			// show warning
-			Platform.runLater(() -> {
-				String message = "Connection to analysis server lost. Please check your network connection.";
-				owner_.getNotificationPane().showWarning(message, null);
-			});
 		}
 
 		/**

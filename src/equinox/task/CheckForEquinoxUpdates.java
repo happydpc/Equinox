@@ -69,7 +69,7 @@ public class CheckForEquinoxUpdates extends TemporaryFileCreatingTask<EquinoxUpd
 
 	@Override
 	public String getTaskTitle() {
-		return "Check for Data Analyst container updates";
+		return "Check for container updates";
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class CheckForEquinoxUpdates extends TemporaryFileCreatingTask<EquinoxUpd
 		checkPermission(Permission.CHECK_FOR_EQUINOX_UPDATES);
 
 		// update progress info
-		updateTitle("Checking for Data Analyst container updates...");
+		updateTitle("Checking for container updates...");
 		updateMessage("Please wait...");
 
 		// initialize variables

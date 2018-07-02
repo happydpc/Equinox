@@ -26,12 +26,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
 import equinox.controller.MainScreen;
+import equinox.controller.NotificationPanel1;
 import equinox.data.Settings;
 import equinox.dataServer.remote.Registry;
 import equinox.dataServer.remote.listener.DataMessageListener;
@@ -39,13 +43,12 @@ import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.HandshakeWithDataServer;
 import equinox.dataServer.remote.message.LoginFailed;
 import equinox.dataServer.remote.message.LoginSuccessful;
-import equinox.exchangeServer.remote.message.WhoRequest;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
-import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
+import equinox.task.SaveUserAuthentication;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 
@@ -154,10 +157,10 @@ public class DataServerManager implements DataMessageListener {
 	 *
 	 * @param message
 	 *            Message to be sent once the connection is established. Can be <code>null</code>.
-	 *
-	 * @return True if successfully connected to server.
+	 * @param showWarning
+	 *            True to show warning if exception occurs during connecting.
 	 */
-	public boolean connect(DataMessage message) {
+	public void connect(DataMessage message, boolean showWarning) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -167,35 +170,46 @@ public class DataServerManager implements DataMessageListener {
 			if (message != null) {
 				sendMessage(message);
 			}
-			return true;
+			return;
 		}
 
-		// add message to queue
-		if (message != null) {
-			messageQueue_.add(message);
-		}
+		// submit new task
+		threadExecutor_.submit(() -> {
 
-		// connect to server
-		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.DATA_SERVER_HOSTNAME);
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.DATA_SERVER_PORT));
-			kryoNetClient_.connect(5000, hostname, port);
-			HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
-			handshake.setListenerHashCode(hashCode());
-			kryoNetClient_.sendTCP(handshake);
-			return true;
-		}
+			// add message to queue
+			if (message != null) {
+				messageQueue_.add(message);
+			}
 
-		// exception occurred during connecting to server
-		catch (IOException e) {
+			// connect to server
+			try {
+				String hostname = (String) owner_.getSettings().getValue(Settings.DATA_SERVER_HOSTNAME);
+				int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.DATA_SERVER_PORT));
+				kryoNetClient_.connect(5000, hostname, port);
+				HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
+				handshake.setListenerHashCode(hashCode());
+				kryoNetClient_.sendTCP(handshake);
+				return true;
+			}
 
-			// log error
-			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to data server.", e);
-			String msg = "Cannot connect to data server. Please check your network connection and data server connection settings.";
-			owner_.getNotificationPane().showWarning(msg, null);
-			messageQueue_.clear();
-			return false;
-		}
+			// exception occurred during connecting to server
+			catch (IOException e) {
+
+				// log error
+				Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to data service.", e);
+
+				// notify UI
+				if (showWarning) {
+					Platform.runLater(() -> {
+						String msg = "Cannot connect to data service. Please check your network connection and data service connection settings.";
+						owner_.getNotificationPane().showWarning(msg, null);
+						messageQueue_.clear();
+
+					});
+				}
+				return false;
+			}
+		});
 	}
 
 	/**
@@ -210,16 +224,25 @@ public class DataServerManager implements DataMessageListener {
 		if (message == null)
 			return;
 
+		// not connected
+		if (!kryoNetClient_.isConnected()) {
+			Platform.runLater(() -> {
+				String msg = "Data service is currently not available. Please connect to the service and try again.";
+				PopOver popOver = new PopOver();
+				popOver.setArrowLocation(ArrowLocation.BOTTOM_LEFT);
+				popOver.setDetachable(false);
+				popOver.setContentNode(NotificationPanel1.load(msg, 40, NotificationPanel1.WARNING));
+				popOver.setHideOnEscape(true);
+				popOver.setAutoHide(true);
+				popOver.show(owner_.getInputPanel().getDataServiceButton());
+			});
+			return;
+		}
+
 		// submit new task
 		threadExecutor_.submit(() -> {
 
 			try {
-
-				// not connected
-				if (!kryoNetClient_.isConnected()) {
-					connect(message);
-					return;
-				}
 
 				// not a big message
 				if (message instanceof BigMessage == false) {
@@ -252,12 +275,14 @@ public class DataServerManager implements DataMessageListener {
 			catch (Exception e) {
 
 				// log error
-				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to data server.", e);
+				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to data service.", e);
 
 				// show warning
-				String msg = "Exception occurred during sending message to data server: " + e.getLocalizedMessage();
-				msg += " Click 'Details' for more information.";
-				owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				Platform.runLater(() -> {
+					String msg = "Exception occurred during sending message to data service: " + e.getLocalizedMessage();
+					msg += " Click 'Details' for more information.";
+					owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				});
 			}
 		});
 	}
@@ -272,7 +297,7 @@ public class DataServerManager implements DataMessageListener {
 
 		// disconnect kryonet client
 		kryoNetClient_.close();
-		Equinox.LOGGER.info("Disconnected from data server.");
+		Equinox.LOGGER.info("Disconnected from data service.");
 	}
 
 	/**
@@ -289,7 +314,7 @@ public class DataServerManager implements DataMessageListener {
 
 		// stop kryonet client
 		kryoNetClient_.stop();
-		Equinox.LOGGER.info("Disconnected from data server.");
+		Equinox.LOGGER.info("Disconnected from data service.");
 	}
 
 	/**
@@ -322,7 +347,7 @@ public class DataServerManager implements DataMessageListener {
 		if (handshake.isHandshakeSuccessful()) {
 
 			// log
-			Equinox.LOGGER.info("Successfully connected to data server.");
+			Equinox.LOGGER.info("Successfully connected to data service.");
 
 			// set user attributes
 			Equinox.USER.setUsername(handshake.getUsername());
@@ -330,11 +355,6 @@ public class DataServerManager implements DataMessageListener {
 
 			// add non-administrative permissions
 			handshake.getPermissionNames().forEach(p -> Equinox.USER.addPermission(p));
-
-			// send who request
-			if (Equinox.USER.hasPermission(Permission.SEE_CONNECTED_USERS, false, null)) {
-				owner_.getExchangeServerManager().sendMessage(new WhoRequest());
-			}
 
 			// setup administrator menu
 			owner_.getMenuBarPanel().setupAdministratorMenu(handshake.isAdministrator());
@@ -344,11 +364,14 @@ public class DataServerManager implements DataMessageListener {
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
 			}
+
+			// save user authentication
+			owner_.getActiveTasksPanel().runTaskInParallel(new SaveUserAuthentication(Equinox.USER));
 		}
 
 		// unsuccessful
 		else {
-			String text = "Cannot connect to data server. Please check your network connection and data server connection settings.";
+			String text = "Cannot connect to data service. Please check your network connection and data service connection settings.";
 			owner_.getNotificationPane().showWarning(text, null);
 			messageQueue_.clear();
 		}
@@ -370,13 +393,15 @@ public class DataServerManager implements DataMessageListener {
 		public void connected(Connection connection) {
 
 			// log connection
-			Equinox.LOGGER.info("Successfully connected to data server.");
+			Equinox.LOGGER.info("Successfully connected to data service.");
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
 
 			// notify UI
-			owner_.getInputPanel().dataServiceConnectionStatusChanged(true);
+			Platform.runLater(() -> {
+				owner_.getInputPanel().dataServiceConnectionStatusChanged(true);
+			});
 		}
 
 		@Override
@@ -411,11 +436,11 @@ public class DataServerManager implements DataMessageListener {
 				catch (Exception e) {
 
 					// log warning
-					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to data server message.", e);
+					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to data service message.", e);
 
 					// show warning
 					Platform.runLater(() -> {
-						String message = "Exception occurred during responding to data server message: " + e.getLocalizedMessage();
+						String message = "Exception occurred during responding to data service message: " + e.getLocalizedMessage();
 						message += " Click 'Details' for more information.";
 						owner_.getNotificationPane().showError("Problem encountered", message, e);
 					});
@@ -426,21 +451,12 @@ public class DataServerManager implements DataMessageListener {
 		@Override
 		public void disconnected(Connection connection) {
 
-			// notify UI
-			owner_.getInputPanel().dataServiceConnectionStatusChanged(false);
-
 			// stopped by the user
 			if (isStopped_)
 				return;
 
 			// log warning
-			Equinox.LOGGER.log(Level.WARNING, "Connection to data server lost.");
-
-			// show warning
-			Platform.runLater(() -> {
-				String message = "Connection to data server lost. Please check your network connection.";
-				owner_.getNotificationPane().showWarning(message, null);
-			});
+			Equinox.LOGGER.log(Level.WARNING, "Connection to data service lost.");
 		}
 
 		/**

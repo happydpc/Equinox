@@ -37,11 +37,11 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.PluginTask;
 import equinox.task.SaveTask;
+import equinox.utility.exception.IgnoredFailureException;
 import equinox.utility.exception.PermissionDeniedException;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Worker.State;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -51,7 +51,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.WindowEvent;
 
 /**
  * Class for active tasks panel controller.
@@ -96,13 +95,7 @@ public class ActiveTasksPanel implements Initializable {
 		tasks_ = Collections.synchronizedList(new ArrayList<InternalEquinoxTask<?>>());
 
 		// bind no tasks label
-		taskContainer_.getChildren().addListener(new ListChangeListener<Node>() {
-
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Node> c) {
-				noTaskLabel_.setVisible(taskContainer_.getChildren().isEmpty());
-			}
-		});
+		taskContainer_.getChildren().addListener((ListChangeListener<Node>) c -> noTaskLabel_.setVisible(taskContainer_.getChildren().isEmpty()));
 	}
 
 	/**
@@ -226,14 +219,14 @@ public class ActiveTasksPanel implements Initializable {
 
 			// notify if task is sequentially run and queued
 			boolean notificationShown = false;
-			if (isSequential && (runningTasks_ != 0)) {
+			if (isSequential && runningTasks_ != 0) {
 				String message = task.getTaskTitle() + " is queued for execution. You can see currently running tasks from Task Manager.";
 				owner_.getNotificationPane().showQueued(message);
 				notificationShown = true;
 			}
 
 			// notify long running task submission
-			if (!notificationShown && ((task instanceof LongRunningTask) || ((task instanceof PluginTask) && ((PluginTask) task).isLongRunning()))) {
+			if (!notificationShown && (task instanceof LongRunningTask || task instanceof PluginTask && ((PluginTask) task).isLongRunning())) {
 
 				// get number of active tasks
 				ThreadPoolExecutor tPool = (ThreadPoolExecutor) Equinox.FIXED_THREADPOOL;
@@ -256,7 +249,7 @@ public class ActiveTasksPanel implements Initializable {
 			}
 
 			// notify saved task notification
-			else if (!notificationShown && (task instanceof SaveTask))
+			else if (!notificationShown && task instanceof SaveTask)
 				// saved task
 				if (!((SaveTask) task).isScheduled()) {
 					String message = "Task is saved to execute later. You can access and execute saved tasks from Task Manager.";
@@ -348,23 +341,15 @@ public class ActiveTasksPanel implements Initializable {
 		popOver_.setId("modal");
 
 		// set showing handler
-		popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				owner_.addModalLayer("modalTask");
-				isShown_ = true;
-			}
+		popOver_.setOnShowing(event -> {
+			owner_.addModalLayer("modalTask");
+			isShown_ = true;
 		});
 
 		// set hidden handler
-		popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				owner_.removeModalLayer("modalTask");
-				isShown_ = false;
-			}
+		popOver_.setOnHidden(event -> {
+			owner_.removeModalLayer("modalTask");
+			isShown_ = false;
 		});
 
 		// show
@@ -394,22 +379,10 @@ public class ActiveTasksPanel implements Initializable {
 		popOver_.setId("non-modal");
 
 		// set showing handler
-		popOver_.setOnShowing(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				isShown_ = true;
-			}
-		});
+		popOver_.setOnShowing(event -> isShown_ = true);
 
 		// set hidden handler
-		popOver_.setOnHidden(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				isShown_ = false;
-			}
-		});
+		popOver_.setOnHidden(event -> isShown_ = false);
 
 		// show
 		popOver_.show(node);
@@ -463,110 +436,110 @@ public class ActiveTasksPanel implements Initializable {
 	private void updateUI(InternalEquinoxTask<?> task, State state) {
 
 		// add to javafx event queue
-		Platform.runLater(new Runnable() {
+		Platform.runLater(() -> {
 
-			@Override
-			public void run() {
+			// task started running
+			if (state.equals(State.RUNNING)) {
 
-				// task started running
-				if (state.equals(State.RUNNING)) {
+				// root element of task panel
+				Parent root = task.getTaskPanel().getRoot();
 
-					// root element of task panel
-					Parent root = task.getTaskPanel().getRoot();
-
-					// not added yet
-					if (!taskContainer_.getChildren().contains(root)) {
-
-						// remove task from queued list
-						owner_.getQueuedTasksPanel().getQueuedTasks().getItems().remove(task);
-
-						// add root node to task container
-						taskContainer_.getChildren().add(root);
-					}
-				}
-
-				// update info image
-				Image image = runningTasks_ == 0 ? MenuBarPanel.QUIET : MenuBarPanel.RUNNING;
-				owner_.getMenuBarPanel().getNotificationNode().setImage(image);
-
-				// succeeded, failed or canceled
-				if (state.equals(State.SUCCEEDED) || state.equals(State.CANCELLED) || state.equals(State.FAILED)) {
+				// not added yet
+				if (!taskContainer_.getChildren().contains(root)) {
 
 					// remove task from queued list
 					owner_.getQueuedTasksPanel().getQueuedTasks().getItems().remove(task);
 
-					// remove task
-					tasks_.remove(task);
-					taskContainer_.getChildren().remove(task.getTaskPanel().getRoot());
+					// add root node to task container
+					taskContainer_.getChildren().add(root);
+				}
+			}
 
-					// ON hide popup if there are no active and queued tasks
-					if (taskContainer_.getChildren().isEmpty() && owner_.getQueuedTasksPanel().getQueuedTasks().getItems().isEmpty() && (popOver_ != null) && popOver_.getId().equals("non-modal")) {
-						popOver_.hide();
-					}
+			// update info image
+			Image image = runningTasks_ == 0 ? MenuBarPanel.QUIET : MenuBarPanel.RUNNING;
+			owner_.getMenuBarPanel().getNotificationNode().setImage(image);
 
-					// add to history
-					owner_.getTaskHistoryPanel().getTaskHistory().getItems().add(0, new HistoryItem(task.getTaskTitle(), task.getDuration(), state));
+			// succeeded, failed or canceled
+			if (state.equals(State.SUCCEEDED) || state.equals(State.CANCELLED) || state.equals(State.FAILED)) {
+
+				// remove task from queued list
+				owner_.getQueuedTasksPanel().getQueuedTasks().getItems().remove(task);
+
+				// remove task
+				tasks_.remove(task);
+				taskContainer_.getChildren().remove(task.getTaskPanel().getRoot());
+
+				// ON hide popup if there are no active and queued tasks
+				if (taskContainer_.getChildren().isEmpty() && owner_.getQueuedTasksPanel().getQueuedTasks().getItems().isEmpty() && popOver_ != null && popOver_.getId().equals("non-modal")) {
+					popOver_.hide();
 				}
 
-				// task failed
-				if (state.equals(State.FAILED)) {
+				// add to history
+				owner_.getTaskHistoryPanel().getTaskHistory().getItems().add(0, new HistoryItem(task.getTaskTitle(), task.getDuration(), state));
+			}
 
-					// get exception
-					Throwable exception = task.getException();
+			// task failed
+			if (state.equals(State.FAILED)) {
 
-					// permission denied exception
-					if (exception instanceof PermissionDeniedException) {
-						owner_.getNotificationPane().showPermissionDenied(((PermissionDeniedException) exception).getPermission());
+				// get exception
+				Throwable exception = task.getException();
+
+				// ignored failure exception
+				if (exception instanceof IgnoredFailureException)
+					return;
+
+				// permission denied exception
+				else if (exception instanceof PermissionDeniedException) {
+					owner_.getNotificationPane().showPermissionDenied(((PermissionDeniedException) exception).getPermission());
+				}
+
+				// other exception
+				else {
+					String title1 = "Task failed (in " + task.getDuration() + ")";
+					String message1 = task.getTaskTitle() + " has failed due to an exception.";
+					message1 += " Click 'Details' for more information.";
+					owner_.getNotificationPane().showError(title1, message1, exception);
+				}
+			}
+
+			// task succeeded
+			else if (state.equals(State.SUCCEEDED)) {
+
+				// has warnings
+				if (!task.getWarnings().isEmpty()) {
+					String title2 = "Task completed with warnings (in " + task.getDuration() + ")";
+					String message2 = task.getTaskTitle() + " is completed with warnings.";
+					message2 += " Click 'Details' for more information.";
+					owner_.getNotificationPane().showCompletedWithWarnings(title2, message2, task.getWarnings());
+				}
+
+				// no warnings and should be notified
+				else if (task.getTaskPanel().shouldNotify()) {
+
+					// directory outputting task
+					if (task instanceof DirectoryOutputtingTask) {
+						DirectoryOutputtingTask dirOutputtingTask = (DirectoryOutputtingTask) task;
+						String title3 = "Task completed (in " + task.getDuration() + ")";
+						String message3 = dirOutputtingTask.getOutputMessage();
+						String buttonText1 = dirOutputtingTask.getOutputButtonText();
+						owner_.getNotificationPane().showDirectoryOutputtingOk(title3, message3, buttonText1, dirOutputtingTask.getOutputDirectory());
 					}
 
-					// other exception
+					// directory outputting plugin task
+					else if (task instanceof PluginTask && ((PluginTask) task).isDirectoryOutputting()) {
+						PluginTask pluginTask = (PluginTask) task;
+						String title4 = "Task completed (in " + task.getDuration() + ")";
+						String message4 = task.getTaskTitle() + " is successfully completed. ";
+						message4 += "Click 'Outputs' to see outputs of the task.";
+						String buttonText2 = "Outputs";
+						owner_.getNotificationPane().showDirectoryOutputtingOk(title4, message4, buttonText2, pluginTask.getOutputDirectory());
+					}
+
+					// standard task
 					else {
-						String title = "Task failed (in " + task.getDuration() + ")";
-						String message = task.getTaskTitle() + " has failed due to an exception.";
-						message += " Click 'Details' for more information.";
-						owner_.getNotificationPane().showError(title, message, exception);
-					}
-				}
-
-				// task succeeded
-				else if (state.equals(State.SUCCEEDED)) {
-
-					// has warnings
-					if (!task.getWarnings().isEmpty()) {
-						String title = "Task completed with warnings (in " + task.getDuration() + ")";
-						String message = task.getTaskTitle() + " is completed with warnings.";
-						message += " Click 'Details' for more information.";
-						owner_.getNotificationPane().showCompletedWithWarnings(title, message, task.getWarnings());
-					}
-
-					// no warnings and should be notified
-					else if (task.getTaskPanel().shouldNotify()) {
-
-						// directory outputting task
-						if (task instanceof DirectoryOutputtingTask) {
-							DirectoryOutputtingTask dirOutputtingTask = (DirectoryOutputtingTask) task;
-							String title = "Task completed (in " + task.getDuration() + ")";
-							String message = dirOutputtingTask.getOutputMessage();
-							String buttonText = dirOutputtingTask.getOutputButtonText();
-							owner_.getNotificationPane().showDirectoryOutputtingOk(title, message, buttonText, dirOutputtingTask.getOutputDirectory());
-						}
-
-						// directory outputting plugin task
-						else if ((task instanceof PluginTask) && ((PluginTask) task).isDirectoryOutputting()) {
-							PluginTask pluginTask = (PluginTask) task;
-							String title = "Task completed (in " + task.getDuration() + ")";
-							String message = task.getTaskTitle() + " is successfully completed. ";
-							message += "Click 'Outputs' to see outputs of the task.";
-							String buttonText = "Outputs";
-							owner_.getNotificationPane().showDirectoryOutputtingOk(title, message, buttonText, pluginTask.getOutputDirectory());
-						}
-
-						// standard task
-						else {
-							String title = "Task completed (in " + task.getDuration() + ")";
-							String message = task.getTaskTitle() + " is successfully completed.";
-							owner_.getNotificationPane().showOk(title, message);
-						}
+						String title5 = "Task completed (in " + task.getDuration() + ")";
+						String message5 = task.getTaskTitle() + " is successfully completed.";
+						owner_.getNotificationPane().showOk(title5, message5);
 					}
 				}
 			}

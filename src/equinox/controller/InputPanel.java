@@ -106,10 +106,10 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private Button authenticationService_, dataService_, analysisService_, exchangeService_;
+	private Button dataService_, analysisService_, exchangeService_;
 
 	@FXML
-	private Tooltip authenticationServiceTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+	private Tooltip dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
 
 	@FXML
 	private HBox services_;
@@ -421,13 +421,40 @@ public class InputPanel implements Initializable {
 	}
 
 	/**
+	 * Returns data service button.
+	 *
+	 * @return Data service button.
+	 */
+	public Button getDataServiceButton() {
+		return dataService_;
+	}
+
+	/**
+	 * Returns analysis service button.
+	 *
+	 * @return Analysis service button.
+	 */
+	public Button getAnalysisServiceButton() {
+		return analysisService_;
+	}
+
+	/**
+	 * Returns exchange service button.
+	 *
+	 * @return Exchange service button.
+	 */
+	public Button getExchangeServiceButton() {
+		return exchangeService_;
+	}
+
+	/**
 	 * Called when data service connection status changes.
 	 *
 	 * @param isConnected
 	 *            True if connected to service.
 	 */
 	public void dataServiceConnectionStatusChanged(boolean isConnected) {
-		dataServiceImage_.setImage(Utility.getImage(isConnected ? "dataServer_16_on.png" : "dataServer_16_off.png"));
+		dataService_.setStyle(isConnected ? "-fx-base:green" : "-fx-base:red");
 		dataServiceTooltip_.setText(isConnected ? "Data Service: Available" : "Data Service: Not available");
 	}
 
@@ -438,7 +465,7 @@ public class InputPanel implements Initializable {
 	 *            True if connected to service.
 	 */
 	public void analysisServiceConnectionStatusChanged(boolean isConnected) {
-		analysisServiceImage_.setImage(Utility.getImage(isConnected ? "analysisServer_16_on.png" : "analysisServer_16_off.png"));
+		analysisService_.setStyle(isConnected ? "-fx-base:green" : "-fx-base:red");
 		analysisServiceTooltip_.setText(isConnected ? "Analysis Service: Available" : "Analysis Service: Not available");
 	}
 
@@ -449,7 +476,7 @@ public class InputPanel implements Initializable {
 	 *            True if connected to service.
 	 */
 	public void exchangeServiceConnectionStatusChanged(boolean isConnected) {
-		exchangeServiceImage_.setImage(Utility.getImage(isConnected ? "exchangeServer_16_on.png" : "exchangeServer_16_off.png"));
+		exchangeService_.setStyle(isConnected ? "-fx-base:green" : "-fx-base:red");
 		exchangeServiceTooltip_.setText(isConnected ? "Collaboration Service: Available" : "Collaboration Service: Not available");
 	}
 
@@ -465,7 +492,7 @@ public class InputPanel implements Initializable {
 		}
 
 		// connect
-		owner_.getAnalysisServerManager().connect(null);
+		owner_.getAnalysisServerManager().connect(null, true);
 	}
 
 	@FXML
@@ -480,7 +507,7 @@ public class InputPanel implements Initializable {
 		}
 
 		// connect
-		owner_.getDataServerManager().connect(null);
+		owner_.getDataServerManager().connect(null, true);
 	}
 
 	@FXML
@@ -495,7 +522,7 @@ public class InputPanel implements Initializable {
 		}
 
 		// connect
-		owner_.getExchangeServerManager().connect(null);
+		owner_.getExchangeServerManager().connect(null, true);
 	}
 
 	@FXML

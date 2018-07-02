@@ -120,9 +120,9 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 
 		// connect to servers
 		finally {
-			taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null);
-			taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null);
-			taskPanel_.getOwner().getOwner().getDataServerManager().connect(null);
+			taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null, false);
+			taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null, false);
+			taskPanel_.getOwner().getOwner().getDataServerManager().connect(null, false);
 		}
 	}
 
@@ -133,9 +133,9 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 		super.failed();
 
 		// connect to servers
-		taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null);
-		taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null);
-		taskPanel_.getOwner().getOwner().getDataServerManager().connect(null);
+		taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null, false);
+		taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null, false);
+		taskPanel_.getOwner().getOwner().getDataServerManager().connect(null, false);
 	}
 
 	/**

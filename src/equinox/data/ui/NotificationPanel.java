@@ -29,6 +29,8 @@ import javax.swing.Timer;
 //DEPRECATION using org.apache.commons.text.WordUtils instead of org.apache.commons.lang3.text.WordUtils
 import org.apache.commons.text.WordUtils;
 import org.controlsfx.control.NotificationPane;
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.control.action.Action;
 
 import equinox.Equinox;
@@ -41,6 +43,7 @@ import equinox.controller.InfoNotificationPanel;
 import equinox.controller.InternalEngineAnalysisFailedPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.MaterialUpdateNotificationPanel;
+import equinox.controller.NotificationPanel1;
 import equinox.controller.OkNotificationPanel;
 import equinox.controller.PluginUpdateNotificationPanel;
 import equinox.controller.PrivilegeNotificationPanel;
@@ -359,6 +362,19 @@ public class NotificationPanel extends NotificationPane implements java.awt.even
 	 *            The denied permission.
 	 */
 	public void showPermissionDenied(Permission permission) {
+
+		// data service is not available
+		if (!mainScreen_.getDataServerManager().isConnected()) {
+			String msg = "You need to be connected to data service in order to perform this operation. Please connect to the service and try again.";
+			PopOver popOver = new PopOver();
+			popOver.setArrowLocation(ArrowLocation.BOTTOM_LEFT);
+			popOver.setDetachable(false);
+			popOver.setContentNode(NotificationPanel1.load(msg, 50, NotificationPanel1.WARNING));
+			popOver.setHideOnEscape(true);
+			popOver.setAutoHide(true);
+			popOver.show(mainScreen_.getInputPanel().getDataServiceButton());
+			return;
+		}
 
 		// set message
 		String message = "You don't have sufficient privileges to perform the operation ";

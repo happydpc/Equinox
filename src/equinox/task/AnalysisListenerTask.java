@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import equinox.analysisServer.remote.listener.AnalysisMessageListener;
 import equinox.analysisServer.remote.message.AnalysisMessage;
 import equinox.analysisServer.remote.message.AnalysisProgress;
+import equinox.utility.exception.IgnoredFailureException;
 
 /**
  * Interface for server analysis listener task.
@@ -42,6 +43,10 @@ public interface AnalysisListenerTask extends AnalysisMessageListener {
 	 *             If exception occurs during process.
 	 */
 	default void waitForAnalysis(InternalEquinoxTask<?> task, AtomicBoolean isAnalysisCompleted) throws Exception {
+
+		// not connected to server
+		if (!task.getTaskPanel().getOwner().getOwner().getAnalysisServerManager().isConnected())
+			throw new IgnoredFailureException("Analysis service is currently not available. Please connect to the service and try again.");
 
 		// loop while analysis is running
 		while (!isAnalysisCompleted.get()) {

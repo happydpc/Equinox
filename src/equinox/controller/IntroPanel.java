@@ -36,6 +36,7 @@ import equinox.task.CreateWorkspace;
 import equinox.task.GetServerConnectionInfo;
 import equinox.task.LoadAllFiles;
 import equinox.task.LoadPlugins;
+import equinox.task.LoadUserAuthentication;
 import equinox.task.LoadWorkspacePaths;
 import equinox.task.OpenWorkspace;
 import equinox.task.ShowNewsFeed;
@@ -222,7 +223,7 @@ public class IntroPanel implements Initializable {
 			Equinox.WORKSPACE_PATHS.setupOpenRecentMenu(owner_.getMenuBarPanel());
 
 			// get server connection info, update database, load all files
-			owner_.getActiveTasksPanel().runTasksSequentially(new GetServerConnectionInfo(), new UpdateWorkspace(), new LoadAllFiles(IntroPanel.this));
+			owner_.getActiveTasksPanel().runTasksSequentially(new LoadUserAuthentication(), new GetServerConnectionInfo(), new UpdateWorkspace(), new LoadAllFiles(IntroPanel.this));
 		}
 
 		// unsuccessful

@@ -60,7 +60,8 @@ public class Equinox extends EmbeddedApplication {
 	/** Paths to resources. */
 	// @formatter:off
 	public static Path RESOURCES_DIR, EXT_RESOURCES_DIR, UPDATE_DIR, HELP_DIR, SCRIPTS_DIR, TEMP_DIR, PLUGINS_DIR, NEWSFEED_DIR,
-	LOG_FILE, SETTINGS_FILE, DEFAULT_SETTINGS_FILE, WORKSPACE_PATHS_FILE, PERL_EXECUTABLE, WORKSPACE_SCHEMA_PATH, NEWSFEED_MAP_FILE;
+	LOG_FILE, SETTINGS_FILE, DEFAULT_SETTINGS_FILE, WORKSPACE_PATHS_FILE, PERL_EXECUTABLE, WORKSPACE_SCHEMA_PATH, NEWSFEED_MAP_FILE,
+	USER_AUTHENTICATION_FILE;
 	// @formatter:on
 
 	/** Logger. */
@@ -150,6 +151,7 @@ public class Equinox extends EmbeddedApplication {
 		PERL_EXECUTABLE = SCRIPTS_DIR.resolve("perl").resolve("bin").resolve("perl.exe");
 		LOG_FILE = EXT_RESOURCES_DIR.resolve("equinox.log");
 		SETTINGS_FILE = EXT_RESOURCES_DIR.resolve("equinox.set");
+		USER_AUTHENTICATION_FILE = EXT_RESOURCES_DIR.resolve("equinox.usr");
 		DEFAULT_SETTINGS_FILE = RESOURCES_DIR.resolve("equinox.def");
 		WORKSPACE_PATHS_FILE = EXT_RESOURCES_DIR.resolve("equinox.dat");
 		Path tempDir = RESOURCES_DIR.resolve("temp");

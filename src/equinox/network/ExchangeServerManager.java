@@ -26,21 +26,27 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
 import equinox.controller.MainScreen;
+import equinox.controller.NotificationPanel1;
 import equinox.data.Settings;
 import equinox.exchangeServer.remote.Registry;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsMessage;
 import equinox.exchangeServer.remote.message.HandshakeWithExchangeServer;
+import equinox.exchangeServer.remote.message.WhoRequest;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
+import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.utility.Utility;
@@ -148,10 +154,10 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 *
 	 * @param message
 	 *            Message to be sent once the connection is established. Can be <code>null</code>.
-	 *
-	 * @return True if successfully connected to server.
+	 * @param showWarning
+	 *            True to show warning if exception occurs during connecting.
 	 */
-	public boolean connect(ExchangeMessage message) {
+	public void connect(ExchangeMessage message, boolean showWarning) {
 
 		// set stop indicator
 		isStopped_ = false;
@@ -161,34 +167,45 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			if (message != null) {
 				sendMessage(message);
 			}
-			return true;
+			return;
 		}
 
-		// add message to queue
-		if (message != null) {
-			messageQueue_.add(message);
-		}
+		// submit new task
+		threadExecutor_.submit(() -> {
 
-		// connect to server
-		try {
-			String hostname = (String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_HOSTNAME);
-			int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_PORT));
-			kryoNetClient_.connect(5000, hostname, port);
-			HandshakeWithExchangeServer handshake = new HandshakeWithExchangeServer(Equinox.USER.getAlias());
-			kryoNetClient_.sendTCP(handshake);
-			return true;
-		}
+			// add message to queue
+			if (message != null) {
+				messageQueue_.add(message);
+			}
 
-		// exception occurred during connecting to server
-		catch (IOException e) {
+			// connect to server
+			try {
+				String hostname = (String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_HOSTNAME);
+				int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_PORT));
+				kryoNetClient_.connect(5000, hostname, port);
+				HandshakeWithExchangeServer handshake = new HandshakeWithExchangeServer(Equinox.USER.getAlias());
+				kryoNetClient_.sendTCP(handshake);
+				return true;
+			}
 
-			// log error
-			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to exchange server.", e);
-			String msg = "Cannot connect to exchange server. Please check your network connection and exchange server connection settings.";
-			owner_.getNotificationPane().showWarning(msg, null);
-			messageQueue_.clear();
-			return false;
-		}
+			// exception occurred during connecting to server
+			catch (IOException e) {
+
+				// log error
+				Equinox.LOGGER.log(Level.WARNING, "Exception occurred during connecting to collaboration service.", e);
+
+				// notify UI
+				if (showWarning) {
+					Platform.runLater(() -> {
+						String msg = "Cannot connect to collaboration service. Please check your network connection and collaboration service connection settings.";
+						owner_.getNotificationPane().showWarning(msg, null);
+						messageQueue_.clear();
+
+					});
+				}
+				return false;
+			}
+		});
 	}
 
 	/**
@@ -203,16 +220,25 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		if (message == null)
 			return;
 
+		// not connected
+		if (!kryoNetClient_.isConnected()) {
+			Platform.runLater(() -> {
+				String msg = "Collaboration service is currently not available. Please connect to the service and try again.";
+				PopOver popOver = new PopOver();
+				popOver.setArrowLocation(ArrowLocation.BOTTOM_LEFT);
+				popOver.setDetachable(false);
+				popOver.setContentNode(NotificationPanel1.load(msg, 40, NotificationPanel1.WARNING));
+				popOver.setHideOnEscape(true);
+				popOver.setAutoHide(true);
+				popOver.show(owner_.getInputPanel().getExchangeServiceButton());
+			});
+			return;
+		}
+
 		// submit new task
 		threadExecutor_.submit(() -> {
 
 			try {
-
-				// not connected
-				if (!kryoNetClient_.isConnected()) {
-					connect(message);
-					return;
-				}
 
 				// not a big message
 				if (message instanceof BigMessage == false) {
@@ -245,12 +271,14 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			catch (Exception e) {
 
 				// log error
-				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to exchange server.", e);
+				Equinox.LOGGER.log(Level.SEVERE, "Exception occurred during sending network message to collaboration service.", e);
 
 				// show warning
-				String msg = "Exception occurred during sending message to exchange server: " + e.getLocalizedMessage();
-				msg += " Click 'Details' for more information.";
-				owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				Platform.runLater(() -> {
+					String msg = "Exception occurred during sending message to collaboration service: " + e.getLocalizedMessage();
+					msg += " Click 'Details' for more information.";
+					owner_.getNotificationPane().showError("Problem encountered", msg, e);
+				});
 			}
 		});
 	}
@@ -265,7 +293,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// disconnect kryonet client
 		kryoNetClient_.close();
-		Equinox.LOGGER.info("Disconnected from exchange server.");
+		Equinox.LOGGER.info("Disconnected from collaboration service.");
 	}
 
 	/**
@@ -282,7 +310,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// stop kryonet client
 		kryoNetClient_.stop();
-		Equinox.LOGGER.info("Disconnected from exchange server.");
+		Equinox.LOGGER.info("Disconnected from collaboration service.");
 	}
 
 	/**
@@ -315,7 +343,12 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		if (handshake.isHandshakeSuccessful()) {
 
 			// log
-			Equinox.LOGGER.info("Successfully connected to exchange server.");
+			Equinox.LOGGER.info("Successfully connected to collaboration service.");
+
+			// send who request
+			if (Equinox.USER.hasPermission(Permission.SEE_CONNECTED_USERS, false, null)) {
+				sendMessage(new WhoRequest());
+			}
 
 			// send all queued message (if any)
 			ExchangeMessage message;
@@ -326,7 +359,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		// unsuccessful
 		else {
-			String text = "Cannot connect to exchange server. Please check your network connection and exchange server connection settings.";
+			String text = "Cannot connect to collaboration service. Please check your network connection and collaboration service connection settings.";
 			owner_.getNotificationPane().showWarning(text, null);
 			messageQueue_.clear();
 		}
@@ -348,13 +381,15 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		public void connected(Connection connection) {
 
 			// log connection
-			Equinox.LOGGER.info("Successfully connected to exchange server.");
+			Equinox.LOGGER.info("Successfully connected to collaboration service.");
 
 			// set 20 seconds timeout for connection (this will allow 12 seconds of network latency)
 			connection.setTimeout(20000);
 
 			// notify UI
-			owner_.getInputPanel().exchangeServiceConnectionStatusChanged(true);
+			Platform.runLater(() -> {
+				owner_.getInputPanel().exchangeServiceConnectionStatusChanged(true);
+			});
 		}
 
 		@Override
@@ -389,11 +424,11 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 				catch (Exception e) {
 
 					// log warning
-					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to exchange server message.", e);
+					Equinox.LOGGER.log(Level.WARNING, "Exception occurred during responding to collaboration service message.", e);
 
 					// show warning
 					Platform.runLater(() -> {
-						String message = "Exception occurred during responding to exchange server message: " + e.getLocalizedMessage();
+						String message = "Exception occurred during responding to collaboration service message: " + e.getLocalizedMessage();
 						message += " Click 'Details' for more information.";
 						owner_.getNotificationPane().showError("Problem encountered", message, e);
 					});
@@ -404,21 +439,12 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		@Override
 		public void disconnected(Connection connection) {
 
-			// notify UI
-			owner_.getInputPanel().exchangeServiceConnectionStatusChanged(false);
-
 			// stopped by the user
 			if (isStopped_)
 				return;
 
 			// log warning
-			Equinox.LOGGER.log(Level.WARNING, "Connection to exchange server lost.");
-
-			// show warning
-			Platform.runLater(() -> {
-				String message = "Connection to exchange server lost. Please check your network connection.";
-				owner_.getNotificationPane().showWarning(message, null);
-			});
+			Equinox.LOGGER.log(Level.WARNING, "Connection to collaboration service lost.");
 		}
 
 		/**
