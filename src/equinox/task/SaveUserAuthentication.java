@@ -18,6 +18,7 @@ package equinox.task;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.concurrent.ExecutionException;
 
 import com.itextpdf.xmp.impl.Base64;
 
@@ -33,7 +34,7 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date 2 Jul 2018
  * @time 01:35:11
  */
-public class SaveUserAuthentication extends InternalEquinoxTask<Void> implements ShortRunningTask {
+public class SaveUserAuthentication extends InternalEquinoxTask<UserAuthentication> implements ShortRunningTask {
 
 	/** User. */
 	private final User user;
@@ -59,7 +60,7 @@ public class SaveUserAuthentication extends InternalEquinoxTask<Void> implements
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected UserAuthentication call() throws Exception {
 
 		// encrypt user attributes
 		String alias = Base64.encode(user.getAlias());
@@ -75,6 +76,25 @@ public class SaveUserAuthentication extends InternalEquinoxTask<Void> implements
 		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(Equinox.USER_AUTHENTICATION_FILE.toFile())))) {
 			out.writeObject(userAuth);
 		}
-		return null;
+
+		// return authentication
+		return userAuth;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// set authentication end date to UI
+		try {
+			taskPanel_.getOwner().getOwner().getInputPanel().getAuthenticationButton().setUserData(get());
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 }

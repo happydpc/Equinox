@@ -445,6 +445,11 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to collaboration service lost.");
+
+			// notify UI
+			Platform.runLater(() -> {
+				owner_.getInputPanel().exchangeServiceConnectionStatusChanged(false);
+			});
 		}
 
 		/**

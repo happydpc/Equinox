@@ -457,6 +457,11 @@ public class DataServerManager implements DataMessageListener {
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to data service lost.");
+
+			// notify UI
+			Platform.runLater(() -> {
+				owner_.getInputPanel().dataServiceConnectionStatusChanged(false);
+			});
 		}
 
 		/**

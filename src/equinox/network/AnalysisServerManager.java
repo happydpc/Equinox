@@ -438,6 +438,11 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to analysis server lost.");
+
+			// notify UI
+			Platform.runLater(() -> {
+				owner_.getInputPanel().analysisServiceConnectionStatusChanged(false);
+			});
 		}
 
 		/**

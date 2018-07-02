@@ -22,9 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
+
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
+import equinox.data.UserAuthentication;
 import equinox.data.fileType.SpectrumItem;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
@@ -106,10 +110,10 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private Button dataService_, analysisService_, exchangeService_;
+	private Button authentication_, dataService_, analysisService_, exchangeService_;
 
 	@FXML
-	private Tooltip dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+	private Tooltip authenticationTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
 
 	@FXML
 	private HBox services_;
@@ -421,6 +425,15 @@ public class InputPanel implements Initializable {
 	}
 
 	/**
+	 * Returns user authentication button.
+	 *
+	 * @return User authentication button.
+	 */
+	public Button getAuthenticationButton() {
+		return authentication_;
+	}
+
+	/**
 	 * Returns data service button.
 	 *
 	 * @return Data service button.
@@ -445,6 +458,17 @@ public class InputPanel implements Initializable {
 	 */
 	public Button getExchangeServiceButton() {
 		return exchangeService_;
+	}
+
+	/**
+	 * Called when user authentication status changes.
+	 *
+	 * @param isExpired
+	 *            True if user authentication is expired.
+	 */
+	public void authenticationStatusChanged(boolean isExpired) {
+		authentication_.setStyle(isExpired ? "-fx-base:red" : "-fx-base:green");
+		authenticationTooltip_.setText(isExpired ? "User Authentication: Expired" : "User Authentication: Valid");
 	}
 
 	/**
@@ -478,6 +502,33 @@ public class InputPanel implements Initializable {
 	public void exchangeServiceConnectionStatusChanged(boolean isConnected) {
 		exchangeService_.setStyle(isConnected ? "-fx-base:green" : "-fx-base:red");
 		exchangeServiceTooltip_.setText(isConnected ? "Collaboration Service: Available" : "Collaboration Service: Not available");
+	}
+
+	@FXML
+	private void onAuthenticationClicked() {
+
+		// get user authentication
+		UserAuthentication userAuth = (UserAuthentication) authentication_.getUserData();
+
+		// expired
+		String msg = null;
+		if (userAuth == null || userAuth.isExpired()) {
+			msg = "Your user authentication is expired. Please connect to data service to obtain new authentication.";
+		}
+
+		// valid
+		else {
+			msg = "Your user authentication will expire in " + userAuth.getAuthenticationExpiryDuration() + ".";
+		}
+
+		// show pop-up
+		PopOver popOver = new PopOver();
+		popOver.setArrowLocation(ArrowLocation.BOTTOM_LEFT);
+		popOver.setDetachable(false);
+		popOver.setContentNode(NotificationPanel1.load(msg, 50, NotificationPanel1.INFO));
+		popOver.setHideOnEscape(true);
+		popOver.setAutoHide(true);
+		popOver.show(authentication_);
 	}
 
 	@FXML

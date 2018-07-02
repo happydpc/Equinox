@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
 /**
  * Class for user authentication.
  *
@@ -93,6 +95,31 @@ public final class UserAuthentication implements Serializable {
 	 */
 	public List<String> getPermissionNames() {
 		return permissionNames;
+	}
+
+	/**
+	 * Computes and returns formatted user authentication expiry duration.
+	 *
+	 * @return Formatted user authentication expiry duration.
+	 */
+	public String getAuthenticationExpiryDuration() {
+
+		// compute duration
+		Duration duration = Duration.between(Instant.now(), expiry);
+
+		// expired
+		if (duration.isZero() || duration.isNegative())
+			return "Expired";
+
+		// get duration milliseconds
+		long millis = duration.toMillis();
+
+		// smaller than a second
+		if (millis < 1000)
+			return millis + " milliseconds";
+
+		// longer than a second
+		return DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
 	}
 
 	/**

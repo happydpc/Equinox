@@ -99,6 +99,8 @@ public class LoadUserAuthentication extends InternalEquinoxTask<UserAuthenticati
 				Equinox.USER.addPermission(Base64Decoder.decodeString(permission));
 			}
 
+			// set authentication to UI
+			taskPanel_.getOwner().getOwner().getInputPanel().getAuthenticationButton().setUserData(userAuth);
 		}
 
 		// exception occurred
