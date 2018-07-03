@@ -89,7 +89,11 @@ public class SaveUserAuthentication extends InternalEquinoxTask<UserAuthenticati
 
 		// set authentication end date to UI
 		try {
-			taskPanel_.getOwner().getOwner().getInputPanel().getAuthenticationButton().setUserData(get());
+			UserAuthentication userAuth = get();
+			if (userAuth != null) {
+				taskPanel_.getOwner().getOwner().getInputPanel().getAuthenticationButton().setUserData(userAuth);
+				taskPanel_.getOwner().getOwner().getInputPanel().authenticationStatusChanged(userAuth.isExpired());
+			}
 		}
 
 		// exception occurred

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import org.controlsfx.control.PopOver;
@@ -48,6 +50,7 @@ import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
+import equinox.task.CheckUserAuthentication;
 import equinox.task.SaveUserAuthentication;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -367,6 +370,10 @@ public class DataServerManager implements DataMessageListener {
 
 			// save user authentication
 			owner_.getActiveTasksPanel().runTaskInParallel(new SaveUserAuthentication(Equinox.USER));
+
+			// start scheduled thread pool
+			CheckUserAuthentication check = new CheckUserAuthentication(owner_.getInputPanel());
+			((ScheduledExecutorService) Equinox.SCHEDULED_THREADPOOL).scheduleAtFixedRate(check, 60, 120, TimeUnit.SECONDS);
 		}
 
 		// unsuccessful

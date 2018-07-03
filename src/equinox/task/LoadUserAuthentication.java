@@ -101,6 +101,7 @@ public class LoadUserAuthentication extends InternalEquinoxTask<UserAuthenticati
 
 			// set authentication to UI
 			taskPanel_.getOwner().getOwner().getInputPanel().getAuthenticationButton().setUserData(userAuth);
+			taskPanel_.getOwner().getOwner().getInputPanel().authenticationStatusChanged(userAuth.isExpired());
 		}
 
 		// exception occurred
