@@ -67,7 +67,12 @@ public class RewriteCFGFile extends TemporaryFileCreatingTask<Void> implements S
 
 		// get path launch configuration file
 		Path configFile = Paths.get(taskPanel_.getOwner().getOwner().getOwner().getLaunchConfigurationFile());
-		
+
+		// cannot find configuration file (remove all white spaces from file name)
+		if (!Files.exists(configFile)) {
+			configFile = configFile.getParent().resolve(configFile.getFileName().toString().replaceAll("\\s+", ""));
+		}
+
 		// no configuration file
 		Path cfgFileNamePath = configFile.getFileName();
 		if (cfgFileNamePath == null)
@@ -87,14 +92,12 @@ public class RewriteCFGFile extends TemporaryFileCreatingTask<Void> implements S
 				while ((line = reader.readLine()) != null) {
 
 					// min heap size
-					if (line.startsWith("-Xms"))
+					if (line.startsWith("-Xms")) {
 						writer.write("-Xms" + arguments_.get(ArgumentType.JVM_MIN_HEAP_SIZE) + "m");
-
-					// max heap size
-					else if (line.startsWith("-Xmx"))
+					}
+					else if (line.startsWith("-Xmx")) {
 						writer.write("-Xmx" + arguments_.get(ArgumentType.JVM_MAX_HEAP_SIZE) + "m");
-
-					// user arguments
+					}
 					else if (line.startsWith("--")) {
 						for (ArgumentType type : ArgumentType.values()) {
 							if (line.contains(type.getName())) {
@@ -103,10 +106,9 @@ public class RewriteCFGFile extends TemporaryFileCreatingTask<Void> implements S
 							}
 						}
 					}
-
-					// other lines
-					else
+					else {
 						writer.write(line);
+					}
 
 					// new line
 					writer.newLine();
