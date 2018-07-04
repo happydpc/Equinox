@@ -31,7 +31,6 @@ import equinox.data.fileType.Spectrum;
 import equinox.task.CreateDummySTFFile;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -89,43 +88,27 @@ public class DummySTFPanel implements InternalInputSubPanel {
 		stressState_.getSelectionModel().select(0);
 
 		// set listener to DT sup
-		dtSup_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onDTSupClicked();
-			}
-		});
+		dtSup_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onDTSupClicked());
 
 		// set listener to DT sup
-		dtInf_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onDTInfClicked();
-			}
-		});
+		dtInf_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onDTInfClicked());
 
 		// add listener
-		stressState_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				boolean is1D = newValue.equals("1D stress state");
-				oneGY_.setDisable(is1D);
-				oneGXY_.setDisable(is1D);
-				incrementY_.setDisable(is1D);
-				incrementXY_.setDisable(is1D);
-				deltaPY_.setDisable(is1D);
-				deltaPXY_.setDisable(is1D);
-				if (dtSup_.isSelected()) {
-					dtSupY_.setDisable(is1D);
-					dtSupXY_.setDisable(is1D);
-				}
-				if (dtInf_.isSelected()) {
-					dtInfY_.setDisable(is1D);
-					dtInfXY_.setDisable(is1D);
-				}
+		stressState_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> {
+			boolean is1D = newValue.equals("1D stress state");
+			oneGY_.setDisable(is1D);
+			oneGXY_.setDisable(is1D);
+			incrementY_.setDisable(is1D);
+			incrementXY_.setDisable(is1D);
+			deltaPY_.setDisable(is1D);
+			deltaPXY_.setDisable(is1D);
+			if (dtSup_.isSelected()) {
+				dtSupY_.setDisable(is1D);
+				dtSupXY_.setDisable(is1D);
+			}
+			if (dtInf_.isSelected()) {
+				dtInfY_.setDisable(is1D);
+				dtInfXY_.setDisable(is1D);
 			}
 		});
 
@@ -302,7 +285,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// no file name given
 		String fileName = fileName_.getText();
-		if ((fileName == null) || fileName.isEmpty()) {
+		if (fileName == null || fileName.isEmpty()) {
 			String message = "No file name entered. Please enter name for the dummy STF file.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
@@ -332,7 +315,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check 1G y
 		message = oneGY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -345,7 +328,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check 1G xy
 		message = oneGXY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -371,7 +354,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check increment y
 		message = incrementY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -384,7 +367,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check increment xy
 		message = incrementXY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -423,7 +406,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check delta-p y
 		message = deltaPY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -436,7 +419,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 		// check delta-p xy
 		message = deltaPXY_.validate();
-		if (!is1D & (message != null)) {
+		if (!is1D & message != null) {
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
@@ -478,7 +461,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 			// check delta-t superior y
 			message = dtSupY_.validate();
-			if (!is1D & (message != null)) {
+			if (!is1D & message != null) {
 				PopOver popOver = new PopOver();
 				popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 				popOver.setDetachable(false);
@@ -491,7 +474,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 			// check delta-t superior xy
 			message = dtSupXY_.validate();
-			if (!is1D & (message != null)) {
+			if (!is1D & message != null) {
 				PopOver popOver = new PopOver();
 				popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 				popOver.setDetachable(false);
@@ -534,7 +517,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 			// check delta-t inferior y
 			message = dtInfY_.validate();
-			if (!is1D & (message != null)) {
+			if (!is1D & message != null) {
 				PopOver popOver = new PopOver();
 				popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 				popOver.setDetachable(false);
@@ -547,7 +530,7 @@ public class DummySTFPanel implements InternalInputSubPanel {
 
 			// check delta-t inferior xy
 			message = dtInfXY_.validate();
-			if (!is1D & (message != null)) {
+			if (!is1D & message != null) {
 				PopOver popOver = new PopOver();
 				popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 				popOver.setDetachable(false);
