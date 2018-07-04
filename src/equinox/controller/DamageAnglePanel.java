@@ -22,7 +22,6 @@ import java.util.ResourceBundle;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
-import org.controlsfx.control.RangeSlider;
 import org.controlsfx.control.ToggleSwitch;
 
 import control.validationField.DoubleValidationField;
@@ -77,6 +76,8 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
@@ -98,9 +99,6 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 	/** True if the loadcase/segment factors are enabled. */
 	private boolean loadcaseSegmentFactorsEnabled_ = true;
 
-	/** Angle range slider. */
-	private RangeSlider angleRange_;
-
 	@FXML
 	private VBox root_, iterationPanel_;
 
@@ -108,7 +106,7 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 	private ToggleSwitch removeNegative_, omission_, generateData_;
 
 	@FXML
-	private TextField incrementAngle_, startAngle_, endAngle_;
+	private TextField incrementAngle_;
 
 	@FXML
 	private Label dtLoadcaseInfLabel_, refDTValInfLabel_, dtLoadcaseSupLabel_, refDTValSupLabel_;
@@ -145,6 +143,9 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 
 	@FXML
 	private IntegerValidationField dpLoadcase_, dtLoadcaseInf_, dtLoadcaseSup_;
+
+	@FXML
+	private Spinner<Integer> startAngle_, endAngle_;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -201,35 +202,16 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 			interpolationSelected(newValue);
 		});
 
-		// create angle range slider
-		angleRange_ = new RangeSlider(0, 180, 0, 180);
-		angleRange_.setShowTickMarks(true);
-		angleRange_.setShowTickLabels(true);
-		angleRange_.setMajorTickUnit(30);
-		angleRange_.setMinorTickCount(2);
-		angleRange_.setBlockIncrement(10);
-		angleRange_.setSnapToTicks(true);
-		angleRange_.setMaxWidth(Double.MAX_VALUE);
-		iterationPanel_.getChildren().add(1, angleRange_);
-
-		// set listeners to range slider
-		angleRange_.lowValueProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> {
-			if (angleRange_.getLowValue() == angleRange_.getHighValue()) {
-				angleRange_.adjustLowValue(angleRange_.getLowValue() - Integer.parseInt(incrementAngle_.getText()));
-			}
-		});
-		angleRange_.highValueProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> {
-			if (angleRange_.getLowValue() == angleRange_.getHighValue()) {
-				angleRange_.adjustHighValue(angleRange_.getHighValue() + Integer.parseInt(incrementAngle_.getText()));
-			}
-		});
-
-		// bind start/end angles to range slider
-		startAngle_.textProperty().bind(angleRange_.lowValueProperty().asString("%.0f"));
-		endAngle_.textProperty().bind(angleRange_.highValueProperty().asString("%.0f"));
+		// setup spinners
+		IntegerSpinnerValueFactory startFactory = new IntegerSpinnerValueFactory(0, 180, 0, 10);
+		IntegerSpinnerValueFactory endFactory = new IntegerSpinnerValueFactory(0, 180, 180, 10);
+		startFactory.maxProperty().bind(endFactory.valueProperty());
+		endFactory.minProperty().bind(startFactory.valueProperty());
+		startAngle_.setValueFactory(startFactory);
+		endAngle_.setValueFactory(endFactory);
 
 		// add listener to increment angle
-		incrementAngle_.textProperty().addListener(new IncrementAngleFieldListener(incrementAngle_, angleRange_));
+		incrementAngle_.textProperty().addListener(new IncrementAngleFieldListener(incrementAngle_, startAngle_, endAngle_));
 
 		// expand first panes
 		accordion1_.setExpandedPane(accordion1_.getPanes().get(0));
@@ -420,8 +402,8 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 		input.setReferenceDTInf(refDTInf);
 
 		// set iteration settings
-		int start = Integer.parseInt(startAngle_.getText());
-		int end = Integer.parseInt(endAngle_.getText());
+		int start = startAngle_.getValue();
+		int end = endAngle_.getValue();
 		int inc = Integer.parseInt(incrementAngle_.getText());
 		input.setIterationAngles(start, end, inc);
 
@@ -489,6 +471,19 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 	 * @return True if inputs are valid.
 	 */
 	private boolean checkInputs(boolean runNow, Date scheduleDate) {
+
+		// start-end angles same
+		if (startAngle_.getValue() == endAngle_.getValue()) {
+			String message = "Start angle must be smaller than the end angle. Please supply valid values.";
+			PopOver popOver = new PopOver();
+			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
+			popOver.setDetachable(false);
+			popOver.setContentNode(NotificationPanel1.load(message, 30, NotificationPanel1.WARNING));
+			popOver.setHideOnEscape(true);
+			popOver.setAutoHide(true);
+			popOver.show(startAngle_);
+			return false;
+		}
 
 		// no fatigue material added
 		if (fatigueMaterials_.getItems().isEmpty()) {
@@ -785,8 +780,8 @@ public class DamageAnglePanel implements InternalInputSubPanel, DeltaPInfoReques
 
 		// reset iteration settings
 		incrementAngle_.setText("10");
-		angleRange_.adjustLowValue(0);
-		angleRange_.adjustHighValue(180);
+		startAngle_.getValueFactory().setValue(0);
+		endAngle_.getValueFactory().setValue(180);
 
 		// reset overall stress factors
 		oneG_.reset();

@@ -1,0 +1,9 @@
+
+
+.menu-button {
+	-fx-base:#2c3e50;
+}
+
+.menu-button > .arrow-button .arrow {
+	-fx-background-color: white;
+}

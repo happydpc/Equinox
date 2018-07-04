@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="root_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="370.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadMultiplicationTableInfoPanel">
+<VBox fx:id="root_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="370.0" spacing="5.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadMultiplicationTableInfoPanel">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
    </padding>
@@ -60,17 +60,17 @@
             <Label layoutX="10.0" layoutY="77.0" text="A/C section:" textFill="SLATEGRAY" GridPane.rowIndex="3" />
             <Label layoutX="10.0" layoutY="107.0" text="Fatigue mission:" textFill="SLATEGRAY" GridPane.rowIndex="4" />
             <Label layoutX="10.0" layoutY="137.0" text="Issue:" textFill="SLATEGRAY" GridPane.rowIndex="5" />
-            <Label fx:id="spectrumName_" layoutX="155.0" layoutY="17.0" text="Label" GridPane.columnIndex="1" />
-            <Label fx:id="program_" layoutX="155.0" layoutY="47.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label fx:id="section_" layoutX="155.0" layoutY="77.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label fx:id="mission_" layoutX="155.0" layoutY="107.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label fx:id="issue_" layoutX="155.0" layoutY="137.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Label fx:id="spectrumName_" layoutX="155.0" layoutY="17.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" />
+            <Label fx:id="program_" layoutX="155.0" layoutY="47.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label fx:id="section_" layoutX="155.0" layoutY="77.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label fx:id="mission_" layoutX="155.0" layoutY="107.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label fx:id="issue_" layoutX="155.0" layoutY="137.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             <Label layoutX="10.0" layoutY="197.0" text="Delivery reference:" textFill="SLATEGRAY" GridPane.rowIndex="6" />
-            <Label fx:id="deliveryRef_" layoutX="115.0" layoutY="197.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <Label fx:id="deliveryRef_" layoutX="115.0" layoutY="197.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="6" />
             <Label layoutX="10.0" layoutY="223.0" text="Description:" textFill="SLATEGRAY" GridPane.rowIndex="7" />
-            <Label fx:id="description_" layoutX="130.0" layoutY="223.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <Label fx:id="description_" layoutX="130.0" layoutY="223.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="7" />
             <Label layoutX="10.0" layoutY="15.0" text="Pilot point name:" textFill="SLATEGRAY" GridPane.rowIndex="1" />
-            <Label fx:id="ppName_" layoutX="144.0" layoutY="15.0" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="ppName_" layoutX="144.0" layoutY="15.0" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="1" />
          </children>
       </GridPane>
    </children>

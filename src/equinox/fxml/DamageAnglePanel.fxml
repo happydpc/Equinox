@@ -13,8 +13,8 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -31,7 +31,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="410.0" prefWidth="352.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DamageAnglePanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="364.0" prefWidth="352.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DamageAnglePanel">
   <!-- TODO Add Nodes -->
   <children>
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" pannable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="scrollPane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
@@ -44,14 +44,12 @@
       <content>
                               <VBox fx:id="iterationPanel_" spacing="10.0">
       <children>
-                                    <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Select angle range" />
-                                    <Separator prefWidth="200.0" />
-                  <GridPane hgap="5.0" prefWidth="192.0" vgap="5.0" VBox.vgrow="NEVER">
-                    <children>
-      <Label layoutX="35.0" layoutY="122.0" text="Increment angle:" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                    <GridPane hgap="5.0" layoutX="20.0" layoutY="60.0" prefWidth="192.0" vgap="5.0">
+                                       <children>
+                                          <Label layoutX="35.0" layoutY="122.0" text="Increment angle:" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                           <StackPane GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                                              <children>
-                                                <TextField fx:id="incrementAngle_" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="25.0" prefWidth="-1.0" text="10" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                                <TextField fx:id="incrementAngle_" maxWidth="1.7976931348623157E308" prefWidth="-1.0" text="10" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
                                                 <Label mouseTransparent="true" text="degrees" textFill="LIGHTGRAY" StackPane.alignment="CENTER_RIGHT">
                                                    <StackPane.margin>
                                                       <Insets right="4.0" />
@@ -59,42 +57,39 @@
                                                 </Label>
                                              </children>
                                           </StackPane>
-                                          <Label layoutX="10.0" layoutY="87.0" text="Start angle:" GridPane.rowIndex="1" />
-                                          <Label layoutX="10.0" layoutY="17.0" text="End angle:" GridPane.rowIndex="2" />
+                                          <Label layoutX="10.0" layoutY="87.0" text="Start angle:" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+                                          <Label layoutX="10.0" layoutY="17.0" text="End angle:" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
                                           <StackPane layoutX="122.0" layoutY="80.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                              <children>
-                                                <TextField fx:id="startAngle_" disable="true" editable="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="25.0" text="0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                                <Spinner fx:id="startAngle_" maxWidth="1.7976931348623157E308" />
                                                 <Label mouseTransparent="true" text="degrees" textFill="LIGHTGRAY" StackPane.alignment="CENTER_RIGHT">
                                                    <StackPane.margin>
-                                                      <Insets right="4.0" />
+                                                      <Insets right="31.0" />
                                                    </StackPane.margin>
                                                 </Label>
                                              </children>
                                           </StackPane>
                                           <StackPane layoutX="122.0" layoutY="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <children>
-                                                <TextField fx:id="endAngle_" disable="true" editable="false" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="25.0" prefWidth="-1.0" text="180" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+                                                <Spinner fx:id="endAngle_" maxWidth="1.7976931348623157E308" />
                                                 <Label mouseTransparent="true" text="degrees" textFill="LIGHTGRAY" StackPane.alignment="CENTER_RIGHT">
                                                    <StackPane.margin>
-                                                      <Insets right="4.0" />
+                                                      <Insets right="31.0" />
                                                    </StackPane.margin>
                                                 </Label>
                                              </children>
                                           </StackPane>
-                    </children>
-                    <columnConstraints>
-                      <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" />
-                      <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                       </children>
+                                       <columnConstraints>
+                                          <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" />
+                                          <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="10.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                    </rowConstraints>
-                    <VBox.margin>
-                      <Insets />
-                    </VBox.margin>
-                  </GridPane>
+                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                       </rowConstraints>
+                                    </GridPane>
       </children>
       <padding>
       <Insets left="10.0" right="10.0" top="10.0" />

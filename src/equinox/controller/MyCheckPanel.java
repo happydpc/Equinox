@@ -29,8 +29,6 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
 import org.controlsfx.control.ToggleSwitch;
 
-import com.jfoenix.controls.JFXTabPane;
-
 import control.validationField.DoubleValidationField;
 import control.validationField.IntegerValidationField;
 import equinox.controller.InputPanel.InternalInputSubPanel;
@@ -50,7 +48,6 @@ import equinox.task.SaveTask;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -66,6 +63,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitMenuButton;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -135,7 +133,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 	private SplitMenuButton ok_;
 
 	@FXML
-	private JFXTabPane optionsTabPane_;
+	private TabPane optionsTabPane_;
 
 	@FXML
 	private BorderPane inputZone_;
@@ -164,33 +162,29 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		removeMission_.disableProperty().bind(missionList_.getSelectionModel().selectedItemProperty().isNull());
 
 		// add change listener to conversion table check image
-		xls_.imageProperty().addListener(new ChangeListener<Image>() {
+		xls_.imageProperty().addListener((ChangeListener<Image>) (observable, oldValue, newValue) -> {
 
-			@Override
-			public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue) {
+			// setup add button
+			setupAddButton();
 
-				// setup add button
-				setupAddButton();
+			// no value given
+			if (newValue == null)
+				return;
 
-				// no value given
-				if (newValue == null)
-					return;
+			// get data
+			Path conversionTable = (Path) xls_.getUserData();
 
-				// get data
-				Path conversionTable = (Path) xls_.getUserData();
-
-				// no data
-				if (conversionTable == null) {
-					sheet_.getSelectionModel().clearSelection();
-					sheet_.setValue(null);
-					sheet_.getItems().clear();
-					sheet_.setDisable(true);
-					return;
-				}
-
-				// get worksheet names
-				owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetConvTableSheetNames(MyCheckPanel.this, conversionTable));
+			// no data
+			if (conversionTable == null) {
+				sheet_.getSelectionModel().clearSelection();
+				sheet_.setValue(null);
+				sheet_.getItems().clear();
+				sheet_.setDisable(true);
+				return;
 			}
+
+			// get worksheet names
+			owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetConvTableSheetNames(MyCheckPanel.this, conversionTable));
 		});
 
 		// add change listeners to file check images
@@ -201,13 +195,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		stressComponent_.getSelectionModel().select(0);
 
 		// add listener
-		stressComponent_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<StressComponent>() {
-
-			@Override
-			public void changed(ObservableValue<? extends StressComponent> observable, StressComponent oldValue, StressComponent newValue) {
-				rotation_.setDisable(!newValue.equals(StressComponent.ROTATED));
-			}
-		});
+		stressComponent_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<StressComponent>) (observable, oldValue, newValue) -> rotation_.setDisable(!newValue.equals(StressComponent.ROTATED)));
 
 		// setup text field listeners
 		maxPoints_.setDefaultValue(123456);
@@ -313,7 +301,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		boolean countFlights = countFlights_.isSelected();
 		int maxPoints = Integer.parseInt(maxPoints_.getText());
 		String runTillCountString = runTillFlightCount_.getText();
-		int runTillCount = (runTillCountString == null) || runTillCountString.isEmpty() ? -1 : Integer.parseInt(runTillCountString);
+		int runTillCount = runTillCountString == null || runTillCountString.isEmpty() ? -1 : Integer.parseInt(runTillCountString);
 		int cvtWarnings = Integer.parseInt(cvtWarnings_.getText());
 		input.setCountANABooleans(new boolean[] { esgCount, roundTheClock, printFSF, printFactors, write1g, returnTo1g, countFlights });
 		input.setCountANAIntegers(new int[] { maxPoints, runTillCount, cvtWarnings });
@@ -331,7 +319,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		StressComponent component = stressComponent_.getSelectionModel().getSelectedItem();
 		double rotation = Double.parseDouble(rotation_.getText());
 		String runTillSthString = runTillFlightSTH_.getText();
-		int runTillSth = (runTillSthString == null) || runTillSthString.isEmpty() ? -1 : Integer.parseInt(runTillSthString);
+		int runTillSth = runTillSthString == null || runTillSthString.isEmpty() ? -1 : Integer.parseInt(runTillSthString);
 		double refDT = Double.parseDouble(refDT_.getText());
 		input.setGenerateSTHBooleans(new boolean[] { enableSlog, esgSTH, warnCombo, removeNegative, addDP });
 		input.setGenerateSTHDoubles(new double[] { refDP, dpFactor, overallFactor, rotation, refDT });
@@ -472,7 +460,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		List<File> files = fileChooser.showOpenMultipleDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((files == null) || files.isEmpty())
+		if (files == null || files.isEmpty())
 			return;
 
 		// process files
@@ -554,13 +542,9 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 
 		// animate file types
 		if (success && !toBeAnimated.isEmpty()) {
-			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, new EventHandler<ActionEvent>() {
-
-				@Override
-				public void handle(ActionEvent event) {
-					for (ImageView item : toBeAnimated) {
-						item.setImage(Utility.getImage("full.png"));
-					}
+			Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, (EventHandler<ActionEvent>) event -> {
+				for (ImageView item : toBeAnimated) {
+					item.setImage(Utility.getImage("full.png"));
 				}
 			}, toBeAnimated).play();
 		}
@@ -663,7 +647,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		File directory = directoryChooser.showDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
-		if ((directory == null) || !directory.exists())
+		if (directory == null || !directory.exists())
 			return;
 
 		// process directory
@@ -683,13 +667,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 		outputDir_.setUserData(file.toPath());
 
 		// animate file types
-		Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				outputDir_.setImage(Utility.getImage("full.png"));
-			}
-		}, outputDir_).play();
+		Animator.bouncingScale(0.0, 100.0, 1.0, 1.5, 1.0, (EventHandler<ActionEvent>) event -> outputDir_.setImage(Utility.getImage("full.png")), outputDir_).play();
 	}
 
 	@FXML
@@ -923,7 +901,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 
 		// no output directory given
 		Path outputDir = (Path) outputDir_.getUserData();
-		if ((outputDir == null) || !Files.exists(outputDir) || !Files.isDirectory(outputDir)) {
+		if (outputDir == null || !Files.exists(outputDir) || !Files.isDirectory(outputDir)) {
 			accordion_.setExpandedPane(accordion_.getPanes().get(2));
 			String message = "Please supply output directory to proceed.";
 			PopOver popOver = new PopOver();
@@ -948,13 +926,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 	 */
 	private void setListenersToCheckImages(ImageView... images) {
 		for (ImageView image : images) {
-			image.imageProperty().addListener(new ChangeListener<Image>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Image> observable, Image oldValue, Image newValue) {
-					setupAddButton();
-				}
-			});
+			image.imageProperty().addListener((ChangeListener<Image>) (observable, oldValue, newValue) -> setupAddButton());
 		}
 	}
 
@@ -965,7 +937,7 @@ public class MyCheckPanel implements InternalInputSubPanel, ConversionTableSheet
 	private void setupAddButton() {
 
 		// all required inputs are supplied
-		if ((ana_.getUserData() != null) && (txt_.getUserData() != null) && (cvt_.getUserData() != null) && (xls_.getUserData() != null) && !sheet_.getSelectionModel().isEmpty() && !missionType_.getSelectionModel().isEmpty()) {
+		if (ana_.getUserData() != null && txt_.getUserData() != null && cvt_.getUserData() != null && xls_.getUserData() != null && !sheet_.getSelectionModel().isEmpty() && !missionType_.getSelectionModel().isEmpty()) {
 
 			// check if selected mission type is already in the list
 			MissionType type = missionType_.getSelectionModel().getSelectedItem();

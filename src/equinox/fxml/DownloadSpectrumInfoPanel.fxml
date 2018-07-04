@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox fx:id="root_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="370.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadSpectrumInfoPanel">
+<VBox fx:id="root_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="370.0" spacing="5.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadSpectrumInfoPanel">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
    </padding>
@@ -71,18 +71,18 @@
             <Label text="Pilot points:" textFill="SLATEGRAY" GridPane.rowIndex="9" />
             <Label text="Loadcase factor files:" textFill="SLATEGRAY" GridPane.rowIndex="10" />
             <Label text="Download size:" textFill="SLATEGRAY" GridPane.rowIndex="11" />
-            <Label fx:id="program_" text="Label" GridPane.columnIndex="1" />
-            <Label fx:id="section_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label fx:id="mission_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label fx:id="missionIssue_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label fx:id="flpIssue_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label fx:id="iflpIssue_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-            <Label fx:id="cdfIssue_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-            <Label fx:id="deliveryRef_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-            <Label fx:id="description_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-            <Label fx:id="pilotPoints_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-            <Label fx:id="multiplicationTables_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-            <Label fx:id="size_" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+            <Label fx:id="program_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" />
+            <Label fx:id="section_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="mission_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label fx:id="missionIssue_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label fx:id="flpIssue_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label fx:id="iflpIssue_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Label fx:id="cdfIssue_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <Label fx:id="deliveryRef_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <Label fx:id="description_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+            <Label fx:id="pilotPoints_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+            <Label fx:id="multiplicationTables_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+            <Label fx:id="size_" text="Label" textFill="DIMGRAY" GridPane.columnIndex="1" GridPane.rowIndex="11" />
          </children>
       </GridPane>
    </children>

@@ -15,18 +15,18 @@
  */
 package equinox.utility;
 
-import org.controlsfx.control.RangeSlider;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 
 /**
- * Class for increment angle field listener.
+ * Utility class for damage angle increment text field listener.
  *
  * @author Murat Artim
- * @date Aug 6, 2014
- * @time 3:14:14 PM
+ * @date 4 Jul 2018
+ * @time 23:33:44
  */
 public class IncrementAngleFieldListener implements ChangeListener<String> {
 
@@ -34,7 +34,7 @@ public class IncrementAngleFieldListener implements ChangeListener<String> {
 	private static final int DEFAULT = 10, MIN = 1, MAX = 90;
 
 	/** Angle range slider. */
-	private final RangeSlider angleRange_;
+	private final Spinner<Integer> startAngle_, endAngle_;
 
 	/** Listened text field. */
 	protected final TextField textField_;
@@ -44,12 +44,15 @@ public class IncrementAngleFieldListener implements ChangeListener<String> {
 	 *
 	 * @param textField
 	 *            Text field to listen.
-	 * @param angleRange
-	 *            Angle range slider.
+	 * @param startAngle
+	 *            Start angle spinner.
+	 * @param endAngle
+	 *            End angle spinner.
 	 */
-	public IncrementAngleFieldListener(TextField textField, RangeSlider angleRange) {
+	public IncrementAngleFieldListener(TextField textField, Spinner<Integer> startAngle, Spinner<Integer> endAngle) {
 		textField_ = textField;
-		angleRange_ = angleRange;
+		startAngle_ = startAngle;
+		endAngle_ = endAngle;
 	}
 
 	@Override
@@ -61,47 +64,28 @@ public class IncrementAngleFieldListener implements ChangeListener<String> {
 			int val = Integer.parseInt(newValue);
 
 			// check against lower boundary
-			if (val < MIN) {
+			if (val < MIN || val > MAX || 30 % val != 0) {
 				textField_.setText(Integer.toString(DEFAULT));
-				angleRange_.setMinorTickCount(2);
-				angleRange_.setBlockIncrement(DEFAULT);
-				angleRange_.adjustLowValue(angleRange_.getLowValue());
-				angleRange_.adjustHighValue(angleRange_.getHighValue());
-				return;
-			}
-
-			// check against upper boundary
-			if (val > MAX) {
-				textField_.setText(Integer.toString(DEFAULT));
-				angleRange_.setMinorTickCount(2);
-				angleRange_.setBlockIncrement(DEFAULT);
-				angleRange_.adjustLowValue(angleRange_.getLowValue());
-				angleRange_.adjustHighValue(angleRange_.getHighValue());
-				return;
-			}
-
-			// check if divisor of 30
-			if (30 % val != 0) {
-				textField_.setText(Integer.toString(DEFAULT));
-				angleRange_.setMinorTickCount(2);
-				angleRange_.setBlockIncrement(DEFAULT);
-				angleRange_.adjustLowValue(angleRange_.getLowValue());
-				angleRange_.adjustHighValue(angleRange_.getHighValue());
+				((IntegerSpinnerValueFactory) startAngle_.getValueFactory()).setAmountToStepBy(DEFAULT);
+				((IntegerSpinnerValueFactory) endAngle_.getValueFactory()).setAmountToStepBy(DEFAULT);
+				startAngle_.getValueFactory().setValue(0);
+				endAngle_.getValueFactory().setValue(180);
 				return;
 			}
 
 			// setup range slider
-			angleRange_.setMinorTickCount(30 / val - 1);
-			angleRange_.setBlockIncrement(val);
-			angleRange_.adjustLowValue(angleRange_.getLowValue());
-			angleRange_.adjustHighValue(angleRange_.getHighValue());
+			((IntegerSpinnerValueFactory) startAngle_.getValueFactory()).setAmountToStepBy(val);
+			((IntegerSpinnerValueFactory) endAngle_.getValueFactory()).setAmountToStepBy(val);
+			startAngle_.getValueFactory().setValue(0);
+			endAngle_.getValueFactory().setValue(180);
 		}
 
 		// not integer
 		catch (NumberFormatException e) {
-			textField_.setText(Integer.toString(DEFAULT));
-			angleRange_.setMinorTickCount(2);
-			angleRange_.setBlockIncrement(DEFAULT);
+			((IntegerSpinnerValueFactory) startAngle_.getValueFactory()).setAmountToStepBy(DEFAULT);
+			((IntegerSpinnerValueFactory) endAngle_.getValueFactory()).setAmountToStepBy(DEFAULT);
+			startAngle_.getValueFactory().setValue(0);
+			endAngle_.getValueFactory().setValue(180);
 		}
 	}
 }
