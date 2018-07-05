@@ -251,6 +251,16 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 	}
 
 	@FXML
+	private void onDownloadImagesClicked() {
+		// TODO download images clicked
+	}
+
+	@FXML
+	private void onDownloadAttributesClicked() {
+		// TODO download attributes clicked
+	}
+
+	@FXML
 	private void onAddClicked() {
 		PopOver popOver = new PopOver();
 		popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
