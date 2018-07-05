@@ -332,6 +332,18 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 					filer.getSftpChannel().put(stfFile.toString(), url);
 					request.addDataUrl(url);
 
+					// upload pilot point attributes (excel file)
+					Path excelFile = zipExcelFile(tempDir.resolve(directoryName), pilotPointName);
+					if (excelFile == null) {
+						request.addAttributeUrl(null);
+					}
+					else {
+						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_ATTRIBUTES), program, section, mission);
+						url = dir + "/" + excelFile.getFileName().toString();
+						filer.getSftpChannel().put(excelFile.toString(), url);
+						request.addAttributeUrl(url);
+					}
+
 					// create mapping for storing image URLs
 					HashMap<PilotPointImageType, String> imageUrls = new HashMap<>();
 
@@ -458,6 +470,54 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 	}
 
 	/**
+	 * Zips pilot point attribute file.
+	 *
+	 * @param directory
+	 *            Directory containing the pilot point files.
+	 * @param pilotPointName
+	 *            Pilot point name.
+	 * @return Path to zipped archive.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private Path zipExcelFile(Path directory, String pilotPointName) throws Exception {
+
+		// get pilot point files
+		Path excelFile = null;
+		File[] files = directory.toFile().listFiles();
+		if (files != null) {
+			for (File file : files) {
+
+				// get file type
+				FileType type = FileType.getFileType(file);
+
+				// unknown type
+				if (type == null) {
+					continue;
+				}
+
+				// set files
+				if (type.equals(FileType.XLS) || type.equals(FileType.XLSX)) {
+					excelFile = file.toPath();
+				}
+			}
+		}
+
+		// check files
+		if (excelFile == null)
+			return null;
+
+		// create output file path
+		Path output = directory.resolve(pilotPointName + "_attributes" + FileType.ZIP.getExtension());
+
+		// zip files
+		Utility.zipFile(excelFile, output.toFile(), this);
+
+		// return output zip file
+		return output;
+	}
+
+	/**
 	 * Zips pilot point STF file.
 	 *
 	 * @param directory
@@ -480,6 +540,11 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 
 				// get file type
 				FileType type = FileType.getFileType(file);
+
+				// unknown type
+				if (type == null) {
+					continue;
+				}
 
 				// set files
 				if (type.equals(FileType.STF)) {
@@ -526,6 +591,11 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 
 				// get file type
 				FileType type = FileType.getFileType(file);
+
+				// unknown type
+				if (type == null) {
+					continue;
+				}
 
 				// set files
 				if (type.equals(FileType.PNG) && file.getName().equals(imageType.getFileName())) {
