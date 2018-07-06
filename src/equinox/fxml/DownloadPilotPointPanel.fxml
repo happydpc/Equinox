@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<HBox fx:id="root_" alignment="CENTER_LEFT" spacing="5.0" style="-fx-background-color: white; -fx-border-color: gainsboro; -fx-background-radius: 10; -fx-border-radius: 10;" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadPilotPointPanel">
+<HBox fx:id="root_" alignment="CENTER_LEFT" spacing="5.0" style="-fx-background-color: white; -fx-border-color: gainsboro; -fx-background-radius: 10; -fx-border-radius: 10;" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.DownloadPilotPointPanel">
    <children>
       <ToggleSwitch fx:id="select_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="35.0" HBox.hgrow="NEVER" />
       <VBox HBox.hgrow="ALWAYS">
@@ -121,7 +121,7 @@
             <String fx:value="menuButton" />
          </styleClass>
       </Button>
-      <SplitMenuButton contentDisplay="GRAPHIC_ONLY" focusTraversable="false" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" onAction="#onDownloadClicked" prefHeight="26.0" text="SplitMenuButton">
+      <SplitMenuButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onDownloadClicked" prefHeight="26.0" prefWidth="65.0" text="SplitMenuButton">
         <items>
           <MenuItem mnemonicParsing="false" onAction="#onDownloadClicked" text="Download STF File" />
           <MenuItem mnemonicParsing="false" onAction="#onDownloadImagesClicked" text="Download Images" />

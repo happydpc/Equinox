@@ -249,215 +249,214 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 			// get workbook
 			workbook = Workbook.getWorkbook(infoFile.toFile());
 
-			// loop over sheets
-			for (Sheet sheet : workbook.getSheets()) {
+			// get sheet
+			Sheet sheet = workbook.getSheet("Page 1");
 
-				// null sheet
-				if (sheet == null) {
-					String message = "Cannot find worksheet 'Pilot Point Info' in the upload information file 'Pilot_Point_Info.xls' of ";
-					message += "the ZIP archive '" + zipFile.toString() + "'. Aborting operation.";
+			// null sheet
+			if (sheet == null) {
+				String message = "Cannot find worksheet 'Pilot Point Info' in the upload information file 'Pilot_Point_Info.xls' of ";
+				message += "the ZIP archive '" + zipFile.toString() + "'. Aborting operation.";
+				throw new Exception(message);
+			}
+
+			// loop over rows
+			int endRow = sheet.getRows() - 1;
+			for (int i = 1; i <= endRow; i++) {
+
+				// task cancelled
+				if (isCancelled())
+					return;
+
+				// get pilot point info
+				String directoryName = sheet.getCell(0, i).getContents().trim();
+				String pilotPointName = sheet.getCell(1, i).getContents().trim();
+				String spectrumName = sheet.getCell(2, i).getContents().trim();
+				String program = sheet.getCell(3, i).getContents().trim();
+				String section = sheet.getCell(4, i).getContents().trim();
+				String mission = sheet.getCell(5, i).getContents().trim();
+				String description = sheet.getCell(6, i).getContents().trim();
+				String dataSource = sheet.getCell(7, i).getContents().trim();
+				String generationSource = sheet.getCell(8, i).getContents().trim();
+				String delRef = sheet.getCell(9, i).getContents().trim();
+				String issue = sheet.getCell(10, i).getContents().trim();
+				String eid = sheet.getCell(11, i).getContents().trim();
+				String elementType = sheet.getCell(12, i).getContents().trim();
+				String framePos = sheet.getCell(13, i).getContents().trim();
+				String stringerPos = sheet.getCell(14, i).getContents().trim();
+				String fatigueMaterial = sheet.getCell(15, i).getContents().trim();
+				String preffasMaterial = sheet.getCell(16, i).getContents().trim();
+				String linearMaterial = sheet.getCell(17, i).getContents().trim();
+
+				// check values
+				if (directoryName.isEmpty() || pilotPointName.isEmpty() || spectrumName.isEmpty() || mission.isEmpty() || description.isEmpty() || dataSource.isEmpty() || generationSource.isEmpty() || delRef.isEmpty() || issue.isEmpty()) {
+					String message = "The upload information file 'Pilot_Point_Info.xls' of ";
+					message += "the ZIP archive '" + zipFile.toString() + "' has missing entries. Aborting operation.";
 					throw new Exception(message);
 				}
 
-				// loop over rows
-				int endRow = sheet.getRows() - 1;
-				for (int i = 1; i <= endRow; i++) {
+				// progress info
+				updateMessage("Uploading pilot point '" + pilotPointName + "'...");
+				updateProgress(i, endRow);
 
-					// task cancelled
-					if (isCancelled())
-						return;
+				// create and add pilot point info to request
+				PilotPointInfo info = new PilotPointInfo();
+				info.setInfo(PilotPointInfoType.SPECTRUM_NAME, spectrumName);
+				info.setInfo(PilotPointInfoType.NAME, pilotPointName);
+				info.setInfo(PilotPointInfoType.AC_PROGRAM, program);
+				info.setInfo(PilotPointInfoType.AC_SECTION, section);
+				info.setInfo(PilotPointInfoType.FAT_MISSION, mission);
+				info.setInfo(PilotPointInfoType.DESCRIPTION, description);
+				info.setInfo(PilotPointInfoType.DATA_SOURCE, dataSource);
+				info.setInfo(PilotPointInfoType.GENERATION_SOURCE, generationSource);
+				info.setInfo(PilotPointInfoType.DELIVERY_REF_NUM, delRef);
+				info.setInfo(PilotPointInfoType.ISSUE, issue);
+				info.setInfo(PilotPointInfoType.EID, eid);
+				info.setInfo(PilotPointInfoType.ELEMENT_TYPE, elementType);
+				info.setInfo(PilotPointInfoType.FRAME_RIB_POSITION, framePos);
+				info.setInfo(PilotPointInfoType.STRINGER_POSITION, stringerPos);
+				info.setInfo(PilotPointInfoType.FATIGUE_MATERIAL, fatigueMaterial);
+				info.setInfo(PilotPointInfoType.PREFFAS_MATERIAL, preffasMaterial);
+				info.setInfo(PilotPointInfoType.LINEAR_MATERIAL, linearMaterial);
+				request.addInfo(info);
 
-					// get pilot point info
-					String directoryName = sheet.getCell(0, i).getContents().trim();
-					String pilotPointName = sheet.getCell(1, i).getContents().trim();
-					String spectrumName = sheet.getCell(2, i).getContents().trim();
-					String program = sheet.getCell(3, i).getContents().trim();
-					String section = sheet.getCell(4, i).getContents().trim();
-					String mission = sheet.getCell(5, i).getContents().trim();
-					String description = sheet.getCell(6, i).getContents().trim();
-					String dataSource = sheet.getCell(7, i).getContents().trim();
-					String generationSource = sheet.getCell(8, i).getContents().trim();
-					String delRef = sheet.getCell(9, i).getContents().trim();
-					String issue = sheet.getCell(10, i).getContents().trim();
-					String eid = sheet.getCell(11, i).getContents().trim();
-					String elementType = sheet.getCell(12, i).getContents().trim();
-					String framePos = sheet.getCell(13, i).getContents().trim();
-					String stringerPos = sheet.getCell(14, i).getContents().trim();
-					String fatigueMaterial = sheet.getCell(15, i).getContents().trim();
-					String preffasMaterial = sheet.getCell(16, i).getContents().trim();
-					String linearMaterial = sheet.getCell(17, i).getContents().trim();
+				// zip pilot point file
+				Path stfFile = zipSTFFile(tempDir.resolve(directoryName), zipFile, pilotPointName);
 
-					// check values
-					if (directoryName.isEmpty() || pilotPointName.isEmpty() || spectrumName.isEmpty() || mission.isEmpty() || description.isEmpty() || dataSource.isEmpty() || generationSource.isEmpty() || delRef.isEmpty() || issue.isEmpty()) {
-						String message = "The upload information file 'Pilot_Point_Info.xls' of ";
-						message += "the ZIP archive '" + zipFile.toString() + "' has missing entries. Aborting operation.";
-						throw new Exception(message);
-					}
+				// task cancelled
+				if (isCancelled())
+					return;
 
-					// progress info
-					updateMessage("Uploading pilot point '" + pilotPointName + "'...");
-					updateProgress(i, endRow);
+				// upload pilot point data
+				String dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_DATA), program, section, mission);
+				String url = dir + "/" + stfFile.getFileName().toString();
+				filer.getSftpChannel().put(stfFile.toString(), url);
+				request.addDataUrl(url);
 
-					// create and add pilot point info to request
-					PilotPointInfo info = new PilotPointInfo();
-					info.setInfo(PilotPointInfoType.SPECTRUM_NAME, spectrumName);
-					info.setInfo(PilotPointInfoType.NAME, pilotPointName);
-					info.setInfo(PilotPointInfoType.AC_PROGRAM, program);
-					info.setInfo(PilotPointInfoType.AC_SECTION, section);
-					info.setInfo(PilotPointInfoType.FAT_MISSION, mission);
-					info.setInfo(PilotPointInfoType.DESCRIPTION, description);
-					info.setInfo(PilotPointInfoType.DATA_SOURCE, dataSource);
-					info.setInfo(PilotPointInfoType.GENERATION_SOURCE, generationSource);
-					info.setInfo(PilotPointInfoType.DELIVERY_REF_NUM, delRef);
-					info.setInfo(PilotPointInfoType.ISSUE, issue);
-					info.setInfo(PilotPointInfoType.EID, eid);
-					info.setInfo(PilotPointInfoType.ELEMENT_TYPE, elementType);
-					info.setInfo(PilotPointInfoType.FRAME_RIB_POSITION, framePos);
-					info.setInfo(PilotPointInfoType.STRINGER_POSITION, stringerPos);
-					info.setInfo(PilotPointInfoType.FATIGUE_MATERIAL, fatigueMaterial);
-					info.setInfo(PilotPointInfoType.PREFFAS_MATERIAL, preffasMaterial);
-					info.setInfo(PilotPointInfoType.LINEAR_MATERIAL, linearMaterial);
-					request.addInfo(info);
-
-					// zip pilot point file
-					Path stfFile = zipSTFFile(tempDir.resolve(directoryName), zipFile, pilotPointName);
-
-					// task cancelled
-					if (isCancelled())
-						return;
-
-					// upload pilot point data
-					String dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_DATA), program, section, mission);
-					String url = dir + "/" + stfFile.getFileName().toString();
-					filer.getSftpChannel().put(stfFile.toString(), url);
-					request.addDataUrl(url);
-
-					// upload pilot point attributes (excel file)
-					Path excelFile = zipExcelFile(tempDir.resolve(directoryName), pilotPointName);
-					if (excelFile == null) {
-						request.addAttributeUrl(null);
-					}
-					else {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_ATTRIBUTES), program, section, mission);
-						url = dir + "/" + excelFile.getFileName().toString();
-						filer.getSftpChannel().put(excelFile.toString(), url);
-						request.addAttributeUrl(url);
-					}
-
-					// create mapping for storing image URLs
-					HashMap<PilotPointImageType, String> imageUrls = new HashMap<>();
-
-					// upload pilot point image
-					Path pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.IMAGE);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_IMAGES), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.IMAGE, url);
-					}
-
-					// upload pilot point mission profile plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.MISSION_PROFILE);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_MISSION_PROFILE_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.MISSION_PROFILE, url);
-					}
-
-					// upload pilot point longest flight plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LONGEST_FLIGHT);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LONGEST_TYPICAL_FLIGHT_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.LONGEST_FLIGHT, url);
-					}
-
-					// upload pilot point highest occurrence flight plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_WITH_HIGHEST_OCCURRENCE_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE, url);
-					}
-
-					// upload pilot point highest stress flight plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_WITH_HIGHEST_STRESS_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS, url);
-					}
-
-					// upload pilot point level crossing plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LEVEL_CROSSING);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LEVEL_CROSSING_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.LEVEL_CROSSING, url);
-					}
-
-					// upload pilot point damage angle plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.DAMAGE_ANGLE);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_DAMAGE_ANGLE_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.DAMAGE_ANGLE, url);
-					}
-
-					// upload pilot point number of peaks plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.NUMBER_OF_PEAKS);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_NUMBER_OF_PEAKS_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.NUMBER_OF_PEAKS, url);
-					}
-
-					// upload pilot point flight occurrence plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_OCCURRENCE);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_FLIGHT_OCCURRENCE_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.FLIGHT_OCCURRENCE, url);
-					}
-
-					// upload pilot point rainflow histogram plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.RAINFLOW_HISTOGRAM);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_RAINFLOW_HISTOGRAM_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.RAINFLOW_HISTOGRAM, url);
-					}
-
-					// upload pilot point loadcase damage contribution plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LOADCASE_DAMAGE_CONTRIBUTION);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LOADCASE_DAMAGE_CONTRIBUTION_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.LOADCASE_DAMAGE_CONTRIBUTION, url);
-					}
-
-					// upload pilot point typical flight damage contribution plot
-					pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_DAMAGE_CONTRIBUTION);
-					if (pngFile != null) {
-						dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_DAMAGE_CONTRIBUTION_PLOTS), program, section, mission);
-						url = dir + "/" + pilotPointName + ".png";
-						filer.getSftpChannel().put(pngFile.toString(), url);
-						imageUrls.put(PilotPointImageType.FLIGHT_DAMAGE_CONTRIBUTION, url);
-					}
-
-					// add image mapping to request
-					request.addImageUrls(imageUrls);
+				// upload pilot point attributes (excel file)
+				Path excelFile = zipExcelFile(tempDir.resolve(directoryName), pilotPointName);
+				if (excelFile == null) {
+					request.addAttributeUrl(null);
 				}
+				else {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_ATTRIBUTES), program, section, mission);
+					url = dir + "/" + excelFile.getFileName().toString();
+					filer.getSftpChannel().put(excelFile.toString(), url);
+					request.addAttributeUrl(url);
+				}
+
+				// create mapping for storing image URLs
+				HashMap<PilotPointImageType, String> imageUrls = new HashMap<>();
+
+				// upload pilot point image
+				Path pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.IMAGE);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_IMAGES), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.IMAGE, url);
+				}
+
+				// upload pilot point mission profile plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.MISSION_PROFILE);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_MISSION_PROFILE_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.MISSION_PROFILE, url);
+				}
+
+				// upload pilot point longest flight plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LONGEST_FLIGHT);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LONGEST_TYPICAL_FLIGHT_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.LONGEST_FLIGHT, url);
+				}
+
+				// upload pilot point highest occurrence flight plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_WITH_HIGHEST_OCCURRENCE_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE, url);
+				}
+
+				// upload pilot point highest stress flight plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_WITH_HIGHEST_STRESS_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS, url);
+				}
+
+				// upload pilot point level crossing plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LEVEL_CROSSING);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LEVEL_CROSSING_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.LEVEL_CROSSING, url);
+				}
+
+				// upload pilot point damage angle plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.DAMAGE_ANGLE);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_DAMAGE_ANGLE_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.DAMAGE_ANGLE, url);
+				}
+
+				// upload pilot point number of peaks plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.NUMBER_OF_PEAKS);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_NUMBER_OF_PEAKS_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.NUMBER_OF_PEAKS, url);
+				}
+
+				// upload pilot point flight occurrence plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_OCCURRENCE);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_FLIGHT_OCCURRENCE_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.FLIGHT_OCCURRENCE, url);
+				}
+
+				// upload pilot point rainflow histogram plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.RAINFLOW_HISTOGRAM);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_RAINFLOW_HISTOGRAM_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.RAINFLOW_HISTOGRAM, url);
+				}
+
+				// upload pilot point loadcase damage contribution plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.LOADCASE_DAMAGE_CONTRIBUTION);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_LOADCASE_DAMAGE_CONTRIBUTION_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.LOADCASE_DAMAGE_CONTRIBUTION, url);
+				}
+
+				// upload pilot point typical flight damage contribution plot
+				pngFile = getPNGFile(tempDir.resolve(directoryName), PilotPointImageType.FLIGHT_DAMAGE_CONTRIBUTION);
+				if (pngFile != null) {
+					dir = filer.createDirectories(filer.getDirectoryPath(FilerConnection.PP_TYPICAL_FLIGHT_DAMAGE_CONTRIBUTION_PLOTS), program, section, mission);
+					url = dir + "/" + pilotPointName + ".png";
+					filer.getSftpChannel().put(pngFile.toString(), url);
+					imageUrls.put(PilotPointImageType.FLIGHT_DAMAGE_CONTRIBUTION, url);
+				}
+
+				// add image mapping to request
+				request.addImageUrls(imageUrls);
 			}
 		}
 

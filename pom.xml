@@ -56,8 +56,8 @@
 						<Implementation-Version>3.8</Implementation-Version>
 						<Notify-Update>true</Notify-Update>
 						<Allow-Ignore-Update>true</Allow-Ignore-Update>
-						<Jar-Version>3.8.1</Jar-Version>
-						<Lib-Version>3.8.0</Lib-Version>
+						<Jar-Version>3.8.6</Jar-Version>
+						<Lib-Version>3.8.3</Lib-Version>
 						<Resource-Version>3.8.0</Resource-Version>
 						<JavaFX-Feature-Proxy>None</JavaFX-Feature-Proxy>
 					</manifestAttributes>
@@ -159,7 +159,6 @@
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
 		</dependency>
-		<!-- FIXME Remove this -->
 		<!-- https://mvnrepository.com/artifact/eu.hansolo/Medusa -->
 		<dependency>
 			<groupId>eu.hansolo</groupId>
