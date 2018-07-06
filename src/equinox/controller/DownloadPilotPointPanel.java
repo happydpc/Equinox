@@ -45,6 +45,8 @@ import equinox.task.AdvancedMultiplicationTableSearch;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.DeletePilotPointFromGlobalDB;
 import equinox.task.DownloadPilotPoint;
+import equinox.task.DownloadPilotPointAttributes;
+import equinox.task.DownloadPilotPointImages;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -252,12 +254,54 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 
 	@FXML
 	private void onDownloadImagesClicked() {
-		// TODO download images clicked
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getOwner().getOwner().getFileChooser(FileType.ZIP.getExtensionFilter());
+
+		// show save dialog
+		String name = (String) info_.getInfo(PilotPointInfoType.NAME);
+		fileChooser.setInitialFileName(name + "_images" + FileType.ZIP.getExtension());
+		File selectedFile = fileChooser.showSaveDialog(owner_.getOwner().getOwner().getOwner().getStage());
+
+		// no file selected
+		if (selectedFile == null)
+			return;
+
+		// set initial directory
+		owner_.getOwner().getOwner().setInitialDirectory(selectedFile);
+
+		// append extension if necessary
+		File output = FileType.appendExtension(selectedFile, FileType.ZIP);
+
+		// get task manager
+		ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+		tm.runTaskInParallel(new DownloadPilotPointImages(info_, output.toPath()));
 	}
 
 	@FXML
 	private void onDownloadAttributesClicked() {
-		// TODO download attributes clicked
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getOwner().getOwner().getFileChooser(FileType.ZIP.getExtensionFilter());
+
+		// show save dialog
+		String name = (String) info_.getInfo(PilotPointInfoType.NAME);
+		fileChooser.setInitialFileName(name + "_attributes" + FileType.ZIP.getExtension());
+		File selectedFile = fileChooser.showSaveDialog(owner_.getOwner().getOwner().getOwner().getStage());
+
+		// no file selected
+		if (selectedFile == null)
+			return;
+
+		// set initial directory
+		owner_.getOwner().getOwner().setInitialDirectory(selectedFile);
+
+		// append extension if necessary
+		File output = FileType.appendExtension(selectedFile, FileType.ZIP);
+
+		// get task manager
+		ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+		tm.runTaskInParallel(new DownloadPilotPointAttributes(info_, output.toPath()));
 	}
 
 	@FXML
