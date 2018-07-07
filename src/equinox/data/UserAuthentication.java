@@ -33,10 +33,10 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 public final class UserAuthentication implements Serializable {
 
 	/** Serial ID. */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	/** Number of days to expiry. */
-	private static final long NUMBER_OF_DAYS_EXPIRY = 2L;
+	private static final long NUMBER_OF_DAYS_EXPIRY = 10L;
 
 	/** User alias. */
 	private final String alias, username;

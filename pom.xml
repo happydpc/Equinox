@@ -56,8 +56,8 @@
 						<Implementation-Version>3.8</Implementation-Version>
 						<Notify-Update>true</Notify-Update>
 						<Allow-Ignore-Update>true</Allow-Ignore-Update>
-						<Jar-Version>3.8.7</Jar-Version>
-						<Lib-Version>3.8.4</Lib-Version>
+						<Jar-Version>3.8.8</Jar-Version>
+						<Lib-Version>3.8.5</Lib-Version>
 						<Resource-Version>3.8.0</Resource-Version>
 						<JavaFX-Feature-Proxy>None</JavaFX-Feature-Proxy>
 					</manifestAttributes>
