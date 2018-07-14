@@ -430,10 +430,12 @@ public class DataServerManager implements DataMessageListener {
 
 					// permission denied message
 					else if (object instanceof PermissionDenied) {
-						owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+						Platform.runLater(() -> {
+							owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+						});
 					}
 
-					// analysis message
+					// data message
 					else if (object instanceof DataMessage) {
 						respond((DataMessage) object);
 					}
@@ -533,7 +535,7 @@ public class DataServerManager implements DataMessageListener {
 				owner_.respondToDataMessage(message);
 			}
 
-			// other message
+			// other messages
 			else {
 
 				// sync over listeners

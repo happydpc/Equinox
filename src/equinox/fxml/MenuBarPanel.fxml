@@ -622,13 +622,35 @@
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.users" />
                      </graphic>
                   </Menu>
+                  <Menu disable="true" mnemonicParsing="false" text="Manage Services...">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.weather-cloudy" />
+                     </graphic>
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onManageDataServiceClicked" text="Data Service">
+                           <graphic>
+                              <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.database" />
+                           </graphic>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#onManageAnalysisServiceClicked" text="Analysis Service">
+                           <graphic>
+                              <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.gear" />
+                           </graphic>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#onManageExchangeServiceClicked" text="Collaboration Service">
+                           <graphic>
+                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.link" />
+                           </graphic>
+                        </MenuItem>
+                     </items>
+                  </Menu>
                   <SeparatorMenuItem disable="true" mnemonicParsing="false" />
-                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onResetExchangeDatabaseClicked" text="Reset Exchange Database">
+                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onResetExchangeDatabaseClicked" text="Reset Exchange Data">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.power-off" />
                      </graphic>
                   </MenuItem>
-                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onServerDiagnosticsClicked" text="Server Diagnostics...">
+                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onHealthMonitoringClicked" text="Platform Health Monitoring...">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.heartbeat" />
                      </graphic>

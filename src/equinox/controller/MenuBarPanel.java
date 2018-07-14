@@ -1044,8 +1044,26 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onServerDiagnosticsClicked() {
-		owner_.getInputPanel().showSubPanel(InputPanel.SERVER_DIAGNOSTICS_PANEL);
+	private void onHealthMonitoringClicked() {
+		// TODO on platform health monitoring clicked
+	}
+
+	@FXML
+	private void onManageDataServiceClicked() {
+		((ManageServicePanel) owner_.getInputPanel().getSubPanel(InputPanel.MANAGE_SERVICE_PANEL)).setService(ManageServicePanel.DATA_SERVICE);
+		owner_.getInputPanel().showSubPanel(InputPanel.MANAGE_SERVICE_PANEL);
+	}
+
+	@FXML
+	private void onManageAnalysisServiceClicked() {
+		((ManageServicePanel) owner_.getInputPanel().getSubPanel(InputPanel.MANAGE_SERVICE_PANEL)).setService(ManageServicePanel.ANALYSIS_SERVICE);
+		owner_.getInputPanel().showSubPanel(InputPanel.MANAGE_SERVICE_PANEL);
+	}
+
+	@FXML
+	private void onManageExchangeServiceClicked() {
+		((ManageServicePanel) owner_.getInputPanel().getSubPanel(InputPanel.MANAGE_SERVICE_PANEL)).setService(ManageServicePanel.EXCHANGE_SERVICE);
+		owner_.getInputPanel().showSubPanel(InputPanel.MANAGE_SERVICE_PANEL);
 	}
 
 	/**

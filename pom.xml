@@ -165,6 +165,12 @@
 			<artifactId>Medusa</artifactId>
 			<version>8.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.jasypt/jasypt -->
+		<dependency>
+			<groupId>org.jasypt</groupId>
+			<artifactId>jasypt</artifactId>
+			<version>1.9.2</version>
+		</dependency>
 		<!-- local repository: com.base64.base64-all -->
 		<dependency>
 			<groupId>com.base64</groupId>

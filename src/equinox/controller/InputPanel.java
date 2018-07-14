@@ -73,8 +73,8 @@ public class InputPanel implements Initializable {
 			COMPARE_AC_EQUIVALENT_STRESSES_PANEL = 53, GENERATE_LIFE_FACTOR_PANEL = 54, GENERATE_EQUIVALENT_STRESS_RATIO_PANEL = 55, SAVE_LIFE_FACTOR_PANEL = 56, SAVE_EQUIVALENT_STRESS_RATIO_PANEL = 57, GENERATE_AC_LIFE_FACTORS_PANEL = 58, GENERATE_AC_EQUIVALENT_STRESS_RATIOS_PANEL = 59,
 			SAVE_AC_LIFE_FACTOR_PANEL = 60, SAVE_AC_EQUIVALENT_STRESS_RATIO_PANEL = 61, PLOT_AC_LIFE_FACTORS_PANEL = 62, PLOT_AC_EQUIVALENT_STRESS_RATIOS_PANEL = 63, STF_INFO_PANEL = 64, SPECTRUM_INFO_PANEL = 65, EXPORT_STF_PANEL = 66, SEARCH_PILOT_POINTS_PANEL = 67,
 			EXPORT_MULTIPLICATION_TABLES_PANEL = 68, SEARCH_MULTIPLICATION_TABLES_PANEL = 69, ADD_RFORT_OMISSIONS_PANEL = 70, UPLOAD_HELP_VIDEO_PANEL = 71, PLOT_RFORT_STRESSES_PANEL = 72, PLOT_RFORT_RESULTS_PANEL = 73, RFORT_REPORT_PANEL = 74, ADD_EQUIVALENT_STRESSES_PANEL = 75,
-			STRESS_SEQEUNCE_INFO_PANEL = 76, AC_MODEL_INFO_PANEL = 77, SAVE_FLIGHT_DAMAGE_CONTRIBUTIONS_PANEL = 78, SEARCH_ENGINE_SETTINGS_PANEL = 79, SERVER_DIAGNOSTICS_PANEL = 80, DATA_INSIGHTS_PANEL = 81, EXECUTE_SQL_STATEMENT_PANEL = 82, ADAPT_DRF_PANEL = 83, MATERIAL_PANEL = 84,
-			EXCALIBUR_PANEL = 85, ADD_NEW_USER_PANEL = 86, DELETE_USERS_PANEL = 87, EDIT_USER_PERMISSIONS_PANEL = 88, UPLOAD_APP_UPDATE_PANEL = 89;
+			STRESS_SEQEUNCE_INFO_PANEL = 76, AC_MODEL_INFO_PANEL = 77, SAVE_FLIGHT_DAMAGE_CONTRIBUTIONS_PANEL = 78, SEARCH_ENGINE_SETTINGS_PANEL = 79, DATA_INSIGHTS_PANEL = 80, EXECUTE_SQL_STATEMENT_PANEL = 81, ADAPT_DRF_PANEL = 82, MATERIAL_PANEL = 83, EXCALIBUR_PANEL = 84, ADD_NEW_USER_PANEL = 85,
+			DELETE_USERS_PANEL = 86, EDIT_USER_PERMISSIONS_PANEL = 87, UPLOAD_APP_UPDATE_PANEL = 88, MANAGE_SERVICE_PANEL = 89;
 
 	/** Popup index. */
 	public static final int FATIGUE_MATERIALS_POPUP = 0, PREFFAS_MATERIALS_POPUP = 1, LINEAR_MATERIALS_POPUP = 2, LINK_PILOT_POINTS_POPUP = 3, SHARE_FILE_POPUP = 4, CHAT_POPUP = 5, SEGMENT_FACTORS_POPUP = 6, LOADCASE_FACTORS_POPUP = 7, DAMAGE_CONTRIBUTIONS_POPUP = 8;
@@ -203,7 +203,6 @@ public class InputPanel implements Initializable {
 		subPanels_.put(AC_MODEL_INFO_PANEL, AircraftModelInfoPanel.load(this));
 		subPanels_.put(SAVE_FLIGHT_DAMAGE_CONTRIBUTIONS_PANEL, SaveFlightDamageContributionsPanel.load(this));
 		subPanels_.put(SEARCH_ENGINE_SETTINGS_PANEL, SearchEngineSettingsPanel.load(this));
-		// FIXME subPanels_.put(SERVER_DIAGNOSTICS_PANEL, ServerDiagnosticsPanel.load(this));
 		subPanels_.put(DATA_INSIGHTS_PANEL, DataInsightsPanel.load(this));
 		subPanels_.put(EXECUTE_SQL_STATEMENT_PANEL, ExecuteSQLStatementPanel.load(this));
 		subPanels_.put(ADAPT_DRF_PANEL, AdaptDRFPanel.load(this));
@@ -213,6 +212,7 @@ public class InputPanel implements Initializable {
 		subPanels_.put(DELETE_USERS_PANEL, DeleteUsersPanel.load(this));
 		subPanels_.put(EDIT_USER_PERMISSIONS_PANEL, EditUserPermissionsPanel.load(this));
 		subPanels_.put(UPLOAD_APP_UPDATE_PANEL, UploadAppUpdatePanel.load(this));
+		subPanels_.put(MANAGE_SERVICE_PANEL, ManageServicePanel.load(this));
 
 		// create pagination control
 		pagination_ = new Pagination(subPanels_.size(), FILE_VIEW_PANEL);
@@ -261,10 +261,11 @@ public class InputPanel implements Initializable {
 		region2_.prefWidthProperty().bind(statusbar_.widthProperty().subtract(services_.widthProperty()).subtract(statusLabel_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
 
 		// start internal sub panels
-		for (InputSubPanel panel : subPanels_.values())
+		for (InputSubPanel panel : subPanels_.values()) {
 			if (panel instanceof InternalInputSubPanel) {
 				((InternalInputSubPanel) panel).start();
 			}
+		}
 
 		// set initial position
 		root_.setTranslateX(-root_.getWidth());

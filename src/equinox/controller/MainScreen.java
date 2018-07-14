@@ -235,24 +235,6 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	}
 
 	@Override
-	public void respondToDataMessage(DataMessage message) throws Exception {
-
-		// run in javafx thread
-		Platform.runLater(() -> {
-
-			// login successful
-			if (message instanceof LoginSuccessful) {
-				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginSuccessful((LoginSuccessful) message);
-			}
-
-			// login failed
-			else if (message instanceof LoginFailed) {
-				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginFailed();
-			}
-		});
-	}
-
-	@Override
 	public void respondToExchangeMessage(ExchangeMessage message) throws Exception {
 
 		// run in javafx thread
@@ -286,6 +268,24 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 			// announcement
 			else if (message instanceof Announcement) {
 				notificationPane_.showServerAnnouncement((Announcement) message);
+			}
+		});
+	}
+
+	@Override
+	public void respondToDataMessage(DataMessage message) throws Exception {
+
+		// run in javafx thread
+		Platform.runLater(() -> {
+
+			// login successful
+			if (message instanceof LoginSuccessful) {
+				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginSuccessful((LoginSuccessful) message);
+			}
+
+			// login failed
+			else if (message instanceof LoginFailed) {
+				((LoginPanel) inputPanel_.getSubPanel(InputPanel.LOGIN_PANEL)).loginFailed();
 			}
 		});
 	}

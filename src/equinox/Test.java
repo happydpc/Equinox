@@ -47,19 +47,19 @@ public class Test extends Application {
 	@Override
 	public void init() {
 		GaugeBuilder<?> builder = GaugeBuilder.create().skinType(SkinType.SLIM);
-		bugReports = builder.decimals(0).maxValue(14).unit("CLOSED").build();
-		roadmap = builder.decimals(0).maxValue(5).unit("CLOSED").build();
-		accessRequests = builder.decimals(0).maxValue(0).unit("CLOSED").build();
-		dataService = builder.decimals(0).maxValue(100).unit("% SUCCESSFUL").build();
-		analysisService = builder.decimals(0).maxValue(100).unit("% SUCCESSFUL").build();
-		collaborationService = builder.decimals(0).maxValue(100).unit("% SUCCESSFUL").build();
+		bugReports = builder.decimals(0).maxValue(14).unit("OPEN").build();
+		roadmap = builder.decimals(0).maxValue(5).unit("OPEN").build();
+		accessRequests = builder.decimals(0).maxValue(0).unit("OPEN").build();
+		dataService = builder.decimals(0).maxValue(100).unit("% SUCCESS").build();
+		analysisService = builder.decimals(0).maxValue(100).unit("% SUCCESS").build();
+		collaborationService = builder.decimals(0).maxValue(100).unit("% SUCCESS").build();
 
 		VBox bugsBox = getTopicBox("BUG REPORTS", Color.rgb(77, 208, 225), bugReports);
 		VBox roadmapBox = getTopicBox("USER WISHES", Color.rgb(255, 183, 77), roadmap);
 		VBox requestsBox = getTopicBox("ACCESS REQUESTS", Color.rgb(229, 115, 115), accessRequests);
 		VBox dataBox = getTopicBox("DATA QUERIES", Color.rgb(129, 199, 132), dataService);
-		VBox analysisBox = getTopicBox("ANALYSIS SERVICE", Color.rgb(149, 117, 205), analysisService);
-		VBox collaborationBox = getTopicBox("COLLABORATION SERVICE", Color.rgb(186, 104, 200), collaborationService);
+		VBox analysisBox = getTopicBox("ANALYSIS REQUESTS", Color.rgb(149, 117, 205), analysisService);
+		VBox collaborationBox = getTopicBox("SHARE REQUESTS", Color.rgb(186, 104, 200), collaborationService);
 
 		pane = new GridPane();
 		pane.setPadding(new Insets(20));

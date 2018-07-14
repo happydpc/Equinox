@@ -404,7 +404,9 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 					// permission denied message
 					else if (object instanceof PermissionDenied) {
-						owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+						Platform.runLater(() -> {
+							owner_.getNotificationPane().showPermissionDenied(((PermissionDenied) object).getPermission());
+						});
 					}
 
 					// analysis message

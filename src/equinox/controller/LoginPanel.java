@@ -32,7 +32,6 @@ import equinox.serverUtilities.Permission;
 import equinox.utility.Utility;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -135,15 +134,25 @@ public class LoginPanel implements InternalInputSubPanel {
 			return;
 
 		// get inputs
-		String username = username_.getText();
 		String password = password_.getText();
 
-		// check invalid values
-		if (!checkInvalidValues(username, password))
+		// check password
+		if (password == null || password.trim().isEmpty()) {
+			String message = "Invalid administrator password given. Please supply a valid password.";
+			PopOver popOver = new PopOver();
+			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
+			popOver.setDetachable(false);
+			popOver.setContentNode(NotificationPanel1.load(message, 30, NotificationPanel1.WARNING));
+			popOver.setHideOnEscape(true);
+			popOver.setAutoHide(true);
+			popOver.show(password_);
 			return;
+		}
 
 		// send login request
-		owner_.getOwner().getDataServerManager().sendMessage(new Login(Base64Encoder.encodeString(password)));
+		Login login = new Login(Base64Encoder.encodeString(password));
+		login.setListenerHashCode(hashCode());
+		owner_.getOwner().getDataServerManager().sendMessage(login);
 	}
 
 	@FXML
@@ -154,49 +163,6 @@ public class LoginPanel implements InternalInputSubPanel {
 	@FXML
 	private void onResetClicked() {
 		password_.clear();
-	}
-
-	/**
-	 * Checks for invalid input values.
-	 *
-	 * @param username
-	 *            Username.
-	 * @param password
-	 *            Password.
-	 * @return True if the values are valid.
-	 */
-	private boolean checkInvalidValues(String username, String password) {
-
-		// initialize message
-		String message = null;
-		Node node = null;
-
-		// check username
-		if (username == null || username.trim().isEmpty()) {
-			message = "";
-			node = username_;
-		}
-
-		// check password
-		else if (password == null || password.trim().isEmpty()) {
-			message = "";
-			node = password_;
-		}
-
-		// invalid value found
-		if (message != null) {
-			PopOver popOver = new PopOver();
-			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
-			popOver.setDetachable(false);
-			popOver.setContentNode(NotificationPanel1.load(message, 30, NotificationPanel1.WARNING));
-			popOver.setHideOnEscape(true);
-			popOver.setAutoHide(true);
-			popOver.show(node);
-			return false;
-		}
-
-		// valid values
-		return true;
 	}
 
 	/**
