@@ -39,7 +39,7 @@ public class LoadUserAuthentication extends InternalEquinoxTask<UserAuthenticati
 
 	@Override
 	public String getTaskTitle() {
-		return "Load user authentication";
+		return "Loading user authentication...";
 	}
 
 	@Override

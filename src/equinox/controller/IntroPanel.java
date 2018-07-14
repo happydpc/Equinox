@@ -18,7 +18,9 @@ package equinox.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -34,6 +36,7 @@ import equinox.serverUtilities.ServerUtility;
 import equinox.task.CheckForEquinoxUpdates;
 import equinox.task.CreateWorkspace;
 import equinox.task.GetServerConnectionInfo;
+import equinox.task.InternalEquinoxTask;
 import equinox.task.LoadAllFiles;
 import equinox.task.LoadPlugins;
 import equinox.task.LoadUserAuthentication;
@@ -48,12 +51,16 @@ import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -69,7 +76,7 @@ import javafx.util.Duration;
  * @date Jan 8, 2014
  * @time 1:44:19 PM
  */
-public class IntroPanel implements Initializable {
+public class IntroPanel implements Initializable, ChangeListener<State> {
 
 	/** Waiting duration in milliseconds. */
 	private static final long WAIT_DURATION = 2000;
@@ -80,11 +87,20 @@ public class IntroPanel implements Initializable {
 	/** Mode of panel. */
 	private boolean isIntro_ = true;
 
+	/** List names containing task names. */
+	private List<String> taskNames_ = Collections.synchronizedList(new ArrayList<String>());
+
+	/** Task count. */
+	volatile private int done_ = 0;
+
 	@FXML
 	private VBox root_;
 
 	@FXML
-	private ImageView banner_, connectingImage_;
+	private ImageView banner_;
+
+	@FXML
+	private Label progressInfo_;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -142,7 +158,7 @@ public class IntroPanel implements Initializable {
 			transition.getChildren().add(Animator.bouncingScale(80.0, 500.0, 0.0, 1.0, 1.0, (EventHandler<ActionEvent>) arg0 -> {
 
 				// show connecting label
-				connectingImage_.setVisible(true);
+				progressInfo_.setVisible(true);
 
 				// hide front and menubar layers
 				owner_.getFrontLayer().setDisable(true);
@@ -151,7 +167,7 @@ public class IntroPanel implements Initializable {
 				owner_.getMenuBarLayer().setOpacity(0.0);
 
 				// load last database paths
-				owner_.getActiveTasksPanel().runTasksSequentially(new LoadWorkspacePaths(IntroPanel.this));
+				owner_.getActiveTasksPanel().runTasksSequentially(addTask(new LoadWorkspacePaths(IntroPanel.this)));
 			}, root_));
 
 			// play
@@ -168,7 +184,7 @@ public class IntroPanel implements Initializable {
 		// about mode
 		isIntro_ = false;
 		Utility.setHandCursor(banner_);
-		connectingImage_.setVisible(false);
+		progressInfo_.setVisible(false);
 
 		// hide 3D Viewer (if it is current view)
 		if (owner_.getViewPanel().getCurrentSubPanelIndex() == ViewPanel.OBJECT_VIEW) {
@@ -223,20 +239,33 @@ public class IntroPanel implements Initializable {
 			Equinox.WORKSPACE_PATHS.setupOpenRecentMenu(owner_.getMenuBarPanel());
 
 			// get server connection info, update database, load all files
-			owner_.getActiveTasksPanel().runTasksSequentially(new LoadUserAuthentication(), new GetServerConnectionInfo(), new UpdateWorkspace(), new LoadAllFiles(IntroPanel.this));
+			owner_.getActiveTasksPanel().runTasksSequentially(addTask(new LoadUserAuthentication()), addTask(new GetServerConnectionInfo()), addTask(new UpdateWorkspace()), addTask(new LoadAllFiles(IntroPanel.this)));
 		}
 
 		// unsuccessful
 		else {
 
 			// get server connection info
-			owner_.getActiveTasksPanel().runTasksSequentially(new GetServerConnectionInfo());
+			owner_.getActiveTasksPanel().runTasksSequentially(addTask(new GetServerConnectionInfo()));
 
 			// show setup workspace dialog
 			PauseTransition pause = new PauseTransition(Duration.millis(WAIT_DURATION));
 			pause.setOnFinished(event -> showSetupWorkspaceDialog("Welcome! Let's setup a local workspace to work with.\t\nHow would you like to proceed?"));
 			pause.play();
 		}
+	}
+
+	/**
+	 * Adds given task to this panel.
+	 *
+	 * @param task
+	 *            Task to add.
+	 * @return The added task.
+	 */
+	public InternalEquinoxTask<?> addTask(InternalEquinoxTask<?> task) {
+		task.stateProperty().addListener(this);
+		taskNames_.add(task.getTaskTitle());
+		return task;
 	}
 
 	/**
@@ -339,7 +368,7 @@ public class IntroPanel implements Initializable {
 				File file = FileType.appendExtension(selectedFile, FileType.EQX);
 
 				// create new workspace
-				owner_.getActiveTasksPanel().runTasksSequentially(new CreateWorkspace(file.toPath(), IntroPanel.this));
+				owner_.getActiveTasksPanel().runTasksSequentially(addTask(new CreateWorkspace(file.toPath(), IntroPanel.this)));
 			}
 
 			// open an existing workspace
@@ -361,7 +390,7 @@ public class IntroPanel implements Initializable {
 				owner_.setInitialDirectory(selectedDir);
 
 				// open workspace
-				owner_.getActiveTasksPanel().runTasksSequentially(new OpenWorkspace(selectedDir.toPath(), IntroPanel.this));
+				owner_.getActiveTasksPanel().runTasksSequentially(addTask(new OpenWorkspace(selectedDir.toPath(), IntroPanel.this)));
 			}
 
 			// cancel and quit
@@ -369,6 +398,23 @@ public class IntroPanel implements Initializable {
 				Platform.exit();
 			}
 		});
+	}
+
+	@Override
+	synchronized public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue) {
+
+		// succeeded, failed or canceled
+		if (newValue.equals(State.SUCCEEDED) || newValue.equals(State.CANCELLED) || newValue.equals(State.FAILED)) {
+
+			// increment task count
+			done_++;
+
+			// add to javafx event queue
+			Platform.runLater(() -> {
+				String info = taskNames_.get(done_ - 1) + "\n(task " + done_ + " of " + taskNames_.size() + ")";
+				progressInfo_.setText(info);
+			});
+		}
 	}
 
 	/**

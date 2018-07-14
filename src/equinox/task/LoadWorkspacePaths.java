@@ -84,10 +84,11 @@ public class LoadWorkspacePaths extends InternalEquinoxTask<Boolean> implements 
 		}
 
 		// no valid path found
-		if ((paths == null) || !paths.hasValidCurrentPath())
+		if (paths == null || !paths.hasValidCurrentPath())
 			return false;
 
 		// setup local database pool
+		updateMessage("Setting up local database pool...");
 		Utility.setupLocalDBPool(Connection.TRANSACTION_READ_UNCOMMITTED, paths.getCurrentPath());
 
 		// set last paths to Equinox

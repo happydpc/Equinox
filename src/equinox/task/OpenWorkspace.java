@@ -113,7 +113,8 @@ public class OpenWorkspace extends InternalEquinoxTask<Void> {
 
 		// at startup
 		if (introPanel_ != null) {
-			taskPanel_.getOwner().runTasksSequentially(new SaveWorkspacePaths(), new UpdateWorkspace(), new LoadUserAuthentication(), new GetServerConnectionInfo(), new LoadAllFiles(introPanel_));
+			taskPanel_.getOwner().runTasksSequentially(introPanel_.addTask(new SaveWorkspacePaths()), introPanel_.addTask(new UpdateWorkspace()), introPanel_.addTask(new LoadUserAuthentication()), introPanel_.addTask(new GetServerConnectionInfo()),
+					introPanel_.addTask(new LoadAllFiles(introPanel_)));
 		}
 
 		// not startup

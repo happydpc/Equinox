@@ -38,7 +38,7 @@ public class UpdateWorkspace extends InternalEquinoxTask<Void> {
 
 	@Override
 	public String getTaskTitle() {
-		return "Update workspace";
+		return "Updating workspace...";
 	}
 
 	@Override

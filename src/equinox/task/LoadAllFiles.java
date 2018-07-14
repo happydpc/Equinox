@@ -65,7 +65,7 @@ public class LoadAllFiles extends InternalEquinoxTask<ArrayList<SpectrumItem>> i
 
 	@Override
 	public String getTaskTitle() {
-		return "Load files";
+		return "Loading workspace...";
 	}
 
 	@Override

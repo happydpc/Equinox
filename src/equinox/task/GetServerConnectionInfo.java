@@ -44,7 +44,7 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 
 	@Override
 	public String getTaskTitle() {
-		return "Get server connection info";
+		return "Getting server connection info...";
 	}
 
 	@Override
@@ -118,7 +118,7 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 			handleResultRetrievalException(e);
 		}
 
-		// connect to servers
+		// connect to services
 		finally {
 			taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null, false);
 			taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null, false);
@@ -132,7 +132,7 @@ public class GetServerConnectionInfo extends TemporaryFileCreatingTask<HashMap<S
 		// call ancestor
 		super.failed();
 
-		// connect to servers
+		// connect to services
 		taskPanel_.getOwner().getOwner().getAnalysisServerManager().connect(null, false);
 		taskPanel_.getOwner().getOwner().getExchangeServerManager().connect(null, false);
 		taskPanel_.getOwner().getOwner().getDataServerManager().connect(null, false);
