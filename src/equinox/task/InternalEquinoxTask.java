@@ -312,13 +312,13 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		 * Uploads file with the given path to filer. Note that the destination file name is generated using the following convention:
 		 * <p>
 		 * userAlias_simpleTaskClassName_currentTimeMillis.zip
-		 *
 		 * @param path
 		 *            Path to file to upload.
 		 * @param recipients
 		 *            List of recipient usernames.
 		 * @param fileType
 		 *            File type.
+		 *
 		 * @throws Exception
 		 *             If exception occurs during process.
 		 */

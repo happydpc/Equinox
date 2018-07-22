@@ -47,6 +47,7 @@ import equinox.task.Excalibur;
 import equinox.task.GetAccessRequests;
 import equinox.task.GetHelpVideos;
 import equinox.task.GetPlugins;
+import equinox.task.GetServerDiagnostics;
 import equinox.task.MyCheck;
 import equinox.task.OpenWorkspace;
 import equinox.task.ResetExchangeTable;
@@ -1045,7 +1046,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private void onHealthMonitoringClicked() {
-		// TODO on platform health monitoring clicked
+		owner_.getActiveTasksPanel().runTaskInParallel(new GetServerDiagnostics());
 	}
 
 	@FXML

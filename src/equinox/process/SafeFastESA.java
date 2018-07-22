@@ -192,7 +192,7 @@ public class SafeFastESA implements ESAProcess<FastESAOutput>, AnalysisListenerT
 			watcher.sendMessage(request);
 
 			// wait for analysis to complete
-			waitForAnalysis(task_, isAnalysisCompleted);
+			waitForAnalysisServer(task_, isAnalysisCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);

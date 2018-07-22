@@ -159,11 +159,11 @@
 			<artifactId>jsch</artifactId>
 			<version>0.1.54</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/eu.hansolo/Medusa -->
+		<!-- https://mvnrepository.com/artifact/eu.hansolo/tilesfx -->
 		<dependency>
 			<groupId>eu.hansolo</groupId>
-			<artifactId>Medusa</artifactId>
-			<version>8.0</version>
+			<artifactId>tilesfx</artifactId>
+			<version>1.6.4</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.jasypt/jasypt -->
 		<dependency>

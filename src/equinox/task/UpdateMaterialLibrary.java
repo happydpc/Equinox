@@ -430,7 +430,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForServer(this, isQueryCompleted);
+			waitForDataServer(this, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);
@@ -504,7 +504,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForServer(this, isQueryCompleted);
+			waitForDataServer(this, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);
@@ -578,7 +578,7 @@ public class UpdateMaterialLibrary extends InternalEquinoxTask<Void> implements 
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForServer(this, isQueryCompleted);
+			waitForDataServer(this, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);

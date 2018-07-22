@@ -54,7 +54,7 @@ public class ViewPanel implements Initializable {
 
 	/** Sub-panel index. */
 	public static final int INFO_VIEW = 0, PLOT_VIEW = 1, STATS_VIEW = 2, DOWNLOAD_VIEW = 3, WEB_VIEW = 4, ROADMAP_VIEW = 5, LEVEL_CROSSING_VIEW = 6, BUG_REPORT_VIEW = 7, COMPARE_FLIGHTS_VIEW = 8, IMAGE_VIEW = 9, MISSION_PARAMETERS_VIEW = 10, MISSION_PROFILE_VIEW = 11, EXTERNAL_PLOT_VIEW = 12,
-			PLUGIN_VIEW = 13, DAMAGE_CONTRIBUTION_VIEW = 14, COMPARE_DAMAGE_CONTRIBUTIONS_VIEW = 15, OBJECT_VIEW = 16, MISSION_PROFILE_COMPARISON_VIEW = 17, TIME_STATS_VIEW = 18, ACCESS_REQUEST_VIEW = 19;
+			PLUGIN_VIEW = 13, DAMAGE_CONTRIBUTION_VIEW = 14, COMPARE_DAMAGE_CONTRIBUTIONS_VIEW = 15, OBJECT_VIEW = 16, MISSION_PROFILE_COMPARISON_VIEW = 17, TIME_STATS_VIEW = 18, ACCESS_REQUEST_VIEW = 19, HEALTH_MONITOR_VIEW = 20;
 
 	/** The main screen of the application. */
 	private MainScreen owner_;
@@ -114,6 +114,7 @@ public class ViewPanel implements Initializable {
 		subPanels_.put(MISSION_PROFILE_COMPARISON_VIEW, MissionProfileComparisonViewPanel.load(this));
 		subPanels_.put(TIME_STATS_VIEW, TimeStatisticsViewPanel.load(this));
 		subPanels_.put(ACCESS_REQUEST_VIEW, AccessRequestViewPanel.load(this));
+		subPanels_.put(HEALTH_MONITOR_VIEW, HealthMonitorViewPanel.load(this));
 
 		// create pagination control
 		pagination_ = new Pagination(subPanels_.size(), INFO_VIEW);

@@ -42,7 +42,7 @@ public interface AnalysisListenerTask extends AnalysisMessageListener {
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	default void waitForAnalysis(InternalEquinoxTask<?> task, AtomicBoolean isAnalysisCompleted) throws Exception {
+	default void waitForAnalysisServer(InternalEquinoxTask<?> task, AtomicBoolean isAnalysisCompleted) throws Exception {
 
 		// not connected to server
 		if (!task.getTaskPanel().getOwner().getOwner().getAnalysisServerManager().isConnected())

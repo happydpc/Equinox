@@ -70,8 +70,8 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	/** The owner of the network watcher. */
 	private final MainScreen owner_;
 
-	/** Server statistics message listeners. */
-	private List<ExchangeMessageListener> statisticsMessageListeners_;
+	/** Analysis message listeners. */
+	private List<ExchangeMessageListener> messageListeners_;
 
 	/** Stop indicator of the network watcher. */
 	private volatile boolean isStopped_ = false;
@@ -96,8 +96,8 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		// create message queue
 		messageQueue_ = new ConcurrentLinkedQueue<>();
 
-		// create exchange message listener list
-		statisticsMessageListeners_ = Collections.synchronizedList(new ArrayList<ExchangeMessageListener>());
+		// create analysis message listener list
+		messageListeners_ = Collections.synchronizedList(new ArrayList<ExchangeMessageListener>());
 
 		// create thread executor of the network watcher
 		threadExecutor_ = Executors.newSingleThreadExecutor();
@@ -122,9 +122,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @param listener
 	 *            Exchange message listener to add.
 	 */
-	public void addStatisticsMessageListener(ExchangeMessageListener listener) {
-		synchronized (statisticsMessageListeners_) {
-			statisticsMessageListeners_.add(listener);
+	public void addMessageListener(ExchangeMessageListener listener) {
+		synchronized (messageListeners_) {
+			messageListeners_.add(listener);
 		}
 	}
 
@@ -134,9 +134,9 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @param listener
 	 *            Exchange message listener to remove.
 	 */
-	public void removeStatisticsMessageListener(ExchangeMessageListener listener) {
-		synchronized (statisticsMessageListeners_) {
-			statisticsMessageListeners_.remove(listener);
+	public void removeMessageListener(ExchangeMessageListener listener) {
+		synchronized (messageListeners_) {
+			messageListeners_.remove(listener);
 		}
 	}
 
@@ -183,8 +183,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 				String hostname = (String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_HOSTNAME);
 				int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.EXCHANGE_SERVER_PORT));
 				kryoNetClient_.connect(5000, hostname, port);
-				HandshakeWithExchangeServer handshake = new HandshakeWithExchangeServer(Equinox.USER.getAlias());
-				kryoNetClient_.sendTCP(handshake);
+				kryoNetClient_.sendTCP(new HandshakeWithExchangeServer(Equinox.USER.getAlias()));
 				return true;
 			}
 
@@ -511,22 +510,22 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		 */
 		private void respond(ExchangeMessage message) throws Exception {
 
-			// handshake (respond with this server manager)
+			// handshake (respond with server manager)
 			if (message instanceof HandshakeWithExchangeServer) {
 				respondToExchangeMessage(message);
 			}
 
-			// statistics message (respond with specified listener)
+			// other messages
 			else if (message instanceof ExchangeServerStatisticsMessage) {
 
 				// cast
 				ExchangeServerStatisticsMessage statisticMessage = (ExchangeServerStatisticsMessage) message;
 
 				// sync over listeners
-				synchronized (statisticsMessageListeners_) {
+				synchronized (messageListeners_) {
 
 					// get listeners
-					Iterator<ExchangeMessageListener> i = statisticsMessageListeners_.iterator();
+					Iterator<ExchangeMessageListener> i = messageListeners_.iterator();
 
 					// loop over listeners
 					while (i.hasNext()) {
@@ -534,7 +533,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 						// get listener
 						ExchangeMessageListener c = i.next();
 
-						// listener hash code matches to message sender hash code
+						// listener hash code matches to message analysis ID
 						if (c.hashCode() == statisticMessage.getListenerHashCode()) {
 							c.respondToExchangeMessage(message);
 							break;
@@ -543,7 +542,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 				}
 			}
 
-			// other exchange messages (respond with main screen)
+			// other messages (respond with main screen)
 			else {
 				owner_.respondToExchangeMessage(message);
 			}

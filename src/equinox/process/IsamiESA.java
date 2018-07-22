@@ -242,7 +242,7 @@ public class IsamiESA implements ESAProcess<Void>, AnalysisListenerTask {
 			manager.sendMessage(request);
 
 			// wait for analysis to complete
-			waitForAnalysis(task_, isAnalysisCompleted);
+			waitForAnalysisServer(task_, isAnalysisCompleted);
 
 			// remove from network watcher
 			manager.removeMessageListener(this);

@@ -129,7 +129,7 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForServer(this, isQueryCompleted);
+			waitForDataServer(this, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);

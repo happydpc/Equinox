@@ -70,7 +70,6 @@ public class ServerAnnouncementPanel implements Initializable {
 
 			// set attributes
 			controller.title_.setText(message.getTitle());
-			// DEPRECATION using org.apache.commons.text.WordUtils instead of org.apache.commons.lang3.text.WordUtils
 			controller.text_.setText(WordUtils.wrap(message.getBody(), 100));
 
 			// return controller

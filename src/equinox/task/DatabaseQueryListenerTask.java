@@ -42,7 +42,7 @@ public interface DatabaseQueryListenerTask extends DataMessageListener {
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	default void waitForServer(InternalEquinoxTask<?> task, AtomicBoolean isQueryCompleted) throws Exception {
+	default void waitForDataServer(InternalEquinoxTask<?> task, AtomicBoolean isQueryCompleted) throws Exception {
 
 		// not connected to server
 		if (!task.getTaskPanel().getOwner().getOwner().getDataServerManager().isConnected())

@@ -118,7 +118,6 @@ public class ChatNotificationPanel implements Initializable, UserProfileImageReq
 			controller.message_ = message;
 			controller.chatPanel_ = chatPanel;
 			controller.title_.setText(message.getSenderUsername() + " says:");
-			// DEPRECATION using org.apache.commons.text.WordUtils instead of org.apache.commons.lang3.text.WordUtils
 			controller.text_.setText(WordUtils.wrap(message.getMessage(), 100));
 
 			// request sender profile image

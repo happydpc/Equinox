@@ -440,7 +440,7 @@ public class LoadSTFFile implements EquinoxProcess<STFFile>, DatabaseQueryListen
 			watcher.sendMessage(request);
 
 			// wait for query to complete
-			waitForServer(task_, isQueryCompleted);
+			waitForDataServer(task_, isQueryCompleted);
 
 			// remove from network watcher
 			watcher.removeMessageListener(this);
