@@ -27,6 +27,7 @@ import equinox.dataServer.remote.data.DataServerStatistic;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
+import equinox.task.GetServerDiagnostics;
 import equinox.task.SaveImage;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
@@ -76,6 +77,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	/** Tile grid pane. */
 	private FlowGridPane pane_;
 
+	/** Control panel. */
+	private HealthMonitorViewControls controls_;
+
 	@FXML
 	private VBox root_;
 
@@ -84,6 +88,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+
+		// create controls
+		controls_ = HealthMonitorViewControls.load(this);
 
 		// create dashboard tiles
 		// @formatter:off
@@ -212,7 +219,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public HBox getControls() {
-		return null;
+		return controls_.getRoot();
 	}
 
 	@Override
@@ -280,6 +287,13 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	@Override
 	public void hiding() {
 		// no implementation
+	}
+
+	/**
+	 * Gets server diagnostics.
+	 */
+	public void getServerDiagnostics() {
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetServerDiagnostics(controls_.getPeriod()));
 	}
 
 	/**
