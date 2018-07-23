@@ -35,7 +35,10 @@ import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.Tile.ChartType;
 import eu.hansolo.tilesfx.Tile.SkinType;
 import eu.hansolo.tilesfx.TileBuilder;
+import eu.hansolo.tilesfx.addons.Indicator;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
+import eu.hansolo.tilesfx.skins.BarChartItem;
+import eu.hansolo.tilesfx.skins.LeaderBoardItem;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -66,7 +69,7 @@ import javafx.stage.FileChooser;
 public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	/** Tile index. */
-	public static final int ONLINE_USERS = 0, ANALYSIS_REQUESTS = 1, SUCCESSFUL_ANALYSES = 2, FAILED_ANALYSES = 3, DATA_QUERIES = 4, SUCCESSFUL_QUERIES = 5, FAILED_QUERIES = 6, SHARE_REQUESTS = 7, SUCCESSFUL_SHARES = 8, FAILED_SHARES = 9;
+	public static final int ONLINE_USERS = 0, DATA_SERVICE = 1, ANALYSIS_SERVICE = 2, COLLABORATION_SERVICE = 3, SEARCH_TRENDS = 4, DOWNLOAD_TRENDS = 5, ANALYSIS_TRENDS = 6, COLLABORATION_TRENDS = 7, SPECTRUM_COUNT = 8, PP_COUNT = 9, BUG_REPORTS = 10, WISHES = 11;
 
 	/** The owner panel. */
 	private ViewPanel owner_;
@@ -92,13 +95,12 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		// create controls
 		controls_ = HealthMonitorViewControls.load(this);
 
-		// create dashboard tiles
 		// @formatter:off
-		tiles_ = new Tile[10];
+		// create dashboard tiles
+		tiles_ = new Tile[12];
 
         // create online users tile
         XYChart.Series<String, Number> onlieUsersSeries = new XYChart.Series<>();
-        onlieUsersSeries.setName("Online Users");
 		TilesFXSeries<String, Number> onlineUsersTilesFXSeries = new TilesFXSeries<>(onlieUsersSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
 		tiles_[ONLINE_USERS] = TileBuilder.create()
                 .skinType(SkinType.SMOOTHED_CHART)
@@ -111,92 +113,165 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                 .build();
 		tiles_[ONLINE_USERS].getXAxis().setTickLabelsVisible(false);
 
-		tiles_[ANALYSIS_REQUESTS] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Analysis Requests")
-				.unit("analyses")
-				.smoothing(true)
-				.build();
-		tiles_[SUCCESSFUL_ANALYSES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Successful Analyses")
-				.unit("analyses")
-				.smoothing(true)
-				.build();
-		tiles_[FAILED_ANALYSES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Failed Analyses")
-				.unit("analyses")
-				.smoothing(true)
-				.build();
-		tiles_[DATA_QUERIES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Data Queries")
-				.unit("queries")
-				.smoothing(true)
-				.build();
-		tiles_[SUCCESSFUL_QUERIES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Successful Queries")
-				.unit("queries")
-				.smoothing(true)
-				.build();
-		tiles_[FAILED_QUERIES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Failed Queries")
-				.unit("queries")
-				.smoothing(true)
-				.build();
-		tiles_[SHARE_REQUESTS] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Share Requests")
-				.unit("shares")
-				.smoothing(true)
-				.build();
-		tiles_[SUCCESSFUL_SHARES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Successful Shares")
-				.unit("shares")
-				.smoothing(true)
-				.build();
-		tiles_[FAILED_SHARES] = TileBuilder.create()
-				.skinType(SkinType.SPARK_LINE)
-				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-				.title("Failed Shares")
-				.unit("shares")
-				.smoothing(true)
-				.build();
+		// create data service tile
+		XYChart.Series<String, Number> dataQueriesSeries = new XYChart.Series<>();
+		dataQueriesSeries.setName("Data Queries");
+		XYChart.Series<String, Number> failedQueriesSeries = new XYChart.Series<>();
+		failedQueriesSeries.setName("Failed Queries");
+		TilesFXSeries<String, Number> dataQueriesFXSeries = new TilesFXSeries<>(dataQueriesSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Number> failedQueriesFXSeries = new TilesFXSeries<>(failedQueriesSeries, Tile.MAGENTA, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.MAGENTA), new Stop(1, Color.TRANSPARENT)));
+		tiles_[DATA_SERVICE] = TileBuilder.create()
+		       .skinType(SkinType.SMOOTHED_CHART)
+		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+		       .title("Data Queries")
+		       .chartType(ChartType.AREA)
+		       //.animated(true)
+		       .smoothing(true)
+		       .tilesFxSeries(dataQueriesFXSeries, failedQueriesFXSeries)
+		       .build();
+		tiles_[DATA_SERVICE].getXAxis().setTickLabelsVisible(false);
 
-//		Indicator bugOpen = new Indicator(Tile.RED);
-//        bugOpen.setOn(true);
-//        Indicator bugProgress = new Indicator(Tile.YELLOW);
-//        bugProgress.setOn(true);
-//        Indicator bugClosed = new Indicator(Tile.GREEN);
-//        bugClosed.setOn(true);
-//        tiles_[BUG_REPORTS] = TileBuilder.create()
-//                .skinType(SkinType.STATUS)
-//                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-//                .title("Bug Reports")
-//                .description("Status")
-//                .leftText("OPEN")
-//                .middleText("PROGRESS")
-//                .rightText("CLOSED")
-//                .leftGraphics(bugOpen)
-//                .middleGraphics(bugProgress)
-//                .rightGraphics(bugClosed)
-//                .build();
+		// create analysis service tile
+		XYChart.Series<String, Number> analysisRequestsSeries = new XYChart.Series<>();
+		analysisRequestsSeries.setName("Analysis Requests");
+		XYChart.Series<String, Number> failedAnalysesSeries = new XYChart.Series<>();
+		failedAnalysesSeries.setName("Failed Analyses");
+		TilesFXSeries<String, Number> analysisRequestsFXSeries = new TilesFXSeries<>(analysisRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Number> failedAnalysesFXSeries = new TilesFXSeries<>(failedAnalysesSeries, Tile.MAGENTA, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.MAGENTA), new Stop(1, Color.TRANSPARENT)));
+		tiles_[ANALYSIS_SERVICE] = TileBuilder.create()
+                .skinType(SkinType.SMOOTHED_CHART)
+                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                .title("Analysis Requests")
+                .chartType(ChartType.AREA)
+                //.animated(true)
+                .smoothing(true)
+                .tilesFxSeries(analysisRequestsFXSeries, failedAnalysesFXSeries)
+                .build();
+		tiles_[ANALYSIS_SERVICE].getXAxis().setTickLabelsVisible(false);
+
+		// create collaboration service tile
+		XYChart.Series<String, Number> shareRequestsSeries = new XYChart.Series<>();
+		shareRequestsSeries.setName("Share Requests");
+		XYChart.Series<String, Number> failedSharesSeries = new XYChart.Series<>();
+		failedSharesSeries.setName("Failed Shares");
+		TilesFXSeries<String, Number> shareRequestsFXSeries = new TilesFXSeries<>(shareRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Number> failedSharesFXSeries = new TilesFXSeries<>(failedSharesSeries, Tile.MAGENTA, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.MAGENTA), new Stop(1, Color.TRANSPARENT)));
+		tiles_[COLLABORATION_SERVICE] = TileBuilder.create()
+		       .skinType(SkinType.SMOOTHED_CHART)
+		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+		       .title("Share Requests")
+		       .chartType(ChartType.AREA)
+		       //.animated(true)
+		       .smoothing(true)
+		       .tilesFxSeries(shareRequestsFXSeries, failedSharesFXSeries)
+		       .build();
+		tiles_[COLLABORATION_SERVICE].getXAxis().setTickLabelsVisible(false);
+
+		// LeaderBoard Items
+		LeaderBoardItem leaderBoardItem1 = new LeaderBoardItem("Gerrit", 47);
+		LeaderBoardItem leaderBoardItem2 = new LeaderBoardItem("Sandra", 43);
+		LeaderBoardItem leaderBoardItem3 = new LeaderBoardItem("Lilli", 12);
+		LeaderBoardItem leaderBoardItem4 = new LeaderBoardItem("Anton", 8);
+
+		// create search trends tile
+		tiles_[SEARCH_TRENDS] = TileBuilder.create()
+                .skinType(SkinType.LEADER_BOARD)
+                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                .title("Search Trends")
+                .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
+                .build();
+
+		// create download trends tile
+				tiles_[DOWNLOAD_TRENDS] = TileBuilder.create()
+		                .skinType(SkinType.LEADER_BOARD)
+		                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+		                .title("Download Trends")
+		                .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
+		                .build();
+
+		// create analysis trends tile
+				tiles_[ANALYSIS_TRENDS] = TileBuilder.create()
+		                .skinType(SkinType.LEADER_BOARD)
+		                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+		                .title("Analysis Trends")
+		                .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
+		                .build();
+
+				// create collaboration trends tile
+				tiles_[COLLABORATION_TRENDS] = TileBuilder.create()
+		                .skinType(SkinType.LEADER_BOARD)
+		                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+		                .title("Collaboration Trends")
+		                .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
+		                .build();
+
+				// BarChart Items
+				BarChartItem barChartItem1 = new BarChartItem("Gerrit", 47, Tile.BLUE);
+				BarChartItem barChartItem2 = new BarChartItem("Sandra", 43, Tile.RED);
+				BarChartItem barChartItem3 = new BarChartItem("Lilli", 12, Tile.GREEN);
+				BarChartItem barChartItem4 = new BarChartItem("Anton", 8, Tile.ORANGE);
+
+				tiles_[SPECTRUM_COUNT] = TileBuilder.create()
+                        .skinType(SkinType.BAR_CHART)
+                        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                        .title("Spectrum Count")
+                        .barChartItems(barChartItem1, barChartItem2, barChartItem3, barChartItem4)
+                        .decimals(0)
+                        .build();
+
+				// BarChart Items
+				BarChartItem barChartItem5 = new BarChartItem("Gerrit", 47, Tile.BLUE);
+				BarChartItem barChartItem6 = new BarChartItem("Sandra", 43, Tile.RED);
+				BarChartItem barChartItem7 = new BarChartItem("Lilli", 12, Tile.GREEN);
+				BarChartItem barChartItem8 = new BarChartItem("Anton", 8, Tile.ORANGE);
+
+				tiles_[PP_COUNT] = TileBuilder.create()
+                        .skinType(SkinType.BAR_CHART)
+                        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                        .title("Pilot Point Count")
+                        .barChartItems(barChartItem5, barChartItem6, barChartItem7, barChartItem8)
+                        .decimals(0)
+                        .build();
+
+
+		Indicator bugOpen = new Indicator(Tile.RED);
+        bugOpen.setOn(true);
+        Indicator bugProgress = new Indicator(Tile.YELLOW);
+        bugProgress.setOn(true);
+        Indicator bugClosed = new Indicator(Tile.GREEN);
+        bugClosed.setOn(true);
+        tiles_[BUG_REPORTS] = TileBuilder.create()
+                .skinType(SkinType.STATUS)
+                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                .title("Bug Reports")
+                .description("Status")
+                .leftText("OPEN")
+                .middleText("PROGRESS")
+                .rightText("CLOSED")
+                .leftGraphics(bugOpen)
+                .middleGraphics(bugProgress)
+                .rightGraphics(bugClosed)
+                .build();
+
+        Indicator wishOpen = new Indicator(Tile.RED);
+        wishOpen.setOn(true);
+        Indicator wishProgress = new Indicator(Tile.YELLOW);
+        wishProgress.setOn(true);
+        Indicator wishClosed = new Indicator(Tile.GREEN);
+        wishClosed.setOn(true);
+        tiles_[WISHES] = TileBuilder.create()
+                .skinType(SkinType.STATUS)
+                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                .title("User Wishes")
+                .description("Status")
+                .leftText("OPEN")
+                .middleText("PROGRESS")
+                .rightText("CLOSED")
+                .leftGraphics(wishOpen)
+                .middleGraphics(wishProgress)
+                .rightGraphics(wishClosed)
+                .build();
 		// @formatter:on
-
-		// TODO set averaging period
-		// Arrays.asList(tiles_).forEach(x -> x.setAveragingPeriod(30));
 
 		// create and setup dashboard grid pane
 		pane_ = new FlowGridPane(4, 3, tiles_);
@@ -311,32 +386,41 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		// create and play fade animation
 		Animator.fade(true, 200, 500, event -> {
 
-			// data server statistics
+			// data service
 			if (dataServerStats != null) {
 				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
+				tiles_[DATA_SERVICE].getTilesFXSeries().get(0).getSeries().getData().clear();
+				tiles_[DATA_SERVICE].getTilesFXSeries().get(1).getSeries().getData().clear();
+				int k = 0;
 				for (DataServerStatistic stat : dataServerStats) {
+
 					tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
-					tiles_[DATA_QUERIES].setValue(stat.getQueries());
-					tiles_[SUCCESSFUL_QUERIES].setValue(stat.getSuccessfulQueries());
-					tiles_[FAILED_QUERIES].setValue(stat.getFailedQueries());
+					tiles_[DATA_SERVICE].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
+					tiles_[DATA_SERVICE].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
+					k++;
+					if (k > 23) {
+						break;
+					}
 				}
 			}
 
 			// analysis server statistics
 			if (analysisServerStats != null) {
+				tiles_[ANALYSIS_SERVICE].getTilesFXSeries().get(0).getSeries().getData().clear();
+				tiles_[ANALYSIS_SERVICE].getTilesFXSeries().get(1).getSeries().getData().clear();
 				for (AnalysisServerStatistic stat : analysisServerStats) {
-					tiles_[ANALYSIS_REQUESTS].setValue(stat.getAnalysisRequests());
-					tiles_[SUCCESSFUL_ANALYSES].setValue(stat.getSuccessfulAnalyses());
-					tiles_[FAILED_ANALYSES].setValue(stat.getFailedAnalyses());
+					tiles_[ANALYSIS_SERVICE].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
+					tiles_[ANALYSIS_SERVICE].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
 				}
 			}
 
 			// exchange server statistics
 			if (exchangeServerStats != null) {
+				tiles_[COLLABORATION_SERVICE].getTilesFXSeries().get(0).getSeries().getData().clear();
+				tiles_[COLLABORATION_SERVICE].getTilesFXSeries().get(1).getSeries().getData().clear();
 				for (ExchangeServerStatistic stat : exchangeServerStats) {
-					tiles_[SHARE_REQUESTS].setValue(stat.getShareRequests());
-					tiles_[SUCCESSFUL_SHARES].setValue(stat.getSuccessfulShares());
-					tiles_[FAILED_SHARES].setValue(stat.getFailedShares());
+					tiles_[COLLABORATION_SERVICE].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
+					tiles_[COLLABORATION_SERVICE].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
 				}
 			}
 		}, header_, pane_).play();
