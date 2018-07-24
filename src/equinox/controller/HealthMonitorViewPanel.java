@@ -110,7 +110,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                 .title("Online Users")
                 .chartType(ChartType.AREA)
-                .animated(true)
+                //.animated(true)
                 .smoothing(true)
                 .tilesFxSeries(onlineUsersTilesFXSeries)
                 .build();
@@ -128,7 +128,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		       .title("Data Queries")
 		       .chartType(ChartType.AREA)
-		       .animated(true)
+		       //.animated(true)
 		       .smoothing(true)
 		       .tilesFxSeries(dataQueriesFXSeries, failedQueriesFXSeries)
 		       .build();
@@ -146,7 +146,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                 .title("Analysis Requests")
                 .chartType(ChartType.AREA)
-                .animated(true)
+                //.animated(true)
                 .smoothing(true)
                 .tilesFxSeries(analysisRequestsFXSeries, failedAnalysesFXSeries)
                 .build();
@@ -164,7 +164,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		       .title("Collaboration Requests")
 		       .chartType(ChartType.AREA)
-		       .animated(true)
+		       //.animated(true)
 		       .smoothing(true)
 		       .tilesFxSeries(shareRequestsFXSeries, failedSharesFXSeries)
 		       .build();
@@ -188,7 +188,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		        .title("Popular Downloads")
 		        .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
-		        .animated(true)
 		        .build();
 
 				// create spectrum count tile
@@ -202,7 +201,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                         .title("Spectrum Count")
                         .barChartItems(barChartItem1, barChartItem2, barChartItem3, barChartItem4)
                         .decimals(0)
-                        .animated(true)
                         .build();
 
 				// create pilot point count tile
@@ -400,10 +398,16 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
+				int k = 0;
 				for (DataServerStatistic stat : dataServerStats) {
+
 					tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
 					tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
 					tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
+					k++;
+					if (k > 23) {
+						break;
+					}
 				}
 			}
 
