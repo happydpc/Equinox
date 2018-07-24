@@ -18,13 +18,20 @@ package equinox.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import equinox.analysisServer.remote.data.AnalysisServerStatistic;
+import equinox.analysisServer.remote.message.AnalysisServerStatisticsResponse;
 import equinox.controller.ViewPanel.InternalViewSubPanel;
 import equinox.data.EquinoxTheme;
-import equinox.dataServer.remote.data.DataServerStatistic;
+import equinox.dataServer.remote.data.PeriodicDataServerStatistic;
+import equinox.dataServer.remote.message.DataServerStatisticsResponse;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
+import equinox.exchangeServer.remote.message.ExchangeServerStatisticsResponse;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.task.GetServerDiagnostics;
@@ -36,10 +43,10 @@ import eu.hansolo.tilesfx.Tile.ChartType;
 import eu.hansolo.tilesfx.Tile.SkinType;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.addons.Indicator;
+import eu.hansolo.tilesfx.chart.ChartData;
 import eu.hansolo.tilesfx.chart.ChartDataBuilder;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
 import eu.hansolo.tilesfx.skins.BarChartItem;
-import eu.hansolo.tilesfx.skins.LeaderBoardItem;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
 import eu.hansolo.tilesfx.tools.Location;
 import javafx.fxml.FXML;
@@ -87,9 +94,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@FXML
 	private VBox root_;
-
-	@FXML
-	private HBox header_;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -171,15 +175,12 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[COLLABORATION_REQUESTS].getXAxis().setTickLabelsVisible(false);
 
 		// create popular search hits tile
-		LeaderBoardItem leaderBoardItem1 = new LeaderBoardItem("Gerrit", 47);
-		LeaderBoardItem leaderBoardItem2 = new LeaderBoardItem("Sandra", 43);
-		LeaderBoardItem leaderBoardItem3 = new LeaderBoardItem("Lilli", 12);
-		LeaderBoardItem leaderBoardItem4 = new LeaderBoardItem("Anton", 8);
 		tiles_[POPULAR_SEARCH_HITS] = TileBuilder.create()
-                .skinType(SkinType.LEADER_BOARD)
+                .skinType(SkinType.RADIAL_CHART)
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                 .title("Popular Search Hits")
-                .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
+                .textVisible(false)
+                .animated(true)
                 .build();
 
 		// create popular downloads tile
@@ -187,7 +188,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		        .skinType(SkinType.LEADER_BOARD)
 		        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		        .title("Popular Downloads")
-		        .leaderBoardItems(leaderBoardItem1, leaderBoardItem2, leaderBoardItem3, leaderBoardItem4)
 		        .build();
 
 				// create spectrum count tile
@@ -277,7 +277,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                                                           .build())
                                .build();
         FlowGridPane.setColumnSpan(tiles_[USER_LOCATIONS], 2);
-
 		// @formatter:on
 
 		// create and setup dashboard grid pane
@@ -381,56 +380,88 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	/**
 	 * Sets data from platform services.
 	 *
-	 * @param dataServerStats
-	 *            Data server statistics.
-	 * @param analysisServerStats
-	 *            Analysis server statistics.
-	 * @param exchangeServerStats
-	 *            Exchange server statistics.
+	 * @param dataServerResponse
+	 *            Data server response.
+	 * @param analysisServerResponse
+	 *            Analysis server response.
+	 * @param exchangeServerResponse
+	 *            Exchange server response.
 	 */
-	public void setData(DataServerStatistic[] dataServerStats, AnalysisServerStatistic[] analysisServerStats, ExchangeServerStatistic[] exchangeServerStats) {
+	public void setData(DataServerStatisticsResponse dataServerResponse, AnalysisServerStatisticsResponse analysisServerResponse, ExchangeServerStatisticsResponse exchangeServerResponse) {
 
 		// create and play fade animation
-		Animator.fade(true, 200, 500, event -> {
+		Animator.bouncingScale2(400, 0, 1.0, event -> {
 
 			// data service
-			if (dataServerStats != null) {
+			if (dataServerResponse != null) {
+
+				// reset tiles
 				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
-				int k = 0;
-				for (DataServerStatistic stat : dataServerStats) {
+				tiles_[POPULAR_SEARCH_HITS].clearChartData();
 
-					tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
-					tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
-					tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
-					k++;
-					if (k > 23) {
-						break;
+				// add periodic statistics
+				PeriodicDataServerStatistic[] stats = dataServerResponse.getPeriodicStatistics();
+				if (stats != null) {
+					Arrays.asList(stats).forEach(stat -> {
+						tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
+						tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
+						tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
+					});
+				}
+
+				// add popular search hits
+				Map<String, Integer> searchHits = dataServerResponse.getSearchHits();
+				if (searchHits != null) {
+					Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE };
+					Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
+					int i = 0;
+					while (it.hasNext()) {
+						Entry<String, Integer> e = it.next();
+						tiles_[POPULAR_SEARCH_HITS].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+						i++;
 					}
 				}
+
+				// auto scale tile
+				tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
 			}
 
-			// analysis server statistics
-			if (analysisServerStats != null) {
+			// analysis server
+			if (analysisServerResponse != null) {
+
+				// reset tiles
 				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
-				for (AnalysisServerStatistic stat : analysisServerStats) {
-					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
-					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
+
+				// add statistics
+				AnalysisServerStatistic[] stats = analysisServerResponse.getStatistics();
+				if (stats != null) {
+					Arrays.asList(stats).forEach(stat -> {
+						tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
+						tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
+					});
 				}
 			}
 
-			// exchange server statistics
-			if (exchangeServerStats != null) {
+			// exchange server
+			if (exchangeServerResponse != null) {
+
+				// reset tiles
 				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
-				for (ExchangeServerStatistic stat : exchangeServerStats) {
-					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
-					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
+
+				// add statistics
+				ExchangeServerStatistic[] stats = exchangeServerResponse.getStatistics();
+				if (stats != null) {
+					Arrays.asList(stats).forEach(stat -> {
+						tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
+						tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
+					});
 				}
 			}
-		}, header_, pane_).play();
+		}, tiles_).play();
 	}
 
 	/**

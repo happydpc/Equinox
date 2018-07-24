@@ -17,26 +17,22 @@ package equinox.task;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 import equinox.Equinox;
-import equinox.analysisServer.remote.data.AnalysisServerStatistic;
 import equinox.analysisServer.remote.message.AnalysisMessage;
 import equinox.analysisServer.remote.message.AnalysisServerStatisticsRequest;
 import equinox.analysisServer.remote.message.AnalysisServerStatisticsRequestFailed;
 import equinox.analysisServer.remote.message.AnalysisServerStatisticsResponse;
 import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.ViewPanel;
-import equinox.dataServer.remote.data.DataServerStatistic;
 import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.DataServerStatisticsRequest;
 import equinox.dataServer.remote.message.DataServerStatisticsRequestFailed;
 import equinox.dataServer.remote.message.DataServerStatisticsResponse;
-import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsRequest;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsRequestFailed;
@@ -74,13 +70,13 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 	private final AtomicReference<ExchangeMessage> exchangeServerMessageRef;
 
 	/** Data server statistics. */
-	private DataServerStatistic[] dataServerStats_ = null;
+	private DataServerStatisticsResponse dataServerResponse_ = null;
 
 	/** Analysis server statistics. */
-	private AnalysisServerStatistic[] analysisServerStats_ = null;
+	private AnalysisServerStatisticsResponse analysisServerResponse_ = null;
 
 	/** Exchange server statistics. */
-	private ExchangeServerStatistic[] exchangeServerStats_ = null;
+	private ExchangeServerStatisticsResponse exchangeServerResponse_ = null;
 
 	/** Data collection period in minutes. */
 	private final long period_;
@@ -130,28 +126,13 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 	protected Void call() throws Exception {
 
 		// get data server diagnostics
-		dataServerStats_ = getDataServerDiagnostics();
+		dataServerResponse_ = getDataServerDiagnostics();
 
 		// get exchange server diagnostics
-		exchangeServerStats_ = getExchangeServerDiagnostics();
+		exchangeServerResponse_ = getExchangeServerDiagnostics();
 
 		// get analysis server diagnostics
-		analysisServerStats_ = getAnalysisServerDiagnostics();
-
-		// sort data server diagnostics
-		if (dataServerStats_ != null) {
-			Arrays.sort(dataServerStats_, (o1, o2) -> o1.getRecorded().compareTo(o2.getRecorded()));
-		}
-
-		// sort exchange server diagnostics
-		if (exchangeServerStats_ != null) {
-			Arrays.sort(exchangeServerStats_, (o1, o2) -> o1.getRecorded().compareTo(o2.getRecorded()));
-		}
-
-		// sort analysis server diagnostics
-		if (analysisServerStats_ != null) {
-			Arrays.sort(analysisServerStats_, (o1, o2) -> o1.getRecorded().compareTo(o2.getRecorded()));
-		}
+		analysisServerResponse_ = getAnalysisServerDiagnostics();
 
 		// return
 		return null;
@@ -165,7 +146,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 
 		// set data to health monitoring panel
 		HealthMonitorViewPanel panel = (HealthMonitorViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
-		panel.setData(dataServerStats_, analysisServerStats_, exchangeServerStats_);
+		panel.setData(dataServerResponse_, analysisServerResponse_, exchangeServerResponse_);
 
 		// show panel
 		taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
@@ -176,7 +157,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 	 *
 	 * @return Analysis server statistics.
 	 */
-	private AnalysisServerStatistic[] getAnalysisServerDiagnostics() {
+	private AnalysisServerStatisticsResponse getAnalysisServerDiagnostics() {
 
 		// progress info
 		updateMessage("Getting analysis server diagnostics...");
@@ -221,7 +202,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 
 			// succeeded
 			else if (message instanceof AnalysisServerStatisticsResponse)
-				return ((AnalysisServerStatisticsResponse) message).getStatistics();
+				return (AnalysisServerStatisticsResponse) message;
 
 			// invalid server response
 			throw new Exception("Invalid server response.");
@@ -246,7 +227,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 	 *
 	 * @return Exchange server statistics.
 	 */
-	private ExchangeServerStatistic[] getExchangeServerDiagnostics() {
+	private ExchangeServerStatisticsResponse getExchangeServerDiagnostics() {
 
 		// progress info
 		updateMessage("Getting exchange server diagnostics...");
@@ -291,7 +272,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 
 			// succeeded
 			else if (message instanceof ExchangeServerStatisticsResponse)
-				return ((ExchangeServerStatisticsResponse) message).getStatistics();
+				return (ExchangeServerStatisticsResponse) message;
 
 			// invalid server response
 			throw new Exception("Invalid server response.");
@@ -316,7 +297,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 	 *
 	 * @return Data server statistics.
 	 */
-	private DataServerStatistic[] getDataServerDiagnostics() {
+	private DataServerStatisticsResponse getDataServerDiagnostics() {
 
 		// progress info
 		updateMessage("Getting data server diagnostics...");
@@ -361,7 +342,7 @@ public class GetServerDiagnostics extends InternalEquinoxTask<Void> implements S
 
 			// succeeded
 			else if (message instanceof DataServerStatisticsResponse)
-				return ((DataServerStatisticsResponse) message).getStatistics();
+				return (DataServerStatisticsResponse) message;
 
 			// invalid server response
 			throw new Exception("Invalid server response.");
