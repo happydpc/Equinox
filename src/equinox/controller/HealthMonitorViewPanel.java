@@ -110,7 +110,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                 .title("Online Users")
                 .chartType(ChartType.AREA)
-                //.animated(true)
+                .animated(true)
                 .smoothing(true)
                 .tilesFxSeries(onlineUsersTilesFXSeries)
                 .build();
@@ -128,7 +128,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		       .title("Data Queries")
 		       .chartType(ChartType.AREA)
-		       //.animated(true)
+		       .animated(true)
 		       .smoothing(true)
 		       .tilesFxSeries(dataQueriesFXSeries, failedQueriesFXSeries)
 		       .build();
@@ -146,7 +146,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                 .title("Analysis Requests")
                 .chartType(ChartType.AREA)
-                //.animated(true)
+                .animated(true)
                 .smoothing(true)
                 .tilesFxSeries(analysisRequestsFXSeries, failedAnalysesFXSeries)
                 .build();
@@ -164,7 +164,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
 		       .title("Collaboration Requests")
 		       .chartType(ChartType.AREA)
-		       //.animated(true)
+		       .animated(true)
 		       .smoothing(true)
 		       .tilesFxSeries(shareRequestsFXSeries, failedSharesFXSeries)
 		       .build();
