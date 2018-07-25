@@ -48,6 +48,7 @@ import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -110,10 +111,13 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private Button authentication_, dataService_, analysisService_, exchangeService_;
+	private Button authentication_, dataService_, analysisService_, exchangeService_, healthMonitoring_;
 
 	@FXML
 	private Tooltip authenticationTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+
+	@FXML
+	private ImageView healthMonitoringImage_;
 
 	@FXML
 	private HBox services_;
@@ -435,6 +439,18 @@ public class InputPanel implements Initializable {
 	}
 
 	/**
+	 * Sets health monitoring button state.
+	 * 
+	 * @param isDisabled
+	 *            True to disable.
+	 */
+	public void setHealthMonitoringButtonState(boolean isDisabled) {
+		healthMonitoring_.setStyle(isDisabled ? "-fx-base:red" : "-fx-base:green");
+		healthMonitoringImage_.setImage(Utility.getImage(isDisabled ? "taskManager.gif" : "pulse.png"));
+		healthMonitoring_.setDisable(isDisabled);
+	}
+
+	/**
 	 * Returns data service button.
 	 *
 	 * @return Data service button.
@@ -575,6 +591,11 @@ public class InputPanel implements Initializable {
 
 		// connect
 		owner_.getExchangeServerManager().connect(null, true);
+	}
+
+	@FXML
+	private void onHealthMonitoringClicked() {
+		((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getServerDiagnostics();
 	}
 
 	@FXML

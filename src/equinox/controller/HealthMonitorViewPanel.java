@@ -28,7 +28,10 @@ import equinox.analysisServer.remote.data.AnalysisServerStatistic;
 import equinox.analysisServer.remote.message.AnalysisServerStatisticsResponse;
 import equinox.controller.ViewPanel.InternalViewSubPanel;
 import equinox.data.EquinoxTheme;
+import equinox.dataServer.remote.data.AccessRequest;
+import equinox.dataServer.remote.data.BugReport;
 import equinox.dataServer.remote.data.PeriodicDataServerStatistic;
+import equinox.dataServer.remote.data.Wish;
 import equinox.dataServer.remote.message.DataServerStatisticsResponse;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsResponse;
@@ -78,7 +81,7 @@ import javafx.stage.FileChooser;
 public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	/** Tile index. */
-	public static final int ONLINE_USERS = 0, DATA_QUERIES = 1, ANALYSIS_REQUESTS = 2, COLLABORATION_REQUESTS = 3, POPULAR_SEARCH_HITS = 4, POPULAR_DOWNLOADS = 5, SPECTRUM_COUNT = 6, PP_COUNT = 7, BUG_REPORTS = 8, USER_WISHES = 9, USER_LOCATIONS = 10;
+	public static final int ONLINE_USERS = 0, DATA_QUERIES = 1, ANALYSIS_REQUESTS = 2, COLLABORATION_REQUESTS = 3, POPULAR_SEARCH_HITS = 4, SPECTRUM_COUNT = 5, PP_COUNT = 6, BUG_REPORTS = 7, USER_WISHES = 8, ACCESS_REQUESTS = 9, USER_LOCATIONS = 10;
 
 	/** The owner panel. */
 	private ViewPanel owner_;
@@ -176,48 +179,30 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 		// create popular search hits tile
 		tiles_[POPULAR_SEARCH_HITS] = TileBuilder.create()
-                .skinType(SkinType.RADIAL_CHART)
-                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                .title("Popular Search Hits")
-                .textVisible(false)
-                .animated(true)
-                .build();
+               .skinType(SkinType.RADIAL_CHART)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("Popular Search Hits")
+               .textVisible(false)
+               .build();
 
-		// create popular downloads tile
-		tiles_[POPULAR_DOWNLOADS] = TileBuilder.create()
-		        .skinType(SkinType.LEADER_BOARD)
-		        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-		        .title("Popular Downloads")
-		        .build();
+		// create spectrum count tile
+		tiles_[SPECTRUM_COUNT] = TileBuilder.create()
+               .skinType(SkinType.BAR_CHART)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("Spectrum Count")
+               .decimals(0)
+               .build();
 
-				// create spectrum count tile
-				BarChartItem barChartItem1 = new BarChartItem("Gerrit", 47, Tile.BLUE);
-				BarChartItem barChartItem2 = new BarChartItem("Sandra", 43, Tile.RED);
-				BarChartItem barChartItem3 = new BarChartItem("Lilli", 12, Tile.GREEN);
-				BarChartItem barChartItem4 = new BarChartItem("Anton", 8, Tile.ORANGE);
-				tiles_[SPECTRUM_COUNT] = TileBuilder.create()
-                        .skinType(SkinType.BAR_CHART)
-                        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                        .title("Spectrum Count")
-                        .barChartItems(barChartItem1, barChartItem2, barChartItem3, barChartItem4)
-                        .decimals(0)
-                        .build();
-
-				// create pilot point count tile
-				BarChartItem barChartItem5 = new BarChartItem("Gerrit", 47, Tile.BLUE);
-				BarChartItem barChartItem6 = new BarChartItem("Sandra", 43, Tile.RED);
-				BarChartItem barChartItem7 = new BarChartItem("Lilli", 12, Tile.GREEN);
-				BarChartItem barChartItem8 = new BarChartItem("Anton", 8, Tile.ORANGE);
-				tiles_[PP_COUNT] = TileBuilder.create()
-                        .skinType(SkinType.BAR_CHART)
-                        .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                        .title("Pilot Point Count")
-                        .barChartItems(barChartItem5, barChartItem6, barChartItem7, barChartItem8)
-                        .decimals(0)
-                        .build();
+		// create pilot point count tile
+		tiles_[PP_COUNT] = TileBuilder.create()
+               .skinType(SkinType.BAR_CHART)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("Pilot Point Count")
+               .decimals(0)
+               .build();
 
 
-				// create bug reports tile
+		// create bug reports tile
 		Indicator bugOpen = new Indicator(Tile.RED);
         bugOpen.setOn(true);
         Indicator bugProgress = new Indicator(Tile.YELLOW);
@@ -225,17 +210,17 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
         Indicator bugClosed = new Indicator(Tile.GREEN);
         bugClosed.setOn(true);
         tiles_[BUG_REPORTS] = TileBuilder.create()
-                .skinType(SkinType.STATUS)
-                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                .title("Bug Reports")
-                .description("Status")
-                .leftText("OPEN")
-                .middleText("PROGRESS")
-                .rightText("CLOSED")
-                .leftGraphics(bugOpen)
-                .middleGraphics(bugProgress)
-                .rightGraphics(bugClosed)
-                .build();
+               .skinType(SkinType.STATUS)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("Bug Reports")
+               .description("Status")
+               .leftText("OPEN")
+               .middleText("PROGRESS")
+               .rightText("CLOSED")
+               .leftGraphics(bugOpen)
+               .middleGraphics(bugProgress)
+               .rightGraphics(bugClosed)
+               .build();
 
         // create user wishes tile
         Indicator wishOpen = new Indicator(Tile.RED);
@@ -245,17 +230,37 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
         Indicator wishClosed = new Indicator(Tile.GREEN);
         wishClosed.setOn(true);
         tiles_[USER_WISHES] = TileBuilder.create()
-                .skinType(SkinType.STATUS)
-                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                .title("User Wishes")
-                .description("Status")
-                .leftText("OPEN")
-                .middleText("PROGRESS")
-                .rightText("CLOSED")
-                .leftGraphics(wishOpen)
-                .middleGraphics(wishProgress)
-                .rightGraphics(wishClosed)
-                .build();
+               .skinType(SkinType.STATUS)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("User Wishes")
+               .description("Status")
+               .leftText("OPEN")
+               .middleText("PROGRESS")
+               .rightText("CLOSED")
+               .leftGraphics(wishOpen)
+               .middleGraphics(wishProgress)
+               .rightGraphics(wishClosed)
+               .build();
+
+        // create access requests tile
+        Indicator accessRequestRejected = new Indicator(Tile.RED);
+        accessRequestRejected.setOn(true);
+        Indicator accessRequestPending = new Indicator(Tile.YELLOW);
+        accessRequestPending.setOn(true);
+        Indicator accessRequestGranted = new Indicator(Tile.GREEN);
+        accessRequestGranted.setOn(true);
+        tiles_[ACCESS_REQUESTS] = TileBuilder.create()
+               .skinType(SkinType.STATUS)
+               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+               .title("Access Requests")
+               .description("Status")
+               .leftText("REJECTED")
+               .middleText("PENDING")
+               .rightText("GRANTED")
+               .leftGraphics(accessRequestRejected)
+               .middleGraphics(accessRequestPending)
+               .rightGraphics(accessRequestGranted)
+               .build();
 
         // create connection map tile
         Location SanFranciso = new Location(37.7576171, -122.5776844, "San Francisco", Color.MAGENTA);
@@ -374,6 +379,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	 * Gets server diagnostics.
 	 */
 	public void getServerDiagnostics() {
+		owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(true);
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetServerDiagnostics(controls_.getPeriod()));
 	}
 
@@ -395,11 +401,16 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 			// data service
 			if (dataServerResponse != null) {
 
+				// create common colors
+				Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE, Tile.MAGENTA };
+
 				// reset tiles
 				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
 				tiles_[POPULAR_SEARCH_HITS].clearChartData();
+				tiles_[SPECTRUM_COUNT].clearBarChartItems();
+				tiles_[PP_COUNT].clearBarChartItems();
 
 				// add periodic statistics
 				PeriodicDataServerStatistic[] stats = dataServerResponse.getPeriodicStatistics();
@@ -414,7 +425,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 				// add popular search hits
 				Map<String, Integer> searchHits = dataServerResponse.getSearchHits();
 				if (searchHits != null) {
-					Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE };
 					Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
 					int i = 0;
 					while (it.hasNext()) {
@@ -423,9 +433,62 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 						i++;
 					}
 				}
-
-				// auto scale tile
 				tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
+
+				// add spectrum counts
+				Map<String, Integer> spectrumCounts = dataServerResponse.getSpectrumCounts();
+				if (spectrumCounts != null) {
+					Iterator<Entry<String, Integer>> it = spectrumCounts.entrySet().iterator();
+					int i = 0;
+					while (it.hasNext()) {
+						Entry<String, Integer> e = it.next();
+						tiles_[SPECTRUM_COUNT].addBarChartItem(new BarChartItem(e.getKey(), e.getValue(), colors[i]));
+						i++;
+					}
+				}
+				tiles_[SPECTRUM_COUNT].calcAutoScale();
+
+				// add pilot point counts
+				Map<String, Integer> ppCounts = dataServerResponse.getPilotPointCounts();
+				if (ppCounts != null) {
+					Iterator<Entry<String, Integer>> it = ppCounts.entrySet().iterator();
+					int i = 0;
+					while (it.hasNext()) {
+						Entry<String, Integer> e = it.next();
+						tiles_[PP_COUNT].addBarChartItem(new BarChartItem(e.getKey(), e.getValue(), colors[i]));
+						i++;
+					}
+				}
+				tiles_[PP_COUNT].calcAutoScale();
+
+				// set bug counts
+				Map<String, Integer> bugCounts = dataServerResponse.getBugReportCounts();
+				if (bugCounts != null) {
+					Integer open = bugCounts.get(BugReport.OPEN);
+					Integer closed = bugCounts.get(BugReport.CLOSED);
+					tiles_[BUG_REPORTS].setLeftValue(open == null ? 0 : open);
+					tiles_[BUG_REPORTS].setRightValue(closed == null ? 0 : closed);
+				}
+
+				// set wish counts
+				Map<String, Integer> wishCounts = dataServerResponse.getWishCounts();
+				if (wishCounts != null) {
+					Integer open = wishCounts.get(Wish.OPEN);
+					Integer closed = wishCounts.get(Wish.CLOSED);
+					tiles_[USER_WISHES].setLeftValue(open == null ? 0 : open);
+					tiles_[USER_WISHES].setRightValue(closed == null ? 0 : closed);
+				}
+
+				// set access request counts
+				Map<String, Integer> accessRequestCounts = dataServerResponse.getAccessRequestCounts();
+				if (accessRequestCounts != null) {
+					Integer rejected = accessRequestCounts.get(AccessRequest.REJECTED);
+					Integer pending = accessRequestCounts.get(AccessRequest.PENDING);
+					Integer granted = accessRequestCounts.get(AccessRequest.GRANTED);
+					tiles_[ACCESS_REQUESTS].setLeftValue(rejected == null ? 0 : rejected);
+					tiles_[ACCESS_REQUESTS].setMiddleValue(pending == null ? 0 : pending);
+					tiles_[ACCESS_REQUESTS].setRightValue(granted == null ? 0 : granted);
+				}
 			}
 
 			// analysis server
@@ -461,6 +524,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 					});
 				}
 			}
+
+			// set button state
+			owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(false);
 		}, tiles_).play();
 	}
 
