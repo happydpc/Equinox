@@ -23,7 +23,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -115,6 +117,28 @@ public class Utility {
 
 	/** Buffer size for extracting zipped files. */
 	private static final int BUFSIZE = 2048;
+
+	/**
+	 * Retrieves and returns the external IP address from Amazon web services, or null if cannot connect to internet (or service is not available).
+	 * 
+	 * @return External IP address or null.
+	 */
+	public static String getExternalIPAdress() {
+
+		// get IP from Amazon web services
+		try {
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()))) {
+				return in.readLine();
+			}
+		}
+
+		// exception occurred during getting external IP address
+		catch (Exception e) {
+			Equinox.LOGGER.log(Level.WARNING, "Cannot obtain external IP address.", e);
+			return null;
+		}
+	}
 
 	/**
 	 * Loads and returns image resource.

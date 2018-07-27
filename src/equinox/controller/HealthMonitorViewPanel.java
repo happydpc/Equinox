@@ -18,6 +18,7 @@ package equinox.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,6 +32,7 @@ import equinox.data.EquinoxTheme;
 import equinox.dataServer.remote.data.AccessRequest;
 import equinox.dataServer.remote.data.BugReport;
 import equinox.dataServer.remote.data.PeriodicDataServerStatistic;
+import equinox.dataServer.remote.data.UserLocation;
 import equinox.dataServer.remote.data.Wish;
 import equinox.dataServer.remote.message.DataServerStatisticsResponse;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
@@ -47,9 +49,7 @@ import eu.hansolo.tilesfx.Tile.SkinType;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.addons.Indicator;
 import eu.hansolo.tilesfx.chart.ChartData;
-import eu.hansolo.tilesfx.chart.ChartDataBuilder;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
-import eu.hansolo.tilesfx.skins.BarChartItem;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
 import eu.hansolo.tilesfx.tools.Location;
 import javafx.fxml.FXML;
@@ -187,18 +187,18 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 		// create spectrum count tile
 		tiles_[SPECTRUM_COUNT] = TileBuilder.create()
-               .skinType(SkinType.BAR_CHART)
+               .skinType(SkinType.RADIAL_CHART)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                .title("Spectrum Count")
-               .decimals(0)
+               .textVisible(false)
                .build();
 
 		// create pilot point count tile
 		tiles_[PP_COUNT] = TileBuilder.create()
-               .skinType(SkinType.BAR_CHART)
+               .skinType(SkinType.RADIAL_CHART)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
                .title("Pilot Point Count")
-               .decimals(0)
+               .textVisible(false)
                .build();
 
 
@@ -263,23 +263,11 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                .build();
 
         // create connection map tile
-        Location SanFranciso = new Location(37.7576171, -122.5776844, "San Francisco", Color.MAGENTA);
-        Location NewYork     = new Location(40.7157216,-74.3036411, "New York", Color.MAGENTA);
-        Location Chicago     = new Location(41.8333908,-88.0128341, "Chicago", Color.MAGENTA);
-        Location Home        = new Location(51.9065938,7.6352688, "Hause", Color.CRIMSON);
-        Location Moscow      = new Location(55.751042, 37.619060, "Moscow", Color.MAGENTA);
         tiles_[USER_LOCATIONS] = TileBuilder.create()
                                .skinType(SkinType.WORLDMAP)
                                .title("User Locations")
                                .textVisible(false)
                                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                               .pointsOfInterest(SanFranciso, Chicago, NewYork, Moscow)
-                               .chartData(ChartDataBuilder.create()
-                                                          .name("Home")
-                                                          .fillColor(Color.RED)
-                                                          .value(20)
-                                                          .location(Home)
-                                                          .build())
                                .build();
         FlowGridPane.setColumnSpan(tiles_[USER_LOCATIONS], 2);
 		// @formatter:on
@@ -367,7 +355,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		// no implementation
+		Animator.bouncingScale2(200, 400, 0, 1.0, null, tiles_).play();
 	}
 
 	@Override
@@ -395,139 +383,144 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	 */
 	public void setData(DataServerStatisticsResponse dataServerResponse, AnalysisServerStatisticsResponse analysisServerResponse, ExchangeServerStatisticsResponse exchangeServerResponse) {
 
-		// create and play fade animation
-		Animator.bouncingScale2(400, 0, 1.0, event -> {
+		// data service
+		if (dataServerResponse != null) {
 
-			// data service
-			if (dataServerResponse != null) {
+			// create common colors
+			Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE, Tile.MAGENTA };
 
-				// create common colors
-				Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE, Tile.MAGENTA };
+			// reset tiles
+			tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
+			tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
+			tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
+			tiles_[POPULAR_SEARCH_HITS].clearChartData();
+			tiles_[SPECTRUM_COUNT].clearChartData();
+			tiles_[PP_COUNT].clearChartData();
+			tiles_[USER_LOCATIONS].clearPoiLocations();
 
-				// reset tiles
-				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
-				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
-				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
-				tiles_[POPULAR_SEARCH_HITS].clearChartData();
-				tiles_[SPECTRUM_COUNT].clearBarChartItems();
-				tiles_[PP_COUNT].clearBarChartItems();
-
-				// add periodic statistics
-				PeriodicDataServerStatistic[] stats = dataServerResponse.getPeriodicStatistics();
-				if (stats != null) {
-					Arrays.asList(stats).forEach(stat -> {
-						tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
-						tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
-						tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
-					});
-				}
-
-				// add popular search hits
-				Map<String, Integer> searchHits = dataServerResponse.getSearchHits();
-				if (searchHits != null) {
-					Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
-					int i = 0;
-					while (it.hasNext()) {
-						Entry<String, Integer> e = it.next();
-						tiles_[POPULAR_SEARCH_HITS].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
-						i++;
-					}
-				}
-				tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
-
-				// add spectrum counts
-				Map<String, Integer> spectrumCounts = dataServerResponse.getSpectrumCounts();
-				if (spectrumCounts != null) {
-					Iterator<Entry<String, Integer>> it = spectrumCounts.entrySet().iterator();
-					int i = 0;
-					while (it.hasNext()) {
-						Entry<String, Integer> e = it.next();
-						tiles_[SPECTRUM_COUNT].addBarChartItem(new BarChartItem(e.getKey(), e.getValue(), colors[i]));
-						i++;
-					}
-				}
-				tiles_[SPECTRUM_COUNT].calcAutoScale();
-
-				// add pilot point counts
-				Map<String, Integer> ppCounts = dataServerResponse.getPilotPointCounts();
-				if (ppCounts != null) {
-					Iterator<Entry<String, Integer>> it = ppCounts.entrySet().iterator();
-					int i = 0;
-					while (it.hasNext()) {
-						Entry<String, Integer> e = it.next();
-						tiles_[PP_COUNT].addBarChartItem(new BarChartItem(e.getKey(), e.getValue(), colors[i]));
-						i++;
-					}
-				}
-				tiles_[PP_COUNT].calcAutoScale();
-
-				// set bug counts
-				Map<String, Integer> bugCounts = dataServerResponse.getBugReportCounts();
-				if (bugCounts != null) {
-					Integer open = bugCounts.get(BugReport.OPEN);
-					Integer closed = bugCounts.get(BugReport.CLOSED);
-					tiles_[BUG_REPORTS].setLeftValue(open == null ? 0 : open);
-					tiles_[BUG_REPORTS].setRightValue(closed == null ? 0 : closed);
-				}
-
-				// set wish counts
-				Map<String, Integer> wishCounts = dataServerResponse.getWishCounts();
-				if (wishCounts != null) {
-					Integer open = wishCounts.get(Wish.OPEN);
-					Integer closed = wishCounts.get(Wish.CLOSED);
-					tiles_[USER_WISHES].setLeftValue(open == null ? 0 : open);
-					tiles_[USER_WISHES].setRightValue(closed == null ? 0 : closed);
-				}
-
-				// set access request counts
-				Map<String, Integer> accessRequestCounts = dataServerResponse.getAccessRequestCounts();
-				if (accessRequestCounts != null) {
-					Integer rejected = accessRequestCounts.get(AccessRequest.REJECTED);
-					Integer pending = accessRequestCounts.get(AccessRequest.PENDING);
-					Integer granted = accessRequestCounts.get(AccessRequest.GRANTED);
-					tiles_[ACCESS_REQUESTS].setLeftValue(rejected == null ? 0 : rejected);
-					tiles_[ACCESS_REQUESTS].setMiddleValue(pending == null ? 0 : pending);
-					tiles_[ACCESS_REQUESTS].setRightValue(granted == null ? 0 : granted);
-				}
+			// add periodic statistics
+			PeriodicDataServerStatistic[] stats = dataServerResponse.getPeriodicStatistics();
+			if (stats != null) {
+				Arrays.asList(stats).forEach(stat -> {
+					tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
+					tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
+					tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
+				});
 			}
 
-			// analysis server
-			if (analysisServerResponse != null) {
-
-				// reset tiles
-				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
-				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
-
-				// add statistics
-				AnalysisServerStatistic[] stats = analysisServerResponse.getStatistics();
-				if (stats != null) {
-					Arrays.asList(stats).forEach(stat -> {
-						tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
-						tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
-					});
+			// add popular search hits
+			Map<String, Integer> searchHits = dataServerResponse.getSearchHits();
+			if (searchHits != null) {
+				Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
+				int i = 0;
+				while (it.hasNext()) {
+					Entry<String, Integer> e = it.next();
+					tiles_[POPULAR_SEARCH_HITS].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+					i++;
 				}
 			}
+			tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
 
-			// exchange server
-			if (exchangeServerResponse != null) {
-
-				// reset tiles
-				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
-				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
-
-				// add statistics
-				ExchangeServerStatistic[] stats = exchangeServerResponse.getStatistics();
-				if (stats != null) {
-					Arrays.asList(stats).forEach(stat -> {
-						tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
-						tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
-					});
+			// add spectrum counts
+			Map<String, Integer> spectrumCounts = dataServerResponse.getSpectrumCounts();
+			if (spectrumCounts != null) {
+				Iterator<Entry<String, Integer>> it = spectrumCounts.entrySet().iterator();
+				int i = 0;
+				while (it.hasNext()) {
+					Entry<String, Integer> e = it.next();
+					tiles_[SPECTRUM_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+					i++;
 				}
 			}
+			tiles_[SPECTRUM_COUNT].calcAutoScale();
 
-			// set button state
-			owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(false);
-		}, tiles_).play();
+			// add pilot point counts
+			Map<String, Integer> ppCounts = dataServerResponse.getPilotPointCounts();
+			if (ppCounts != null) {
+				Iterator<Entry<String, Integer>> it = ppCounts.entrySet().iterator();
+				int i = 0;
+				while (it.hasNext()) {
+					Entry<String, Integer> e = it.next();
+					tiles_[PP_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+					i++;
+				}
+			}
+			tiles_[PP_COUNT].calcAutoScale();
+
+			// set bug counts
+			Map<String, Integer> bugCounts = dataServerResponse.getBugReportCounts();
+			if (bugCounts != null) {
+				Integer open = bugCounts.get(BugReport.OPEN);
+				Integer closed = bugCounts.get(BugReport.CLOSED);
+				tiles_[BUG_REPORTS].setLeftValue(open == null ? 0 : open);
+				tiles_[BUG_REPORTS].setRightValue(closed == null ? 0 : closed);
+			}
+
+			// set wish counts
+			Map<String, Integer> wishCounts = dataServerResponse.getWishCounts();
+			if (wishCounts != null) {
+				Integer open = wishCounts.get(Wish.OPEN);
+				Integer closed = wishCounts.get(Wish.CLOSED);
+				tiles_[USER_WISHES].setLeftValue(open == null ? 0 : open);
+				tiles_[USER_WISHES].setRightValue(closed == null ? 0 : closed);
+			}
+
+			// set access request counts
+			Map<String, Integer> accessRequestCounts = dataServerResponse.getAccessRequestCounts();
+			if (accessRequestCounts != null) {
+				Integer rejected = accessRequestCounts.get(AccessRequest.REJECTED);
+				Integer pending = accessRequestCounts.get(AccessRequest.PENDING);
+				Integer granted = accessRequestCounts.get(AccessRequest.GRANTED);
+				tiles_[ACCESS_REQUESTS].setLeftValue(rejected == null ? 0 : rejected);
+				tiles_[ACCESS_REQUESTS].setMiddleValue(pending == null ? 0 : pending);
+				tiles_[ACCESS_REQUESTS].setRightValue(granted == null ? 0 : granted);
+			}
+
+			// set user locations
+			ArrayList<UserLocation> userLocations = dataServerResponse.getUserLocations();
+			if (userLocations != null && !userLocations.isEmpty()) {
+				userLocations.forEach(loc -> {
+					tiles_[USER_LOCATIONS].addPoiLocation(new Location(loc.getLatitude(), loc.getLongtitude(), loc.getCity() + ", " + loc.getCountry(), Color.RED));
+				});
+			}
+		}
+
+		// analysis server
+		if (analysisServerResponse != null) {
+
+			// reset tiles
+			tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
+			tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
+
+			// add statistics
+			AnalysisServerStatistic[] stats = analysisServerResponse.getStatistics();
+			if (stats != null) {
+				Arrays.asList(stats).forEach(stat -> {
+					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
+					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
+				});
+			}
+		}
+
+		// exchange server
+		if (exchangeServerResponse != null) {
+
+			// reset tiles
+			tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
+			tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
+
+			// add statistics
+			ExchangeServerStatistic[] stats = exchangeServerResponse.getStatistics();
+			if (stats != null) {
+				Arrays.asList(stats).forEach(stat -> {
+					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
+					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
+				});
+			}
+		}
+
+		// set button state
+		owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(false);
 	}
 
 	/**

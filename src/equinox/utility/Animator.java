@@ -197,6 +197,8 @@ public class Animator {
 	 * <LI><i>Second step:</i> Scales node from <code>midScale</code> to <code>endScale</code>.
 	 * </UL>
 	 *
+	 * @param startDelay
+	 *            Start delay in milliseconds.
 	 * @param stepDuration
 	 *            Step duration in milliseconds.
 	 * @param startScale
@@ -209,10 +211,13 @@ public class Animator {
 	 *            Array containing the animated nodes of the screen. Note that, nodes will be animated in given order.
 	 * @return The newly created animation.
 	 */
-	public static Animation bouncingScale2(double stepDuration, double startScale, double endScale, EventHandler<ActionEvent> onFinished, Node... nodes) {
+	public static Animation bouncingScale2(double startDelay, double stepDuration, double startScale, double endScale, EventHandler<ActionEvent> onFinished, Node... nodes) {
 
 		// create bouncing scale animation sequence
 		ParallelTransition bouncingScale = new ParallelTransition();
+
+		// set delay to sequence
+		bouncingScale.setDelay(Duration.millis(startDelay));
 
 		// loop over animated nodes
 		int i = 0;

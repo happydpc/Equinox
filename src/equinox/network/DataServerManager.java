@@ -186,11 +186,20 @@ public class DataServerManager implements DataMessageListener {
 
 			// connect to server
 			try {
+
+				// connect to kryonet server
 				String hostname = (String) owner_.getSettings().getValue(Settings.DATA_SERVER_HOSTNAME);
 				int port = Integer.parseInt((String) owner_.getSettings().getValue(Settings.DATA_SERVER_PORT));
 				kryoNetClient_.connect(5000, hostname, port);
+
+				// create handshake message
 				HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
 				handshake.setListenerHashCode(hashCode());
+
+				// get external IP address (if possible)
+				handshake.setExternalIPAddress(Utility.getExternalIPAdress());
+
+				// send handshake message to server
 				kryoNetClient_.sendTCP(handshake);
 				return true;
 			}
