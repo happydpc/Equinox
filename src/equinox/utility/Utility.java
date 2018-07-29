@@ -120,7 +120,7 @@ public class Utility {
 
 	/**
 	 * Retrieves and returns the external IP address from Amazon web services, or null if cannot connect to internet (or service is not available).
-	 * 
+	 *
 	 * @return External IP address or null.
 	 */
 	public static String getExternalIPAdress() {
