@@ -1045,7 +1045,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private void onHealthMonitoringClicked() {
-		((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getServerDiagnostics();
+		((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getServerStatistics();
 	}
 
 	@FXML

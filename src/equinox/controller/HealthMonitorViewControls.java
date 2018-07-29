@@ -110,7 +110,7 @@ public class HealthMonitorViewControls implements Initializable {
 
 		// there is change
 		if (currentPeriod != getPeriod()) {
-			owner_.getServerDiagnostics();
+			owner_.getServerStatistics();
 		}
 	}
 

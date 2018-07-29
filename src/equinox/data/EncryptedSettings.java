@@ -33,7 +33,7 @@ import encoder.Base64Encoder;
 public class EncryptedSettings implements Serializable {
 
 	/** Serial ID. */
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 4L;
 
 	/** Encrypted settings. */
 	private final HashMap<Integer, Setting> encryptedSettings;

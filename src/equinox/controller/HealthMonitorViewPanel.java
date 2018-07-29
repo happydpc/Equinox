@@ -34,12 +34,28 @@ import equinox.dataServer.remote.data.BugReport;
 import equinox.dataServer.remote.data.PeriodicDataServerStatistic;
 import equinox.dataServer.remote.data.UserLocation;
 import equinox.dataServer.remote.data.Wish;
-import equinox.dataServer.remote.message.DataServerStatisticsResponse;
+import equinox.dataServer.remote.message.GetAccessRequestCountResponse;
+import equinox.dataServer.remote.message.GetBugReportCountResponse;
+import equinox.dataServer.remote.message.GetDataQueriesResponse;
+import equinox.dataServer.remote.message.GetPilotPointCountsResponse;
+import equinox.dataServer.remote.message.GetSearchHitsResponse;
+import equinox.dataServer.remote.message.GetSpectrumCountsResponse;
+import equinox.dataServer.remote.message.GetUserLocationsResponse;
+import equinox.dataServer.remote.message.GetWishCountResponse;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsResponse;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
-import equinox.task.GetServerDiagnostics;
+import equinox.task.GetAccessRequestCount;
+import equinox.task.GetAnalysisRequests;
+import equinox.task.GetBugReportCount;
+import equinox.task.GetDataQueryCounts;
+import equinox.task.GetExchangeRequests;
+import equinox.task.GetPilotPointCounts;
+import equinox.task.GetSearchHits;
+import equinox.task.GetSpectrumCounts;
+import equinox.task.GetUserLocations;
+import equinox.task.GetWishCount;
 import equinox.task.SaveImage;
 import equinox.utility.Animator;
 import equinox.utility.Utility;
@@ -52,6 +68,7 @@ import eu.hansolo.tilesfx.chart.ChartData;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
 import eu.hansolo.tilesfx.tools.Location;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -189,7 +206,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[SPECTRUM_COUNT] = TileBuilder.create()
                .skinType(SkinType.RADIAL_CHART)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-               .title("Spectrum Count")
+               .title("Spectra in AF-Twin DB")
                .textVisible(false)
                .build();
 
@@ -197,7 +214,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[PP_COUNT] = TileBuilder.create()
                .skinType(SkinType.RADIAL_CHART)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-               .title("Pilot Point Count")
+               .title("Pilot Points in AF-Twin DB")
                .textVisible(false)
                .build();
 
@@ -232,7 +249,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
         tiles_[USER_WISHES] = TileBuilder.create()
                .skinType(SkinType.STATUS)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-               .title("User Wishes")
+               .title("User Requests")
                .description("Status")
                .leftText("OPEN")
                .middleText("PROGRESS")
@@ -252,7 +269,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
         tiles_[ACCESS_REQUESTS] = TileBuilder.create()
                .skinType(SkinType.STATUS)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-               .title("Access Requests")
+               .title("User Access Requests")
                .description("Status")
                .leftText("REJECTED")
                .middleText("PENDING")
@@ -338,6 +355,15 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new SaveImage(file, snapshot));
 	}
 
+	/**
+	 * Returns selected data collection period.
+	 *
+	 * @return Data collection period.
+	 */
+	public long getPeriod() {
+		return controls_.getPeriod();
+	}
+
 	@Override
 	public String getViewName() {
 		return "Platform Health Monitoring";
@@ -355,7 +381,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		Animator.bouncingScale2(200, 400, 0, 1.0, null, tiles_).play();
+		Platform.runLater(() -> Animator.bouncingScale2(200, 400, 0, 1.0, null, tiles_).play());
 	}
 
 	@Override
@@ -364,163 +390,289 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	}
 
 	/**
-	 * Gets server diagnostics.
+	 * Gets server statistics.
 	 */
-	public void getServerDiagnostics() {
-		owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(true);
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetServerDiagnostics(controls_.getPeriod()));
+	public void getServerStatistics() {
+		long period = controls_.getPeriod();
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetExchangeRequests(period));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetDataQueryCounts(period));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetUserLocations());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetSpectrumCounts());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetSearchHits());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetPilotPointCounts());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetBugReportCount());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetWishCount());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetAccessRequestCount());
+		owner_.showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
 	}
 
 	/**
-	 * Sets data from platform services.
+	 * Sets analysis requests.
 	 *
-	 * @param dataServerResponse
-	 *            Data server response.
-	 * @param analysisServerResponse
-	 *            Analysis server response.
-	 * @param exchangeServerResponse
-	 *            Exchange server response.
+	 * @param response
+	 *            Analysis server response message.
 	 */
-	public void setData(DataServerStatisticsResponse dataServerResponse, AnalysisServerStatisticsResponse analysisServerResponse, ExchangeServerStatisticsResponse exchangeServerResponse) {
+	public void setAnalysisRequests(AnalysisServerStatisticsResponse response) {
 
-		// data service
-		if (dataServerResponse != null) {
+		// null response
+		if (response == null)
+			return;
 
-			// create common colors
-			Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE, Tile.MAGENTA };
+		// reset tiles
+		tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
 
-			// reset tiles
-			tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
-			tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
-			tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
-			tiles_[POPULAR_SEARCH_HITS].clearChartData();
-			tiles_[SPECTRUM_COUNT].clearChartData();
-			tiles_[PP_COUNT].clearChartData();
-			tiles_[USER_LOCATIONS].clearPoiLocations();
+		// add statistics
+		AnalysisServerStatistic[] stats = response.getStatistics();
+		if (stats != null) {
+			Arrays.asList(stats).forEach(stat -> {
+				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
+				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
+			});
+		}
+	}
 
-			// add periodic statistics
-			PeriodicDataServerStatistic[] stats = dataServerResponse.getPeriodicStatistics();
-			if (stats != null) {
-				Arrays.asList(stats).forEach(stat -> {
-					tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
-					tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
-					tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
-				});
-			}
+	/**
+	 * Sets exchange requests.
+	 *
+	 * @param response
+	 *            Exchange server response message.
+	 */
+	public void setExchangeRequests(ExchangeServerStatisticsResponse response) {
 
-			// add popular search hits
-			Map<String, Integer> searchHits = dataServerResponse.getSearchHits();
-			if (searchHits != null) {
-				Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
-				int i = 0;
-				while (it.hasNext()) {
-					Entry<String, Integer> e = it.next();
-					tiles_[POPULAR_SEARCH_HITS].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
-					i++;
-				}
-			}
-			tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
+		// null response
+		if (response == null)
+			return;
 
-			// add spectrum counts
-			Map<String, Integer> spectrumCounts = dataServerResponse.getSpectrumCounts();
-			if (spectrumCounts != null) {
-				Iterator<Entry<String, Integer>> it = spectrumCounts.entrySet().iterator();
-				int i = 0;
-				while (it.hasNext()) {
-					Entry<String, Integer> e = it.next();
-					tiles_[SPECTRUM_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
-					i++;
-				}
-			}
-			tiles_[SPECTRUM_COUNT].calcAutoScale();
+		// reset tiles
+		tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
 
-			// add pilot point counts
-			Map<String, Integer> ppCounts = dataServerResponse.getPilotPointCounts();
-			if (ppCounts != null) {
-				Iterator<Entry<String, Integer>> it = ppCounts.entrySet().iterator();
-				int i = 0;
-				while (it.hasNext()) {
-					Entry<String, Integer> e = it.next();
-					tiles_[PP_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
-					i++;
-				}
-			}
-			tiles_[PP_COUNT].calcAutoScale();
+		// add statistics
+		ExchangeServerStatistic[] stats = response.getStatistics();
+		if (stats != null) {
+			Arrays.asList(stats).forEach(stat -> {
+				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
+				tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
+			});
+		}
+	}
 
-			// set bug counts
-			Map<String, Integer> bugCounts = dataServerResponse.getBugReportCounts();
-			if (bugCounts != null) {
-				Integer open = bugCounts.get(BugReport.OPEN);
-				Integer closed = bugCounts.get(BugReport.CLOSED);
-				tiles_[BUG_REPORTS].setLeftValue(open == null ? 0 : open);
-				tiles_[BUG_REPORTS].setRightValue(closed == null ? 0 : closed);
-			}
+	/**
+	 * Sets data query counts.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setDataQueries(GetDataQueriesResponse response) {
 
-			// set wish counts
-			Map<String, Integer> wishCounts = dataServerResponse.getWishCounts();
-			if (wishCounts != null) {
-				Integer open = wishCounts.get(Wish.OPEN);
-				Integer closed = wishCounts.get(Wish.CLOSED);
-				tiles_[USER_WISHES].setLeftValue(open == null ? 0 : open);
-				tiles_[USER_WISHES].setRightValue(closed == null ? 0 : closed);
-			}
+		// null response
+		if (response == null)
+			return;
 
-			// set access request counts
-			Map<String, Integer> accessRequestCounts = dataServerResponse.getAccessRequestCounts();
-			if (accessRequestCounts != null) {
-				Integer rejected = accessRequestCounts.get(AccessRequest.REJECTED);
-				Integer pending = accessRequestCounts.get(AccessRequest.PENDING);
-				Integer granted = accessRequestCounts.get(AccessRequest.GRANTED);
-				tiles_[ACCESS_REQUESTS].setLeftValue(rejected == null ? 0 : rejected);
-				tiles_[ACCESS_REQUESTS].setMiddleValue(pending == null ? 0 : pending);
-				tiles_[ACCESS_REQUESTS].setRightValue(granted == null ? 0 : granted);
-			}
+		// reset tiles
+		tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
 
-			// set user locations
-			ArrayList<UserLocation> userLocations = dataServerResponse.getUserLocations();
-			if (userLocations != null && !userLocations.isEmpty()) {
-				userLocations.forEach(loc -> {
-					tiles_[USER_LOCATIONS].addPoiLocation(new Location(loc.getLatitude(), loc.getLongtitude(), loc.getCity() + ", " + loc.getCountry(), Color.RED));
-				});
+		// add periodic statistics
+		PeriodicDataServerStatistic[] stats = response.getPeriodicStatistics();
+		if (stats != null) {
+			Arrays.asList(stats).forEach(stat -> {
+				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
+				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
+				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
+			});
+		}
+	}
+
+	/**
+	 * Sets user locations.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setUserLocations(GetUserLocationsResponse response) {
+
+		// null response
+		if (response == null)
+			return;
+
+		// reset tiles
+		tiles_[USER_LOCATIONS].clearPoiLocations();
+
+		// set user locations
+		ArrayList<UserLocation> userLocations = response.getUserLocations();
+		if (userLocations != null && !userLocations.isEmpty()) {
+			userLocations.forEach(loc -> {
+				tiles_[USER_LOCATIONS].addPoiLocation(new Location(loc.getLatitude(), loc.getLongtitude(), loc.getCity() + ", " + loc.getCountry(), Color.RED));
+			});
+		}
+	}
+
+	/**
+	 * Sets spectrum counts.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setSpectrumCounts(GetSpectrumCountsResponse response) {
+
+		// null response
+		if (response == null)
+			return;
+
+		// create common colors
+		Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE };
+
+		// reset tiles
+		tiles_[SPECTRUM_COUNT].clearChartData();
+
+		// add spectrum counts
+		Map<String, Integer> spectrumCounts = response.getSpectrumCounts();
+		if (spectrumCounts != null) {
+			Iterator<Entry<String, Integer>> it = spectrumCounts.entrySet().iterator();
+			int i = 0;
+			while (it.hasNext()) {
+				Entry<String, Integer> e = it.next();
+				tiles_[SPECTRUM_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+				i++;
 			}
 		}
+		tiles_[SPECTRUM_COUNT].calcAutoScale();
+	}
 
-		// analysis server
-		if (analysisServerResponse != null) {
+	/**
+	 * Sets popular search hits.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setSearchHits(GetSearchHitsResponse response) {
 
-			// reset tiles
-			tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
-			tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
+		// null response
+		if (response == null)
+			return;
 
-			// add statistics
-			AnalysisServerStatistic[] stats = analysisServerResponse.getStatistics();
-			if (stats != null) {
-				Arrays.asList(stats).forEach(stat -> {
-					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
-					tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
-				});
+		// create common colors
+		Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE };
+
+		// reset tiles
+		tiles_[POPULAR_SEARCH_HITS].clearChartData();
+
+		// add popular search hits
+		Map<String, Integer> searchHits = response.getSearchHits();
+		if (searchHits != null) {
+			Iterator<Entry<String, Integer>> it = searchHits.entrySet().iterator();
+			int i = 0;
+			while (it.hasNext()) {
+				Entry<String, Integer> e = it.next();
+				tiles_[POPULAR_SEARCH_HITS].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+				i++;
 			}
 		}
+		tiles_[POPULAR_SEARCH_HITS].calcAutoScale();
+	}
 
-		// exchange server
-		if (exchangeServerResponse != null) {
+	/**
+	 * Sets pilot point counts.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setPilotPointCounts(GetPilotPointCountsResponse response) {
 
-			// reset tiles
-			tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
-			tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
+		// null response
+		if (response == null)
+			return;
 
-			// add statistics
-			ExchangeServerStatistic[] stats = exchangeServerResponse.getStatistics();
-			if (stats != null) {
-				Arrays.asList(stats).forEach(stat -> {
-					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getShareRequests()));
-					tiles_[COLLABORATION_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedShares()));
-				});
+		// create common colors
+		Color[] colors = { Tile.BLUE, Tile.RED, Tile.GREEN, Tile.ORANGE };
+
+		// reset tiles
+		tiles_[PP_COUNT].clearChartData();
+
+		// add pilot point counts
+		Map<String, Integer> ppCounts = response.getPilotPointCounts();
+		if (ppCounts != null) {
+			Iterator<Entry<String, Integer>> it = ppCounts.entrySet().iterator();
+			int i = 0;
+			while (it.hasNext()) {
+				Entry<String, Integer> e = it.next();
+				tiles_[PP_COUNT].addChartData(new ChartData(e.getKey(), e.getValue(), colors[i]));
+				i++;
 			}
 		}
+		tiles_[PP_COUNT].calcAutoScale();
+	}
 
-		// set button state
-		owner_.getOwner().getInputPanel().setHealthMonitoringButtonState(false);
+	/**
+	 * Sets bug report count.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setBugReportCount(GetBugReportCountResponse response) {
+
+		// null response
+		if (response == null)
+			return;
+
+		// set bug counts
+		Map<String, Integer> bugCounts = response.getBugReportCounts();
+		if (bugCounts != null) {
+			Integer open = bugCounts.get(BugReport.OPEN);
+			Integer closed = bugCounts.get(BugReport.CLOSED);
+			tiles_[BUG_REPORTS].setLeftValue(open == null ? 0 : open);
+			tiles_[BUG_REPORTS].setRightValue(closed == null ? 0 : closed);
+		}
+	}
+
+	/**
+	 * Sets wish count.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setWishCount(GetWishCountResponse response) {
+
+		// null response
+		if (response == null)
+			return;
+
+		// set wish counts
+		Map<String, Integer> wishCounts = response.getWishCounts();
+		if (wishCounts != null) {
+			Integer open = wishCounts.get(Wish.OPEN);
+			Integer closed = wishCounts.get(Wish.CLOSED);
+			tiles_[USER_WISHES].setLeftValue(open == null ? 0 : open);
+			tiles_[USER_WISHES].setRightValue(closed == null ? 0 : closed);
+		}
+	}
+
+	/**
+	 * Sets access request count.
+	 *
+	 * @param response
+	 *            Data server response message.
+	 */
+	public void setAccessRequestCount(GetAccessRequestCountResponse response) {
+
+		// null response
+		if (response == null)
+			return;
+
+		// set access request counts
+		Map<String, Integer> accessRequestCounts = response.getAccessRequestCounts();
+		if (accessRequestCounts != null) {
+			Integer rejected = accessRequestCounts.get(AccessRequest.REJECTED);
+			Integer pending = accessRequestCounts.get(AccessRequest.PENDING);
+			Integer granted = accessRequestCounts.get(AccessRequest.GRANTED);
+			tiles_[ACCESS_REQUESTS].setLeftValue(rejected == null ? 0 : rejected);
+			tiles_[ACCESS_REQUESTS].setMiddleValue(pending == null ? 0 : pending);
+			tiles_[ACCESS_REQUESTS].setRightValue(granted == null ? 0 : granted);
+		}
 	}
 
 	/**

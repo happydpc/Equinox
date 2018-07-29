@@ -88,9 +88,9 @@
                         <Tooltip fx:id="authenticationTooltip_" text="User Authentication: Expired" />
                      </tooltip>
                   </Button>
-                  <Button fx:id="healthMonitoring_" contentDisplay="GRAPHIC_ONLY" layoutX="82.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onHealthMonitoringClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: green;" text="Button">
+                  <Button contentDisplay="GRAPHIC_ONLY" layoutX="82.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onHealthMonitoringClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: green;" text="Button">
                      <graphic>
-                        <ImageView fx:id="healthMonitoringImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../image/pulse.png" />
                            </image>
@@ -100,7 +100,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <tooltip>
-                        <Tooltip text="Microservices Health Monitoring" />
+                        <Tooltip text="Platform Health Monitoring" />
                      </tooltip>
                   </Button>
                   <Button fx:id="dataService_" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToDataServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
