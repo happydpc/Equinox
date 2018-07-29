@@ -387,7 +387,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		Platform.runLater(() -> Animator.bouncingScale2(1200, 400, 0, 1.0, null, tiles_).play());
+		Platform.runLater(() -> Animator.bouncingScale2(1000, 400, 0, 1.0, null, tiles_).play());
 	}
 
 	@Override
