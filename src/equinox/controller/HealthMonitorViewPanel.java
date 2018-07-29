@@ -78,6 +78,9 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -126,9 +129,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_ = new Tile[11];
 
         // create online users tile
-        XYChart.Series<String, Number> onlieUsersSeries = new XYChart.Series<>();
+        XYChart.Series<String, Integer> onlieUsersSeries = new XYChart.Series<>();
         onlieUsersSeries.setName("Online Users");
-		TilesFXSeries<String, Number> onlineUsersTilesFXSeries = new TilesFXSeries<>(onlieUsersSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> onlineUsersTilesFXSeries = new TilesFXSeries<>(onlieUsersSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
 		tiles_[ONLINE_USERS] = TileBuilder.create()
                 .skinType(SkinType.SMOOTHED_CHART)
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
@@ -141,12 +144,12 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[ONLINE_USERS].getXAxis().setTickLabelsVisible(false);
 
 		// create data queries tile
-		XYChart.Series<String, Number> dataQueriesSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> dataQueriesSeries = new XYChart.Series<>();
 		dataQueriesSeries.setName("Data Queries");
-		XYChart.Series<String, Number> failedQueriesSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> failedQueriesSeries = new XYChart.Series<>();
 		failedQueriesSeries.setName("Failed Queries");
-		TilesFXSeries<String, Number> dataQueriesFXSeries = new TilesFXSeries<>(dataQueriesSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
-		TilesFXSeries<String, Number> failedQueriesFXSeries = new TilesFXSeries<>(failedQueriesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> dataQueriesFXSeries = new TilesFXSeries<>(dataQueriesSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> failedQueriesFXSeries = new TilesFXSeries<>(failedQueriesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
 		tiles_[DATA_QUERIES] = TileBuilder.create()
 		       .skinType(SkinType.SMOOTHED_CHART)
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
@@ -158,13 +161,14 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .build();
 		tiles_[DATA_QUERIES].getXAxis().setTickLabelsVisible(false);
 
+
 		// create analysis requests tile
-		XYChart.Series<String, Number> analysisRequestsSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> analysisRequestsSeries = new XYChart.Series<>();
 		analysisRequestsSeries.setName("Analysis Requests");
-		XYChart.Series<String, Number> failedAnalysesSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> failedAnalysesSeries = new XYChart.Series<>();
 		failedAnalysesSeries.setName("Failed Analyses");
-		TilesFXSeries<String, Number> analysisRequestsFXSeries = new TilesFXSeries<>(analysisRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
-		TilesFXSeries<String, Number> failedAnalysesFXSeries = new TilesFXSeries<>(failedAnalysesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> analysisRequestsFXSeries = new TilesFXSeries<>(analysisRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> failedAnalysesFXSeries = new TilesFXSeries<>(failedAnalysesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
 		tiles_[ANALYSIS_REQUESTS] = TileBuilder.create()
                 .skinType(SkinType.SMOOTHED_CHART)
                 .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
@@ -177,12 +181,12 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[ANALYSIS_REQUESTS].getXAxis().setTickLabelsVisible(false);
 
 		// create collaboration requests tile
-		XYChart.Series<String, Number> shareRequestsSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> shareRequestsSeries = new XYChart.Series<>();
 		shareRequestsSeries.setName("Share Requests");
-		XYChart.Series<String, Number> failedSharesSeries = new XYChart.Series<>();
+		XYChart.Series<String, Integer> failedSharesSeries = new XYChart.Series<>();
 		failedSharesSeries.setName("Failed Shares");
-		TilesFXSeries<String, Number> shareRequestsFXSeries = new TilesFXSeries<>(shareRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
-		TilesFXSeries<String, Number> failedSharesFXSeries = new TilesFXSeries<>(failedSharesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> shareRequestsFXSeries = new TilesFXSeries<>(shareRequestsSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> failedSharesFXSeries = new TilesFXSeries<>(failedSharesSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
 		tiles_[COLLABORATION_REQUESTS] = TileBuilder.create()
 		       .skinType(SkinType.SMOOTHED_CHART)
 		       .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
@@ -279,7 +283,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                .rightGraphics(accessRequestGranted)
                .build();
 
-        // create connection map tile
+        // create user locations tile
         tiles_[USER_LOCATIONS] = TileBuilder.create()
                                .skinType(SkinType.WORLDMAP)
                                .title("User Locations")
@@ -296,7 +300,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		pane_.setAlignment(Pos.CENTER);
 		pane_.setCenterShape(true);
 		pane_.setPadding(new Insets(5));
-		pane_.setBackground(new Background(new BackgroundFill(Color.web("#101214"), CornerRadii.EMPTY, Insets.EMPTY)));
+		BackgroundFill fill = new BackgroundFill(Color.web("#101214"), CornerRadii.EMPTY, Insets.EMPTY);
+		BackgroundImage img = new BackgroundImage(Utility.getImage("healthMonitoring.png"), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, null);
+		pane_.setBackground(new Background(Arrays.asList(fill), Arrays.asList(img)));
 		VBox.setVgrow(pane_, Priority.ALWAYS);
 		pane_.setMaxWidth(Double.MAX_VALUE);
 		pane_.setMaxHeight(Double.MAX_VALUE);
@@ -315,7 +321,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public String getHeader() {
-		return "Platform Health Monitoring";
+		return "Microservices Health Monitoring";
 	}
 
 	@Override
@@ -335,7 +341,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		FileChooser fileChooser = owner_.getOwner().getFileChooser(FileType.PNG.getExtensionFilter());
 
 		// show save dialog
-		fileChooser.setInitialFileName("Platform Health Monitoring" + FileType.PNG.getExtension());
+		fileChooser.setInitialFileName("Microservices Health Monitoring" + FileType.PNG.getExtension());
 		File selectedFile = fileChooser.showSaveDialog(owner_.getOwner().getOwner().getStage());
 
 		// no file selected
@@ -366,7 +372,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public String getViewName() {
-		return "Platform Health Monitoring";
+		return "Microservices Health Monitoring";
 	}
 
 	@Override
@@ -381,7 +387,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		Platform.runLater(() -> Animator.bouncingScale2(200, 400, 0, 1.0, null, tiles_).play());
+		Platform.runLater(() -> Animator.bouncingScale2(1200, 400, 0, 1.0, null, tiles_).play());
 	}
 
 	@Override
@@ -390,9 +396,9 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 	}
 
 	/**
-	 * Gets server statistics.
+	 * Requests server statistics.
 	 */
-	public void getServerStatistics() {
+	public void requestServerStatistics() {
 		long period = controls_.getPeriod();
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetExchangeRequests(period));
@@ -404,7 +410,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetBugReportCount());
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetWishCount());
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetAccessRequestCount());
-		owner_.showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
 	}
 
 	/**

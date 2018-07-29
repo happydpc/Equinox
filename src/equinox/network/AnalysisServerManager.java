@@ -38,14 +38,17 @@ import equinox.analysisServer.remote.Registry;
 import equinox.analysisServer.remote.listener.AnalysisMessageListener;
 import equinox.analysisServer.remote.message.AnalysisMessage;
 import equinox.analysisServer.remote.message.HandshakeWithAnalysisServer;
+import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
+import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
+import equinox.task.GetAnalysisRequests;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 
@@ -71,7 +74,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	private List<AnalysisMessageListener> messageListeners_;
 
 	/** Stop indicator of the network watcher. */
-	private volatile boolean isStopped_ = false;
+	private volatile boolean isHandShaken_ = false;
 
 	/** The thread executor of the network watcher. */
 	private final ExecutorService threadExecutor_;
@@ -156,9 +159,6 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 *            True to show warning if exception occurs during connecting.
 	 */
 	public void connect(AnalysisMessage message, boolean showWarning) {
-
-		// set stop indicator
-		isStopped_ = false;
 
 		// already connected
 		if (kryoNetClient_.isConnected()) {
@@ -285,11 +285,6 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 * Disconnects from server. Note that, this method doesn't stop the network thread.
 	 */
 	public void disconnect() {
-
-		// set stop indicator
-		isStopped_ = true;
-
-		// disconnect kryonet client
 		kryoNetClient_.close();
 		Equinox.LOGGER.info("Disconnected from analysis server.");
 	}
@@ -303,9 +298,6 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		Utility.shutdownThreadExecutor(threadExecutor_);
 		Equinox.LOGGER.info("Analysis server manager network thread executor stopped.");
 
-		// set stop indicator
-		isStopped_ = true;
-
 		// stop kryonet client
 		kryoNetClient_.stop();
 		Equinox.LOGGER.info("Disconnected from analysis server.");
@@ -317,7 +309,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 	 * @return True if there is active connection to server.
 	 */
 	public boolean isConnected() {
-		return kryoNetClient_.isConnected();
+		return kryoNetClient_.isConnected() && isHandShaken_;
 	}
 
 	@Override
@@ -342,11 +334,18 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 
 			// log
 			Equinox.LOGGER.info("Successfully connected to analysis server.");
+			isHandShaken_ = true;
 
 			// send all queued message (if any)
 			AnalysisMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
+			}
+
+			// request analysis server statistics
+			if (!(boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
+				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
 			}
 		}
 
@@ -434,9 +433,8 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 		@Override
 		public void disconnected(Connection connection) {
 
-			// stopped by the user
-			if (isStopped_)
-				return;
+			// reset handshake
+			isHandShaken_ = false;
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to analysis server lost.");

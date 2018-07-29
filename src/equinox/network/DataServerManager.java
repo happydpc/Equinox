@@ -36,8 +36,10 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
+import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
+import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.dataServer.remote.Registry;
 import equinox.dataServer.remote.listener.DataMessageListener;
@@ -51,6 +53,14 @@ import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.task.CheckUserAuthentication;
+import equinox.task.GetAccessRequestCount;
+import equinox.task.GetBugReportCount;
+import equinox.task.GetDataQueryCounts;
+import equinox.task.GetPilotPointCounts;
+import equinox.task.GetSearchHits;
+import equinox.task.GetSpectrumCounts;
+import equinox.task.GetUserLocations;
+import equinox.task.GetWishCount;
 import equinox.task.SaveUserAuthentication;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -77,7 +87,7 @@ public class DataServerManager implements DataMessageListener {
 	private List<DataMessageListener> messageListeners_;
 
 	/** Stop indicator of the network watcher. */
-	private volatile boolean isStopped_ = false;
+	private volatile boolean isHandShaken_ = false;
 
 	/** The thread executor of the network watcher. */
 	private final ExecutorService threadExecutor_;
@@ -164,9 +174,6 @@ public class DataServerManager implements DataMessageListener {
 	 *            True to show warning if exception occurs during connecting.
 	 */
 	public void connect(DataMessage message, boolean showWarning) {
-
-		// set stop indicator
-		isStopped_ = false;
 
 		// already connected
 		if (kryoNetClient_.isConnected()) {
@@ -303,11 +310,6 @@ public class DataServerManager implements DataMessageListener {
 	 * Disconnects from server. Note that, this method doesn't stop the network thread.
 	 */
 	public void disconnect() {
-
-		// set stop indicator
-		isStopped_ = true;
-
-		// disconnect kryonet client
 		kryoNetClient_.close();
 		Equinox.LOGGER.info("Disconnected from data service.");
 	}
@@ -321,9 +323,6 @@ public class DataServerManager implements DataMessageListener {
 		Utility.shutdownThreadExecutor(threadExecutor_);
 		Equinox.LOGGER.info("Data server manager network thread executor stopped.");
 
-		// set stop indicator
-		isStopped_ = true;
-
 		// stop kryonet client
 		kryoNetClient_.stop();
 		Equinox.LOGGER.info("Disconnected from data service.");
@@ -335,7 +334,7 @@ public class DataServerManager implements DataMessageListener {
 	 * @return True if there is active connection to server.
 	 */
 	public boolean isConnected() {
-		return kryoNetClient_.isConnected();
+		return kryoNetClient_.isConnected() && isHandShaken_;
 	}
 
 	@Override
@@ -360,6 +359,7 @@ public class DataServerManager implements DataMessageListener {
 
 			// log
 			Equinox.LOGGER.info("Successfully connected to data service.");
+			isHandShaken_ = true;
 
 			// set user attributes
 			Equinox.USER.setUsername(handshake.getUsername());
@@ -383,6 +383,19 @@ public class DataServerManager implements DataMessageListener {
 			// start scheduled thread pool
 			CheckUserAuthentication check = new CheckUserAuthentication(owner_.getInputPanel());
 			((ScheduledExecutorService) Equinox.SCHEDULED_THREADPOOL).scheduleAtFixedRate(check, 60, 120, TimeUnit.SECONDS);
+
+			// request data server statistics
+			if (!(boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
+				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetDataQueryCounts(period));
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetUserLocations());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetSpectrumCounts());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetSearchHits());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetPilotPointCounts());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetBugReportCount());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetWishCount());
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetAccessRequestCount());
+			}
 		}
 
 		// unsuccessful
@@ -469,9 +482,8 @@ public class DataServerManager implements DataMessageListener {
 		@Override
 		public void disconnected(Connection connection) {
 
-			// stopped by the user
-			if (isStopped_)
-				return;
+			// reset handshake
+			isHandShaken_ = false;
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to data service lost.");

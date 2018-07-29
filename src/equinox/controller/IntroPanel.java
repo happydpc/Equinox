@@ -314,7 +314,7 @@ public class IntroPanel implements Initializable, ChangeListener<State> {
 
 				// show health monitoring
 				else {
-					((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getServerStatistics();
+					owner_.getViewPanel().showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
 				}
 			});
 		});

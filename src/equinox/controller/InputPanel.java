@@ -579,7 +579,8 @@ public class InputPanel implements Initializable {
 
 	@FXML
 	private void onHealthMonitoringClicked() {
-		((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getServerStatistics();
+		((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).requestServerStatistics();
+		owner_.getViewPanel().showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
 	}
 
 	@FXML

@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
+<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
    <children>
       <MenuBar fx:id="menuBar_" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="29.0" stylesheets="@../css/MenuBar.css" StackPane.alignment="TOP_CENTER">
         <menus>
@@ -650,7 +650,7 @@
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.power-off" />
                      </graphic>
                   </MenuItem>
-                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onHealthMonitoringClicked" text="Platform Health Monitoring...">
+                  <MenuItem disable="true" mnemonicParsing="false" onAction="#onHealthMonitoringClicked" text="Microservices Health Monitoring...">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.heartbeat" />
                      </graphic>

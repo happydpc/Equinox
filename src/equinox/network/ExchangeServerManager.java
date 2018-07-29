@@ -34,8 +34,10 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
+import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
+import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.exchangeServer.remote.Registry;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
@@ -49,6 +51,7 @@ import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
+import equinox.task.GetExchangeRequests;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 
@@ -74,7 +77,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	private List<ExchangeMessageListener> messageListeners_;
 
 	/** Stop indicator of the network watcher. */
-	private volatile boolean isStopped_ = false;
+	private volatile boolean isHandShaken_ = false;
 
 	/** The thread executor of the network watcher. */
 	private final ExecutorService threadExecutor_;
@@ -158,9 +161,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 *            True to show warning if exception occurs during connecting.
 	 */
 	public void connect(ExchangeMessage message, boolean showWarning) {
-
-		// set stop indicator
-		isStopped_ = false;
 
 		// already connected
 		if (kryoNetClient_.isConnected()) {
@@ -287,9 +287,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 */
 	public void disconnect() {
 
-		// set stop indicator
-		isStopped_ = true;
-
 		// disconnect kryonet client
 		kryoNetClient_.close();
 		Equinox.LOGGER.info("Disconnected from collaboration service.");
@@ -304,9 +301,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 		Utility.shutdownThreadExecutor(threadExecutor_);
 		Equinox.LOGGER.info("Exchange server manager network thread executor stopped.");
 
-		// set stop indicator
-		isStopped_ = true;
-
 		// stop kryonet client
 		kryoNetClient_.stop();
 		Equinox.LOGGER.info("Disconnected from collaboration service.");
@@ -318,7 +312,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 	 * @return True if there is active connection to server.
 	 */
 	public boolean isConnected() {
-		return kryoNetClient_.isConnected();
+		return kryoNetClient_.isConnected() && isHandShaken_;
 	}
 
 	@Override
@@ -343,6 +337,7 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 			// log
 			Equinox.LOGGER.info("Successfully connected to collaboration service.");
+			isHandShaken_ = true;
 
 			// send who request
 			if (Equinox.USER.hasPermission(Permission.SEE_CONNECTED_USERS, false, null)) {
@@ -353,6 +348,12 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			ExchangeMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
+			}
+
+			// request exchange server statistics
+			if (!(boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
+				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
+				owner_.getActiveTasksPanel().runTaskInParallel(new GetExchangeRequests(period));
 			}
 		}
 
@@ -439,10 +440,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 
 		@Override
 		public void disconnected(Connection connection) {
-
-			// stopped by the user
-			if (isStopped_)
-				return;
 
 			// log warning
 			Equinox.LOGGER.log(Level.WARNING, "Connection to collaboration service lost.");

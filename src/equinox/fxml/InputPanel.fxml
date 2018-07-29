@@ -100,7 +100,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor>
                      <tooltip>
-                        <Tooltip text="Platform Health Monitoring" />
+                        <Tooltip text="Microservices Health Monitoring" />
                      </tooltip>
                   </Button>
                   <Button fx:id="dataService_" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onConnectToDataServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
