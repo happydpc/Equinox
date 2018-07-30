@@ -269,7 +269,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 			message = "Invalid filer port given. Please supply a valid port.";
 			node = filerPort_;
 		}
-		else if (filerRootPath == null || filerRootPath.isEmpty()) {
+		else if (filerRootPath == null) {
 			message = "Invalid filer root path given. Please supply a valid path.";
 			node = filerRootPath_;
 		}
