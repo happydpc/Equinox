@@ -428,8 +428,8 @@
                                              <children>
                                                 <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" spacing="5.0">
                                                    <children>
-                                                      <ToggleSwitch fx:id="showNewsfeed_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="35.0" selected="true" HBox.hgrow="NEVER" />
-                                                      <Label maxWidth="1.7976931348623157E308" text="Show newsfeed at start" HBox.hgrow="ALWAYS" />
+                                                      <ToggleSwitch fx:id="showHealthMonitor_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="35.0" selected="true" HBox.hgrow="NEVER" />
+                                                      <Label maxWidth="1.7976931348623157E308" text="Show health at start" HBox.hgrow="ALWAYS" />
                                                    </children>
                                                 </HBox>
                                                 <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="5.0">

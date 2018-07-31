@@ -343,7 +343,7 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			}
 
 			// request analysis server statistics
-			if (!(boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
+			if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
 				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
 				owner_.getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
 			}

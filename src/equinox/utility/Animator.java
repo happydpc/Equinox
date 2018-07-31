@@ -230,7 +230,7 @@ public class Animator {
 
 			// create and add first scale animation
 			ScaleTransition scale1 = new ScaleTransition();
-			scale1.setDelay(Duration.millis(i * stepDuration / 2.0));
+			scale1.setDelay(Duration.millis(i * stepDuration / 4.0));
 			scale1.setFromX(startScale);
 			scale1.setFromY(startScale);
 			scale1.setFromZ(startScale);

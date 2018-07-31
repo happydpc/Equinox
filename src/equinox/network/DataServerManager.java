@@ -59,7 +59,6 @@ import equinox.task.GetDataQueryCounts;
 import equinox.task.GetPilotPointCounts;
 import equinox.task.GetSearchHits;
 import equinox.task.GetSpectrumCounts;
-import equinox.task.GetUserLocations;
 import equinox.task.GetWishCount;
 import equinox.task.SaveUserAuthentication;
 import equinox.utility.Utility;
@@ -202,9 +201,6 @@ public class DataServerManager implements DataMessageListener {
 				// create handshake message
 				HandshakeWithDataServer handshake = new HandshakeWithDataServer(Equinox.USER.getAlias());
 				handshake.setListenerHashCode(hashCode());
-
-				// get external IP address (if possible)
-				handshake.setExternalIPAddress(Utility.getExternalIPAdress());
 
 				// send handshake message to server
 				kryoNetClient_.sendTCP(handshake);
@@ -385,10 +381,9 @@ public class DataServerManager implements DataMessageListener {
 			((ScheduledExecutorService) Equinox.SCHEDULED_THREADPOOL).scheduleAtFixedRate(check, 60, 120, TimeUnit.SECONDS);
 
 			// request data server statistics
-			if (!(boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
+			if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
 				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
 				owner_.getActiveTasksPanel().runTaskInParallel(new GetDataQueryCounts(period));
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetUserLocations());
 				owner_.getActiveTasksPanel().runTaskInParallel(new GetSpectrumCounts());
 				owner_.getActiveTasksPanel().runTaskInParallel(new GetSearchHits());
 				owner_.getActiveTasksPanel().runTaskInParallel(new GetPilotPointCounts());

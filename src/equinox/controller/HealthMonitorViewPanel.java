@@ -18,7 +18,6 @@ package equinox.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +31,6 @@ import equinox.data.EquinoxTheme;
 import equinox.dataServer.remote.data.AccessRequest;
 import equinox.dataServer.remote.data.BugReport;
 import equinox.dataServer.remote.data.PeriodicDataServerStatistic;
-import equinox.dataServer.remote.data.UserLocation;
 import equinox.dataServer.remote.data.Wish;
 import equinox.dataServer.remote.message.GetAccessRequestCountResponse;
 import equinox.dataServer.remote.message.GetBugReportCountResponse;
@@ -40,7 +38,6 @@ import equinox.dataServer.remote.message.GetDataQueriesResponse;
 import equinox.dataServer.remote.message.GetPilotPointCountsResponse;
 import equinox.dataServer.remote.message.GetSearchHitsResponse;
 import equinox.dataServer.remote.message.GetSpectrumCountsResponse;
-import equinox.dataServer.remote.message.GetUserLocationsResponse;
 import equinox.dataServer.remote.message.GetWishCountResponse;
 import equinox.exchangeServer.remote.data.ExchangeServerStatistic;
 import equinox.exchangeServer.remote.message.ExchangeServerStatisticsResponse;
@@ -54,7 +51,6 @@ import equinox.task.GetExchangeRequests;
 import equinox.task.GetPilotPointCounts;
 import equinox.task.GetSearchHits;
 import equinox.task.GetSpectrumCounts;
-import equinox.task.GetUserLocations;
 import equinox.task.GetWishCount;
 import equinox.task.SaveImage;
 import equinox.utility.Animator;
@@ -67,7 +63,6 @@ import eu.hansolo.tilesfx.addons.Indicator;
 import eu.hansolo.tilesfx.chart.ChartData;
 import eu.hansolo.tilesfx.chart.TilesFXSeries;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
-import eu.hansolo.tilesfx.tools.Location;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -101,7 +96,7 @@ import javafx.stage.FileChooser;
 public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	/** Tile index. */
-	public static final int ONLINE_USERS = 0, DATA_QUERIES = 1, ANALYSIS_REQUESTS = 2, COLLABORATION_REQUESTS = 3, POPULAR_SEARCH_HITS = 4, SPECTRUM_COUNT = 5, PP_COUNT = 6, BUG_REPORTS = 7, USER_WISHES = 8, ACCESS_REQUESTS = 9, USER_LOCATIONS = 10;
+	public static final int ONLINE_USERS = 0, DATA_QUERIES = 1, ANALYSIS_REQUESTS = 2, COLLABORATION_REQUESTS = 3, DATA_SERVER_THREADPOOL = 4, ANALYSIS_SERVER_THREADPOOL = 5, POPULAR_SEARCH_HITS = 6, SPECTRUM_COUNT = 7, PP_COUNT = 8, BUG_REPORTS = 9, USER_WISHES = 10, ACCESS_REQUESTS = 11;
 
 	/** The owner panel. */
 	private ViewPanel owner_;
@@ -126,7 +121,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 		// @formatter:off
 		// create dashboard tiles
-		tiles_ = new Tile[11];
+		tiles_ = new Tile[12];
 
         // create online users tile
         XYChart.Series<String, Integer> onlieUsersSeries = new XYChart.Series<>();
@@ -198,6 +193,42 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		       .build();
 		tiles_[COLLABORATION_REQUESTS].getXAxis().setTickLabelsVisible(false);
 
+		// create data server thread pool tile
+		XYChart.Series<String, Integer> dataServerThreadPoolSizeSeries = new XYChart.Series<>();
+		dataServerThreadPoolSizeSeries.setName("Thread Pool Size");
+		XYChart.Series<String, Integer> dataServerActiveThreadsSeries = new XYChart.Series<>();
+		dataServerActiveThreadsSeries.setName("Active Threads");
+		TilesFXSeries<String, Integer> dataServerThreadPoolSizeFXSeries = new TilesFXSeries<>(dataServerThreadPoolSizeSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> dataServerActiveThreadsFXSeries = new TilesFXSeries<>(dataServerActiveThreadsSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
+		tiles_[DATA_SERVER_THREADPOOL] = TileBuilder.create()
+				.skinType(SkinType.SMOOTHED_CHART)
+				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+				.title("Data Service Thread Pool")
+				.chartType(ChartType.AREA)
+				.animated(true)
+				.smoothing(true)
+				.tilesFxSeries(dataServerThreadPoolSizeFXSeries, dataServerActiveThreadsFXSeries)
+				.build();
+		tiles_[DATA_SERVER_THREADPOOL].getXAxis().setTickLabelsVisible(false);
+
+		// create analysis server thread pool tile
+		XYChart.Series<String, Integer> analysisServerThreadPoolSizeSeries = new XYChart.Series<>();
+		analysisServerThreadPoolSizeSeries.setName("Thread Pool Size");
+		XYChart.Series<String, Integer> analysisServerActiveThreadsSeries = new XYChart.Series<>();
+		analysisServerActiveThreadsSeries.setName("Active Threads");
+		TilesFXSeries<String, Integer> analysisServerThreadPoolSizeFXSeries = new TilesFXSeries<>(analysisServerThreadPoolSizeSeries, Tile.BLUE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.BLUE), new Stop(1, Color.TRANSPARENT)));
+		TilesFXSeries<String, Integer> analysisServerActiveThreadsFXSeries = new TilesFXSeries<>(analysisServerActiveThreadsSeries, Tile.ORANGE, new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Tile.ORANGE), new Stop(1, Color.TRANSPARENT)));
+		tiles_[ANALYSIS_SERVER_THREADPOOL] = TileBuilder.create()
+				.skinType(SkinType.SMOOTHED_CHART)
+				.maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
+				.title("Analysis Service Thread Pool")
+				.chartType(ChartType.AREA)
+				.animated(true)
+				.smoothing(true)
+				.tilesFxSeries(analysisServerThreadPoolSizeFXSeries, analysisServerActiveThreadsFXSeries)
+				.build();
+		tiles_[ANALYSIS_SERVER_THREADPOOL].getXAxis().setTickLabelsVisible(false);
+
 		// create popular search hits tile
 		tiles_[POPULAR_SEARCH_HITS] = TileBuilder.create()
                .skinType(SkinType.RADIAL_CHART)
@@ -253,7 +284,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
         tiles_[USER_WISHES] = TileBuilder.create()
                .skinType(SkinType.STATUS)
                .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-               .title("User Requests")
+               .title("User Wishes")
                .description("Status")
                .leftText("OPEN")
                .middleText("PROGRESS")
@@ -282,19 +313,10 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
                .middleGraphics(accessRequestPending)
                .rightGraphics(accessRequestGranted)
                .build();
-
-        // create user locations tile
-        tiles_[USER_LOCATIONS] = TileBuilder.create()
-                               .skinType(SkinType.WORLDMAP)
-                               .title("User Locations")
-                               .textVisible(false)
-                               .maxSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                               .build();
-        FlowGridPane.setColumnSpan(tiles_[USER_LOCATIONS], 2);
 		// @formatter:on
 
 		// create and setup dashboard grid pane
-		pane_ = new FlowGridPane(4, 3, tiles_);
+		pane_ = new FlowGridPane(3, 4, tiles_);
 		pane_.setHgap(5);
 		pane_.setVgap(5);
 		pane_.setAlignment(Pos.CENTER);
@@ -387,7 +409,7 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 
 	@Override
 	public void showing() {
-		Platform.runLater(() -> Animator.bouncingScale2(1000, 400, 0, 1.0, null, tiles_).play());
+		Platform.runLater(() -> Animator.bouncingScale2(1000, 320, 0, 1.0, null, tiles_).play());
 	}
 
 	@Override
@@ -403,7 +425,6 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetExchangeRequests(period));
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetDataQueryCounts(period));
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetUserLocations());
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetSpectrumCounts());
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetSearchHits());
 		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GetPilotPointCounts());
@@ -427,6 +448,8 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		// reset tiles
 		tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().clear();
 		tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().clear();
+		tiles_[ANALYSIS_SERVER_THREADPOOL].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[ANALYSIS_SERVER_THREADPOOL].getTilesFXSeries().get(1).getSeries().getData().clear();
 
 		// add statistics
 		AnalysisServerStatistic[] stats = response.getStatistics();
@@ -434,6 +457,8 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 			Arrays.asList(stats).forEach(stat -> {
 				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getAnalysisRequests()));
 				tiles_[ANALYSIS_REQUESTS].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedAnalyses()));
+				tiles_[ANALYSIS_SERVER_THREADPOOL].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getThreadPoolSize()));
+				tiles_[ANALYSIS_SERVER_THREADPOOL].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getActiveThreads()));
 			});
 		}
 	}
@@ -480,6 +505,8 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 		tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().clear();
 		tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().clear();
 		tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().clear();
+		tiles_[DATA_SERVER_THREADPOOL].getTilesFXSeries().get(0).getSeries().getData().clear();
+		tiles_[DATA_SERVER_THREADPOOL].getTilesFXSeries().get(1).getSeries().getData().clear();
 
 		// add periodic statistics
 		PeriodicDataServerStatistic[] stats = response.getPeriodicStatistics();
@@ -488,30 +515,8 @@ public class HealthMonitorViewPanel implements InternalViewSubPanel {
 				tiles_[ONLINE_USERS].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getClients()));
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getQueries()));
 				tiles_[DATA_QUERIES].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getFailedQueries()));
-			});
-		}
-	}
-
-	/**
-	 * Sets user locations.
-	 *
-	 * @param response
-	 *            Data server response message.
-	 */
-	public void setUserLocations(GetUserLocationsResponse response) {
-
-		// null response
-		if (response == null)
-			return;
-
-		// reset tiles
-		tiles_[USER_LOCATIONS].clearPoiLocations();
-
-		// set user locations
-		ArrayList<UserLocation> userLocations = response.getUserLocations();
-		if (userLocations != null && !userLocations.isEmpty()) {
-			userLocations.forEach(loc -> {
-				tiles_[USER_LOCATIONS].addPoiLocation(new Location(loc.getLatitude(), loc.getLongtitude(), loc.getCity() + ", " + loc.getCountry(), Color.RED));
+				tiles_[DATA_SERVER_THREADPOOL].getTilesFXSeries().get(0).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getThreadPoolSize()));
+				tiles_[DATA_SERVER_THREADPOOL].getTilesFXSeries().get(1).getSeries().getData().add(new XYChart.Data<>(stat.getRecorded().toString(), stat.getActiveThreads()));
 			});
 		}
 	}

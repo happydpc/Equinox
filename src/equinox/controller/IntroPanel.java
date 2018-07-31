@@ -307,14 +307,14 @@ public class IntroPanel implements Initializable, ChangeListener<State> {
 					}
 				}
 
-				// show news feed
-				if ((boolean) owner_.getSettings().getValue(Settings.SHOW_NEWSFEED)) {
-					owner_.getActiveTasksPanel().runTaskInParallel(new ShowNewsFeed());
+				// show health monitoring
+				if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
+					owner_.getViewPanel().showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
 				}
 
-				// show health monitoring
+				// show news feed
 				else {
-					owner_.getViewPanel().showSubPanel(ViewPanel.HEALTH_MONITOR_VIEW);
+					owner_.getActiveTasksPanel().runTaskInParallel(new ShowNewsFeed());
 				}
 			});
 		});
