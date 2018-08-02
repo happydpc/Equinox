@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="183.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SearchPilotPointsPanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="183.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.SearchPilotPointsPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" pannable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="scrollPane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
@@ -414,7 +414,14 @@
 </children>
 </HBox>
 <Button layoutX="221.0" layoutY="10.0" mnemonicParsing="false" onAction="#onCancelClicked" styleClass="menuButton" text="Cancel" />
-                        <Button fx:id="search_" mnemonicParsing="false" onAction="#onSearchClicked" styleClass="menuButton" text="Go" />
+                        <Button fx:id="search_" mnemonicParsing="false" onAction="#onSearchClicked" styleClass="menuButton" text="Go">
+                           <graphic>
+                              <ImageView fx:id="goImage_" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../image/runNowWhite.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic></Button>
               </children>
             </HBox>
           </children>

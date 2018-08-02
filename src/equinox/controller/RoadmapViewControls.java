@@ -26,6 +26,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -44,6 +45,9 @@ public class RoadmapViewControls implements Initializable {
 
 	@FXML
 	private HBox root_;
+
+	@FXML
+	private MenuButton status_;
 
 	@FXML
 	private RadioMenuItem all_, open_, closed_;
@@ -82,27 +86,39 @@ public class RoadmapViewControls implements Initializable {
 	public void reset(int status) {
 		if (status == GetWishesRequest.ALL) {
 			all_.setSelected(true);
+			status_.setText(all_.getText());
 		}
 		else if (status == GetWishesRequest.OPEN) {
 			open_.setSelected(true);
+			status_.setText(open_.getText());
 		}
 		else if (status == GetWishesRequest.CLOSED) {
 			closed_.setSelected(true);
+			status_.setText(closed_.getText());
 		}
 	}
 
 	@FXML
 	private void onStatusSelected() {
 
-		// get wishes
+		// update period according to selection
 		if (all_.isSelected()) {
-			owner_.onStatusSelected(GetWishesRequest.ALL);
+			if (!status_.getText().equals(all_.getText())) {
+				status_.setText(all_.getText());
+				owner_.onStatusSelected(GetWishesRequest.ALL);
+			}
 		}
 		else if (open_.isSelected()) {
-			owner_.onStatusSelected(GetWishesRequest.OPEN);
+			if (!status_.getText().equals(open_.getText())) {
+				status_.setText(open_.getText());
+				owner_.onStatusSelected(GetWishesRequest.OPEN);
+			}
 		}
 		else if (closed_.isSelected()) {
-			owner_.onStatusSelected(GetWishesRequest.CLOSED);
+			if (!status_.getText().equals(closed_.getText())) {
+				status_.setText(closed_.getText());
+				owner_.onStatusSelected(GetWishesRequest.CLOSED);
+			}
 		}
 	}
 

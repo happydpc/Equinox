@@ -120,6 +120,7 @@ public class CloseAccessRequest extends InternalEquinoxTask<Boolean> implements 
 			request.setListenerHashCode(hashCode());
 			request.setRequestId((long) request_.getInfo(AccessRequestInfo.ID));
 			request.setClosure(closure_);
+			request.setIsGrantAccess(isGrantAccess_);
 
 			// disable task canceling
 			taskPanel_.updateCancelState(false);

@@ -26,6 +26,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -44,6 +45,9 @@ public class BugReportViewControls implements Initializable {
 
 	@FXML
 	private HBox root_;
+
+	@FXML
+	private MenuButton status_;
 
 	@FXML
 	private RadioMenuItem all_, open_, closed_;
@@ -82,25 +86,39 @@ public class BugReportViewControls implements Initializable {
 	public void reset(int status) {
 		if (status == GetBugReportsRequest.ALL) {
 			all_.setSelected(true);
+			status_.setText(all_.getText());
 		}
 		else if (status == GetBugReportsRequest.OPEN) {
 			open_.setSelected(true);
+			status_.setText(open_.getText());
 		}
 		else if (status == GetBugReportsRequest.CLOSED) {
 			closed_.setSelected(true);
+			status_.setText(closed_.getText());
 		}
 	}
 
 	@FXML
 	private void onStatusSelected() {
+
+		// update period according to selection
 		if (all_.isSelected()) {
-			owner_.onStatusSelected(GetBugReportsRequest.ALL);
+			if (!status_.getText().equals(all_.getText())) {
+				status_.setText(all_.getText());
+				owner_.onStatusSelected(GetBugReportsRequest.ALL);
+			}
 		}
 		else if (open_.isSelected()) {
-			owner_.onStatusSelected(GetBugReportsRequest.OPEN);
+			if (!status_.getText().equals(open_.getText())) {
+				status_.setText(open_.getText());
+				owner_.onStatusSelected(GetBugReportsRequest.OPEN);
+			}
 		}
 		else if (closed_.isSelected()) {
-			owner_.onStatusSelected(GetBugReportsRequest.CLOSED);
+			if (!status_.getText().equals(closed_.getText())) {
+				status_.setText(closed_.getText());
+				owner_.onStatusSelected(GetBugReportsRequest.CLOSED);
+			}
 		}
 	}
 

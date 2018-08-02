@@ -40,6 +40,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 
 /**
@@ -80,6 +81,16 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 
 		// bind scroll position to container height
 		messageContainer_.heightProperty().addListener((ChangeListener<Number>) (observable, oldValue, newValue) -> scroll_.setVvalue(scroll_.getVmax()));
+
+		// set button handler
+		send_.setOnAction(actionEvent -> sendMessage());
+
+		// set text area handler
+		message_.setOnKeyPressed(keyEvent -> {
+			if (keyEvent.getCode() == KeyCode.ENTER) {
+				sendMessage();
+			}
+		});
 	}
 
 	@Override
@@ -180,19 +191,22 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 		messageContainer_.getChildren().add(ShareFileChatMessagePanel.load(this, message));
 	}
 
-	@FXML
-	private void onSendClicked() {
-
-		// no permission
-		if (!Equinox.USER.hasPermission(Permission.SEND_CHAT_MESSAGE, true, owner_.getOwner()))
-			return;
+	/**
+	 * Called when send button is clicked or enter is pressed in text field.
+	 */
+	private void sendMessage() {
 
 		// get inputs
 		String recipient = recipient_.getValue();
 		String messageText = message_.getText();
+		messageText = messageText != null ? messageText.trim() : messageText;
 
 		// check inputs
 		if (!checkInputs(recipient, messageText))
+			return;
+
+		// no permission
+		if (!Equinox.USER.hasPermission(Permission.SEND_CHAT_MESSAGE, true, owner_.getOwner()))
 			return;
 
 		// create message

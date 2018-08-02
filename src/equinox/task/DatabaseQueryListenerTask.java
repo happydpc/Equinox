@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import equinox.dataServer.remote.listener.DataMessageListener;
 import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.DatabaseQueryProgress;
+import equinox.network.DataServerManager;
 import equinox.utility.exception.IgnoredFailureException;
 
 /**
@@ -45,7 +46,8 @@ public interface DatabaseQueryListenerTask extends DataMessageListener {
 	default void waitForDataServer(InternalEquinoxTask<?> task, AtomicBoolean isQueryCompleted) throws Exception {
 
 		// not connected to server
-		if (!task.getTaskPanel().getOwner().getOwner().getDataServerManager().isConnected())
+		DataServerManager dm = task.getTaskPanel().getOwner().getOwner().getDataServerManager();
+		if (!dm.isConnected())
 			throw new IgnoredFailureException("Data service is currently not available. Please connect to the service and try again.");
 
 		// loop while query is running
@@ -54,6 +56,10 @@ public interface DatabaseQueryListenerTask extends DataMessageListener {
 			// task cancelled
 			if (task.isCancelled())
 				return;
+
+			// not connected to server
+			if (!dm.isConnected())
+				throw new IgnoredFailureException("Data service is currently not available. Please connect to the service and try again.");
 
 			// sleep a bit
 			try {

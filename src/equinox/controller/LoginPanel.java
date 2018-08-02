@@ -15,6 +15,8 @@
  */
 package equinox.controller;
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -35,6 +37,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 
 /**
@@ -58,6 +62,9 @@ public class LoginPanel implements InternalInputSubPanel {
 	@FXML
 	private PasswordField password_;
 
+	@FXML
+	private ImageView capslock_;
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		// no implementation
@@ -75,7 +82,13 @@ public class LoginPanel implements InternalInputSubPanel {
 
 	@Override
 	public void start() {
-		// no implementation
+
+		// listen for caps lock state
+		owner_.getOwner().getOwner().getStage().getScene().setOnKeyReleased(event -> {
+			if (event.getCode() == KeyCode.CAPS) {
+				capslock_.setVisible(Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK));
+			}
+		});
 	}
 
 	@Override
@@ -86,6 +99,10 @@ public class LoginPanel implements InternalInputSubPanel {
 
 		// clear password
 		password_.clear();
+
+		// FIXME
+		boolean isOn = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
+		System.out.println("Capslock: " + isOn);
 	}
 
 	@Override

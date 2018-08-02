@@ -11,7 +11,7 @@
 <HBox fx:id="root_" alignment="CENTER_RIGHT" disable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-1.0" minWidth="-1.0" spacing="4.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.AccessRequestViewControls">
   <!-- TODO Add Nodes -->
   <children>
-      <MenuButton focusTraversable="false" mnemonicParsing="false" text="Show requests...">
+      <MenuButton fx:id="status_" focusTraversable="false" mnemonicParsing="false" text="All requests">
          <font>
             <Font size="10.0" />
          </font>
@@ -30,11 +30,7 @@
             </RadioMenuItem>
             <RadioMenuItem fx:id="pending_" mnemonicParsing="false" onAction="#onStatusSelected" text="Pending requests" toggleGroup="$type" />
             <RadioMenuItem fx:id="granted_" mnemonicParsing="false" onAction="#onStatusSelected" text="Granted requests" toggleGroup="$type" />
-            <RadioMenuItem fx:id="rejected_" mnemonicParsing="false" onAction="#onStatusSelected" text="Rejected requests">
-               <toggleGroup>
-                  <ToggleGroup fx:id="type1" />
-               </toggleGroup>
-            </RadioMenuItem>
+            <RadioMenuItem fx:id="rejected_" mnemonicParsing="false" onAction="#onStatusSelected" text="Rejected requests" toggleGroup="$type" />
          </items>
       </MenuButton>
   </children>

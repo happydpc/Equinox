@@ -26,6 +26,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -44,6 +45,9 @@ public class AccessRequestViewControls implements Initializable {
 
 	@FXML
 	private HBox root_;
+
+	@FXML
+	private MenuButton status_;
 
 	@FXML
 	private RadioMenuItem all_, pending_, granted_, rejected_;
@@ -82,31 +86,49 @@ public class AccessRequestViewControls implements Initializable {
 	public void reset(int status) {
 		if (status == GetAccessRequestsRequest.ALL) {
 			all_.setSelected(true);
+			status_.setText(all_.getText());
 		}
 		else if (status == GetAccessRequestsRequest.PENDING) {
 			pending_.setSelected(true);
+			status_.setText(pending_.getText());
 		}
 		else if (status == GetAccessRequestsRequest.GRANTED) {
 			granted_.setSelected(true);
+			status_.setText(granted_.getText());
 		}
 		else if (status == GetAccessRequestsRequest.REJECTED) {
 			rejected_.setSelected(true);
+			status_.setText(rejected_.getText());
 		}
 	}
 
 	@FXML
 	private void onStatusSelected() {
+
+		// update period according to selection
 		if (all_.isSelected()) {
-			owner_.onStatusSelected(GetAccessRequestsRequest.ALL);
+			if (!status_.getText().equals(all_.getText())) {
+				status_.setText(all_.getText());
+				owner_.onStatusSelected(GetAccessRequestsRequest.ALL);
+			}
 		}
 		else if (pending_.isSelected()) {
-			owner_.onStatusSelected(GetAccessRequestsRequest.PENDING);
+			if (!status_.getText().equals(pending_.getText())) {
+				status_.setText(pending_.getText());
+				owner_.onStatusSelected(GetAccessRequestsRequest.PENDING);
+			}
 		}
 		else if (granted_.isSelected()) {
-			owner_.onStatusSelected(GetAccessRequestsRequest.GRANTED);
+			if (!status_.getText().equals(granted_.getText())) {
+				status_.setText(granted_.getText());
+				owner_.onStatusSelected(GetAccessRequestsRequest.GRANTED);
+			}
 		}
 		else if (rejected_.isSelected()) {
-			owner_.onStatusSelected(GetAccessRequestsRequest.REJECTED);
+			if (!status_.getText().equals(rejected_.getText())) {
+				status_.setText(rejected_.getText());
+				owner_.onStatusSelected(GetAccessRequestsRequest.REJECTED);
+			}
 		}
 	}
 

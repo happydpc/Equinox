@@ -34,6 +34,7 @@ import equinox.dataServer.remote.data.SearchItem;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.BasicPilotPointSearch;
 import equinox.utility.Utility;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -45,6 +46,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
 /**
@@ -78,6 +80,13 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 	@FXML
 	private Accordion accordion_;
 
+	@FXML
+	private ImageView goImage_;
+
+	/** Search task status binding. */
+	private SimpleBooleanProperty isSearchRunning_;
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 
@@ -88,7 +97,9 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 		Utility.setHandCursor(clear_);
 
 		// bind components
-		search_.disableProperty().bind(basicSearchPane_.expandedProperty().not().and(advancedSearchPane_.expandedProperty().not()));
+		isSearchRunning_ = new SimpleBooleanProperty(false);
+		search_.disableProperty().bind(isSearchRunning_);
+		isSearchRunning_.addListener((ChangeListener) (observable, oldValue, newValue) -> goImage_.setImage((boolean) newValue ? Utility.getImage("taskManager.gif") : Utility.getImage("runNowWhite.png")));
 
 		// expand first pane
 		accordion_.setExpandedPane(accordion_.getPanes().get(0));
@@ -156,6 +167,10 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 
 	@FXML
 	private void onSearchClicked() {
+
+		// already a search is running
+		if (isSearchRunning_.get())
+			return;
 
 		try {
 
@@ -248,7 +263,10 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 		panel.setEngineSettings(input);
 
 		// search
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new BasicPilotPointSearch(input));
+		BasicPilotPointSearch task = new BasicPilotPointSearch(input);
+		isSearchRunning_.unbind();
+		isSearchRunning_.bind(task.runningProperty());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**
@@ -339,7 +357,10 @@ public class SearchPilotPointsPanel implements InternalInputSubPanel {
 		panel.setEngineSettings(input);
 
 		// search
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new AdvancedPilotPointSearch(input));
+		AdvancedPilotPointSearch task = new AdvancedPilotPointSearch(input);
+		isSearchRunning_.unbind();
+		isSearchRunning_.bind(task.runningProperty());
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**

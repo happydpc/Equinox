@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
+import equinox.network.ExchangeServerManager;
 import equinox.utility.exception.IgnoredFailureException;
 
 /**
@@ -44,7 +45,8 @@ public interface ExchangeMessageListenerTask extends ExchangeMessageListener {
 	default void waitForExchangeServer(InternalEquinoxTask<?> task, AtomicBoolean isServerCompleted) throws Exception {
 
 		// not connected to server
-		if (!task.getTaskPanel().getOwner().getOwner().getExchangeServerManager().isConnected())
+		ExchangeServerManager em = task.getTaskPanel().getOwner().getOwner().getExchangeServerManager();
+		if (!em.isConnected())
 			throw new IgnoredFailureException("Exchange service is currently not available. Please connect to the service and try again.");
 
 		// loop while server is running
@@ -53,6 +55,10 @@ public interface ExchangeMessageListenerTask extends ExchangeMessageListener {
 			// task cancelled
 			if (task.isCancelled())
 				return;
+
+			// not connected to server
+			if (!em.isConnected())
+				throw new IgnoredFailureException("Exchange service is currently not available. Please connect to the service and try again.");
 
 			// sleep a bit
 			try {
