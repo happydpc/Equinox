@@ -15,8 +15,6 @@
  */
 package equinox.controller;
 
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -86,7 +84,7 @@ public class LoginPanel implements InternalInputSubPanel {
 		// listen for caps lock state
 		owner_.getOwner().getOwner().getStage().getScene().setOnKeyReleased(event -> {
 			if (event.getCode() == KeyCode.CAPS) {
-				capslock_.setVisible(Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK));
+				capslock_.setVisible(!capslock_.isVisible());
 			}
 		});
 	}
@@ -99,10 +97,6 @@ public class LoginPanel implements InternalInputSubPanel {
 
 		// clear password
 		password_.clear();
-
-		// FIXME
-		boolean isOn = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
-		System.out.println("Capslock: " + isOn);
 	}
 
 	@Override
