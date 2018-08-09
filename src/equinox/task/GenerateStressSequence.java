@@ -261,6 +261,9 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			HashMap<Segment, SteadyStress> steadyStresses = new HashMap<>();
 			HashMap<Segment, IncrementStress> incStresses = new HashMap<>();
 
+			// insert STH flights
+			ArrayList<Flight> sthFlights = insertSTHFlights(anaFileID, sthFileID, statement, connection);
+
 			// prepare statement for inserting STH flights
 			String sql = "insert into sth_flights(file_id, flight_num, name, severity, num_peaks, validity, block_size) values(?, ?, ?, ?, ?, ?, ?)";
 			try (PreparedStatement insertSTHFlight = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -292,7 +295,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 									try (PreparedStatement setMaxMinToFlight = connection.prepareStatement(sql)) {
 
 										// execute query for selecting ANA flights
-										sql = "select * from ana_flights where file_id = " + anaFileID + " order by flight_num";
+										sql = "select flight_id from ana_flights where file_id = " + anaFileID + " order by flight_num";
 										try (ResultSet anaFlights = statement.executeQuery(sql)) {
 
 											// loop over flights
@@ -300,7 +303,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 											HashMap<String, Stress> inc = new HashMap<>();
 											ArrayList<Integer> factorNumbers = new ArrayList<>();
 											double[] maxMin = new double[10];
-											int peakCount = 0;
+											int peakCount = 0, flightIndex = 0;
 											while (anaFlights.next()) {
 
 												// task cancelled
@@ -319,8 +322,9 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 												maxMin[8] = Double.NEGATIVE_INFINITY; // max dt
 												maxMin[9] = Double.POSITIVE_INFINITY; // min dt
 
-												// insert flight into STH flights table
-												Flight flight = insertSTHFlight(anaFlights, sthFileID, insertSTHFlight);
+												// get STH flight
+												Flight flight = sthFlights.get(flightIndex);
+												updateMessage("Generating flight '" + flight.getName() + "'...");
 
 												// execute statement for getting ANA peaks
 												selectANAPeak.setInt(1, anaFlights.getInt("flight_id"));
@@ -347,6 +351,9 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 
 												// add flight to flights folder
 												flights.getChildren().add(flight);
+
+												// increment flight index
+												flightIndex++;
 											}
 
 											// add flights folder to spectrum
@@ -366,6 +373,32 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			// return STH file
 			return sthFile;
 		}
+	}
+
+	private static ArrayList<Flight> insertSTHFlights(int anaFileID, int sthFileID, Statement statement, Connection connection) throws Exception {
+
+		// create list
+		ArrayList<Flight> sthFlights = new ArrayList<>();
+
+		// prepare statement for inserting STH flights
+		String sql = "insert into sth_flights(file_id, flight_num, name, severity, num_peaks, validity, block_size) values(?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement insertSTHFlight = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+			// execute query for selecting ANA flights
+			sql = "select name, flight_num, severity, num_peaks, validity, block_size from ana_flights where file_id = " + anaFileID + " order by flight_num";
+			try (ResultSet anaFlights = statement.executeQuery(sql)) {
+
+				// loop over ANA flights
+				while (anaFlights.next()) {
+
+					// insert flight into STH flights table
+					sthFlights.add(insertSTHFlight(anaFlights, sthFileID, insertSTHFlight));
+				}
+			}
+		}
+
+		// return flights
+		return sthFlights;
 	}
 
 	/**
@@ -1012,11 +1045,10 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private Flight insertSTHFlight(ResultSet anaFlights, int sthFileID, PreparedStatement insertSTHFlight) throws Exception {
+	private static Flight insertSTHFlight(ResultSet anaFlights, int sthFileID, PreparedStatement insertSTHFlight) throws Exception {
 
-		// update info
+		// get flight name
 		String name = anaFlights.getString("name");
-		updateMessage("Generating flight '" + name + "'...");
 
 		// execute update
 		insertSTHFlight.setInt(1, sthFileID); // file ID
