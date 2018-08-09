@@ -672,7 +672,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 
 			// run now
 			if (runNow) {
-				tm.runTaskSequentially(task);
+				tm.runTaskInParallel(task);
 			}
 
 			// run later
