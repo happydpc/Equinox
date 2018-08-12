@@ -962,7 +962,7 @@ public class FileViewPanel implements InternalInputSubPanel {
 		files_.clear();
 
 		// add files to file list
-		threadExecutor_.submit(new AddFiles(owner_.getOwner(), fileTree_.getRoot(), files_, fileList_, search_));
+		threadExecutor_.submit(new AddFiles(fileTree_.getRoot(), files_, fileList_, search_));
 	}
 
 	/**

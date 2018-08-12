@@ -16,11 +16,9 @@
 package equinox.task;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -55,8 +53,8 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
 
-	/** Zip files containing the pilot points to upload. */
-	private final List<File> files_;
+	/** Zip file containing the pilot points to upload. */
+	private final Path zipFile_;
 
 	/** Server query completion indicator. */
 	private final AtomicBoolean isQueryCompleted;
@@ -67,11 +65,11 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 	/**
 	 * Creates upload pilot points task.
 	 *
-	 * @param files
-	 *            Zip files containing the pilot points to upload.
+	 * @param zipFile
+	 *            Zip file containing the pilot points to upload.
 	 */
-	public UploadPilotPoints(List<File> files) {
-		files_ = files;
+	public UploadPilotPoints(Path zipFile) {
+		zipFile_ = zipFile;
 		isQueryCompleted = new AtomicBoolean();
 		serverMessageRef = new AtomicReference<>(null);
 	}
@@ -183,41 +181,34 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 		// get connection to filer
 		try (FilerConnection filer = getFilerConnection()) {
 
-			// loop over zip files
-			for (int i = 0; i < files_.size(); i++) {
+			// task cancelled
+			if (isCancelled())
+				return;
 
-				// task cancelled
-				if (isCancelled())
-					return;
+			// progress info
+			updateMessage("Processing upload archive '" + zipFile_.getFileName() + "'...");
+			updateProgress(0, 100);
 
-				// get zip file
-				Path zipFile = files_.get(i).toPath();
+			// get working directory
+			Path tempDir = getWorkingDirectory();
 
-				// progress info
-				updateMessage("Processing upload archive '" + zipFile.getFileName() + "'...");
-				updateProgress(0, 100);
+			// extract zip file
+			updateMessage("Extracting upload archive '" + zipFile_.getFileName() + "'...");
+			ArrayList<Path> extractedFiles = Utility.extractAllFilesFromZIP(zipFile_, this, tempDir);
 
-				// create temporary directory for pilot point
-				Path tempDir = Files.createDirectory(getWorkingDirectory().resolve("Package_" + i));
+			// task cancelled
+			if (isCancelled())
+				return;
 
-				// extract zip file
-				updateMessage("Extracting upload archive '" + zipFile.getFileName() + "'...");
-				ArrayList<Path> extractedFiles = Utility.extractAllFilesFromZIP(zipFile, this, tempDir);
+			// get info file
+			Path infoFile = getInfoFile(zipFile_, extractedFiles);
 
-				// task cancelled
-				if (isCancelled())
-					return;
+			// task cancelled
+			if (isCancelled())
+				return;
 
-				// get info file
-				Path infoFile = getInfoFile(zipFile, extractedFiles);
-
-				// task cancelled
-				if (isCancelled())
-					return;
-
-				// upload pilot points
-				uploadPilotPoints(zipFile, tempDir, extractedFiles, infoFile, filer, request);
-			}
+			// upload pilot points
+			uploadPilotPoints(zipFile_, tempDir, extractedFiles, infoFile, filer, request);
 		}
 	}
 
@@ -250,7 +241,7 @@ public class UploadPilotPoints extends TemporaryFileCreatingTask<Boolean> implem
 			workbook = Workbook.getWorkbook(infoFile.toFile());
 
 			// get sheet
-			Sheet sheet = workbook.getSheet("Page 1");
+			Sheet sheet = workbook.getSheet(0);
 
 			// null sheet
 			if (sheet == null) {

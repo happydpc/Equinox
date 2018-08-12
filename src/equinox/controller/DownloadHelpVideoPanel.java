@@ -31,6 +31,7 @@ import equinox.dataServer.remote.data.DownloadInfo;
 import equinox.dataServer.remote.data.HelpVideoInfo;
 import equinox.dataServer.remote.data.HelpVideoInfo.HelpVideoInfoType;
 import equinox.font.IconicFont;
+import equinox.serverUtilities.Permission;
 import equinox.task.DeleteHelpVideo;
 import equinox.task.DownloadHelpVideo;
 import equinox.utility.Utility;
@@ -77,7 +78,7 @@ public class DownloadHelpVideoPanel implements Initializable, DownloadItemPanel 
 	public void start() {
 
 		// remove delete button if not administrator or logged in
-		if (!Equinox.USER.isLoggedAsAdministrator()) {
+		if (!Equinox.USER.hasPermission(Permission.DELETE_HELP_VIDEO, false, null) || !Equinox.USER.isLoggedAsAdministrator()) {
 			buttonPane_.getChildren().remove(delete_);
 		}
 	}
@@ -122,6 +123,12 @@ public class DownloadHelpVideoPanel implements Initializable, DownloadItemPanel 
 	}
 
 	@Override
+	public void delete() {
+		ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+		tm.runTaskInParallel(new DeleteHelpVideo(info_, owner_));
+	}
+
+	@Override
 	public void setInfo(DownloadInfo info) {
 
 		// set info
@@ -142,6 +149,11 @@ public class DownloadHelpVideoPanel implements Initializable, DownloadItemPanel 
 	@Override
 	public boolean canBeAdded() {
 		return false;
+	}
+
+	@Override
+	public boolean canBeDeleted() {
+		return buttonPane_.getChildren().contains(delete_);
 	}
 
 	@FXML

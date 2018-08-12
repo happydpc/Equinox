@@ -100,7 +100,7 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 	public void start() {
 
 		// remove delete button if not administrator or logged in
-		if (!Equinox.USER.hasPermission(Permission.DELETE_PILOT_POINT, false, null)) {
+		if (!Equinox.USER.hasPermission(Permission.DELETE_PILOT_POINT, false, null) || !Equinox.USER.isLoggedAsAdministrator()) {
 			root_.getChildren().remove(delete_);
 		}
 	}
@@ -176,6 +176,12 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 	}
 
 	@Override
+	public void delete() {
+		ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+		tm.runTaskInParallel(new DeletePilotPointFromGlobalDB(info_, owner_));
+	}
+
+	@Override
 	public void setInfo(DownloadInfo info) {
 
 		// set info
@@ -201,6 +207,11 @@ public class DownloadPilotPointPanel implements Initializable, DownloadItemPanel
 	@Override
 	public boolean canBeAdded() {
 		return true;
+	}
+
+	@Override
+	public boolean canBeDeleted() {
+		return root_.getChildren().contains(delete_);
 	}
 
 	@FXML
