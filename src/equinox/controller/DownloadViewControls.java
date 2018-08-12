@@ -29,6 +29,8 @@ import equinox.controller.DownloadViewPanel.DownloadItemPanel;
 import equinox.data.EquinoxTheme;
 import equinox.dataServer.remote.data.PilotPointInfo;
 import equinox.utility.Utility;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -54,7 +56,7 @@ public class DownloadViewControls implements Initializable {
 	private HBox root_;
 
 	@FXML
-	private Button download_, add_, settings_;
+	private Button download_, add_, settings_, selectAll_, unselectAll_, delete_;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -108,6 +110,51 @@ public class DownloadViewControls implements Initializable {
 		return settings_;
 	}
 
+	/**
+	 * Returns select all button.
+	 *
+	 * @return Select all button.
+	 */
+	public Button getSelectAllButton() {
+		return selectAll_;
+	}
+
+	/**
+	 * Returns unselect all button.
+	 *
+	 * @return Unselect all button.
+	 */
+	public Button getUnselectAllButton() {
+		return unselectAll_;
+	}
+
+	/**
+	 * Returns delete button.
+	 *
+	 * @return Delete button.
+	 */
+	public Button getDeleteButton() {
+		return delete_;
+	}
+
+	@FXML
+	private void onSelectAllClicked() {
+		owner_.getDownloadItems().forEach(item -> {
+			if (!item.getSelectSwitch().isSelected()) {
+				item.getSelectSwitch().setSelected(true);
+			}
+		});
+	}
+
+	@FXML
+	private void onUnselectAllClicked() {
+		owner_.getDownloadItems().forEach(item -> {
+			if (item.getSelectSwitch().isSelected()) {
+				item.getSelectSwitch().setSelected(false);
+			}
+		});
+	}
+
 	@FXML
 	private void onDownloadClicked() {
 
@@ -159,19 +206,11 @@ public class DownloadViewControls implements Initializable {
 
 			// get pilot point info
 			ArrayList<PilotPointInfo> info = new ArrayList<>();
-			for (int i = 0; i < items.size(); i++) {
-
-				// get item
-				DownloadItemPanel item = items.get(i);
-
-				// not selected
-				if (!item.getSelectSwitch().isSelected()) {
-					continue;
+			items.forEach(item -> {
+				if (item.getSelectSwitch().isSelected()) {
+					info.add((PilotPointInfo) item.getInfo());
 				}
-
-				// add
-				info.add((PilotPointInfo) item.getInfo());
-			}
+			});
 
 			// show add STF popup
 			final PopOver popOver = new PopOver();
@@ -182,27 +221,52 @@ public class DownloadViewControls implements Initializable {
 			popOver.setAutoHide(true);
 			popOver.show(add_);
 		}
+
+		// other items
 		else {
-			// loop over items
-			for (int i = 0; i < items.size(); i++) {
-
-				// get item
-				DownloadItemPanel item = items.get(i);
-
-				// not selected
-				if (!item.getSelectSwitch().isSelected()) {
-					continue;
+			items.forEach(item -> {
+				if (item.getSelectSwitch().isSelected()) {
+					item.add();
 				}
-
-				// add
-				item.add();
-			}
+			});
 		}
 	}
 
 	@FXML
 	private void onSettingsClicked() {
 		owner_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.SEARCH_ENGINE_SETTINGS_PANEL);
+	}
+
+	@FXML
+	private void onDeleteClicked() {
+
+		// create confirmation popover
+		PopOver popOver = new PopOver();
+
+		// create confirmation action
+		EventHandler<ActionEvent> handler = event -> {
+
+			// delete
+			owner_.getDownloadItems().forEach(item -> {
+				if (item.getSelectSwitch().isSelected()) {
+					item.delete();
+				}
+			});
+
+			// hide pop-over
+			popOver.hide();
+		};
+
+		// show message
+		String message = "Are you sure you want to delete selected items from AF-Twin central database?";
+		popOver.setArrowLocation(ArrowLocation.TOP_RIGHT);
+		popOver.setDetachable(false);
+		popOver.setContentNode(NotificationPanel2.load(popOver, message, 50, "Delete", handler, NotificationPanel2.QUESTION));
+		popOver.setHideOnEscape(true);
+		popOver.setAutoHide(true);
+
+		// show popup
+		popOver.show(delete_);
 	}
 
 	/**

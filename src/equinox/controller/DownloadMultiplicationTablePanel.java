@@ -95,7 +95,7 @@ public class DownloadMultiplicationTablePanel implements Initializable, Download
 	public void start() {
 
 		// remove delete button if not administrator or logged in
-		if (!Equinox.USER.hasPermission(Permission.DELETE_MULTIPLICATION_TABLE, false, null)) {
+		if (!Equinox.USER.hasPermission(Permission.DELETE_MULTIPLICATION_TABLE, false, null) || !Equinox.USER.isLoggedAsAdministrator()) {
 			root_.getChildren().remove(delete_);
 		}
 	}
@@ -149,6 +149,12 @@ public class DownloadMultiplicationTablePanel implements Initializable, Download
 	}
 
 	@Override
+	public void delete() {
+		ActiveTasksPanel tm = owner_.getOwner().getOwner().getActiveTasksPanel();
+		tm.runTaskInParallel(new DeleteMultiplicationTableFromGlobalDB(info_, owner_));
+	}
+
+	@Override
 	public void setInfo(DownloadInfo info) {
 
 		// set info
@@ -174,6 +180,11 @@ public class DownloadMultiplicationTablePanel implements Initializable, Download
 	@Override
 	public boolean canBeAdded() {
 		return false;
+	}
+
+	@Override
+	public boolean canBeDeleted() {
+		return root_.getChildren().contains(delete_);
 	}
 
 	@FXML

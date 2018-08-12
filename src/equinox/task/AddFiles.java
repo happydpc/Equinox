@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import equinox.Equinox;
-import equinox.controller.MainScreen;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.ListView;
@@ -35,9 +34,6 @@ import javafx.scene.control.TreeItem;
  * @time 1:31:42 PM
  */
 public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
-
-	/** The owner screen. */
-	private final MainScreen mainScreen_;
 
 	/** Root node of file tree. */
 	private final TreeItem<String> root_;
@@ -54,8 +50,6 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 	/**
 	 * Creates add files to file list task.
 	 *
-	 * @param mainScreen
-	 *            The owner screen.
 	 * @param root
 	 *            Root node of file tree.
 	 * @param files
@@ -65,9 +59,7 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 	 * @param search
 	 *            File search field.
 	 */
-	public AddFiles(MainScreen mainScreen, TreeItem<String> root, ObservableList<TreeItem<String>> files, ListView<TreeItem<String>> fileList,
-			TextField search) {
-		mainScreen_ = mainScreen;
+	public AddFiles(TreeItem<String> root, ObservableList<TreeItem<String>> files, ListView<TreeItem<String>> fileList, TextField search) {
 		root_ = root;
 		files_ = files;
 		fileList_ = fileList;
@@ -96,7 +88,7 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
-			handleException(e);
+			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during adding files to file list: ", e);
 		}
 	}
 
@@ -107,7 +99,7 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 		super.failed();
 
 		// log exception
-		handleException(getException());
+		Equinox.LOGGER.log(Level.WARNING, "Exception occurred during adding files to file list: ", getException());
 	}
 
 	/**
@@ -127,8 +119,9 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 			return;
 
 		// add to files (if not root)
-		if (!treeItem.equals(root_))
+		if (!treeItem.equals(root_)) {
 			list.add(treeItem);
+		}
 
 		// get children
 		ObservableList<TreeItem<String>> children = treeItem.getChildren();
@@ -136,27 +129,8 @@ public class AddFiles extends Task<ArrayList<TreeItem<String>>> {
 			return;
 
 		// add files
-		for (TreeItem<String> item : children)
+		for (TreeItem<String> item : children) {
 			addFiles(item, list);
-	}
-
-	/**
-	 * Handles exceptions.
-	 *
-	 * @param e
-	 *            Exception to handle.
-	 */
-	private void handleException(Throwable e) {
-
-		// create error message
-		String message = "Exception occurred during adding files to file list: ";
-
-		// log exception
-		Equinox.LOGGER.log(Level.WARNING, message, e);
-
-		// show error message
-		message += e.getLocalizedMessage();
-		message += " Click 'Details' for more information.";
-		mainScreen_.getNotificationPane().showError("Problem encountered", message, e);
+		}
 	}
 }

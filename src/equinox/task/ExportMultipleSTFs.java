@@ -109,7 +109,7 @@ public class ExportMultipleSTFs extends InternalEquinoxTask<Void> implements Lon
 			workbook = Workbook.createWorkbook(outputDirectory_.resolve("Pilot_Point_Info.xls").toFile());
 
 			// create worksheet
-			WritableSheet sheet = workbook.createSheet("Page 1", 0);
+			WritableSheet sheet = workbook.createSheet("Pilot Point Info", 0);
 
 			// write headers
 			updateMessage("Creating pilot point info Excel sheet...");

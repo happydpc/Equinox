@@ -41,6 +41,7 @@ import equinox.task.AdaptDRF;
 import equinox.task.AddStressSequence;
 import equinox.task.BackupWorkspace;
 import equinox.task.CheckForEquinoxUpdates;
+import equinox.task.PreparePilotPointUpload;
 import equinox.task.CreateWorkspace;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.Excalibur;
@@ -58,7 +59,6 @@ import equinox.task.ShowNewsFeed;
 import equinox.task.UploadDamageContributions;
 import equinox.task.UploadMaterials;
 import equinox.task.UploadMultiplicationTables;
-import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSampleInputs;
 import equinox.task.UploadSpectra;
 import equinox.utility.Utility;
@@ -930,7 +930,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 		owner_.setInitialDirectory(files.get(0));
 
 		// create and start upload task
-		owner_.getActiveTasksPanel().runTaskInParallel(new UploadPilotPoints(files));
+		owner_.getActiveTasksPanel().runTaskInParallel(new PreparePilotPointUpload(files));
 	}
 
 	@FXML

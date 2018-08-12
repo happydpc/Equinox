@@ -364,6 +364,9 @@ public class DownloadViewPanel implements InternalViewSubPanel {
 		// get buttons
 		Button download = controls_.getDownloadButton();
 		Button add = controls_.getAddButton();
+		controls_.getSelectAllButton().setDisable(items_.isEmpty());
+		Button unselect = controls_.getUnselectAllButton();
+		Button delete = controls_.getDeleteButton();
 
 		// count selected items
 		for (DownloadItemPanel item : items_) {
@@ -372,12 +375,16 @@ public class DownloadViewPanel implements InternalViewSubPanel {
 				if (selectSwitch.isSelected()) {
 					download.setDisable(!item.canBeDownloaded());
 					add.setDisable(!item.canBeAdded());
+					unselect.setDisable(false);
+					delete.setDisable(!item.canBeDeleted());
 					return;
 				}
 			}
 		}
 		download.setDisable(true);
 		add.setDisable(true);
+		unselect.setDisable(true);
+		delete.setDisable(true);
 	}
 
 	/**
@@ -466,6 +473,13 @@ public class DownloadViewPanel implements InternalViewSubPanel {
 		boolean canBeAdded();
 
 		/**
+		 * Returns true if this item can be deleted from global database.
+		 *
+		 * @return True if this item can be deleted from global database.
+		 */
+		boolean canBeDeleted();
+
+		/**
 		 * Sets download info to this panel.
 		 *
 		 * @param info
@@ -492,5 +506,10 @@ public class DownloadViewPanel implements InternalViewSubPanel {
 		 * Adds the item to database.
 		 */
 		void add();
+
+		/**
+		 * Deletes this item from the global database.
+		 */
+		void delete();
 	}
 }

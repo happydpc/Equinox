@@ -39,6 +39,7 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -1020,7 +1022,7 @@ public class Utility {
 	/**
 	 * Extracts and returns temporary files with the demanded file type from the given ZIP file. Note that, the first file with the given file type will be extracted and returned.
 	 *
-	 * @param zipFile
+	 * @param zipPath
 	 *            Path to ZIP file.
 	 * @param task
 	 *            Task which calls this method.
@@ -1030,17 +1032,33 @@ public class Utility {
 	 * @throws IOException
 	 *             If exception occurs during process.
 	 */
-	public static ArrayList<Path> extractFilesFromZIP(Path zipFile, TemporaryFileCreatingTask<?> task, FileType type) throws IOException {
+	public static ArrayList<Path> extractFilesFromZIP(Path zipPath, TemporaryFileCreatingTask<?> task, FileType type) throws IOException {
+
+		// update message
+		task.updateMessage("Extracting all *" + type.getExtension() + " files from '" + zipPath.getFileName().toString() + "'...");
 
 		// initialize output file
 		ArrayList<Path> output = null;
 
-		// create zip input stream
-		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile.toString())), Charset.defaultCharset())) {
+		// open zip file
+		try (ZipFile zipFile = new ZipFile(zipPath.toFile())) {
+
+			// get number of entries
+			int numEntries = zipFile.size();
+
+			// get entries
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
 			// loop over zip entries
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
+			int entryCount = 0;
+			while (entries.hasMoreElements()) {
+
+				// get entry
+				ZipEntry ze = entries.nextElement();
+
+				// progress info
+				task.updateProgress(entryCount, numEntries);
+				entryCount++;
 
 				// task cancelled
 				if (task.isCancelled()) {
@@ -1048,7 +1066,8 @@ public class Utility {
 				}
 
 				// not directory
-				if (!ze.isDirectory())
+				if (!ze.isDirectory()) {
+
 					// required file type
 					if (ze.getName().toUpperCase().endsWith(type.getExtension().toUpperCase())) {
 
@@ -1067,10 +1086,14 @@ public class Utility {
 							// create new buffer
 							byte[] buffer = new byte[BUFSIZE];
 
-							// write to output stream
-							int len;
-							while ((len = zis.read(buffer, 0, BUFSIZE)) != -1) {
-								bos.write(buffer, 0, len);
+							// open zip input stream
+							try (InputStream zis = zipFile.getInputStream(ze)) {
+
+								// write to output stream
+								int len;
+								while ((len = zis.read(buffer, 0, BUFSIZE)) != -1) {
+									bos.write(buffer, 0, len);
+								}
 							}
 						}
 
@@ -1085,9 +1108,7 @@ public class Utility {
 						}
 						output.add(file);
 					}
-
-				// close entry
-				zis.closeEntry();
+				}
 			}
 		}
 
@@ -1098,7 +1119,7 @@ public class Utility {
 	/**
 	 * Extracts and returns all files from the given ZIP file.
 	 *
-	 * @param zipFile
+	 * @param zipPath
 	 *            Path to ZIP file.
 	 * @param task
 	 *            Task which calls this method.
@@ -1108,17 +1129,33 @@ public class Utility {
 	 * @throws IOException
 	 *             If exception occurs during process.
 	 */
-	public static ArrayList<Path> extractAllFilesFromZIP(Path zipFile, InternalEquinoxTask<?> task, Path outputDir) throws IOException {
+	public static ArrayList<Path> extractAllFilesFromZIP(Path zipPath, InternalEquinoxTask<?> task, Path outputDir) throws IOException {
+
+		// update message
+		task.updateMessage("Extracting all files from '" + zipPath.getFileName().toString() + "'...");
 
 		// initialize output file
 		ArrayList<Path> output = null;
 
-		// create zip input stream
-		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile.toString())), Charset.defaultCharset())) {
+		// open zip file
+		try (ZipFile zipFile = new ZipFile(zipPath.toFile())) {
+
+			// get number of entries
+			int numEntries = zipFile.size();
+
+			// get entries
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
 			// loop over zip entries
-			ZipEntry ze;
-			while ((ze = zis.getNextEntry()) != null) {
+			int entryCount = 0;
+			while (entries.hasMoreElements()) {
+
+				// get entry
+				ZipEntry ze = entries.nextElement();
+
+				// progress info
+				task.updateProgress(entryCount, numEntries);
+				entryCount++;
 
 				// task cancelled
 				if (task.isCancelled()) {
@@ -1143,10 +1180,14 @@ public class Utility {
 						// create new buffer
 						byte[] buffer = new byte[BUFSIZE];
 
-						// write to output stream
-						int len;
-						while ((len = zis.read(buffer, 0, BUFSIZE)) != -1) {
-							bos.write(buffer, 0, len);
+						// open zip input stream
+						try (InputStream zis = zipFile.getInputStream(ze)) {
+
+							// write to output stream
+							int len;
+							while ((len = zis.read(buffer, 0, BUFSIZE)) != -1) {
+								bos.write(buffer, 0, len);
+							}
 						}
 					}
 
@@ -1161,9 +1202,6 @@ public class Utility {
 					}
 					output.add(file);
 				}
-
-				// close entry
-				zis.closeEntry();
 			}
 		}
 
