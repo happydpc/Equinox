@@ -261,7 +261,7 @@ This process needs to be replaced with **direct access to ISAMI material databas
         <task id="195" name="3D Stress Mapping Visualization" color="#ff0033" meeting="false" start="2018-11-12" duration="10" complete="0" thirdDate="2018-11-12" thirdDate-constraint="0" expand="true"/>
         <task id="196" name="Store Pilot Point Charts with Attributes" color="#990099" meeting="false" start="2018-11-19" duration="5" complete="0" thirdDate="2018-11-29" thirdDate-constraint="0" expand="true"/>
         <task id="309" name="Sun Release" color="#ff9900" meeting="true" start="2018-11-23" duration="0" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" priority="2" expand="true"/>
-        <task id="215" name="Not Available" color="#ffffff" meeting="true" start="2018-08-27" duration="0" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="false">
+        <task id="215" name="Not Available" color="#ffffff" meeting="true" start="2018-08-27" duration="0" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true">
             <task id="219" name="Not Available" color="#990099" meeting="false" start="2018-08-27" duration="5" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="226" name="Not Available" color="#990099" meeting="false" start="2018-09-17" duration="2" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="284" name="Not Available" color="#8cb6ce" meeting="false" start="2018-09-17" duration="3" complete="0" thirdDate="2018-09-17" thirdDate-constraint="0" priority="3" expand="true"/>
