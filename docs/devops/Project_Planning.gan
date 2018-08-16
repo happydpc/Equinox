@@ -42,7 +42,7 @@
         </taskproperties>
         <task id="231" name="Admin feature to see list of AF-Twin users" color="#990099" meeting="false" start="2018-08-20" duration="2" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" expand="true">
             <notes>
-                <![CDATA[Task for seeing a list of all users in the central database. The list should give basic information on users (such as names, departments, emails etc.). Menu button should be added to Admins menu under user management.]]>
+                <![CDATA[Task for seeing a list of all users in the central database. The list should give basic information on users (such as names, departments, emails etc.). Menu button should be added to Admins menu under user management. The list should be exportable to an Excel file.]]>
             </notes>
         </task>
         <task id="67" name="Improving query performance by applying batch process" color="#990099" meeting="false" start="2018-08-22" duration="3" complete="0" thirdDate="2018-09-19" thirdDate-constraint="0" expand="true">
