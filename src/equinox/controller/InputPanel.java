@@ -34,6 +34,7 @@ import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.plugin.InputSubPanel;
 import equinox.serverUtilities.ServerUtility;
+import equinox.task.AddBatchTasks;
 import equinox.task.AddStressSequence;
 import equinox.utility.Utility;
 import javafx.collections.ObservableList;
@@ -634,28 +635,28 @@ public class InputPanel implements Initializable {
 	}
 
 	@FXML
-	public void onAddBatchAnalysisClicked() {
+	public void onAddBatchTasksClicked() {
 
-		// // get file chooser
-		// FileChooser fileChooser = owner_.getFileChooser(FileType.XLS.getExtensionFilter());
-		//
-		// // show open dialog
-		// File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
-		//
-		// // no file selected
-		// if ((file == null) || !file.exists())
-		// return;
-		//
-		// // set initial directory
-		// owner_.setInitialDirectory(file);
-		//
-		// // create batch analysis
-		// owner_.getActiveTasksPanel().runTaskInParallel(new BatchEquivalentStressAnalysis(file.toPath()));
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// create batch analysis
+		owner_.getActiveTasksPanel().runTaskInParallel(new AddBatchTasks(file.toPath()));
 	}
 
 	@FXML
-	public void onDownloadSampleBatchAnalysisInputClicked() {
-		// TODO on download sample batch analysis input clicked
+	public void onDownloadSampleBatchInputClicked() {
+		// TODO on download sample batch input clicked
 	}
 
 	/**

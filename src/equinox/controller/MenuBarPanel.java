@@ -41,7 +41,6 @@ import equinox.task.AdaptDRF;
 import equinox.task.AddStressSequence;
 import equinox.task.BackupWorkspace;
 import equinox.task.CheckForEquinoxUpdates;
-import equinox.task.PreparePilotPointUpload;
 import equinox.task.CreateWorkspace;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.Excalibur;
@@ -50,6 +49,7 @@ import equinox.task.GetHelpVideos;
 import equinox.task.GetPlugins;
 import equinox.task.MyCheck;
 import equinox.task.OpenWorkspace;
+import equinox.task.PreparePilotPointUpload;
 import equinox.task.ResetExchangeTable;
 import equinox.task.ResetWorkspace;
 import equinox.task.RfortAnalysis;
@@ -253,8 +253,8 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onAddBatchAnalysisClicked() {
-		owner_.getInputPanel().onAddBatchAnalysisClicked();
+	private void onAddBatchTasksClicked() {
+		owner_.getInputPanel().onAddBatchTasksClicked();
 	}
 
 	@FXML
@@ -421,8 +421,8 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onDownloadSampleBatchAnalysisInputClicked() {
-		owner_.getInputPanel().onDownloadSampleBatchAnalysisInputClicked();
+	private void onDownloadSampleBatchInputClicked() {
+		owner_.getInputPanel().onDownloadSampleBatchInputClicked();
 	}
 
 	@FXML

@@ -1,44 +1,88 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<equinoxInput minEquinoxVersion="Earth" author="" date="" inputVersion="1.0" title="" description="">
-	<analysisEngine>
-		<engine></engine>
-		<version></version>
-		<subVersion></subVersion>
-		<keepOutputFile></keepOutputFile>
-		<performDetailedAnalysis></performDetailedAnalysis>
-		<applyCompressionForPropagation></applyCompressionForPropagation>
-		<fallbackToInbuilt></fallbackToInbuilt></analysisEngine>
-	<!--Adds spectrum.-->
+<?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory.-->
+<equinoxInput version="" title="" description="" author="" date="" time="">
+	
+	<!--Analysis engine settings. This element and all its children are obligatory. All analysis jobs defined in the following elements will be performed based these settings.-->
+	<settings><!--Run mode can be one of parallel, sequential, save. Note that, save mode will only save first level tasks to the workspace (i.e. not the relative tasks)-->
+		<runMode></runMode>
+		<analysisEngine><engine></engine><version></version><subVersion></subVersion><keepOutputFile></keepOutputFile><performDetailedAnalysis></performDetailedAnalysis><applyCompressionForPropagation></applyCompressionForPropagation><fallbackToInbuilt></fallbackToInbuilt></analysisEngine>
+		<notifications>
+			<systemTrayPopups></systemTrayPopups>
+			<errors></errors>
+			<warnings></warnings>
+			<information></information>
+			<queued></queued>
+			<submitted></submitted>
+			<succeeded></succeeded>
+			<saved></saved>
+			<surpressAll></surpressAll></notifications></settings>
+	
+	
+	<!--Adds spectrum to workspace from supplied CDF set files. TXT file is optional, if not given, will be generated from CVT and XLS.-->
 	<addSpectrum>
-		<id>12</id>
-		<anaPath>tzhbjv</anaPath>
+		<id></id>
+		<anaPath></anaPath>
 		<cvtPath></cvtPath>
 		<flsPath></flsPath>
 		<xlsPath></xlsPath>
 		<txtPath></txtPath>
-		<convSheet></convSheet></addSpectrum>
+		<convSheet></convSheet>
+	</addSpectrum>
+	
+	<!--Adds spectrum to workspace from suplied SPEC bundle.-->
 	<addSpectrum>
 		<id></id>
-		<specPath></specPath></addSpectrum>
+		<specPath></specPath>
+	</addSpectrum>
+	
+	<!--Adds STF file to specified spectrum.-->
 	<addStf>
-		<id></id>
-		<stfPath></stfPath></addStf>
+		<id></id><spectrumId></spectrumId><stfPath></stfPath>
+	</addStf>
+	
+	<!--Adds stress sequence from given SIGMA file.-->
 	<addStressSequence>
 		<id></id>
-		<sigmaPath></sigmaPath></addStressSequence>
+		<sigmaPath></sigmaPath>
+	</addStressSequence>
+	
+	<!--Adds stress sequence from given STH and FLS files.-->
 	<addStressSequence>
 		<id></id>
+		
 		<sthPath></sthPath>
-		<flsPath></flsPath></addStressSequence>
+		<flsPath></flsPath>
+	</addStressSequence>
+	
+	<!--Generates stress sequence from given STF file.-->
 	<generateStressSequence>
 		<id></id>
 		<stfId></stfId>
-		<inputPath></inputPath></generateStressSequence>
+		<inputPath></inputPath>
+	</generateStressSequence>
+	
+	<saveMissionProfilePlot>
+		<id></id><stressSequenceId></stressSequenceId>
+		<outputPath></outputPath></saveMissionProfilePlot>
+	<saveTypicalFlightPlot>
+		<id></id>
+		<stressSequenceId></stressSequenceId><typicalFlightName></typicalFlightName>
+		<outputPath></outputPath></saveTypicalFlightPlot>
+	
 	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
-		<inputPath></inputPath></equivalentStressAnalysis>
+		<inputPath></inputPath>
+	</equivalentStressAnalysis>
+	
 	<equivalentStressAnalysis>
 		<id></id>
 		<stressSequenceId></stressSequenceId>
-		<inputPath></inputPath></equivalentStressAnalysis></equinoxInput>
+		<inputPath></inputPath>
+	</equivalentStressAnalysis>
+	<saveLevelCrossingPlot>
+		<id></id>
+		<equivalentStressId></equivalentStressId>
+		<outputPath></outputPath></saveLevelCrossingPlot>
+	<saveAnalysisOutputFile>
+		<id></id>
+		<outputPath></outputPath></saveAnalysisOutputFile></equinoxInput>
