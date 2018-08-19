@@ -1,1 +1,1 @@
-insert into db_version(name, value) values('Database Version', 3.9);
+insert into db_version(name, value) values('Database Version', 4.0);

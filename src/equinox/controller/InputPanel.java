@@ -33,9 +33,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.plugin.InputSubPanel;
-import equinox.serverUtilities.ServerUtility;
-import equinox.task.AddBatchTasks;
 import equinox.task.AddStressSequence;
+import equinox.task.CheckInstructionSet;
 import equinox.utility.Utility;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -44,8 +43,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.Pagination;
-import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
@@ -102,7 +101,7 @@ public class InputPanel implements Initializable {
 	private Label header_, statusLabel_;
 
 	@FXML
-	private SplitMenuButton addButton_;
+	private MenuButton addButton_, automateButton_;
 
 	@FXML
 	private Region region_, region2_;
@@ -243,9 +242,6 @@ public class InputPanel implements Initializable {
 		popups_.put(SEGMENT_FACTORS_POPUP, SegmentFactorsPopup.load(this));
 		popups_.put(LOADCASE_FACTORS_POPUP, LoadcaseFactorsPopup.load(this));
 		popups_.put(DAMAGE_CONTRIBUTIONS_POPUP, DamageContributionsPopup.load(this));
-
-		// setup add button preferred size
-		addButton_.setPrefWidth(Equinox.OS_TYPE.equals(ServerUtility.WINDOWS) ? 50.0 : 55.0);
 	}
 
 	/**
@@ -254,11 +250,11 @@ public class InputPanel implements Initializable {
 	public void start() {
 
 		// set minimum toolbar width
-		toolbar_.minWidthProperty().set(header_.getWidth() + addButton_.getWidth() + 2 * 11.0 + 2 * 4.0);
+		toolbar_.minWidthProperty().set(header_.getWidth() + addButton_.getWidth() + automateButton_.getWidth() + 2 * 11.0 + 3 * 4.0);
 		statusbar_.minWidthProperty().set(services_.getWidth() + statusLabel_.getWidth() + 2 * 11.0 + 2 * 4.0);
 
 		// bind region width to tool bar width
-		region_.prefWidthProperty().bind(toolbar_.widthProperty().subtract(header_.widthProperty()).subtract(addButton_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
+		region_.prefWidthProperty().bind(toolbar_.widthProperty().subtract(header_.widthProperty()).subtract(addButton_.widthProperty()).subtract(automateButton_.widthProperty()).subtract(2 * 11.0 + 3 * 4.0));
 		region2_.prefWidthProperty().bind(statusbar_.widthProperty().subtract(services_.widthProperty()).subtract(statusLabel_.widthProperty()).subtract(2 * 11.0 + 2 * 4.0));
 
 		// start internal sub panels
@@ -635,7 +631,7 @@ public class InputPanel implements Initializable {
 	}
 
 	@FXML
-	public void onAddBatchTasksClicked() {
+	public void onRunInstructionSetClicked() {
 
 		// get file chooser
 		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
@@ -651,12 +647,32 @@ public class InputPanel implements Initializable {
 		owner_.setInitialDirectory(file);
 
 		// create batch analysis
-		owner_.getActiveTasksPanel().runTaskInParallel(new AddBatchTasks(file.toPath()));
+		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), true));
 	}
 
 	@FXML
-	public void onDownloadSampleBatchInputClicked() {
-		// TODO on download sample batch input clicked
+	public void onCheckInstructionSetClicked() {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// create batch analysis
+		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), false));
+	}
+
+	@FXML
+	public void onDownloadSampleInstructionSetClicked() {
+		// TODO
 	}
 
 	/**

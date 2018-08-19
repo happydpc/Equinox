@@ -151,13 +151,13 @@ public class GetFastPreffasEquivalentStressInfo extends InternalEquinoxTask<Arra
 
 							// loadcase modifiers
 							ArrayList<LoadcaseFactor> lcFactors = analysisInput.getLoadcaseFactors();
-							if ((lcFactors != null) && !lcFactors.isEmpty()) {
+							if (lcFactors != null && !lcFactors.isEmpty()) {
 								TreeItem<TableItem> loadcaseModifiers = new TreeItem<>(new TableItem("Loadcase factors", ""));
 								for (LoadcaseFactor lcFactor : lcFactors) {
 									String loadcaseNumber = lcFactor.getLoadcaseNumber();
 									String eventName = lcFactor.getEventName();
 									String comments = lcFactor.getComments();
-									TreeItem<TableItem> loadcase = new TreeItem<>(new TableItem("Loadcase '" + loadcaseNumber + "'", eventName + (comments == null ? "" : " (" + comments + ")")));
+									TreeItem<TableItem> loadcase = new TreeItem<>(new TableItem("Loadcase '" + loadcaseNumber + "'", (eventName == null ? "" : eventName) + (comments == null ? "" : " (" + comments + ")")));
 									loadcase.getChildren().add(new TreeItem<>(new TableItem("Stress modifier", format_.format(lcFactor.getModifierValue()) + " (" + lcFactor.getModifierMethod() + ")")));
 									loadcaseModifiers.getChildren().add(loadcase);
 								}
@@ -168,7 +168,7 @@ public class GetFastPreffasEquivalentStressInfo extends InternalEquinoxTask<Arra
 
 							// segment modifiers
 							ArrayList<SegmentFactor> sFactors = analysisInput.getSegmentFactors();
-							if ((sFactors != null) && !sFactors.isEmpty()) {
+							if (sFactors != null && !sFactors.isEmpty()) {
 								TreeItem<TableItem> segmentModifiers = new TreeItem<>(new TableItem("Segment factors", ""));
 								for (SegmentFactor sFactor : sFactors) {
 									TreeItem<TableItem> segment = new TreeItem<>(new TableItem("Segment '" + sFactor.getSegment().toString() + "'", ""));

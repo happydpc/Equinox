@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory.-->
+<equinoxInput version="" title="" description="" author="" date="" time="">
+	
+	<!--Analysis engine settings. This element and all its children are optional. If not supplied, Data Analyst settings will be used at execution time.-->
+	<settings>
+		<!--Run mode can be one of 'parallel', 'sequential' or 'save'. Note that, save mode will only save first level tasks (i.e. not the dependent tasks).-->
+		<runMode>parallel</runMode>
+		<suppressNotifications>false</suppressNotifications><!--Analysis engine settings are same as seen in Data Analyst user interface. The settings 'engine', 'version' and 'subVersion' are case sensitive and the rest are boolean (i.e. true or false). -->
+		<analysisEngine><!--Engine can be one of 'ISAMI Engine', 'SAFE Engine' or 'Inbuilt Engine'.-->
+			<engine>Inbuilt Engine</engine>
+			<version>v9.7.1</version>
+			<subVersion>Derivatives</subVersion>
+			<keepOutputFile>true</keepOutputFile>
+			<performDetailedAnalysis>true</performDetailedAnalysis>
+			<applyCompressionForPropagation>true</applyCompressionForPropagation>
+			<fallbackToInbuilt>true</fallbackToInbuilt>
+		</analysisEngine>
+	</settings>
+	
+	<!--Adds spectrum to workspace from supplied CDF set files. TXT file is optional, if not given, will be generated from CVT and XLS.-->
+	<addSpectrum>
+		<id>1</id>
+		<anaPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P/A310Microgravity-211Sect13-MR2_31P.ana</anaPath>
+		<cvtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P/A310Microgravity-211Sect13-MR2_31P.cvt</cvtPath>
+		<flsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P/A310Microgravity-211Sect13-MR2_31P.fls</flsPath>
+		<txtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P/A310Microgravity-211Sect13-MR2_31P.txt</txtPath>
+		<convSheet>31 Parabolas</convSheet>
+	</addSpectrum></equinoxInput>

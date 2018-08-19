@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -226,6 +227,24 @@ public class Utility {
 	 */
 	public static String getContainerVersionDescriptionFileName() {
 		return "dataAnalyst_versionDesc.html";
+	}
+
+	/**
+	 * Wrapper method to throw exceptions from lambda expressions. Use this wrapper if a lambda expression has to throw exception.
+	 *
+	 * @param throwingConsumer
+	 *            Throwing consumer.
+	 * @return Consumer.
+	 */
+	public static <T> Consumer<T> exceptionThrowingLambda(ThrowingConsumer<T, Exception> throwingConsumer) {
+		return i -> {
+			try {
+				throwingConsumer.accept(i);
+			}
+			catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		};
 	}
 
 	/**

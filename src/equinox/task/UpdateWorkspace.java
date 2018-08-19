@@ -114,6 +114,11 @@ public class UpdateWorkspace extends InternalEquinoxTask<Void> {
 					dbVersion = updateTo39(connection);
 				}
 
+				// update to v4.0
+				if (dbVersion < 4.0) {
+					dbVersion = updateTo40(connection);
+				}
+
 				// update version number
 				updateVersionNumber(connection, createVersionTable, dbVersion);
 
@@ -138,6 +143,35 @@ public class UpdateWorkspace extends InternalEquinoxTask<Void> {
 
 		// return
 		return null;
+	}
+
+	/**
+	 * Updates the database to version 4.0.
+	 *
+	 * @param connection
+	 *            Database connection.
+	 * @return New version number.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private double updateTo40(Connection connection) throws Exception {
+
+		// update info
+		updateMessage("Updating workspace to version 4.0");
+
+		// create statement
+		try (Statement statement = connection.createStatement()) {
+
+			// remove not null constraint from event name columns of event modifier tables
+			statement.executeUpdate("ALTER TABLE EVENT_MODIFIERS ALTER COLUMN EVENT_NAME NULL");
+			statement.executeUpdate("ALTER TABLE DAM_ANGLE_EVENT_MODIFIERS ALTER COLUMN EVENT_NAME NULL");
+			statement.executeUpdate("ALTER TABLE DAM_CONTRIBUTIONS_EVENT_MODIFIERS ALTER COLUMN EVENT_NAME NULL");
+			statement.executeUpdate("ALTER TABLE DAM_CONTRIBUTION_EVENT_MODIFIERS ALTER COLUMN EVENT_NAME NULL");
+			statement.executeUpdate("ALTER TABLE FLIGHT_DAM_CONTRIBUTIONS_EVENT_MODIFIERS ALTER COLUMN EVENT_NAME NULL");
+		}
+
+		// return new version number
+		return 4.0;
 	}
 
 	/**

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<generateStressSequenceInput>
+	<overallFactors>
+		<oneg>
+			<value>1.0</value><method>Multiply</method>
+			</oneg>
+		<increment>
+			<value>1.0</value>
+			<method>Multiply</method></increment>
+		<deltaP>
+			<value>1.0</value>
+			<method>Multiply</method></deltaP>
+		<deltaT>
+			<value>1.0</value>
+			<method>Multiply</method></deltaT></overallFactors>
+	<loadcaseFactors>
+		<mutPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/A380PS_OWB1_p45_baseline.mut</mutPath>
+		<tableColumn>1</tableColumn>
+		<method>Multiply</method></loadcaseFactors>
+	<pressure><dpLoadcase></dpLoadcase><referenceDp></referenceDp></pressure>
+	<temperature>
+		<dtInterpolation></dtInterpolation>
+		<dtLoadcaseSuperior></dtLoadcaseSuperior>
+		<referenceDtSuperior></referenceDtSuperior>
+		<dtLoadcaseInferior></dtLoadcaseInferior>
+		<referenceDtInferior></referenceDtInferior></temperature>
+	<stressRotation>
+		<component></component>
+		<rotationAngle></rotationAngle></stressRotation></generateStressSequenceInput>

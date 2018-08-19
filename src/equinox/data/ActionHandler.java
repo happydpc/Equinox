@@ -1665,11 +1665,8 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 			// set initial directory
 			owner_.setInitialDirectory(selectedFile);
 
-			// append extension if necessary
-			File output = FileType.appendExtension(selectedFile, FileType.SPEC);
-
 			// save file
-			owner_.getActiveTasksPanel().runTaskInParallel(new SaveSpectrum(file, output));
+			owner_.getActiveTasksPanel().runTaskInParallel(new SaveSpectrum(file, selectedFile));
 		}
 
 		// multiple files

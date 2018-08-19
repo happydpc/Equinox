@@ -536,7 +536,12 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 				for (LoadcaseFactor eFactor : input_.getLoadcaseFactors()) {
 					update.setInt(1, contributions.getID()); // contributions ID
 					update.setString(2, eFactor.getLoadcaseNumber()); // loadcase number
-					update.setString(3, eFactor.getEventName()); // event name
+					if (eFactor.getEventName() != null) {
+						update.setString(3, eFactor.getEventName());
+					}
+					else {
+						update.setNull(3, java.sql.Types.VARCHAR);
+					}
 					if (eFactor.getComments() != null) {
 						update.setString(4, eFactor.getComments());
 					}
@@ -664,7 +669,12 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 						insertEventModifiers.setInt(1, contID);
 						insertEventModifiers.setInt(2, contributions.getID());
 						insertEventModifiers.setString(3, modifier.getLoadcaseNumber()); // loadcase number
-						insertEventModifiers.setString(4, modifier.getEventName()); // event name
+						if (modifier.getEventName() != null) {
+							insertEventModifiers.setString(4, modifier.getEventName());
+						}
+						else {
+							insertEventModifiers.setNull(4, java.sql.Types.VARCHAR);
+						}
 						if (modifier.getComments() != null) {
 							insertEventModifiers.setString(5, modifier.getComments());
 						}

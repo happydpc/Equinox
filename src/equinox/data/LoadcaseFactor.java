@@ -51,18 +51,18 @@ public class LoadcaseFactor implements Serializable {
 	}
 
 	/**
-	 * Returns event name.
+	 * Returns event name or null if no event name supplied.
 	 *
-	 * @return Event name.
+	 * @return Event name or null if no event name supplied.
 	 */
 	public String getEventName() {
 		return eventName_;
 	}
 
 	/**
-	 * Returns loadcase comments.
+	 * Returns loadcase comments or null if no event name supplied.
 	 *
-	 * @return Loadcase comments.
+	 * @return Loadcase comments or null if no event name supplied.
 	 */
 	public String getComments() {
 		return comments_;

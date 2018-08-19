@@ -1169,7 +1169,12 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 				for (LoadcaseFactor eFactor : input_.getLoadcaseFactors()) {
 					update.setInt(1, sthFileID); // STH file ID
 					update.setString(2, eFactor.getLoadcaseNumber()); // loadcase number
-					update.setString(3, eFactor.getEventName()); // event name
+					if (eFactor.getEventName() != null) {
+						update.setString(3, eFactor.getEventName());
+					}
+					else {
+						update.setNull(3, java.sql.Types.VARCHAR);
+					}
 					if (eFactor.getComments() != null) {
 						update.setString(4, eFactor.getComments());
 					}

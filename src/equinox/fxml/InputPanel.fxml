@@ -5,9 +5,9 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
@@ -16,19 +16,31 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
       <items>
         <Label fx:id="header_" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="204.0" styleClass="titleBarLabel" text="Generate Stress Sequence" />
         <Region fx:id="region_" prefHeight="-1.0" prefWidth="-1.0" />
-            <SplitMenuButton fx:id="addButton_" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onAddCDFSetClicked" prefHeight="20.0" prefWidth="55.0" text="SplitMenuButton">
-              <items>
+            <MenuButton fx:id="addButton_" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="20.0" prefWidth="27.0" text="MenuButton">
+               <graphic>
+                  <ImageView fitHeight="12.0" fitWidth="12.0" pickOnBounds="true" preserveRatio="true" translateX="-1.0">
+                     <image>
+                        <Image url="@../image/addWhite.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <stylesheets>
+                  <URL value="@../css/MenuButton6.css" />
+                  <URL value="@../css/ContextMenu.css" />
+               </stylesheets>
+               <items>
                 <MenuItem mnemonicParsing="false" onAction="#onAddCDFSetClicked" text="Add New Spectrum">
                      <graphic>
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.chart" />
-                     </graphic></MenuItem>
+                     </graphic>
+                  </MenuItem>
                   <Menu mnemonicParsing="false" text="Add New Stress Sequences...">
                      <items>
                       <MenuItem mnemonicParsing="false" onAction="#onAddSTHClicked" text="From STH Files" />
@@ -43,30 +55,41 @@
                   <MenuItem mnemonicParsing="false" onAction="#onAddACModelClicked" text="Add New A/C Model">
                      <graphic>
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.airplane" />
-                     </graphic></MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onAddBatchTasksClicked" text="Add New Batch Tasks">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.file-excel-o" />
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleBatchInputClicked" text="Download Sample Batch Input" />
-              </items>
+               </items>
+            </MenuButton>
+            <MenuButton fx:id="automateButton_" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="20.0" prefWidth="27.0" text="MenuButton">
                <graphic>
-                  <ImageView fitHeight="12.0" fitWidth="12.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="12.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" translateX="-1.0">
                      <image>
-                        <Image url="@../image/addWhite.png" />
+                        <Image url="@../image/android.png" />
                      </image>
                   </ImageView>
                </graphic>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
                <stylesheets>
-                  <URL value="@../css/SplitMenuButton1.css" />
+                  <URL value="@../css/MenuButton6.css" />
                   <URL value="@../css/ContextMenu.css" />
                </stylesheets>
-            </SplitMenuButton>
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#onRunInstructionSetClicked" text="Run Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.play3" />
+                     </graphic>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onCheckInstructionSetClicked" text="Check Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
+                     </graphic>
+                  </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.cloud-download" />
+                     </graphic>
+                  </MenuItem>
+               </items>
+            </MenuButton>
       </items>
     </ToolBar>
       <ToolBar fx:id="statusbar_" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-1.0" prefHeight="30.0" styleClass="statusBar">

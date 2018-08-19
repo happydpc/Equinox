@@ -253,11 +253,6 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onAddBatchTasksClicked() {
-		owner_.getInputPanel().onAddBatchTasksClicked();
-	}
-
-	@FXML
 	private void onAddCDFSetClicked() {
 		owner_.getInputPanel().showSubPanel(InputPanel.ADD_SPECTRUM_PANEL);
 	}
@@ -290,6 +285,21 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	@FXML
 	private void onAddSTHClicked() {
 		owner_.getInputPanel().showSubPanel(InputPanel.ADD_STH_PANEL);
+	}
+
+	@FXML
+	private void onRunInstructionSetClicked() {
+		owner_.getInputPanel().onRunInstructionSetClicked();
+	}
+
+	@FXML
+	private void onCheckInstructionSetClicked() {
+		owner_.getInputPanel().onCheckInstructionSetClicked();
+	}
+
+	@FXML
+	private void onDownloadSampleInstructionSetClicked() {
+		owner_.getInputPanel().onDownloadSampleInstructionSetClicked();
 	}
 
 	@FXML
@@ -418,11 +428,6 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	@FXML
 	private void onDamageContributionViewClicked() {
 		owner_.getViewPanel().showSubPanel(ViewPanel.DAMAGE_CONTRIBUTION_VIEW);
-	}
-
-	@FXML
-	private void onDownloadSampleBatchInputClicked() {
-		owner_.getInputPanel().onDownloadSampleBatchInputClicked();
 	}
 
 	@FXML

@@ -33,7 +33,7 @@ public interface EquinoxProcess<U> {
 	 * Starts this process.
 	 *
 	 * @param connection
-	 *            Database connection.
+	 *            Database connection. Can be null if no database operation is performed.
 	 * @param preparedStatements
 	 *            Prepared statements (if any).
 	 * @return The output spectrum item.
