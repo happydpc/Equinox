@@ -19,12 +19,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
+import equinox.data.InstructedTask;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.process.ReadGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
@@ -37,7 +40,7 @@ import equinox.utility.Utility;
  * @date 17 Aug 2018
  * @time 15:12:11
  */
-public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, InternalEquinoxTask<?>>> implements LongRunningTask {
+public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, InstructedTask>> implements LongRunningTask {
 
 	/** Run mode constant. */
 	public static final String PARALLEL = "parallel", SEQUENTIAL = "sequential", SAVE = "save";
@@ -72,10 +75,10 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 	}
 
 	@Override
-	protected HashMap<String, InternalEquinoxTask<?>> call() throws Exception {
+	protected HashMap<String, InstructedTask> call() throws Exception {
 
 		// create list of tasks to be executed
-		HashMap<String, InternalEquinoxTask<?>> tasks = new HashMap<>();
+		HashMap<String, InstructedTask> tasks = new HashMap<>();
 
 		// read input file
 		updateMessage("Reading input XML file...");
@@ -134,33 +137,56 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 		// execute tasks
 		try {
 
-			// parallel
-			if (runMode.equals(PARALLEL)) {
-				if (runSilent) {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskSilently(task, false));
-				}
-				else {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskInParallel(task));
-				}
-			}
+			// get tasks
+			HashMap<String, InstructedTask> tasks = get();
 
-			// sequential
-			else if (runMode.equals(SEQUENTIAL)) {
-				if (runSilent) {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskSilently(task, true));
-				}
-				else {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskSequentially(task));
-				}
-			}
+			// no tasks found
+			if (tasks == null)
+				return;
 
-			// save
-			else if (runMode.equals(SAVE)) {
-				if (runSilent) {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskSilently(new SaveTask((SavableTask) task, null), false));
+			// loop over tasks
+			Iterator<Entry<String, InstructedTask>> iterator = tasks.entrySet().iterator();
+			while (iterator.hasNext()) {
+
+				// get task
+				InstructedTask task = iterator.next().getValue();
+
+				// embedded
+				if (task.isEmbedded()) {
+					continue;
 				}
-				else {
-					get().values().forEach(task -> taskPanel_.getOwner().runTaskInParallel(new SaveTask((SavableTask) task, null)));
+
+				// get task implementation
+				InternalEquinoxTask<?> taskImpl = task.getTask();
+
+				// parallel
+				if (runMode.equals(PARALLEL)) {
+					if (runSilent) {
+						taskPanel_.getOwner().runTaskSilently(taskImpl, false);
+					}
+					else {
+						taskPanel_.getOwner().runTaskInParallel(taskImpl);
+					}
+				}
+
+				// sequential
+				else if (runMode.equals(SEQUENTIAL)) {
+					if (runSilent) {
+						taskPanel_.getOwner().runTaskSilently(taskImpl, true);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially(taskImpl);
+					}
+				}
+
+				// save
+				else if (runMode.equals(SAVE)) {
+					if (runSilent) {
+						taskPanel_.getOwner().runTaskSilently(new SaveTask((SavableTask) taskImpl, null), false);
+					}
+					else {
+						taskPanel_.getOwner().runTaskInParallel(new SaveTask((SavableTask) taskImpl, null));
+					}
 				}
 			}
 		}
@@ -181,13 +207,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void generateStressSequence(Element equinoxInput, HashMap<String, InternalEquinoxTask<?>> tasks) throws Exception {
+	private void generateStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
 
 		// update info
 		updateMessage("Creating generate stress sequence tasks...");
 
-		// get add stress sequence elements
-		equinoxInput.getChildren("generateStressSequence").forEach(Utility.exceptionThrowingLambda(generateStressSequence -> {
+		// loop over add stress sequence elements
+		for (Element generateStressSequence : equinoxInput.getChildren("generateStressSequence")) {
 
 			// parse elements
 			String id = generateStressSequence.getChild("id").getTextNormalize();
@@ -201,8 +227,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 			GenerateStressSequence task = new GenerateStressSequence(null, input);
 
 			// add to parent task
-			((AddSTFFiles) tasks.get(stfId)).addAutomaticTask(id, task);
-		}));
+			((AddSTFFiles) tasks.get(stfId).getTask()).addAutomaticTask(id, task);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
 	}
 
 	/**
@@ -215,7 +244,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void addStressSequence(Element equinoxInput, HashMap<String, InternalEquinoxTask<?>> tasks) throws Exception {
+	private void addStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
 
 		// update info
 		updateMessage("Creating add stress sequence tasks...");
@@ -229,14 +258,14 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 			// from SIGMA
 			if (addStressSequence.getChild("sigmaPath") != null) {
 				Path sigmaPath = Paths.get(addStressSequence.getChild("sigmaPath").getTextNormalize());
-				tasks.put(id, new AddStressSequence(sigmaPath));
+				tasks.put(id, new InstructedTask(new AddStressSequence(sigmaPath), false));
 			}
 
 			// from STH
 			else {
 				Path sthPath = Paths.get(addStressSequence.getChild("sthPath").getTextNormalize());
 				Path flsPath = Paths.get(addStressSequence.getChild("flsPath").getTextNormalize());
-				tasks.put(id, new AddStressSequence(sthPath, flsPath));
+				tasks.put(id, new InstructedTask(new AddStressSequence(sthPath, flsPath), false));
 			}
 		}));
 	}
@@ -251,13 +280,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void addStf(Element equinoxInput, HashMap<String, InternalEquinoxTask<?>> tasks) throws Exception {
+	private void addStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
 
 		// update info
 		updateMessage("Creating add STF tasks...");
 
-		// get add STF elements
-		equinoxInput.getChildren("addStf").forEach(Utility.exceptionThrowingLambda(addStf -> {
+		// loop over add STF elements
+		for (Element addStf : equinoxInput.getChildren("addStf")) {
 
 			// create task
 			String id = addStf.getChild("id").getTextNormalize();
@@ -266,8 +295,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 			AddSTFFiles addSTFFiles = new AddSTFFiles(Arrays.asList(stfPath.toFile()), null, null);
 
 			// add to parent task
-			((AddSpectrum) tasks.get(spectrumId)).addAutomaticTask(id, addSTFFiles);
-		}));
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, addSTFFiles);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(addSTFFiles, true));
+		}
 	}
 
 	/**
@@ -280,13 +312,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void addSpectrum(Element equinoxInput, HashMap<String, InternalEquinoxTask<?>> tasks) throws Exception {
+	private void addSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
 
 		// update info
 		updateMessage("Creating add spectrum tasks...");
 
-		// get add spectrum elements
-		equinoxInput.getChildren("addSpectrum").forEach(Utility.exceptionThrowingLambda(addSpectrum -> {
+		// loop over add spectrum elements
+		for (Element addSpectrum : equinoxInput.getChildren("addSpectrum")) {
 
 			// get id
 			String id = addSpectrum.getChild("id").getTextNormalize();
@@ -294,7 +326,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 			// SPEC bundle
 			if (addSpectrum.getChild("specPath") != null) {
 				Path specPath = Paths.get(addSpectrum.getChild("specPath").getTextNormalize());
-				tasks.put(id, new AddSpectrum(specPath));
+				tasks.put(id, new InstructedTask(new AddSpectrum(specPath), false));
 			}
 
 			// CDF set files
@@ -308,8 +340,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Inter
 				if (addSpectrum.getChild("txtPath") != null) {
 					txtFile = Paths.get(addSpectrum.getChild("txtPath").getTextNormalize());
 				}
-				tasks.put(id, new AddSpectrum(anaFile, txtFile, cvtFile, flsFile, conversionTable, sheet, null));
+				tasks.put(id, new InstructedTask(new AddSpectrum(anaFile, txtFile, cvtFile, flsFile, conversionTable, sheet, null), false));
 			}
-		}));
+		}
 	}
 }

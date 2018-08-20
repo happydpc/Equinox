@@ -24,6 +24,8 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
+import equinox.data.DTInterpolation;
+import equinox.data.StressComponent;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask;
 
@@ -84,10 +86,75 @@ public class ReadGenerateStressSequenceInput implements EquinoxProcess<GenerateS
 			pressure(generateStressSequenceInput, input);
 		}
 
-		// TODO
+		// temperature
+		if (generateStressSequenceInput.getChild("temperature") != null) {
+			temperature(generateStressSequenceInput, input);
+		}
+
+		// stress rotation
+		if (generateStressSequenceInput.getChild("stressRotation") != null) {
+			stressRotation(generateStressSequenceInput, input);
+		}
 
 		// return input
 		return input;
+	}
+
+	/**
+	 * Reads stress rotation information from the input file.
+	 *
+	 * @param generateStressSequenceInput
+	 *            Root input element.
+	 * @param input
+	 *            Input data to add factors to.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void stressRotation(Element generateStressSequenceInput, GenerateStressSequenceInput input) throws Exception {
+
+		// update info
+		task.updateMessage("Reading stress rotation info...");
+
+		// get inputs
+		Element stressRotation = generateStressSequenceInput.getChild("stressRotation");
+		StressComponent comp = StressComponent.getStressComponent(stressRotation.getChild("component").getTextNormalize());
+		input.setStressComponent(comp);
+		if (comp.equals(StressComponent.ROTATED)) {
+			input.setRotationAngle(Double.parseDouble(stressRotation.getChild("rotationAngle").getTextNormalize()));
+		}
+	}
+
+	/**
+	 * Reads temperature information from the input file.
+	 *
+	 * @param generateStressSequenceInput
+	 *            Root input element.
+	 * @param input
+	 *            Input data to add factors to.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void temperature(Element generateStressSequenceInput, GenerateStressSequenceInput input) throws Exception {
+
+		// update info
+		task.updateMessage("Reading temparature info...");
+
+		// get temperature
+		Element temperature = generateStressSequenceInput.getChild("temperature");
+
+		// set interpolation
+		DTInterpolation dtInterpolation = DTInterpolation.getDTInterpolation(temperature.getChild("dtInterpolation").getTextNormalize());
+		input.setDTInterpolation(dtInterpolation);
+
+		// set superior loadcase and reference delta-t
+		input.setDTLoadcaseSup(temperature.getChild("dtLoadcaseSuperior").getTextNormalize());
+		input.setReferenceDTSup(Double.parseDouble(temperature.getChild("referenceDtSuperior").getTextNormalize()));
+
+		// set inferior loadcase and reference delta-t
+		if (dtInterpolation.equals(DTInterpolation.TWO_POINTS)) {
+			input.setDTLoadcaseInf(temperature.getChild("dtLoadcaseInferior").getTextNormalize());
+			input.setReferenceDTInf(Double.parseDouble(temperature.getChild("referenceDtInferior").getTextNormalize()));
+		}
 	}
 
 	/**
@@ -141,7 +208,7 @@ public class ReadGenerateStressSequenceInput implements EquinoxProcess<GenerateS
 		String method = loadcaseFactors.getChild("method").getTextNormalize();
 
 		// set loadcase factors
-		input.setLoadcaseFactors(new ReadMultiplicationTable(task, mutPath, tableColumn - 1, method).start(null));
+		input.setLoadcaseFactors(new ReadMultiplicationTable(task, mutPath, tableColumn, method).start(null));
 	}
 
 	/**

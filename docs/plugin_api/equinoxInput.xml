@@ -34,12 +34,23 @@
 		<id></id>
 		<specPath></specPath>
 	</addSpectrum>
-	
+	<saveSpectrum>
+		<id></id>
+		<spectrumId></spectrumId>
+		<ouputPath></ouputPath></saveSpectrum>
+	<shareSpectrum></shareSpectrum>
+	<exportSpectrum></exportSpectrum>
+	<deleteSpectrum></deleteSpectrum>
+
 	<!--Adds STF file to specified spectrum.-->
 	<addStf>
 		<id></id><spectrumId></spectrumId><stfPath></stfPath>
 	</addStf>
-	
+	<saveStf></saveStf>
+	<shareStf></shareStf>
+	<exportStf></exportStf>
+	<deleteStf></deleteStf>
+
 	<!--Adds stress sequence to workspace from given SIGMA file.-->
 	<addStressSequence>
 		<id></id>
@@ -61,6 +72,10 @@
 		<inputPath></inputPath>
 	</generateStressSequence>
 	
+	<saveStressSequence>
+		<id></id>
+		<stressSequenceId></stressSequenceId>
+		<sigmaPath></sigmaPath></saveStressSequence>
 	<saveMissionProfilePlot>
 		<id></id><stressSequenceId></stressSequenceId>
 		<outputPath></outputPath></saveMissionProfilePlot>

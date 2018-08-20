@@ -249,7 +249,8 @@ public class ActiveTasksPanel implements Initializable {
 			}
 
 			// notify saved task notification
-			else if (!notificationShown && task instanceof SaveTask)
+			else if (!notificationShown && task instanceof SaveTask) {
+
 				// saved task
 				if (!((SaveTask) task).isScheduled()) {
 					String message = "Task is saved to execute later. You can access and execute saved tasks from Task Manager.";
@@ -261,6 +262,7 @@ public class ActiveTasksPanel implements Initializable {
 					String message = "Task is scheduled for execution. You can access scheduled tasks from Task Manager.";
 					owner_.getNotificationPane().showScheduled(message);
 				}
+			}
 		}
 
 		// sequential

@@ -3,13 +3,13 @@
         <![CDATA[This is the project planning for the software architecture, design and development activities of AF-Twin platform.]]>
     </description>
     <view zooming-state="default:6" id="gantt-chart">
-        <field id="tpd3" name="Name" width="258" order="0"/>
-        <field id="tpd5" name="End date" width="87" order="1"/>
-        <field id="tpd6" name="Duration" width="55" order="2"/>
-        <field id="tpd13" name="Resources" width="63" order="3"/>
-        <field id="tpd1" name="Priority" width="49" order="4"/>
+        <field id="tpd3" name="Name" width="249" order="0"/>
+        <field id="tpd5" name="End date" width="90" order="1"/>
+        <field id="tpd6" name="Duration" width="49" order="2"/>
+        <field id="tpd13" name="Resources" width="61" order="3"/>
+        <field id="tpd1" name="Priority" width="48" order="4"/>
         <option id="color.recent">
-            <![CDATA[#ff9900 #ffffff #990099 #999999 #666666 #ff0033 #009933 #000000 #660066 #0000ff]]>
+            <![CDATA[#ff0033 #ff9900 #ffffff #990099 #999999 #666666 #009933 #000000 #660066 #0000ff]]>
         </option>
     </view>
     <view id="resource-table">
@@ -40,17 +40,17 @@
             <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
             <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
         </taskproperties>
-        <task id="231" name="Admin feature to see list of AF-Twin users" color="#990099" meeting="false" start="2018-08-20" duration="2" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" expand="true">
-            <notes>
-                <![CDATA[Task for seeing a list of all users in the central database. The list should give basic information on users (such as names, departments, emails etc.). Menu button should be added to Admins menu under user management. The list should be exportable to an Excel file.]]>
-            </notes>
-        </task>
-        <task id="67" name="Improving query performance by applying batch process" color="#990099" meeting="false" start="2018-08-22" duration="3" complete="0" thirdDate="2018-09-19" thirdDate-constraint="0" expand="true">
+        <task id="67" name="Improving query performance by applying batch process" color="#990099" meeting="false" start="2018-08-20" duration="5" complete="0" thirdDate="2018-08-22" thirdDate-constraint="0" expand="true">
             <notes>
                 <![CDATA[This is a performance improvement. Local database query performance should be improved by applying batch process. Task includes following steps:
 * Determine queries that have significant potential for performance improvement
 * Run queries (or tasks including these queries) and note runtimes
 * Implement batch process and compare runtimes.]]>
+            </notes>
+        </task>
+        <task id="231" name="Admin feature to see list of AF-Twin users" color="#990099" meeting="false" start="2018-09-03" duration="2" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Task for seeing a list of all users in the central database. The list should give basic information on users (such as names, departments, emails etc.). Menu button should be added to Admins menu under user management. The list should be exportable to an Excel file.]]>
             </notes>
         </task>
         <task id="69" name="Bug-10: Health monitoring UI freezes at application startup" color="#8cb6ce" meeting="false" start="2018-09-03" duration="3" complete="0" thirdDate="2018-09-03" thirdDate-constraint="0" priority="0" expand="true">
@@ -102,7 +102,12 @@
                 </notes>
             </task>
         </task>
-        <task id="41" name="Add different ISAMI option for stress rotation" color="#ff0033" meeting="false" start="2018-09-03" duration="10" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" expand="true">
+        <task id="267" name="Venus Release" color="#ff9900" meeting="true" start="2018-09-14" duration="0" complete="0" thirdDate="2018-09-10" thirdDate-constraint="0" priority="2" expand="true">
+            <notes>
+                <![CDATA[This milestone marks the release of Venus.]]>
+            </notes>
+        </task>
+        <task id="41" name="Add different ISAMI option for stress rotation" color="#ff0033" meeting="false" start="2018-09-04" duration="9" complete="0" thirdDate="2018-09-04" thirdDate-constraint="0" expand="true">
             <notes>
                 <![CDATA[Additional stress rotation options to be implemented for 2D stress state. Following options shall be considered:
 * Resolved fatigue stress (currently implemented)
@@ -122,11 +127,6 @@
 * How to import H2 into Eclipse
 * Is there SQL accent differences between H2 and Derby
 * How to establish connection to H2 database via Java code]]>
-            </notes>
-        </task>
-        <task id="267" name="Venus Release" color="#ff9900" meeting="true" start="2018-09-14" duration="0" complete="0" thirdDate="2018-09-10" thirdDate-constraint="0" priority="2" expand="true">
-            <notes>
-                <![CDATA[This milestone marks the release of Venus.]]>
             </notes>
         </task>
         <task id="254" name="Batch Analysis Mode - Part 1" color="#990099" meeting="false" start="2018-09-19" duration="3" complete="0" thirdDate="2018-09-19" thirdDate-constraint="0" expand="true">
@@ -177,7 +177,7 @@ Note 2: Please have a look at the file [resetDatabase.sql](https://gheprivate.in
                 </notes>
                 <depend id="81" type="2" difference="3" hardness="Strong"/>
             </task>
-            <task id="81" name="PP Data Migration" color="#ff0033" meeting="false" start="2018-08-20" duration="10" complete="0" thirdDate="2018-08-15" thirdDate-constraint="0" priority="2" expand="true">
+            <task id="81" name="PP Data Migration - Part 1" color="#ff0033" meeting="false" start="2018-08-20" duration="3" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" priority="2" expand="true">
                 <notes>
                     <![CDATA[This is a subtask of the task #3. This task includes the following steps:
 * Create scripts to migrate existing PPs from previous tables to new tables
@@ -186,9 +186,12 @@ Note 2: Please have a look at the file [resetDatabase.sql](https://gheprivate.in
 
 Note 1: Pilot point storage design can be accessed from [here](https://gheprivate.intra.corp/Digital-Airframe-Solutions/AF-Twin-Data-Analyst/blob/master/docs/PP_Storage_Design.xlsx)]]>
                 </notes>
-                <depend id="84" type="2" difference="0" hardness="Strong"/>
+                <depend id="344" type="2" difference="5" hardness="Strong"/>
             </task>
-            <task id="84" name="Update Data Server codebase" color="#990099" meeting="false" start="2018-09-03" duration="10" complete="0" thirdDate="2018-09-03" thirdDate-constraint="0" priority="2" expand="true">
+            <task id="344" name="PP Data Migration - Part 2" color="#ff0033" meeting="false" start="2018-08-30" duration="3" complete="0" thirdDate="2018-08-30" thirdDate-constraint="0" priority="2" expand="true">
+                <depend id="84" type="2" difference="2" hardness="Strong"/>
+            </task>
+            <task id="84" name="Update Data Server codebase" color="#990099" meeting="false" start="2018-09-06" duration="7" complete="0" thirdDate="2018-09-04" thirdDate-constraint="0" priority="2" expand="true">
                 <notes>
                     <![CDATA[This is a subtask of the task #3. This task includes the following steps:
 * Update queries (pilot point table related) in data server
@@ -198,7 +201,7 @@ Note 1: Pilot point storage design can be accessed from [here](https://gheprivat
                 </notes>
                 <depend id="63" type="2" difference="3" hardness="Strong"/>
             </task>
-            <task id="63" name="Update Data Analyst codebase" color="#8cb6ce" meeting="false" start="2018-09-20" duration="12" complete="0" thirdDate="2018-09-20" thirdDate-constraint="0" expand="true">
+            <task id="63" name="Update Data Analyst codebase" color="#8cb6ce" meeting="false" start="2018-09-20" duration="12" complete="0" thirdDate="2018-09-19" thirdDate-constraint="0" expand="true">
                 <notes>
                     <![CDATA[This is a subtask of the task muratartim/EquinoxDataServer#3. This task includes the following steps:
 * Update central database pilot point related client tasks (search pilot point, download  etc.)
@@ -223,14 +226,14 @@ Note 1: Pilot point storage design can be accessed from [here](https://github.co
 (Excel file? ISAMI Template?)]]>
             </notes>
         </task>
-        <task id="35" name="Server Announcement UI" color="#ff0033" meeting="false" start="2018-10-08" duration="5" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="0" expand="true">
+        <task id="35" name="Server Announcement UI" color="#ff0033" meeting="false" start="2018-10-08" duration="4" complete="0" thirdDate="2018-10-08" thirdDate-constraint="0" priority="0" expand="true">
             <notes>
                 <![CDATA[A server announcement panel should be implemented and connected to a menu item in Administrator menu.]]>
             </notes>
         </task>
         <task id="208" name="Keeping only Most Significant 5 TFs in stress sequence" color="#8cb6ce" meeting="false" start="2018-10-15" duration="7" complete="0" thirdDate="2018-10-15" thirdDate-constraint="0" expand="true"/>
-        <task id="199" name="Notification Center" color="#ff0033" meeting="false" start="2018-10-15" duration="10" complete="0" thirdDate="2018-10-29" thirdDate-constraint="0" expand="true"/>
         <task id="301" name="Mercury Release" color="#ff9900" meeting="true" start="2018-10-26" duration="0" complete="0" thirdDate="2018-10-05" thirdDate-constraint="0" expand="true"/>
+        <task id="199" name="Notification Center" color="#ff0033" meeting="false" start="2018-10-15" duration="10" complete="0" thirdDate="2018-10-29" thirdDate-constraint="0" expand="true"/>
         <task id="45" name="Migration to GISEH 2.0 &amp; ISAMI 10" color="#990099" meeting="false" start="2018-11-01" duration="7" complete="0" thirdDate="2018-11-01" thirdDate-constraint="0" expand="true">
             <notes>
                 <![CDATA[Analysis server should be migrated to GISEH 2.0. This task includes following steps:
@@ -258,17 +261,20 @@ This process needs to be replaced with **direct access to ISAMI material databas
         </task>
         <task id="197" name="PC Services Deployment" color="#8cb6ce" meeting="false" start="2018-11-12" duration="5" complete="0" thirdDate="2018-11-12" thirdDate-constraint="0" expand="true"/>
         <task id="198" name="Persistence of Analysis Parameters" color="#990099" meeting="false" start="2018-11-12" duration="5" complete="0" thirdDate="2018-11-22" thirdDate-constraint="0" expand="true"/>
+        <task id="309" name="Sun Release" color="#ff9900" meeting="true" start="2018-11-23" duration="0" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" priority="2" expand="true"/>
         <task id="195" name="3D Stress Mapping Visualization" color="#ff0033" meeting="false" start="2018-11-12" duration="10" complete="0" thirdDate="2018-11-12" thirdDate-constraint="0" expand="true"/>
         <task id="196" name="Store Pilot Point Charts with Attributes" color="#990099" meeting="false" start="2018-11-19" duration="5" complete="0" thirdDate="2018-11-29" thirdDate-constraint="0" expand="true"/>
-        <task id="309" name="Sun Release" color="#ff9900" meeting="true" start="2018-11-23" duration="0" complete="0" thirdDate="2018-08-20" thirdDate-constraint="0" priority="2" expand="true"/>
-        <task id="215" name="Not Available" color="#ffffff" meeting="true" start="2018-08-27" duration="0" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true">
+        <task id="215" name="Not Available" color="#ffffff" meeting="true" start="2018-08-23" duration="0" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true">
+            <task id="318" name="Not Available" color="#ff0033" meeting="false" start="2018-08-23" duration="5" complete="0" thirdDate="2018-08-23" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="219" name="Not Available" color="#990099" meeting="false" start="2018-08-27" duration="5" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="226" name="Not Available" color="#990099" meeting="false" start="2018-09-17" duration="2" complete="0" thirdDate="2018-08-27" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="284" name="Not Available" color="#8cb6ce" meeting="false" start="2018-09-17" duration="3" complete="0" thirdDate="2018-09-17" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="229" name="Not Available" color="#990099" meeting="false" start="2018-09-24" duration="5" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="256" name="Not Available" color="#8cb6ce" meeting="false" start="2018-10-08" duration="5" complete="0" thirdDate="2018-10-08" thirdDate-constraint="0" priority="3" expand="true"/>
+            <task id="322" name="Not Available" color="#ff0033" meeting="false" start="2018-10-12" duration="1" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="312" name="Not Available" color="#8cb6ce" meeting="false" start="2018-10-24" duration="2" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="236" name="Not Available" color="#990099" meeting="false" start="2018-10-08" duration="18" complete="0" thirdDate="2018-10-08" thirdDate-constraint="0" priority="3" expand="true"/>
+            <task id="326" name="Not Available" color="#ff0033" meeting="false" start="2018-11-01" duration="2" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="3" expand="true"/>
             <task id="316" name="Not Available" color="#8cb6ce" meeting="false" start="2018-11-20" duration="2" complete="0" thirdDate="2018-08-13" thirdDate-constraint="0" priority="3" expand="true"/>
         </task>
     </tasks>
@@ -301,6 +307,10 @@ This process needs to be replaced with **direct access to ISAMI material databas
         <allocation task-id="86" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
         <allocation task-id="199" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
         <allocation task-id="195" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
+        <allocation task-id="318" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
+        <allocation task-id="322" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
+        <allocation task-id="326" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
+        <allocation task-id="344" resource-id="1" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
         <allocation task-id="43" resource-id="2" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
         <allocation task-id="57" resource-id="2" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>
         <allocation task-id="67" resource-id="2" function="SoftwareDevelopment:2" responsible="true" load="100.0"/>

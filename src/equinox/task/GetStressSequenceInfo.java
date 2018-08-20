@@ -235,7 +235,7 @@ public class GetStressSequenceInfo extends InternalEquinoxTask<ArrayList<TreeIte
 				String loadcaseNumber = resultSet.getString("loadcase_number");
 				String eventName = resultSet.getString("event_name");
 				String comments = resultSet.getString("comment");
-				TreeItem<TableItem> loadcase = new TreeItem<>(new TableItem("Loadcase '" + loadcaseNumber + "'", eventName + (comments == null ? "" : " (" + comments + ")")));
+				TreeItem<TableItem> loadcase = new TreeItem<>(new TableItem("Loadcase '" + loadcaseNumber + "'", (eventName == null ? "" : eventName) + (comments == null ? "" : " (" + comments + ")")));
 				loadcase.getChildren().add(new TreeItem<>(new TableItem("Stress modifier", format_.format(resultSet.getDouble("value")) + " (" + resultSet.getString("method") + ")")));
 				loadcaseModifiers.getChildren().add(loadcase);
 			}

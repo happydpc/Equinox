@@ -14,16 +14,6 @@
 			<value>1.0</value>
 			<method>Multiply</method></deltaT></overallFactors>
 	<loadcaseFactors>
-		<mutPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/A380PS_OWB1_p45_baseline.mut</mutPath>
+		<mutPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12-p45.mut</mutPath>
 		<tableColumn>1</tableColumn>
-		<method>Multiply</method></loadcaseFactors>
-	<pressure><dpLoadcase></dpLoadcase><referenceDp></referenceDp></pressure>
-	<temperature>
-		<dtInterpolation></dtInterpolation>
-		<dtLoadcaseSuperior></dtLoadcaseSuperior>
-		<referenceDtSuperior></referenceDtSuperior>
-		<dtLoadcaseInferior></dtLoadcaseInferior>
-		<referenceDtInferior></referenceDtInferior></temperature>
-	<stressRotation>
-		<component></component>
-		<rotationAngle></rotationAngle></stressRotation></generateStressSequenceInput>
+		<method>Multiply</method></loadcaseFactors></generateStressSequenceInput>

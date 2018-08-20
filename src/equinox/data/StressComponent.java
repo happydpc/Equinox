@@ -44,4 +44,19 @@ public enum StressComponent {
 	public String toString() {
 		return name_;
 	}
+
+	/**
+	 * Returns the stress component with the given name.
+	 * 
+	 * @param name
+	 *            Name of demanded stress component.
+	 * @return The stress component with the given name.
+	 */
+	public static StressComponent getStressComponent(String name) {
+		for (StressComponent comp : values()) {
+			if (comp.name_.equals(name))
+				return comp;
+		}
+		return null;
+	}
 }

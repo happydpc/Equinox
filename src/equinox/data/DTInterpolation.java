@@ -44,4 +44,19 @@ public enum DTInterpolation {
 	public String toString() {
 		return name_;
 	}
+
+	/**
+	 * Returns the interpolation for the given name.
+	 * 
+	 * @param name
+	 *            Name of demanded interpolation.
+	 * @return The interpolation for the given name.
+	 */
+	public static DTInterpolation getDTInterpolation(String name) {
+		for (DTInterpolation dtInt : values()) {
+			if (dtInt.name_.equals(name))
+				return dtInt;
+		}
+		return null;
+	}
 }

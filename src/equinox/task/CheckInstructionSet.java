@@ -570,7 +570,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		}
 
 		// invalid value
-		if (validValues != null && !Arrays.asList(validValues).contains(value)) {
+		if (validValues != null && validValues.length != 0 && !Arrays.asList(validValues).contains(value)) {
 			addWarning("Invalid value supplied for " + getFamilyTree(element) + ". Valid values are: " + Arrays.toString(validValues) + ". Check failed.");
 			return false;
 		}

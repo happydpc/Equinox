@@ -128,6 +128,9 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		return stfFiles_;
 	}
 
+	/**
+	 * Adds automatic task. If <u>multiple STF files are added</u>, task id must be the name of STF file that the automatic task will use as input. Otherwise it should be any unique task identifier.
+	 */
 	@Override
 	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
 		if (automaticTasks_ == null) {
@@ -272,10 +275,23 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (STFFile stfFile : stfFiles) {
-					AutomaticTask<STFFile> task = automaticTasks_.get(stfFile.getName());
-					task.setAutomaticInput(stfFile);
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+
+				// only 1 STF file added
+				if (stfFiles.size() == 1) {
+					STFFile stfFile = stfFiles.get(0);
+					for (AutomaticTask<STFFile> task : automaticTasks_.values()) {
+						task.setAutomaticInput(stfFile);
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+				}
+
+				// multiple STF files added
+				else {
+					for (STFFile stfFile : stfFiles) {
+						AutomaticTask<STFFile> task = automaticTasks_.get(stfFile.getName());
+						task.setAutomaticInput(stfFile);
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
 				}
 			}
 		}
