@@ -181,11 +181,11 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!checkPathValue(generateStressSequence, "inputPath", false))
 				return false;
 
-			// get input path
-			String inputPath = generateStressSequence.getChild("inputPath").getTextNormalize();
+			// get XML path
+			String xmlPath = generateStressSequence.getChild("xmlPath").getTextNormalize();
 
 			// already checked
-			if (checkedInputs.contains(inputPath)) {
+			if (checkedInputs.contains(xmlPath)) {
 				continue;
 			}
 
@@ -194,7 +194,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			// return false;
 
 			// add to checked inputs
-			checkedInputs.add(inputPath);
+			checkedInputs.add(xmlPath);
 		}
 
 		// check passed

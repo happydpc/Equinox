@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory.-->
 <equinoxInput version="" title="" description="" author="" date="" time="">
 	
-	<!--Instruction settings. This element and all its children are optional. If not supplied, default settings will be used at execution time.-->
+	<!--Instruction settings.-->
 	<settings>
 		<!--Run mode can be one of 'parallel' (default), 'sequential' or 'save'. Note that, save mode will only save first level tasks (i.e. not the dependent tasks).-->
-		<runMode>parallel</runMode><!--If runSilent is set to true, all notifications (except for errors and warnings) will be suppressed.-->
-		<runSilent>false</runSilent><!--Analysis engine settings are same as seen in Data Analyst user interface. The settings 'engine', 'version' and 'subVersion' are case sensitive and the rest are boolean (i.e. true or false). -->
-		<analysisEngine><!--Engine can be one of 'ISAMI Engine', 'SAFE Engine' or 'Inbuilt Engine'.-->
+		<runMode>parallel</runMode>
+		<!--If runSilent is set to true, all task submission notifications will be suppressed.-->
+		<runSilent>false</runSilent>
+		<analysisEngine>
+			<!--Engine can be one of 'ISAMI Engine', 'SAFE Engine' or 'Inbuilt Engine'.-->
 			<engine>Inbuilt Engine</engine>
 			<version>v9.7.0</version>
 			<subVersion>Derivatives</subVersion>
@@ -17,32 +19,34 @@
 		</analysisEngine>
 	</settings>
 	
-	
-	<!--Adds spectrum to workspace from supplied CDF set files. TXT file is optional, if not given, will be generated from CVT and XLS.-->
+	<!--Adds spectrum to workspace from supplied CDF set files.-->
 	<addSpectrum>
 		<id></id>
 		<anaPath></anaPath>
 		<cvtPath></cvtPath>
 		<flsPath></flsPath>
-		<xlsPath></xlsPath>
-		<txtPath></txtPath>
+		<xlsPath></xlsPath><!--TXT file is optional, if not given, will be generated from CVT and XLS.-->
+		<txtPath></txtPath><!--Worksheet name in the conversion table file.-->
 		<convSheet></convSheet>
 	</addSpectrum>
 	
-	<!--Adds spectrum to workspace from suplied SPEC bundle.-->
+	<!--Adds spectrum to workspace from supplied SPEC bundle.-->
 	<addSpectrum>
 		<id></id>
 		<specPath></specPath>
-	</addSpectrum>
+	</addSpectrum><!--Saves spectrum to given output path.-->
+
 	<saveSpectrum>
 		<id></id>
-		<spectrumId></spectrumId>
+		<spectrumId></spectrumId><!--Path to save spectrum bundle. To save as zip bundle, end file name with .zip. To save as spec bundle, end file name with .spec.-->
 		<ouputPath></ouputPath></saveSpectrum>
+	<saveSpectrumFile></saveSpectrumFile>
 	<shareSpectrum></shareSpectrum>
 	<exportSpectrum></exportSpectrum>
 	<deleteSpectrum></deleteSpectrum>
+	<downloadSpectrum></downloadSpectrum>
 
-	<!--Adds STF file to specified spectrum.-->
+	<!--Adds STF file to referenced spectrum.-->
 	<addStf>
 		<id></id><spectrumId></spectrumId><stfPath></stfPath>
 	</addStf>
@@ -50,6 +54,7 @@
 	<shareStf></shareStf>
 	<exportStf></exportStf>
 	<deleteStf></deleteStf>
+	<downloadStf></downloadStf>
 
 	<!--Adds stress sequence to workspace from given SIGMA file.-->
 	<addStressSequence>
@@ -65,40 +70,41 @@
 		<flsPath></flsPath>
 	</addStressSequence>
 	
-	<!--Generates stress sequence from given STF file.-->
+	<!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
-		<stfId></stfId>
-		<inputPath></inputPath>
-	</generateStressSequence>
-	
+		<stfId></stfId><!--Path to XML file containing input parameters for generating stress sequence.-->
+		<xmlPath></xmlPath>
+	</generateStressSequence><!--Saves stress sequence to given output path.-->
+
 	<saveStressSequence>
 		<id></id>
-		<stressSequenceId></stressSequenceId>
-		<sigmaPath></sigmaPath></saveStressSequence>
-	<saveMissionProfilePlot>
-		<id></id><stressSequenceId></stressSequenceId>
-		<outputPath></outputPath></saveMissionProfilePlot>
-	<saveTypicalFlightPlot>
-		<id></id>
-		<stressSequenceId></stressSequenceId><typicalFlightName></typicalFlightName>
-		<outputPath></outputPath></saveTypicalFlightPlot>
-	
+		<stressSequenceId></stressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
+		<outputPath></outputPath></saveStressSequence>
+	<shareStressSequence></shareStressSequence>
+	<deleteStressSequence></deleteStressSequence>
+	<plotMissionProfile><id></id><stressSequenceId></stressSequenceId><!--Path to save mission profile plot. PNG extension will be appended to file name if necessary.--><outputPath></outputPath></plotMissionProfile>
+	<compareMissionProfiles></compareMissionProfiles>
+	<plotTypicalFlight><id></id><stressSequenceId></stressSequenceId><typicalFlightName></typicalFlightName><outputPath></outputPath></plotTypicalFlight>
+	<compareTypicalFlights></compareTypicalFlights>
+
 	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
-		<inputPath></inputPath>
+		<xmlPath></xmlPath>
 	</equivalentStressAnalysis>
 	
 	<equivalentStressAnalysis>
 		<id></id>
 		<stressSequenceId></stressSequenceId>
-		<inputPath></inputPath>
+		<xmlPath></xmlPath>
 	</equivalentStressAnalysis>
-	<saveLevelCrossingPlot>
-		<id></id>
-		<equivalentStressId></equivalentStressId>
-		<outputPath></outputPath></saveLevelCrossingPlot>
+	<plotLevelCrossing><id></id><equivalentStressId></equivalentStressId><outputPath></outputPath></plotLevelCrossing>
+	<compareLevelCrossings></compareLevelCrossings>
 	<saveAnalysisOutputFile>
 		<id></id>
-		<outputPath></outputPath></saveAnalysisOutputFile></equinoxInput>
+		<outputPath></outputPath></saveAnalysisOutputFile>
+	<shareWorkspace></shareWorkspace>
+	<sendTextMessage></sendTextMessage>
+	<restart></restart>
+	<quit></quit></equinoxInput>

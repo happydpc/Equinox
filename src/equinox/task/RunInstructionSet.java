@@ -218,10 +218,10 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// parse elements
 			String id = generateStressSequence.getChild("id").getTextNormalize();
 			String stfId = generateStressSequence.getChild("stfId").getTextNormalize();
-			Path inputPath = Paths.get(generateStressSequence.getChild("inputPath").getTextNormalize());
+			Path xmlPath = Paths.get(generateStressSequence.getChild("xmlPath").getTextNormalize());
 
 			// read input parameters
-			GenerateStressSequenceInput input = new ReadGenerateStressSequenceInput(this, inputPath).start(null);
+			GenerateStressSequenceInput input = new ReadGenerateStressSequenceInput(this, xmlPath).start(null);
 
 			// create task
 			GenerateStressSequence task = new GenerateStressSequence(null, input);
