@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
+<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
    <children>
       <MenuBar fx:id="menuBar_" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="29.0" stylesheets="@../css/MenuBar.css" StackPane.alignment="TOP_CENTER">
         <menus>
@@ -97,32 +97,6 @@
                         <MenuItem mnemonicParsing="false" onAction="#onAddACModelClicked" text="Add New A/C Model">
                            <graphic>
                               <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.airplane" />
-                           </graphic>
-                        </MenuItem>
-                     </items>
-                  </Menu>
-                  <Menu mnemonicParsing="false" text="Automation...">
-                     <graphic>
-                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.android" />
-                     </graphic>
-                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#onRunInstructionSetClicked" text="Run Instruction Set">
-                           <graphic>
-                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.play3" />
-                           </graphic>
-                           <accelerator>
-                              <KeyCodeCombination alt="UP" code="I" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
-                           </accelerator>
-                        </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#onCheckInstructionSetClicked" text="Check Instruction Set">
-                           <graphic>
-                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
-                           </graphic>
-                        </MenuItem>
-                        <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
-                           <graphic>
-                              <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.cloud-download" />
                            </graphic>
                         </MenuItem>
                      </items>
@@ -354,6 +328,29 @@
                   </MenuItem>
                </items>
             </Menu>
+            <Menu id="menu" mnemonicParsing="false" text="Automation">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#onRunInstructionSetClicked" text="Run Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.play3" />
+                     </graphic>
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="I" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
+                     </accelerator>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onCheckInstructionSetClicked" text="Check Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
+                     </graphic>
+                  </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.cloud-download" />
+                     </graphic>
+                  </MenuItem>
+               </items>
+            </Menu>
             <Menu id="menu" fx:id="pluginMenu_" mnemonicParsing="false" text="Plugins">
                <items>
                   <CustomMenuItem mnemonicParsing="false" onAction="#onRFORTExtendedClicked" text="Unspecified Action">
@@ -509,10 +506,7 @@
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.refresh" />
                      </graphic>
                   </MenuItem>
-               </items>
-          </Menu>
-            <Menu id="menu" mnemonicParsing="false" text="About">
-               <items>
+                  <SeparatorMenuItem />
                   <MenuItem mnemonicParsing="false" onAction="#onEquinoxWebClicked" text="Data Analyst on the Web">
                      <graphic>
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.sphere" />
@@ -535,7 +529,7 @@
                         </ImageView>
                      </graphic></MenuItem>
                </items>
-            </Menu>
+          </Menu>
             <Menu id="menu" fx:id="administratorMenu_" disable="true" mnemonicParsing="false" text="Administrator">
                <items>
                   <MenuItem fx:id="login_" mnemonicParsing="false" onAction="#onLoginClicked" text="Login as Administrator">

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import equinox.Equinox;
+import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
@@ -37,10 +38,10 @@ import equinox.utility.Utility;
  * @date Jan 15, 2014
  * @time 10:37:46 AM
  */
-public class SaveANA extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class SaveANA extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
 
 	/** ID of file item to save. */
-	private final int fileID_;
+	private Integer fileID_ = null;
 
 	/** Output file. */
 	private final File output_;
@@ -52,13 +53,13 @@ public class SaveANA extends TemporaryFileCreatingTask<Void> implements LongRunn
 	 * Creates save ANA task.
 	 *
 	 * @param fileID
-	 *            ID of file item to save.
+	 *            ID of file item to save. This can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 * @param type
 	 *            Output file type.
 	 */
-	public SaveANA(int fileID, File output, FileType type) {
+	public SaveANA(Integer fileID, File output, FileType type) {
 		fileID_ = fileID;
 		output_ = output;
 		type_ = type;
@@ -72,6 +73,11 @@ public class SaveANA extends TemporaryFileCreatingTask<Void> implements LongRunn
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		fileID_ = spectrum.getANAFileID();
 	}
 
 	@Override

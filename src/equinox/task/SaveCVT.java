@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import equinox.Equinox;
+import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
@@ -37,10 +38,10 @@ import equinox.utility.Utility;
  * @date Apr 25, 2014
  * @time 3:07:13 PM
  */
-public class SaveCVT extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class SaveCVT extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
 
 	/** ID of file item to save. */
-	private final int fileID_;
+	private Integer fileID_ = null;
 
 	/** Output file. */
 	private final File output_;
@@ -52,13 +53,13 @@ public class SaveCVT extends TemporaryFileCreatingTask<Void> implements LongRunn
 	 * Creates save CVT task.
 	 *
 	 * @param fileID
-	 *            ID of file item to save.
+	 *            ID of file item to save. This can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 * @param type
 	 *            Output file type.
 	 */
-	public SaveCVT(int fileID, File output, FileType type) {
+	public SaveCVT(Integer fileID, File output, FileType type) {
 		fileID_ = fileID;
 		output_ = output;
 		type_ = type;
@@ -72,6 +73,11 @@ public class SaveCVT extends TemporaryFileCreatingTask<Void> implements LongRunn
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		fileID_ = spectrum.getCVTFileID();
 	}
 
 	@Override

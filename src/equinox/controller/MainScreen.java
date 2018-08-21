@@ -399,6 +399,17 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	}
 
 	/**
+	 * Returns true if user with given username is currently available.
+	 * 
+	 * @param username
+	 *            Username to check.
+	 * @return True if user with given username is currently available.
+	 */
+	public boolean isUserAvailable(String username) {
+		return availableUsers_.contains(username);
+	}
+
+	/**
 	 * Returns true if network status is available.
 	 *
 	 * @return True if network status is available.

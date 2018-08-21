@@ -28,7 +28,9 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
 import equinox.data.InstructedTask;
+import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.plugin.FileType;
 import equinox.process.ReadGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.Utility;
@@ -88,15 +90,15 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		Document document = saxBuilder.build(inputFile.toUri().toString());
 		Element equinoxInput = document.getRootElement();
 
-		// get run mode (if given)
+		// get settings (if given)
 		if (equinoxInput.getChild("settings") != null) {
+
+			// get run mode (if given)
 			if (equinoxInput.getChild("settings").getChild("runMode") != null) {
 				runMode = equinoxInput.getChild("settings").getChild("runMode").getTextNormalize();
 			}
-		}
 
-		// get run silent (if given)
-		if (equinoxInput.getChild("settings") != null) {
+			// get run silent (if given)
 			if (equinoxInput.getChild("settings").getChild("runSilent") != null) {
 				runSilent = Boolean.parseBoolean(equinoxInput.getChild("settings").getChild("runSilent").getTextNormalize());
 			}
@@ -105,6 +107,21 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// add spectrum
 		if (equinoxInput.getChild("addSpectrum") != null) {
 			addSpectrum(equinoxInput, tasks);
+		}
+
+		// save spectrum
+		if (equinoxInput.getChild("saveSpectrum") != null) {
+			saveSpectrum(equinoxInput, tasks);
+		}
+
+		// save spectrum file
+		if (equinoxInput.getChild("saveSpectrumFile") != null) {
+			saveSpectrumFile(equinoxInput, tasks);
+		}
+
+		// share spectrum
+		if (equinoxInput.getChild("shareSpectrum") != null) {
+			shareSpectrum(equinoxInput, tasks);
 		}
 
 		// add STF
@@ -299,6 +316,130 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(addSTFFiles, true));
+		}
+	}
+
+	/**
+	 * Creates share spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void shareSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating share spectrum tasks...");
+
+		// loop over share spectrum elements
+		for (Element shareSpectrum : equinoxInput.getChildren("shareSpectrum")) {
+
+			// create task
+			String id = shareSpectrum.getChild("id").getTextNormalize();
+			String spectrumId = shareSpectrum.getChild("spectrumId").getTextNormalize();
+			String recipient = shareSpectrum.getChild("recipient").getTextNormalize();
+			ShareSpectrum task = new ShareSpectrum(null, Arrays.asList(recipient));
+
+			// add to parent task
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, task);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save spectrum file tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveSpectrumFile(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save spectrum file tasks...");
+
+		// loop over save spectrum file elements
+		for (Element saveSpectrumFile : equinoxInput.getChildren("saveSpectrumFile")) {
+
+			// create task
+			String id = saveSpectrumFile.getChild("id").getTextNormalize();
+			String spectrumId = saveSpectrumFile.getChild("spectrumId").getTextNormalize();
+			Path outputPath = Paths.get(saveSpectrumFile.getChild("outputPath").getTextNormalize());
+			AutomaticTask<Spectrum> task = null;
+
+			// get file type
+			FileType fileType = FileType.getFileType(outputPath.toFile());
+
+			// ANA
+			if (fileType.equals(FileType.ANA)) {
+				task = new SaveANA(null, outputPath.toFile(), FileType.ANA);
+			}
+
+			// CVT
+			else if (fileType.equals(FileType.CVT)) {
+				task = new SaveCVT(null, outputPath.toFile(), FileType.CVT);
+			}
+
+			// TXT
+			else if (fileType.equals(FileType.TXT)) {
+				task = new SaveTXT(null, outputPath.toFile(), FileType.TXT);
+			}
+
+			// FLS
+			else if (fileType.equals(FileType.FLS)) {
+				task = new SaveFLS(null, outputPath.toFile(), FileType.FLS);
+			}
+
+			// XLS
+			else if (fileType.equals(FileType.XLS)) {
+				task = new SaveConversionTable(null, outputPath.toFile(), FileType.XLS);
+			}
+
+			// add to parent task
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, task);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask((InternalEquinoxTask<?>) task, true));
+		}
+	}
+
+	/**
+	 * Creates save spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save spectrum tasks...");
+
+		// loop over save spectrum elements
+		for (Element saveSpectrum : equinoxInput.getChildren("saveSpectrum")) {
+
+			// create task
+			String id = saveSpectrum.getChild("id").getTextNormalize();
+			String spectrumId = saveSpectrum.getChild("spectrumId").getTextNormalize();
+			Path outputPath = Paths.get(saveSpectrum.getChild("outputPath").getTextNormalize());
+			SaveSpectrum task = new SaveSpectrum(null, outputPath.toFile());
+
+			// add to parent task
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, task);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
 		}
 	}
 

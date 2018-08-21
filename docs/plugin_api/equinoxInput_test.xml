@@ -1,32 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory.-->
+<?xml version="1.0" encoding="UTF-8"?>
 <equinoxInput version="" title="" description="" author="" date="" time="">
-	
-	<!--Analysis engine settings. This element and all its children are optional. If not supplied, Data Analyst settings will be used at execution time.-->
 	<settings>
-		<!--Run mode can be one of 'parallel', 'sequential' or 'save'. Note that, save mode will only save first level tasks (i.e. not the dependent tasks).-->
 		<runMode>parallel</runMode>
 		<runSilent>true</runSilent>
 	</settings>
-	
-	<!--Adds spectrum to workspace from supplied CDF set files. TXT file is optional, if not given, will be generated from CVT and XLS.-->
 	<addSpectrum>
 		<id>1</id>
-		<anaPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12_ana_with_LAF.ana</anaPath>
-		<cvtPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12_cvt_LAF.cvt</cvtPath>
-		<flsPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12.fls</flsPath>
-		<txtPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12_txt_LAF_TXT.txt</txtPath>
-		<xlsPath>/Users/aurora/Temporary/test2/ConvTableA380-800MRB-511-OWB1_LAF.xls</xlsPath>
-		<convSheet>M1</convSheet>
+		<anaPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.ana</anaPath>
+		<cvtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.cvt</cvtPath>
+		<flsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.fls</flsPath>
+		<txtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.txt</txtPath>
+		<xlsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.xls</xlsPath>
+		<convSheet>31 Parabolas</convSheet>
 	</addSpectrum>
-	
-	<!--Adds STF file to specified spectrum.-->
-	<addStf>
-		<id>2</id><spectrumId>1</spectrumId><stfPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12_S22-10_62220120_2027.stf</stfPath>
-	</addStf>
-	
-	<!--Generates stress sequence from given STF file.-->
-	<generateStressSequence>
-		<id>3</id>
-		<stfId>2</stfId>
-		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
-	</generateStressSequence></equinoxInput>
+	<saveSpectrumFile><id>2</id><spectrumId>1</spectrumId><outputPath>/Users/aurora/Temporary/test/test.ana</outputPath></saveSpectrumFile>
+	</equinoxInput>

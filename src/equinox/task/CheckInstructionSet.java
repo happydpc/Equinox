@@ -15,11 +15,9 @@
  */
 package equinox.task;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import org.jdom2.Document;
@@ -29,7 +27,10 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
+import equinox.plugin.FileType;
+import equinox.process.CheckGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.utility.XMLUtilities;
 
 /**
  * Class for check instruction set task.
@@ -45,6 +46,9 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 	/** True if the instruction set should be run if it passes the check. */
 	private final boolean run;
+
+	/** True to overwrite existing files. */
+	private boolean overwriteFiles = true;
 
 	/**
 	 * Creates check instruction set task.
@@ -82,7 +86,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 		// cannot find root input element
 		if (equinoxInput == null) {
-			addWarning("Cannot locate root input element 'equinoxInput' in instruction set. This element is obligatory. Check failed.");
+			addWarning("Cannot locate root input element 'equinoxInput' in instruction set '" + inputFile.toString() + "'. This element is obligatory. Check failed.");
 			return false;
 		}
 
@@ -95,6 +99,24 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// add spectrum
 		if (equinoxInput.getChild("addSpectrum") != null) {
 			if (!checkAddSpectrum(equinoxInput))
+				return false;
+		}
+
+		// save spectrum
+		if (equinoxInput.getChild("saveSpectrum") != null) {
+			if (!checkSaveSpectrum(equinoxInput))
+				return false;
+		}
+
+		// save spectrum file
+		if (equinoxInput.getChild("saveSpectrumFile") != null) {
+			if (!checkSaveSpectrumFile(equinoxInput))
+				return false;
+		}
+
+		// share spectrum
+		if (equinoxInput.getChild("shareSpectrum") != null) {
+			if (!checkShareSpectrum(equinoxInput))
 				return false;
 		}
 
@@ -170,15 +192,15 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		for (Element generateStressSequence : equinoxInput.getChildren("generateStressSequence")) {
 
 			// no id
-			if (!checkElementId(equinoxInput, generateStressSequence))
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, generateStressSequence))
 				return false;
 
 			// check STF id
-			if (!checkDependency(equinoxInput, generateStressSequence, "stfId", "addStf"))
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, generateStressSequence, "stfId", "addStf"))
 				return false;
 
-			// check input path
-			if (!checkPathValue(generateStressSequence, "inputPath", false))
+			// check CML path
+			if (!XMLUtilities.checkInputPathValue(this, inputFile, generateStressSequence, "xmlPath", false, FileType.XML))
 				return false;
 
 			// get XML path
@@ -189,9 +211,9 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				continue;
 			}
 
-			// TODO check generate stress sequence input
-			// if(!new CheckGenerateStressSequenceInput(Paths.get(inputPath)).start(null))
-			// return false;
+			// check generate stress sequence input
+			if (!new CheckGenerateStressSequenceInput(this, Paths.get(xmlPath)).start(null))
+				return false;
 
 			// add to checked inputs
 			checkedInputs.add(xmlPath);
@@ -219,20 +241,20 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		for (Element addStressSequence : equinoxInput.getChildren("addStressSequence")) {
 
 			// no id
-			if (!checkElementId(equinoxInput, addStressSequence))
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, addStressSequence))
 				return false;
 
 			// from SIGMA file
 			if (addStressSequence.getChild("sigmaPath") != null) {
-				if (!checkPathValue(addStressSequence, "sigmaPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "sigmaPath", false, FileType.SIGMA))
 					return false;
 			}
 
 			// from STH file
 			else {
-				if (!checkPathValue(addStressSequence, "sthPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "sthPath", false, FileType.STH))
 					return false;
-				if (!checkPathValue(addStressSequence, "flsPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "flsPath", false, FileType.FLS))
 					return false;
 			}
 		}
@@ -259,15 +281,117 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		for (Element addStf : equinoxInput.getChildren("addStf")) {
 
 			// no id
-			if (!checkElementId(equinoxInput, addStf))
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, addStf))
 				return false;
 
 			// check spectrum id
-			if (!checkDependency(equinoxInput, addStf, "spectrumId", "addSpectrum"))
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, addStf, "spectrumId", "addSpectrum"))
 				return false;
 
 			// check STF path
-			if (!checkPathValue(addStf, "stfPath", false))
+			if (!XMLUtilities.checkInputPathValue(this, inputFile, addStf, "stfPath", false, FileType.STF))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>shareSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>shareSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkShareSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking shareSpectrum elements...");
+
+		// loop over share spectrum elements
+		for (Element shareSpectrum : equinoxInput.getChildren("shareSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, shareSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, shareSpectrum, "recipient", false))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveSpectrumFile</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveSpectrumFile</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveSpectrumFile(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveSpectrumFile elements...");
+
+		// loop over save spectrum elements
+		for (Element saveSpectrum : equinoxInput.getChildren("saveSpectrumFile")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveSpectrum, "outputPath", false, overwriteFiles, FileType.ANA, FileType.TXT, FileType.CVT, FileType.FLS, FileType.XLS))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveSpectrum elements...");
+
+		// loop over save spectrum elements
+		for (Element saveSpectrum : equinoxInput.getChildren("saveSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP, FileType.SPEC))
 				return false;
 		}
 
@@ -293,28 +417,28 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		for (Element addSpectrum : equinoxInput.getChildren("addSpectrum")) {
 
 			// no id
-			if (!checkElementId(equinoxInput, addSpectrum))
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, addSpectrum))
 				return false;
 
 			// SPEC bundle
 			if (addSpectrum.getChild("specPath") != null) {
-				if (!checkPathValue(addSpectrum, "specPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "specPath", false, FileType.SPEC))
 					return false;
 			}
 
 			// CDF set files
 			else {
-				if (!checkPathValue(addSpectrum, "anaPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "anaPath", false, FileType.ANA))
 					return false;
-				if (!checkPathValue(addSpectrum, "cvtPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "cvtPath", false, FileType.CVT))
 					return false;
-				if (!checkPathValue(addSpectrum, "flsPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "flsPath", false, FileType.FLS))
 					return false;
-				if (!checkPathValue(addSpectrum, "xlsPath", false))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "xlsPath", false, FileType.XLS))
 					return false;
-				if (!checkPathValue(addSpectrum, "txtPath", true))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "txtPath", true, FileType.TXT))
 					return false;
-				if (!checkStringValue(addSpectrum, "convSheet", false))
+				if (!XMLUtilities.checkStringValue(this, inputFile, addSpectrum, "convSheet", false))
 					return false;
 			}
 		}
@@ -341,12 +465,19 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		Element settings = equinoxInput.getChild("settings");
 
 		// check run mode
-		if (!checkStringValue(settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
+		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
 			return false;
 
 		// check run silent
-		if (!checkBooleanValue(settings, "runSilent", true))
+		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "runSilent", true))
 			return false;
+
+		// check overwrite files
+		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "overwriteFiles", true))
+			return false;
+		if (settings.getChild("overwriteFiles") != null) {
+			overwriteFiles = Boolean.parseBoolean(settings.getChild("overwriteFiles").getTextNormalize());
+		}
 
 		// check analysis engine
 		if (settings.getChild("analysisEngine") != null) {
@@ -355,304 +486,35 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			Element analysisEngine = settings.getChild("analysisEngine");
 
 			// engine
-			if (!checkStringValue(analysisEngine, "engine", true, getStringArray(AnalysisEngine.values())))
+			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "engine", true, XMLUtilities.getStringArray(AnalysisEngine.values())))
 				return false;
 
 			// version
-			if (!checkStringValue(analysisEngine, "version", true, getStringArray(IsamiVersion.values())))
+			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "version", true, XMLUtilities.getStringArray(IsamiVersion.values())))
 				return false;
 
 			// sub version
-			if (!checkStringValue(analysisEngine, "subVersion", true, getStringArray(IsamiSubVersion.values())))
+			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "subVersion", true, XMLUtilities.getStringArray(IsamiSubVersion.values())))
 				return false;
 
 			// keep output file
-			if (!checkBooleanValue(analysisEngine, "keepOutputFile", true))
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "keepOutputFile", true))
 				return false;
 
 			// perform detailed analysis
-			if (!checkBooleanValue(analysisEngine, "performDetailedAnalysis", true))
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "performDetailedAnalysis", true))
 				return false;
 
 			// apply compression for propagation
-			if (!checkBooleanValue(analysisEngine, "applyCompressionForPropagation", true))
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "applyCompressionForPropagation", true))
 				return false;
 
 			// fallback to inbuilt
-			if (!checkBooleanValue(analysisEngine, "fallbackToInbuilt", true))
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "fallbackToInbuilt", true))
 				return false;
 		}
 
 		// check passed
 		return true;
-	}
-
-	/**
-	 * Returns true if the dependency of the given element is satisfied.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @param element
-	 *            Element to check its dependency.
-	 * @param dependencyName
-	 *            Dependency name.
-	 * @param targetElementName
-	 *            Target element name.
-	 * @return True if the dependency of the given element is satisfied.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkDependency(Element equinoxInput, Element element, String dependencyName, String targetElementName) throws Exception {
-
-		// get source element
-		Element sourceElement = element.getChild(dependencyName);
-
-		// source element not found
-		if (sourceElement == null) {
-			addWarning("Cannot locate element '" + dependencyName + "' under " + getFamilyTree(element) + " in instruction set. This element is obligatory. Check failed.");
-			return false;
-		}
-
-		// get source id
-		String sourceId = sourceElement.getTextNormalize();
-
-		// empty id
-		if (sourceId.isEmpty()) {
-			addWarning("Empty value supplied for " + getFamilyTree(sourceElement) + ". Check failed.");
-			return false;
-		}
-
-		// search for referenced element
-		for (Element targetElement : equinoxInput.getChildren(targetElementName)) {
-			Element id = targetElement.getChild("id");
-			if (id != null) {
-				if (sourceId.equals(id.getTextNormalize()))
-					return true;
-			}
-		}
-
-		// referenced element not found
-		addWarning("Cannot find element with task id '" + sourceId + "' which appears to be a dependency of " + getFamilyTree(sourceElement) + ". Check failed.");
-		return false;
-	}
-
-	/**
-	 * Returns true if the given element has a valid task id.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @param element
-	 *            Element to be checked.
-	 * @return True if the given element has a valid task id.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkElementId(Element equinoxInput, Element element) throws Exception {
-
-		// no task id
-		if (element.getChild("id") == null) {
-			addWarning("No task id specified for " + getFamilyTree(element) + ". Check failed.");
-			return false;
-		}
-
-		// get id
-		String id = element.getChild("id").getTextNormalize();
-
-		// invalid id
-		if (id.isEmpty()) {
-			addWarning("Invalid id specified for " + getFamilyTree(element) + ". Check failed.");
-			return false;
-		}
-
-		// loop over elements
-		for (Element c : equinoxInput.getChildren()) {
-
-			// pivot
-			if (c.equals(element)) {
-				continue;
-			}
-
-			// no id
-			if (c.getChild("id") == null) {
-				continue;
-			}
-
-			// same id
-			if (c.getChild("id").getTextNormalize().equals(id)) {
-				addWarning("Non-unique id specified for " + getFamilyTree(element) + ". Check failed.");
-				return false;
-			}
-		}
-
-		// check passed
-		return true;
-	}
-
-	/**
-	 * Returns true if given element has a valid <code>Path</code> value.
-	 *
-	 * @param parentElement
-	 *            Parent of the element to check.
-	 * @param elementName
-	 *            Name of the element to check.
-	 * @param isOptionalElement
-	 *            True if the element is optional.
-	 * @return True if given element has a valid <code>Path</code> value.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkPathValue(Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
-
-		// get element
-		Element element = parentElement.getChild(elementName);
-
-		// element not found
-		if (element == null) {
-
-			// optional
-			if (isOptionalElement)
-				return true;
-
-			// obligatory
-			addWarning("Cannot locate element '" + elementName + "' under " + getFamilyTree(parentElement) + " in instruction set. This element is obligatory. Check failed.");
-			return false;
-		}
-
-		// invalid value
-		if (!Files.exists(Paths.get(element.getTextNormalize()))) {
-			addWarning("Invalid file path supplied for " + getFamilyTree(element) + ". Check failed.");
-			return false;
-		}
-
-		// valid value
-		return true;
-	}
-
-	/**
-	 * Returns true if given element has a valid <code>String</code> value.
-	 *
-	 * @param parentElement
-	 *            Parent of the element to check.
-	 * @param elementName
-	 *            Name of the element to check.
-	 * @param isOptionalElement
-	 *            True if the element is optional.
-	 * @param validValues
-	 *            List of valid values. Can be <code>null</code> for checking only against empty values.
-	 * @return True if given element has a valid <code>String</code> value.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkStringValue(Element parentElement, String elementName, boolean isOptionalElement, String... validValues) throws Exception {
-
-		// get element
-		Element element = parentElement.getChild(elementName);
-
-		// element not found
-		if (element == null) {
-
-			// optional
-			if (isOptionalElement)
-				return true;
-
-			// obligatory
-			addWarning("Cannot locate element '" + elementName + "' under " + getFamilyTree(parentElement) + " in instruction set. This element is obligatory. Check failed.");
-			return false;
-		}
-
-		// get value of element
-		String value = element.getTextNormalize();
-
-		// empty value
-		if (value.isEmpty()) {
-			addWarning("Empty value supplied for " + getFamilyTree(element) + ". Check failed.");
-			return false;
-		}
-
-		// invalid value
-		if (validValues != null && validValues.length != 0 && !Arrays.asList(validValues).contains(value)) {
-			addWarning("Invalid value supplied for " + getFamilyTree(element) + ". Valid values are: " + Arrays.toString(validValues) + ". Check failed.");
-			return false;
-		}
-
-		// valid value
-		return true;
-	}
-
-	/**
-	 * Returns true if given element has a valid <code>boolean</code> value.
-	 *
-	 * @param parentElement
-	 *            Parent of the element to check.
-	 * @param elementName
-	 *            Name of the element to check.
-	 * @param isOptionalElement
-	 *            True if the element is optional.
-	 * @return True if given element has a valid <code>boolean</code> value.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkBooleanValue(Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
-
-		// get element
-		Element element = parentElement.getChild(elementName);
-
-		// element not found
-		if (element == null) {
-
-			// optional
-			if (isOptionalElement)
-				return true;
-
-			// obligatory
-			addWarning("Cannot locate element '" + elementName + "' under " + getFamilyTree(parentElement) + " in instruction set. This element is obligatory. Check failed.");
-			return false;
-		}
-
-		// get value of element
-		String value = element.getTextNormalize();
-
-		// invalid value
-		if (!value.equals("true") && !value.equals("false")) {
-			addWarning("Invalid value supplied for " + getFamilyTree(element) + ". Valid values are 'true' or 'false'. Check failed.");
-			return false;
-		}
-
-		// valid value
-		return true;
-	}
-
-	/**
-	 * Returns <code>String</code> representation of the family tree of the given element.
-	 *
-	 * @param element
-	 *            Target element.
-	 * @return <code>String</code> representation of the family tree of the given element.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private static String getFamilyTree(Element element) throws Exception {
-		String tree = element.getName();
-		Element p = element.getParentElement();
-		while (p != null) {
-			tree = p.getName() + "." + tree;
-			p = p.getParentElement();
-		}
-		return tree;
-	}
-
-	/**
-	 * Converts given object array to string array.
-	 *
-	 * @param objects
-	 *            Array of objects.
-	 * @return Array of strings.
-	 */
-	private static String[] getStringArray(Object[] objects) {
-		String[] strings = new String[objects.length];
-		for (int i = 0; i < objects.length; i++) {
-			strings[i] = objects[i].toString();
-		}
-		return strings;
 	}
 }

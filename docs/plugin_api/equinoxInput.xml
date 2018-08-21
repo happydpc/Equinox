@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory.-->
+<?xml version="1.0" encoding="UTF-8"?><!--Root input element. This element is obligatory, but all its children are optional.-->
 <equinoxInput version="" title="" description="" author="" date="" time="">
 	
 	<!--Instruction settings.-->
@@ -6,7 +6,8 @@
 		<!--Run mode can be one of 'parallel' (default), 'sequential' or 'save'. Note that, save mode will only save first level tasks (i.e. not the dependent tasks).-->
 		<runMode>parallel</runMode>
 		<!--If runSilent is set to true, all task submission notifications will be suppressed.-->
-		<runSilent>false</runSilent>
+		<runSilent>false</runSilent><!--if overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and ouput file exists, instructions will not run. -->
+		<overwriteFiles>true</overwriteFiles>
 		<analysisEngine>
 			<!--Engine can be one of 'ISAMI Engine', 'SAFE Engine' or 'Inbuilt Engine'.-->
 			<engine>Inbuilt Engine</engine>
@@ -34,14 +35,26 @@
 	<addSpectrum>
 		<id></id>
 		<specPath></specPath>
-	</addSpectrum><!--Saves spectrum to given output path.-->
-
+	</addSpectrum>
+	
+	<!--Saves spectrum to given output path.-->
 	<saveSpectrum>
 		<id></id>
-		<spectrumId></spectrumId><!--Path to save spectrum bundle. To save as zip bundle, end file name with .zip. To save as spec bundle, end file name with .spec.-->
-		<ouputPath></ouputPath></saveSpectrum>
-	<saveSpectrumFile></saveSpectrumFile>
-	<shareSpectrum></shareSpectrum>
+		<spectrumId></spectrumId>
+		<!--Path to save spectrum bundle. To save as zip bundle, end file name with .zip. To save as spec bundle, end file name with .spec.-->
+		<outputPath></outputPath>
+	</saveSpectrum><!--Saves CDF set file to given otuput path.-->
+
+	<saveSpectrumFile>
+		<id></id>
+		<spectrumId></spectrumId>
+		<!--Path to save spectrum file. File name must end with one of '.ana', '.cvt', '.fls', '.xls' or '.txt'.-->
+		<outputPath></outputPath>
+	</saveSpectrumFile><!--Shares spectrum with given recipient.-->
+	<shareSpectrum>
+		<id></id>
+		<spectrumId></spectrumId><!--Recipient username. Note that, the resipient must be online at the time of execution.-->
+		<recipient></recipient></shareSpectrum>
 	<exportSpectrum></exportSpectrum>
 	<deleteSpectrum></deleteSpectrum>
 	<downloadSpectrum></downloadSpectrum>

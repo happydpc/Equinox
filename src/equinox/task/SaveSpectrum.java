@@ -41,10 +41,10 @@ import equinox.utility.Utility;
  * @date Apr 29, 2014
  * @time 10:32:51 AM
  */
-public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
 
 	/** File item to save. */
-	private final Spectrum file_;
+	private Spectrum spectrum_ = null;
 
 	/** Output file. */
 	private final File output_;
@@ -52,13 +52,13 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 	/**
 	 * Creates save CDF set task.
 	 *
-	 * @param file
-	 *            File item to save.
+	 * @param spectrum
+	 *            File item to save. This can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveSpectrum(Spectrum file, File output) {
-		file_ = file;
+	public SaveSpectrum(Spectrum spectrum, File output) {
+		spectrum_ = spectrum;
 		output_ = output;
 	}
 
@@ -70,6 +70,11 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		spectrum_ = spectrum;
 	}
 
 	@Override
@@ -123,7 +128,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 
 				// save conversion table sheet name
 				if (FileType.getFileType(output_).equals(FileType.SPEC)) {
-					files.add(new ConversionTableSheetName(file_.getMission()).write(getWorkingDirectory()));
+					files.add(new ConversionTableSheetName(spectrum_.getMission()).write(getWorkingDirectory()));
 				}
 
 				// zip files
@@ -153,7 +158,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		Path anaFile = null;
 
 		// execute query
-		try (ResultSet resultSet = statement.executeQuery("select name, data from ana_files where file_id = " + file_.getANAFileID())) {
+		try (ResultSet resultSet = statement.executeQuery("select name, data from ana_files where file_id = " + spectrum_.getANAFileID())) {
 			if (resultSet.next()) {
 
 				// get file name
@@ -194,7 +199,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		Path txtFile = null;
 
 		// execute query
-		try (ResultSet resultSet = statement.executeQuery("select name, data from txt_files where file_id = " + file_.getTXTFileID())) {
+		try (ResultSet resultSet = statement.executeQuery("select name, data from txt_files where file_id = " + spectrum_.getTXTFileID())) {
 			if (resultSet.next()) {
 
 				// get file name
@@ -235,7 +240,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		Path flsFile = null;
 
 		// execute query
-		try (ResultSet resultSet = statement.executeQuery("select name, data from fls_files where file_id = " + file_.getFLSFileID())) {
+		try (ResultSet resultSet = statement.executeQuery("select name, data from fls_files where file_id = " + spectrum_.getFLSFileID())) {
 			if (resultSet.next()) {
 
 				// get file name
@@ -276,7 +281,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		Path cvtFile = null;
 
 		// execute query
-		try (ResultSet resultSet = statement.executeQuery("select name, data from cvt_files where file_id = " + file_.getCVTFileID())) {
+		try (ResultSet resultSet = statement.executeQuery("select name, data from cvt_files where file_id = " + spectrum_.getCVTFileID())) {
 			if (resultSet.next()) {
 
 				// get file name
@@ -317,7 +322,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		Path convTable = null;
 
 		// execute query
-		try (ResultSet resultSet = statement.executeQuery("select name, data from xls_files where file_id = " + file_.getConversionTableID())) {
+		try (ResultSet resultSet = statement.executeQuery("select name, data from xls_files where file_id = " + spectrum_.getConversionTableID())) {
 
 			// get data
 			if (resultSet.next()) {
@@ -359,7 +364,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		ArrayList<Path> outputs = new ArrayList<>();
 
 		// get STF file IDs
-		String sql = "select file_id, stress_table_id, name, is_2d from stf_files where cdf_id = " + file_.getID();
+		String sql = "select file_id, stress_table_id, name, is_2d from stf_files where cdf_id = " + spectrum_.getID();
 		try (ResultSet resultSet = statement.executeQuery(sql)) {
 
 			// loop over STF files

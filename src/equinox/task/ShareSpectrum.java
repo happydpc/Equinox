@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.ConversionTableSheetName;
@@ -42,23 +43,23 @@ import equinox.utility.Utility;
  * @date Sep 23, 2014
  * @time 12:19:23 PM
  */
-public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask {
+public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, AutomaticTask<Spectrum> {
 
 	/** File item to save. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_ = null;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final List<String> recipients_;
 
 	/**
 	 * Creates share spectrum task.
 	 *
 	 * @param file
-	 *            Spectrum to share.
+	 *            Spectrum to share. This can be null for automatic execution.
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSpectrum(Spectrum file, ArrayList<String> recipients) {
+	public ShareSpectrum(Spectrum file, List<String> recipients) {
 		spectrum_ = file;
 		recipients_ = recipients;
 	}
@@ -71,6 +72,11 @@ public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements Lo
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		spectrum_ = spectrum;
 	}
 
 	@Override
