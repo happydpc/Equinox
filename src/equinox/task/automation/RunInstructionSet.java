@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.task;
+package equinox.task.automation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,8 +31,25 @@ import equinox.data.InstructedTask;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.plugin.FileType;
-import equinox.process.ReadGenerateStressSequenceInput;
+import equinox.process.automation.ReadGenerateStressSequenceInput;
+import equinox.task.AddSTFFiles;
+import equinox.task.AddSpectrum;
+import equinox.task.AddStressSequence;
+import equinox.task.DeleteFiles;
+import equinox.task.ExportSpectrum;
+import equinox.task.GenerateStressSequence;
+import equinox.task.GetSpectrumEditInfo;
+import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.SavableTask;
+import equinox.task.SaveANA;
+import equinox.task.SaveCVT;
+import equinox.task.SaveConversionTable;
+import equinox.task.SaveFLS;
+import equinox.task.SaveSpectrum;
+import equinox.task.SaveTXT;
+import equinox.task.SaveTask;
+import equinox.task.ShareSpectrum;
 import equinox.utility.Utility;
 
 /**
@@ -124,6 +141,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			shareSpectrum(equinoxInput, tasks);
 		}
 
+		// export spectrum
+		if (equinoxInput.getChild("exportSpectrum") != null) {
+			exportSpectrum(equinoxInput, tasks);
+		}
+
 		// add STF
 		if (equinoxInput.getChild("addStf") != null) {
 			addStf(equinoxInput, tasks);
@@ -140,6 +162,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		}
 
 		// TODO
+
+		// delete spectrum
+		if (equinoxInput.getChild("deleteSpectrum") != null) {
+			deleteSpectrum(equinoxInput, tasks);
+		}
 
 		// return tasks to be executed
 		return tasks;
@@ -316,6 +343,82 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(addSTFFiles, true));
+		}
+	}
+
+	/**
+	 * Creates delete spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void deleteSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating delete spectrum tasks...");
+
+		// loop over save spectrum elements
+		for (Element saveSpectrum : equinoxInput.getChildren("deleteSpectrum")) {
+
+			// create task
+			String id = saveSpectrum.getChild("id").getTextNormalize();
+			String spectrumId = saveSpectrum.getChild("spectrumId").getTextNormalize();
+			DeleteFiles task = new DeleteFiles(null);
+
+			// add to parent task
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, task);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates export spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void exportSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating export spectrum tasks...");
+
+		// loop over export spectrum elements
+		for (Element exportSpectrum : equinoxInput.getChildren("exportSpectrum")) {
+
+			// create task
+			String id = exportSpectrum.getChild("id").getTextNormalize();
+			String spectrumId = exportSpectrum.getChild("spectrumId").getTextNormalize();
+			Path outputPath = Paths.get(exportSpectrum.getChild("outputPath").getTextNormalize());
+			GetSpectrumEditInfo task1 = new GetSpectrumEditInfo(null);
+			ExportSpectrum task2 = new ExportSpectrum(null, null, outputPath.toFile());
+
+			// set optional parameters
+			if (exportSpectrum.getChild("deliveryReference") != null) {
+				task2.setDeliveryReference(exportSpectrum.getChild("deliveryReference").getTextNormalize());
+			}
+			if (exportSpectrum.getChild("description") != null) {
+				task2.setDescription(exportSpectrum.getChild("description").getTextNormalize());
+			}
+
+			// add to first task
+			task1.addAutomaticTask(id, task2);
+
+			// add to parent task
+			((AddSpectrum) tasks.get(spectrumId).getTask()).addAutomaticTask(id, task1);
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task1, true));
+			tasks.put(id, new InstructedTask(task2, true));
 		}
 	}
 

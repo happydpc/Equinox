@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.task;
+package equinox.task.automation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +28,8 @@ import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
 import equinox.plugin.FileType;
-import equinox.process.CheckGenerateStressSequenceInput;
+import equinox.process.automation.CheckGenerateStressSequenceInput;
+import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.utility.XMLUtilities;
 
@@ -49,6 +50,9 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 	/** True to overwrite existing files. */
 	private boolean overwriteFiles = true;
+
+	/** True if tasks should be executed in parallel mode. */
+	private String runMode = RunInstructionSet.PARALLEL;
 
 	/**
 	 * Creates check instruction set task.
@@ -117,6 +121,18 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// share spectrum
 		if (equinoxInput.getChild("shareSpectrum") != null) {
 			if (!checkShareSpectrum(equinoxInput))
+				return false;
+		}
+
+		// export spectrum
+		if (equinoxInput.getChild("exportSpectrum") != null) {
+			if (!checkExportSpectrum(equinoxInput))
+				return false;
+		}
+
+		// delete spectrum
+		if (equinoxInput.getChild("deleteSpectrum") != null) {
+			if (!checkDeleteSpectrum(equinoxInput))
 				return false;
 		}
 
@@ -298,6 +314,84 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>deleteSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>deleteSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkDeleteSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking deleteSpectrum elements...");
+
+		// check run mode
+		if (runMode.equals(RunInstructionSet.PARALLEL)) {
+			addWarning("Cannot execute instruction " + XMLUtilities.getFamilyTree(equinoxInput.getChild("deleteSpectrum")) + " in instruction set '" + inputFile.toString() + "' in parallel run mode. This instruction requires sequential run. Check failed.");
+			return false;
+		}
+
+		// loop over delete spectrum elements
+		for (Element deleteSpectrum : equinoxInput.getChildren("deleteSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, deleteSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, deleteSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>exportSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>exportSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkExportSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking exportSpectrum elements...");
+
+		// loop over export spectrum elements
+		for (Element exportSpectrum : equinoxInput.getChildren("exportSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, exportSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, exportSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check delivery reference
+			if (!XMLUtilities.checkStringValue(this, inputFile, exportSpectrum, "deliveryReference", true))
+				return false;
+
+			// check description
+			if (!XMLUtilities.checkStringValue(this, inputFile, exportSpectrum, "description", true))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, exportSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>shareSpectrum</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -467,6 +561,9 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// check run mode
 		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
 			return false;
+		if (settings.getChild("runMode") != null) {
+			runMode = settings.getChild("runMode").getTextNormalize();
+		}
 
 		// check run silent
 		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "runSilent", true))

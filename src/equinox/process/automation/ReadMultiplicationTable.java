@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.process;
+package equinox.process.automation;
 
 import java.io.BufferedReader;
 import java.nio.charset.Charset;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import equinox.data.LoadcaseFactor;
+import equinox.process.EquinoxProcess;
 import equinox.task.InternalEquinoxTask;
 import equinox.utility.Utility;
 

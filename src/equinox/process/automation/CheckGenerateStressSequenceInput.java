@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.process;
+package equinox.process.automation;
 
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -27,6 +27,7 @@ import equinox.data.DTInterpolation;
 import equinox.data.StressComponent;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.plugin.FileType;
+import equinox.process.EquinoxProcess;
 import equinox.task.InternalEquinoxTask;
 import equinox.utility.XMLUtilities;
 

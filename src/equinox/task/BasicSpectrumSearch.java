@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,6 +25,7 @@ import equinox.controller.DownloadViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.dataServer.remote.data.BasicSearchInput;
 import equinox.dataServer.remote.data.DownloadInfo;
+import equinox.dataServer.remote.data.SpectrumInfo;
 import equinox.dataServer.remote.message.BasicSpectrumSearchRequest;
 import equinox.dataServer.remote.message.BasicSpectrumSearchResponse;
 import equinox.dataServer.remote.message.DataMessage;
@@ -32,6 +34,8 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -42,7 +46,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date May 7, 2014
  * @time 11:06:12 AM
  */
-public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask {
+public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, AutomaticTaskOwner<SpectrumInfo> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -55,6 +59,9 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 
 	/** Server query message. */
 	private final AtomicReference<DataMessage> serverMessageRef;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<SpectrumInfo>> automaticTasks_ = null;
 
 	/**
 	 * Creates basic spectrum search task.
@@ -81,6 +88,19 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	@Override
 	public void respondToDataMessage(DataMessage message) throws Exception {
 		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumInfo> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<SpectrumInfo>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -164,6 +184,9 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 
 		// set results to download panel
 		try {
+
+			// FIXME
+
 			DownloadViewPanel panel = (DownloadViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.DOWNLOAD_VIEW);
 			panel.setDownloadItems(get(), input);
 			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.DOWNLOAD_VIEW);

@@ -18,11 +18,15 @@ package equinox.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
+import equinox.data.Pair;
 import equinox.data.fileType.Spectrum;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for get spectrum edit info task.
@@ -31,16 +35,19 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Feb 3, 2016
  * @time 11:54:59 AM
  */
-public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implements ShortRunningTask {
+public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implements ShortRunningTask, AutomaticTask<Spectrum>, AutomaticTaskOwner<Pair<Spectrum, String[]>> {
 
 	/** Info index. */
 	public static final int PROGRAM = 0, SECTION = 1, MISSION = 2, MISSION_ISSUE = 3, FLP_ISSUE = 4, IFLP_ISSUE = 5, CDF_ISSUE = 6, DELIVERY_REF = 7, DESCRIPTION = 8;
 
 	/** Spectrum. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_ = null;
 
 	/** Requesting panel. */
 	private final SpectrumInfoRequestingPanel panel_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Pair<Spectrum, String[]>>> automaticTasks_ = null;
 
 	/**
 	 * Creates get spectrum edit info task.
@@ -55,6 +62,17 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 		panel_ = panel;
 	}
 
+	/**
+	 * Creates get spectrum edit info task.
+	 *
+	 * @param spectrum
+	 *            Spectrum. Can be null for automatic execution.
+	 */
+	public GetSpectrumEditInfo(Spectrum spectrum) {
+		spectrum_ = spectrum;
+		panel_ = null;
+	}
+
 	@Override
 	public boolean canBeCancelled() {
 		return false;
@@ -62,7 +80,25 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 
 	@Override
 	public String getTaskTitle() {
-		return "Get spectrum info for '" + spectrum_.getName() + "'";
+		return "Get spectrum info";
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		spectrum_ = spectrum;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<Spectrum, String[]>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Pair<Spectrum, String[]>>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -111,7 +147,22 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 
 		// set file info
 		try {
-			panel_.setSpectrumInfo(get());
+
+			// get info
+			String[] info = get();
+
+			// set to panel
+			if (panel_ != null) {
+				panel_.setSpectrumInfo(info);
+			}
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Pair<Spectrum, String[]>> task : automaticTasks_.values()) {
+					task.setAutomaticInput(new Pair<>(spectrum_, info));
+					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+				}
+			}
 		}
 
 		// exception occurred

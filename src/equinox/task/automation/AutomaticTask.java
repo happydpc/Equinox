@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.task;
+package equinox.task.automation;
 
 /**
  * Interface for automatic tasks. These tasks are executed automatically after owner tasks (i.e. <code>AutomaticTaskOwner</code> tasks) are completed.

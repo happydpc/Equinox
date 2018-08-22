@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for set spectrum mission task.

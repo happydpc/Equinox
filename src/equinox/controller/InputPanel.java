@@ -34,7 +34,7 @@ import equinox.font.IconicFont;
 import equinox.plugin.FileType;
 import equinox.plugin.InputSubPanel;
 import equinox.task.AddStressSequence;
-import equinox.task.CheckInstructionSet;
+import equinox.task.automation.CheckInstructionSet;
 import equinox.utility.Utility;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;

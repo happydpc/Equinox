@@ -26,6 +26,7 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 
 /**
@@ -35,10 +36,10 @@ import equinox.utility.Utility;
  * @date Jul 29, 2014
  * @time 11:43:43 AM
  */
-public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask {
+public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask, AutomaticTask<SpectrumInfo> {
 
 	/** CDF set info. */
-	private final SpectrumInfo info_;
+	private SpectrumInfo info_;
 
 	/** Output file. */
 	private Path output_;
@@ -50,7 +51,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	 * Creates download spectrum task.
 	 *
 	 * @param info
-	 *            CDF set info.
+	 *            CDF set info. Can be null for automatic execution.
 	 * @param output
 	 *            Output file. Null should be given if the downloaded spectrum should be added to local database.
 	 * @param addToDatabase
@@ -70,6 +71,11 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	@Override
 	public boolean canBeCancelled() {
 		return false;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumInfo info) {
+		info_ = info;
 	}
 
 	@Override

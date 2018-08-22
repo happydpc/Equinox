@@ -54,9 +54,16 @@
 	<shareSpectrum>
 		<id></id>
 		<spectrumId></spectrumId><!--Recipient username. Note that, the resipient must be online at the time of execution.-->
-		<recipient></recipient></shareSpectrum>
-	<exportSpectrum></exportSpectrum>
-	<deleteSpectrum></deleteSpectrum>
+		<recipient></recipient></shareSpectrum><!--Packs and exports spectrum to given ouput path.-->
+	<exportSpectrum>
+		<id></id>
+		<spectrumId></spectrumId><!--Delivery reference. This element is optional. If not supplied, DRAFT will be set.-->
+		<deliveryReference></deliveryReference><!--Spectrum description. This element is optional.-->
+		<description></description><!--Path to save export file. File name must end with '.zip'.-->
+		<outputPath></outputPath></exportSpectrum><!--Deletes spectrum with given id. Note that, this instruction can only be used in sequential run mode.-->
+	<deleteSpectrum>
+		<id></id>
+		<spectrumId></spectrumId></deleteSpectrum>
 	<downloadSpectrum></downloadSpectrum>
 
 	<!--Adds STF file to referenced spectrum.-->

@@ -41,6 +41,8 @@ import equinox.process.LoadFLSFile;
 import equinox.process.LoadTXTFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.serializableTask.SerializableAddSpectrum;
 import equinox.utility.Utility;
 

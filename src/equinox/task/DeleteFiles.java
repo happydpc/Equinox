@@ -50,6 +50,7 @@ import equinox.data.fileType.StressSequence;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -61,21 +62,23 @@ import javafx.scene.control.TreeItem;
  * @date Dec 12, 2013
  * @time 6:12:33 PM
  */
-public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
 
 	/** File items to delete. */
-	private final SpectrumItem[] files_;
+	private SpectrumItem[] files_;
 
 	/**
 	 * Creates delete files task.
 	 *
 	 * @param files
-	 *            Files to delete.
+	 *            Files to delete. Can be null for automatic execution.
 	 */
 	public DeleteFiles(ObservableList<TreeItem<String>> files) {
-		files_ = new SpectrumItem[files.size()];
-		for (int i = 0; i < files.size(); i++) {
-			files_[i] = (SpectrumItem) files.get(i);
+		if (files != null) {
+			files_ = new SpectrumItem[files.size()];
+			for (int i = 0; i < files.size(); i++) {
+				files_[i] = (SpectrumItem) files.get(i);
+			}
 		}
 	}
 
@@ -87,6 +90,12 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum input) {
+		files_ = new SpectrumItem[1];
+		files_[0] = input;
 	}
 
 	@Override

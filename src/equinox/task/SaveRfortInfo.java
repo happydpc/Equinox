@@ -38,6 +38,7 @@ import equinox.data.ui.RfortOmission;
 import equinox.data.ui.RfortPercentOmission;
 import equinox.data.ui.SerializableRfortPilotPoint;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for save RFORT info task.

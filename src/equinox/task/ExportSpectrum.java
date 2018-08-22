@@ -26,10 +26,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import equinox.Equinox;
+import equinox.data.Pair;
 import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 import jxl.CellType;
 import jxl.Workbook;
@@ -50,24 +52,27 @@ import jxl.write.WriteException;
  * @date Feb 9, 2016
  * @time 2:45:37 PM
  */
-public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Pair<Spectrum, String[]>> {
 
 	/** Spectrum. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_;
 
 	/** Info array. */
-	private final String[] info_;
+	private String[] info_;
 
 	/** Path to output ZIP file. */
 	private final File output_;
+
+	/** Editable spectrum info. */
+	private String deliveryReference_, description_;
 
 	/**
 	 * Creates export spectrum task.
 	 *
 	 * @param spectrum
-	 *            Spectrum to be exported.
+	 *            Spectrum to be exported. Can be null for automatic task execution.
 	 * @param info
-	 *            Spectrum info.
+	 *            Spectrum info. Can be null for automatic task execution.
 	 * @param output
 	 *            Output zip file.
 	 */
@@ -75,6 +80,26 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 		spectrum_ = spectrum;
 		info_ = info;
 		output_ = output;
+	}
+
+	/**
+	 * Sets delivery reference.
+	 *
+	 * @param deliveryReference
+	 *            Delivery reference.
+	 */
+	public void setDeliveryReference(String deliveryReference) {
+		deliveryReference_ = deliveryReference;
+	}
+
+	/**
+	 * Sets description.
+	 *
+	 * @param description
+	 *            Description.
+	 */
+	public void setDescription(String description) {
+		description_ = description;
 	}
 
 	@Override
@@ -85,6 +110,12 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 	@Override
 	public String getTaskTitle() {
 		return "Export spectrum";
+	}
+
+	@Override
+	public void setAutomaticInput(Pair<Spectrum, String[]> input) {
+		spectrum_ = input.getElement1();
+		info_ = input.getElement2();
 	}
 
 	@Override
@@ -459,12 +490,13 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 		column++;
 
 		// delivery reference
-		String deliveryRef = info_[GetSpectrumEditInfo.DELIVERY_REF] == null ? "DRAFT" : info_[GetSpectrumEditInfo.DELIVERY_REF];
+		String deliveryRef = deliveryReference_ != null ? deliveryReference_ : info_[GetSpectrumEditInfo.DELIVERY_REF];
 		sheet.addCell(new jxl.write.Label(column, 1, deliveryRef, getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// description
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSpectrumEditInfo.DESCRIPTION], getDataFormat(1, CellType.LABEL, false)));
+		String description = description_ != null ? description_ : info_[GetSpectrumEditInfo.DESCRIPTION];
+		sheet.addCell(new jxl.write.Label(column, 1, description, getDataFormat(1, CellType.LABEL, false)));
 	}
 
 	/**

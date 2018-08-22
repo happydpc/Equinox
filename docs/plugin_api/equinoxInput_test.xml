@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <equinoxInput version="" title="" description="" author="" date="" time="">
 	<settings>
-		<runMode>parallel</runMode>
+		<runMode>sequential</runMode>
 		<runSilent>true</runSilent>
 	</settings>
 	<addSpectrum>
@@ -13,5 +13,7 @@
 		<xlsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.xls</xlsPath>
 		<convSheet>31 Parabolas</convSheet>
 	</addSpectrum>
-	<saveSpectrumFile><id>2</id><spectrumId>1</spectrumId><outputPath>/Users/aurora/Temporary/test/test.ana</outputPath></saveSpectrumFile>
+	<deleteSpectrum>
+		<id>2</id>
+		<spectrumId>1</spectrumId></deleteSpectrum>
 	</equinoxInput>
