@@ -63,6 +63,9 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	/** Automatic tasks. */
 	private HashMap<String, AutomaticTask<SpectrumInfo>> automaticTasks_ = null;
 
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates basic spectrum search task.
 	 *
@@ -88,6 +91,11 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	@Override
 	public void respondToDataMessage(DataMessage message) throws Exception {
 		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
 	}
 
 	@Override
@@ -185,11 +193,39 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 		// set results to download panel
 		try {
 
-			// FIXME
+			// get results
+			ArrayList<DownloadInfo> results = get();
 
-			DownloadViewPanel panel = (DownloadViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.DOWNLOAD_VIEW);
-			panel.setDownloadItems(get(), input);
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.DOWNLOAD_VIEW);
+			// executed by user
+			if (automaticTasks_ == null) {
+				DownloadViewPanel panel = (DownloadViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.DOWNLOAD_VIEW);
+				panel.setDownloadItems(results, input);
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.DOWNLOAD_VIEW);
+			}
+
+			// executed for automatic tasks
+			else {
+
+				// no results found
+				if (results == null || results.isEmpty()) {
+					addWarning("No spectrum found with given search criteria. Cannot execute furter connected tasks.");
+					return;
+				}
+
+				// get only first result
+				SpectrumInfo firstResult = (SpectrumInfo) results.get(0);
+
+				// set to automatic tasks and execute them
+				for (AutomaticTask<SpectrumInfo> task : automaticTasks_.values()) {
+					task.setAutomaticInput(firstResult);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
 		}
 
 		// exception occurred

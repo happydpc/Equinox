@@ -18,7 +18,9 @@ package equinox.utility;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.StringTokenizer;
 
 import org.jdom2.Element;
 
@@ -145,6 +147,73 @@ public class XMLUtilities {
 		// referenced element not found
 		task.addWarning("Cannot find element with task id '" + sourceId + "' which appears to be a dependency of " + XMLUtilities.getFamilyTree(sourceElement) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
 		return false;
+	}
+
+	/**
+	 * Returns true if given element has at least 1 valid search keyword value.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param parentElement
+	 *            Parent of the element to check.
+	 * @param elementName
+	 *            Name of the element to check.
+	 * @param isOptionalElement
+	 *            True if the element is optional.
+	 * @return True if given element has at least 1 valid search keyword value.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkSearchKeywords(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
+
+		// get element
+		Element element = parentElement.getChild(elementName);
+
+		// element not found
+		if (element == null) {
+
+			// optional
+			if (isOptionalElement)
+				return true;
+
+			// obligatory
+			task.addWarning("Cannot locate element '" + elementName + "' under " + XMLUtilities.getFamilyTree(parentElement) + " in instruction set '" + xmlFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
+
+		// get value of element
+		String keywords = element.getTextNormalize();
+
+		// empty value
+		if (keywords.isEmpty()) {
+			task.addWarning("Empty value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// multiple keywords
+		if (keywords.contains(",")) {
+
+			// create tokens
+			ArrayList<String> tokens = new ArrayList<>();
+			StringTokenizer st = new StringTokenizer(keywords, ",");
+			while (st.hasMoreTokens()) {
+				String word = st.nextToken().trim();
+				if (!word.isEmpty()) {
+					tokens.add(word);
+				}
+			}
+
+			// no keywords found
+			if (tokens.isEmpty()) {
+				task.addWarning("no valid keyword supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+				return false;
+			}
+		}
+
+		// valid value
+		return true;
 	}
 
 	/**

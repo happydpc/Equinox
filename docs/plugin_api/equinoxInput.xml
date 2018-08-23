@@ -18,9 +18,14 @@
 			<applyCompressionForPropagation>true</applyCompressionForPropagation>
 			<fallbackToInbuilt>true</fallbackToInbuilt>
 		</analysisEngine>
-	</settings>
-	
-	<!--Adds spectrum to workspace from supplied CDF set files.-->
+		<searchEngine><!--Logical operator specifies how to combine search keywords. This can be either 'and' or 'or'.-->
+			<logicalOperator>and</logicalOperator>
+			<ignoreCase>true</ignoreCase>
+			<maxHits>100</maxHits><!--The setting orderResultsBy specifies which attribute to use when ordering search results. This can be one of 'Name', 'Aircraft program', 'Aircraft section', 'Fatigue mission' or 'Delivery reference'.-->
+			<orderResultsBy>Name</orderResultsBy><!--The attribute resultsOrder can be either 'Ascending' or 'Descending'.-->
+			<resultsOrder>Ascending</resultsOrder></searchEngine>
+	</settings><downloadSpectrum><id></id><!--Comma separated keywords which should uniquely identify the spectrum. Best practice is to use the full spectrum name (or ANA file name) which is always unique.--><searchKeywords></searchKeywords><!--Output path to where the downloaded spectrum archive will be saved.-->
+	<outputPath></outputPath></downloadSpectrum><!--Adds spectrum to workspace from supplied CDF set files.-->
 	<addSpectrum>
 		<id></id>
 		<anaPath></anaPath>
@@ -35,8 +40,10 @@
 	<addSpectrum>
 		<id></id>
 		<specPath></specPath>
-	</addSpectrum>
-	
+	</addSpectrum><!--Adds spectrum to workspace from central AF-Twin database.-->
+	<addSpectrum>
+		<id></id>
+		<downloadId></downloadId></addSpectrum>
 	<!--Saves spectrum to given output path.-->
 	<saveSpectrum>
 		<id></id>
@@ -64,7 +71,7 @@
 	<deleteSpectrum>
 		<id></id>
 		<spectrumId></spectrumId></deleteSpectrum>
-	<downloadSpectrum></downloadSpectrum>
+	
 
 	<!--Adds STF file to referenced spectrum.-->
 	<addStf>

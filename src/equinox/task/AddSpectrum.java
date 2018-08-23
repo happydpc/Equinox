@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.ConversionTableSheetName;
+import equinox.data.Pair;
 import equinox.data.fileType.Spectrum;
 import equinox.dataServer.remote.data.SpectrumInfo;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
@@ -53,28 +54,31 @@ import equinox.utility.Utility;
  * @date Jan 21, 2014
  * @time 10:55:55 PM
  */
-public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, AutomaticTaskOwner<Spectrum> {
+public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, AutomaticTaskOwner<Spectrum>, AutomaticTask<Pair<Path, SpectrumInfo>> {
 
 	/** Paths to spectrum files. */
 	private Path anaFile_, txtFile_, cvtFile_, flsFile_, conversionTable_;
 
 	/** Spectrum bundle file. */
-	private Path specFile_;
+	private Path specFile_, zipFile_;
 
 	/** The selected conversion table sheet. */
 	private String sheet_;
 
 	/** Spectrum info. */
-	private final SpectrumInfo info_;
+	private SpectrumInfo info_;
 
 	/** Automatic tasks. */
 	private HashMap<String, AutomaticTask<Spectrum>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/** Add STF files task. */
 	private AddSTFFiles addSTFFiles_ = null;
 
 	/**
-	 * Creates add spectrum task for adding individual CDF set files.
+	 * Creates add spectrum task from individual CDF set files.
 	 *
 	 * @param anaFile
 	 *            Path to ANA file.
@@ -100,10 +104,11 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		sheet_ = sheet;
 		info_ = info;
 		specFile_ = null;
+		zipFile_ = null;
 	}
 
 	/**
-	 * Creates add spectrum task for adding individual CDF set files.
+	 * Creates add spectrum task from given spectrum bundle file.
 	 *
 	 * @param specFile
 	 *            Spectrum bundle.
@@ -117,6 +122,27 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		conversionTable_ = null;
 		sheet_ = null;
 		info_ = null;
+		zipFile_ = null;
+	}
+
+	/**
+	 * Creates add spectrum task from given zip archive and spectrum information.
+	 *
+	 * @param zipFile
+	 *            Zip archive containing CDF set files. Can be null for automatic execution.
+	 * @param info
+	 *            Spectrum information. Can be null for automatic execution.
+	 */
+	public AddSpectrum(Path zipFile, SpectrumInfo info) {
+		zipFile_ = zipFile;
+		info_ = info;
+		specFile_ = null;
+		anaFile_ = null;
+		txtFile_ = null;
+		cvtFile_ = null;
+		flsFile_ = null;
+		conversionTable_ = null;
+		sheet_ = null;
 	}
 
 	/**
@@ -152,6 +178,17 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	 */
 	public void setSpectrumBundle(Path specFile) {
 		specFile_ = specFile;
+	}
+
+	@Override
+	public void setAutomaticInput(Pair<Path, SpectrumInfo> input) {
+		zipFile_ = input.getElement1();
+		info_ = input.getElement2();
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
 	}
 
 	@Override
@@ -205,6 +242,11 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 				ArrayList<File> stfFiles = null;
 				if (specFile_ != null) {
 					stfFiles = extractSpectrumBundle();
+				}
+
+				// spectrum archive
+				else if (zipFile_ != null) {
+					extractSpectrumArchive();
 				}
 
 				// create spectrum
@@ -305,7 +347,12 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 			if (automaticTasks_ != null) {
 				for (AutomaticTask<Spectrum> task : automaticTasks_.values()) {
 					task.setAutomaticInput(spectrum);
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
 				}
 			}
 		}
@@ -350,6 +397,71 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 
 		// set STF files to task
 		addSTFFiles_.setSTFFiles(stfFiles);
+	}
+
+	/**
+	 * Extracts CDF set files from spectrum zip archive.
+	 *
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void extractSpectrumArchive() throws Exception {
+
+		// update info
+		updateMessage("Extracting spectrum archive...");
+
+		// get spectrum file name
+		Path zipFileName = zipFile_.getFileName();
+		if (zipFileName == null)
+			throw new Exception("Cannot get spectrum archive file name.");
+
+		// extract files
+		ArrayList<Path> spectrumFiles = Utility.extractAllFilesFromZIP(zipFile_, this, getWorkingDirectory());
+
+		// no file found in archive
+		if (spectrumFiles == null || spectrumFiles.isEmpty())
+			throw new Exception("No file found in spectrum archive '" + zipFileName.toString() + "'.");
+
+		// get mission name (will be used as conversion table sheet name)
+		sheet_ = (String) info_.getInfo(SpectrumInfoType.FAT_MISSION);
+
+		// loop over files
+		for (Path file : spectrumFiles) {
+
+			// null file
+			if (file == null) {
+				continue;
+			}
+
+			// get file type
+			FileType type = FileType.getFileType(file.toFile());
+
+			// not recognized
+			if (type == null) {
+				continue;
+			}
+
+			// ANA
+			if (type.equals(FileType.ANA)) {
+				anaFile_ = file;
+			}
+			else if (type.equals(FileType.TXT)) {
+				txtFile_ = file;
+			}
+			else if (type.equals(FileType.CVT)) {
+				cvtFile_ = file;
+			}
+			else if (type.equals(FileType.FLS)) {
+				flsFile_ = file;
+			}
+			else if (type.equals(FileType.XLS)) {
+				conversionTable_ = file;
+			}
+		}
+
+		// missing file
+		if (anaFile_ == null || txtFile_ == null || cvtFile_ == null || flsFile_ == null || conversionTable_ == null || sheet_ == null)
+			throw new Exception("Spectrum archive '" + zipFileName.toString() + "' does not contain all CDF set files.");
 	}
 
 	/**

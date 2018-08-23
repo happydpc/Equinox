@@ -27,6 +27,7 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
+import equinox.dataServer.remote.data.SearchInput;
 import equinox.plugin.FileType;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask;
@@ -97,6 +98,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// settings
 		if (equinoxInput.getChild("settings") != null) {
 			if (!checkSettings(equinoxInput))
+				return false;
+		}
+
+		// download spectrum
+		if (equinoxInput.getChild("downloadSpectrum") != null) {
+			if (!checkDownloadSpectrum(equinoxInput))
 				return false;
 		}
 
@@ -520,6 +527,14 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 			}
 
+			// download from central database
+			else if (addSpectrum.getChild("downloadId") != null) {
+
+				// check download id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, addSpectrum, "downloadId", "downloadSpectrum"))
+					return false;
+			}
+
 			// CDF set files
 			else {
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "anaPath", false, FileType.ANA))
@@ -535,6 +550,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				if (!XMLUtilities.checkStringValue(this, inputFile, addSpectrum, "convSheet", false))
 					return false;
 			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>downloadSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>downloadSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkDownloadSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking downloadSpectrum elements...");
+
+		// loop over download spectrum elements
+		for (Element downloadSpectrum : equinoxInput.getChildren("downloadSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, downloadSpectrum))
+				return false;
+
+			// search keywords
+			if (!XMLUtilities.checkSearchKeywords(this, inputFile, downloadSpectrum, "searchKeywords", false))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, downloadSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
 		}
 
 		// check passed
@@ -608,6 +657,33 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// fallback to inbuilt
 			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "fallbackToInbuilt", true))
+				return false;
+		}
+
+		// check search engine
+		if (settings.getChild("searchEngine") != null) {
+
+			// get element
+			Element searchEngine = settings.getChild("searchEngine");
+
+			// logical operator
+			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "logicalOperator", true, "and", "or"))
+				return false;
+
+			// ignore case
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, searchEngine, "ignoreCase", true))
+				return false;
+
+			// maximum hits
+			if (!XMLUtilities.checkIntegerValue(this, inputFile, searchEngine, "maxHits", true))
+				return false;
+
+			// order results by
+			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "orderResultsBy", true, SearchInput.NAME, SearchInput.PROGRAM, SearchInput.SECTION, SearchInput.MISSION, SearchInput.DELIVERY))
+				return false;
+
+			// results order
+			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "resultsOrder", true, "Ascending", "Descending"))
 				return false;
 		}
 

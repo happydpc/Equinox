@@ -73,6 +73,9 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 	/** Automatic tasks. The key is the STF file name and the value is the task. */
 	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
 
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/** Number of STF files added at the end of process. */
 	private int numAdded_ = 0;
 
@@ -128,6 +131,11 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 	 */
 	public List<File> getSTFFiles() {
 		return stfFiles_;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
 	}
 
 	/**
@@ -283,7 +291,12 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 					STFFile stfFile = stfFiles.get(0);
 					for (AutomaticTask<STFFile> task : automaticTasks_.values()) {
 						task.setAutomaticInput(stfFile);
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+						if (executeAutomaticTasksInParallel_) {
+							taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+						}
+						else {
+							taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+						}
 					}
 				}
 
@@ -292,7 +305,12 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 					for (STFFile stfFile : stfFiles) {
 						AutomaticTask<STFFile> task = automaticTasks_.get(stfFile.getName());
 						task.setAutomaticInput(stfFile);
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+						if (executeAutomaticTasksInParallel_) {
+							taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+						}
+						else {
+							taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+						}
 					}
 				}
 			}

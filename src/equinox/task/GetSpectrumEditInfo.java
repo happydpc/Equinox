@@ -49,6 +49,9 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 	/** Automatic tasks. */
 	private HashMap<String, AutomaticTask<Pair<Spectrum, String[]>>> automaticTasks_ = null;
 
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates get spectrum edit info task.
 	 *
@@ -86,6 +89,11 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 	@Override
 	public void setAutomaticInput(Spectrum spectrum) {
 		spectrum_ = spectrum;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
 	}
 
 	@Override
@@ -160,7 +168,12 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 			if (automaticTasks_ != null) {
 				for (AutomaticTask<Pair<Spectrum, String[]>> task : automaticTasks_.values()) {
 					task.setAutomaticInput(new Pair<>(spectrum_, info));
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
 				}
 			}
 		}

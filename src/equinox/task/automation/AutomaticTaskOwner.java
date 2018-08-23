@@ -29,8 +29,16 @@ import java.util.HashMap;
 public interface AutomaticTaskOwner<V> {
 
 	/**
+	 * Sets automatic task execution mode. By default, tasks will be executed in parallel.
+	 *
+	 * @param isParallel
+	 *            True for parallel execution.
+	 */
+	void setAutomaticTaskExecutionMode(boolean isParallel);
+
+	/**
 	 * Adds automatic task.
-	 * 
+	 *
 	 * @param taskID
 	 *            Automatic task ID. This must be unique to the task added.
 	 * @param task
