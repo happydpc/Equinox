@@ -717,7 +717,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			searchSpectrumTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to tasks
-			tasks.put(id, new InstructedTask(downloadSpectrumTask, true));
+			tasks.put(id, new InstructedTask(downloadSpectrumTask, false));
 		}
 	}
 }

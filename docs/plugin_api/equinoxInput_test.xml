@@ -6,14 +6,10 @@
 	</settings>
 	<addSpectrum>
 		<id>1</id>
-		<anaPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.ana</anaPath>
-		<cvtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.cvt</cvtPath>
-		<flsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.fls</flsPath>
-		<txtPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.txt</txtPath>
-		<xlsPath>/Users/aurora/Temporary/test/A310Microgravity-211Sect13-MR2_31P.xls</xlsPath>
-		<convSheet>31 Parabolas</convSheet>
+		<downloadId>2</downloadId>
 	</addSpectrum>
-	<deleteSpectrum>
+	<downloadSpectrum>
 		<id>2</id>
-		<spectrumId>1</spectrumId></deleteSpectrum>
-	</equinoxInput>
+		<searchKeywords>A310Microgravity-211Sect13-MR2_31P</searchKeywords>
+		<outputPath>/Users/aurora/Temporary/testDownload.zip</outputPath></downloadSpectrum>
+</equinoxInput>
