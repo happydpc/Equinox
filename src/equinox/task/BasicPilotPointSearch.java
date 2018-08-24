@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,6 +25,7 @@ import equinox.controller.DownloadViewPanel;
 import equinox.controller.ViewPanel;
 import equinox.dataServer.remote.data.BasicSearchInput;
 import equinox.dataServer.remote.data.DownloadInfo;
+import equinox.dataServer.remote.data.PilotPointInfo;
 import equinox.dataServer.remote.message.BasicPilotPointSearchRequest;
 import equinox.dataServer.remote.message.BasicPilotPointSearchResponse;
 import equinox.dataServer.remote.message.DataMessage;
@@ -32,6 +34,8 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -42,7 +46,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date Feb 15, 2016
  * @time 11:57:22 AM
  */
-public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask {
+public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, AutomaticTaskOwner<PilotPointInfo> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -55,6 +59,12 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 
 	/** Server query message. */
 	private final AtomicReference<DataMessage> serverMessageRef;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<PilotPointInfo>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates basic pilot point search task.
@@ -81,6 +91,24 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 	@Override
 	public void respondToDataMessage(DataMessage message) throws Exception {
 		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<PilotPointInfo> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<PilotPointInfo>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -164,9 +192,40 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 
 		// set results to download panel
 		try {
-			DownloadViewPanel panel = (DownloadViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.DOWNLOAD_VIEW);
-			panel.setDownloadItems(get(), input);
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.DOWNLOAD_VIEW);
+
+			// get results
+			ArrayList<DownloadInfo> results = get();
+
+			// executed by user
+			if (automaticTasks_ == null) {
+				DownloadViewPanel panel = (DownloadViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.DOWNLOAD_VIEW);
+				panel.setDownloadItems(results, input);
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.DOWNLOAD_VIEW);
+			}
+
+			// executed for automatic tasks
+			else {
+
+				// no results found
+				if (results == null || results.isEmpty()) {
+					addWarning("No pilot point found with given search criteria. Cannot execute furter connected tasks.");
+					return;
+				}
+
+				// get only first result
+				PilotPointInfo firstResult = (PilotPointInfo) results.get(0);
+
+				// set to automatic tasks and execute them
+				for (AutomaticTask<PilotPointInfo> task : automaticTasks_.values()) {
+					task.setAutomaticInput(firstResult);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
 		}
 
 		// exception occurred

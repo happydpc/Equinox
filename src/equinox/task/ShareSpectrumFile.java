@@ -22,7 +22,7 @@ import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
@@ -31,6 +31,7 @@ import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 
 /**
@@ -40,29 +41,29 @@ import equinox.utility.Utility;
  * @date Dec 17, 2014
  * @time 12:49:21 PM
  */
-public class ShareSpectrumFile extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask {
+public class ShareSpectrumFile extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, AutomaticTask<Spectrum> {
 
 	/** File item to save. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_;
 
 	/** Type of core spectrum file to share. */
 	private final FileType type_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final List<String> recipients_;
 
 	/**
 	 * Creates share core spectrum file task.
 	 *
-	 * @param file
-	 *            Spectrum to share.
+	 * @param spectrum
+	 *            Spectrum to share. Can be null for automatic execution.
 	 * @param type
 	 *            Type of core spectrum file to share.
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSpectrumFile(Spectrum file, FileType type, ArrayList<String> recipients) {
-		spectrum_ = file;
+	public ShareSpectrumFile(Spectrum spectrum, FileType type, List<String> recipients) {
+		spectrum_ = spectrum;
 		type_ = type;
 		recipients_ = recipients;
 	}
@@ -75,6 +76,11 @@ public class ShareSpectrumFile extends TemporaryFileCreatingTask<Void> implement
 	@Override
 	public String getTaskTitle() {
 		return "Share spectrum file";
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		spectrum_ = spectrum;
 	}
 
 	@Override

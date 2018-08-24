@@ -27,7 +27,9 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.SearchInput;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask;
@@ -131,6 +133,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// share spectrum file
+		if (equinoxInput.getChild("shareSpectrumFile") != null) {
+			if (!checkShareSpectrumFile(equinoxInput))
+				return false;
+		}
+
 		// export spectrum
 		if (equinoxInput.getChild("exportSpectrum") != null) {
 			if (!checkExportSpectrum(equinoxInput))
@@ -140,6 +148,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// delete spectrum
 		if (equinoxInput.getChild("deleteSpectrum") != null) {
 			if (!checkDeleteSpectrum(equinoxInput))
+				return false;
+		}
+
+		// download STF
+		if (equinoxInput.getChild("downloadStf") != null) {
+			if (!checkDownloadStf(equinoxInput))
 				return false;
 		}
 
@@ -311,8 +325,90 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, addStf, "spectrumId", "addSpectrum"))
 				return false;
 
-			// check STF path
-			if (!XMLUtilities.checkInputPathValue(this, inputFile, addStf, "stfPath", false, FileType.STF))
+			// STF path given
+			if (addStf.getChild("stfPath") != null) {
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStf, "stfPath", false, FileType.STF))
+					return false;
+			}
+
+			// search entry given
+			else if (addStf.getChild("searchEntry") != null) {
+				if (!XMLUtilities.checkSearchEntries(this, inputFile, addStf, XMLUtilities.getStringArray(PilotPointInfoType.values())))
+					return false;
+			}
+
+			// nothing given
+			else {
+				addWarning("Cannot locate element 'stfPath' or 'searchEntry' under " + XMLUtilities.getFamilyTree(addStf) + " in instruction set '" + inputFile.toString() + "'. At least one of the mentioned elements is obligatory. Check failed.");
+				return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>downloadStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>downloadStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkDownloadStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking downloadStf elements...");
+
+		// loop over download STF elements
+		for (Element downloadStf : equinoxInput.getChildren("downloadStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, downloadStf))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, downloadStf, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
+
+			// check search entries
+			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadStf, XMLUtilities.getStringArray(PilotPointInfoType.values())))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>downloadSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>downloadSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkDownloadSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking downloadSpectrum elements...");
+
+		// loop over download spectrum elements
+		for (Element downloadSpectrum : equinoxInput.getChildren("downloadSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, downloadSpectrum))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, downloadSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
+
+			// check search entries
+			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadSpectrum, XMLUtilities.getStringArray(SpectrumInfoType.values())))
 				return false;
 		}
 
@@ -391,6 +487,44 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, exportSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>shareSpectrumFile</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>shareSpectrumFile</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkShareSpectrumFile(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking shareSpectrumFile elements...");
+
+		// loop over share spectrum file elements
+		for (Element shareSpectrum : equinoxInput.getChildren("shareSpectrumFile")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, shareSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check file type
+			if (!XMLUtilities.checkStringValue(this, inputFile, shareSpectrum, "fileType", false, "ana", "cvt", "txt", "xls", "fls"))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, shareSpectrum, "recipient", false))
 				return false;
 		}
 
@@ -550,40 +684,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				if (!XMLUtilities.checkStringValue(this, inputFile, addSpectrum, "convSheet", false))
 					return false;
 			}
-		}
-
-		// check passed
-		return true;
-	}
-
-	/**
-	 * Returns true if all <code>downloadSpectrum</code> elements pass checks.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @return True if all <code>downloadSpectrum</code> elements pass checks.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkDownloadSpectrum(Element equinoxInput) throws Exception {
-
-		// read input file
-		updateMessage("Checking downloadSpectrum elements...");
-
-		// loop over download spectrum elements
-		for (Element downloadSpectrum : equinoxInput.getChildren("downloadSpectrum")) {
-
-			// no id
-			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, downloadSpectrum))
-				return false;
-
-			// search keywords
-			if (!XMLUtilities.checkSearchKeywords(this, inputFile, downloadSpectrum, "searchKeywords", false))
-				return false;
-
-			// check output path
-			if (!XMLUtilities.checkOutputPathValue(this, inputFile, downloadSpectrum, "outputPath", false, overwriteFiles, FileType.ZIP))
-				return false;
 		}
 
 		// check passed

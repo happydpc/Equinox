@@ -183,46 +183,46 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 	private void advancedSearch() throws Exception {
 
 		// create search input
-		final SpectrumSearchInput input = new SpectrumSearchInput();
+		SpectrumSearchInput input = new SpectrumSearchInput();
 
 		// add search items
-		final String name = cdfName_.getText();
+		String name = cdfName_.getText();
 		if (name != null && !name.isEmpty()) {
 			input.addInput(SpectrumInfoType.NAME, new SearchItem(name, getSelectedCriteria(nameCriteria_)));
 		}
-		final String acProgram = acProgram_.getText();
+		String acProgram = acProgram_.getText();
 		if (acProgram != null && !acProgram.isEmpty()) {
 			input.addInput(SpectrumInfoType.AC_PROGRAM, new SearchItem(acProgram, getSelectedCriteria(acProgramCriteria_)));
 		}
-		final String acSection = acSection_.getText();
+		String acSection = acSection_.getText();
 		if (acSection != null && !acSection.isEmpty()) {
 			input.addInput(SpectrumInfoType.AC_SECTION, new SearchItem(acSection, getSelectedCriteria(acSectionCriteria_)));
 		}
-		final String fatMission = fatMission_.getText();
+		String fatMission = fatMission_.getText();
 		if (fatMission != null && !fatMission.isEmpty()) {
 			input.addInput(SpectrumInfoType.FAT_MISSION, new SearchItem(fatMission, getSelectedCriteria(missionCriteria_)));
 		}
-		final String fatMissionIssue = fatMissionIssue_.getText();
+		String fatMissionIssue = fatMissionIssue_.getText();
 		if (fatMissionIssue != null && !fatMissionIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.FAT_MISSION_ISSUE, new SearchItem(fatMissionIssue, getSelectedCriteria(missionIssueCriteria_)));
 		}
-		final String flpIssue = flpIssue_.getText();
+		String flpIssue = flpIssue_.getText();
 		if (flpIssue != null && !flpIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.FLP_ISSUE, new SearchItem(flpIssue, getSelectedCriteria(flpIssueCriteria_)));
 		}
-		final String iflpIssue = iflpIssue_.getText();
+		String iflpIssue = iflpIssue_.getText();
 		if (iflpIssue != null && !iflpIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.IFLP_ISSUE, new SearchItem(iflpIssue, getSelectedCriteria(iflpIssueCriteria_)));
 		}
-		final String cdfIssue = cdfIssue_.getText();
+		String cdfIssue = cdfIssue_.getText();
 		if (cdfIssue != null && !cdfIssue.isEmpty()) {
 			input.addInput(SpectrumInfoType.CDF_ISSUE, new SearchItem(cdfIssue, getSelectedCriteria(cdfIssueCriteria_)));
 		}
-		final String deliveryRef = deliveryRef_.getText();
+		String deliveryRef = deliveryRef_.getText();
 		if (deliveryRef != null && !deliveryRef.isEmpty()) {
 			input.addInput(SpectrumInfoType.DELIVERY_REF, new SearchItem(deliveryRef, getSelectedCriteria(deliveryRefCriteria_)));
 		}
-		final String description = description_.getText();
+		String description = description_.getText();
 		if (description != null && !description.isEmpty()) {
 			input.addInput(SpectrumInfoType.DESCRIPTION, new SearchItem(description, getSelectedCriteria(descriptionCriteria_)));
 		}
@@ -253,7 +253,7 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 	private void basicSeach() throws Exception {
 
 		// get keywords
-		final String keywords = keywords_.getText().trim();
+		String keywords = keywords_.getText().trim();
 
 		// no keyword entered
 		if (keywords == null || keywords.isEmpty()) {
@@ -262,13 +262,13 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 		}
 
 		// create input list
-		final ArrayList<String> inputs = new ArrayList<>();
+		ArrayList<String> inputs = new ArrayList<>();
 
 		// multiple keywords
 		if (keywords.contains(",")) {
 
 			// split
-			final String[] split = keywords.split(",");
+			String[] split = keywords.split(",");
 
 			// no keywords
 			if (split.length == 0) {
@@ -343,8 +343,8 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 	private void onResetClicked() {
 
 		// reset search fields
-		final TextField[] fields = { cdfName_, acProgram_, acSection_, fatMission_, fatMissionIssue_, flpIssue_, iflpIssue_, cdfIssue_, deliveryRef_, description_ };
-		for (final TextField field : fields) {
+		TextField[] fields = { cdfName_, acProgram_, acSection_, fatMission_, fatMissionIssue_, flpIssue_, iflpIssue_, cdfIssue_, deliveryRef_, description_ };
+		for (TextField field : fields) {
 			field.clear();
 		}
 
@@ -352,8 +352,8 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 		keywords_.clear();
 
 		// reset criterion
-		final ToggleGroup[] toggles = { nameCriteria_, acProgramCriteria_, acSectionCriteria_, missionCriteria_, missionIssueCriteria_, flpIssueCriteria_, iflpIssueCriteria_, cdfIssueCriteria_, descriptionCriteria_, deliveryRefCriteria_ };
-		for (final ToggleGroup tg : toggles) {
+		ToggleGroup[] toggles = { nameCriteria_, acProgramCriteria_, acSectionCriteria_, missionCriteria_, missionIssueCriteria_, flpIssueCriteria_, iflpIssueCriteria_, cdfIssueCriteria_, descriptionCriteria_, deliveryRefCriteria_ };
+		for (ToggleGroup tg : toggles) {
 			tg.getToggles().get(0).setSelected(true);
 		}
 	}
@@ -380,14 +380,14 @@ public class SearchSpectraPanel implements InternalInputSubPanel {
 		}
 
 		// exception occurred
-		catch (final Exception e) {
+		catch (Exception e) {
 
 			// log exception
 			Equinox.LOGGER.log(Level.WARNING, "Exception occured during setting database search inputs.", e);
 
 			// show warning
-			final String message = "Exception occured during setting database search inputs: " + e.getLocalizedMessage();
-			final PopOver popOver = new PopOver();
+			String message = "Exception occured during setting database search inputs: " + e.getLocalizedMessage();
+			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);
 			popOver.setDetachable(false);
 			popOver.setContentNode(NotificationPanel1.load(message, 50, NotificationPanel1.WARNING));

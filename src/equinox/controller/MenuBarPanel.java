@@ -298,6 +298,11 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
+	private void onVisualizeInstructionSetClicked() {
+		owner_.getInputPanel().onVisualizeInstructionSetClicked();
+	}
+
+	@FXML
 	private void onDownloadSampleInstructionSetClicked() {
 		owner_.getInputPanel().onDownloadSampleInstructionSetClicked();
 	}

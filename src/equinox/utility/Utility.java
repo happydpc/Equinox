@@ -976,7 +976,7 @@ public class Utility {
 		Path output = null;
 
 		// get working directory
-		if (outputDir == null)
+		if (outputDir == null) {
 			if (task instanceof TemporaryFileCreatingTask<?>) {
 				TemporaryFileCreatingTask<?> task1 = (TemporaryFileCreatingTask<?>) task;
 				outputDir = task1.getWorkingDirectory();
@@ -984,6 +984,7 @@ public class Utility {
 			else {
 				outputDir = createWorkingDirectory("extractFileFromZIP");
 			}
+		}
 
 		// create zip input stream
 		try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile.toString())), Charset.defaultCharset())) {

@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import org.jdom2.Element;
 
 import equinox.Equinox;
+import equinox.dataServer.remote.data.SearchInput;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask;
 
@@ -36,6 +37,125 @@ import equinox.task.InternalEquinoxTask;
  * @time 09:58:49
  */
 public class XMLUtilities {
+
+	/**
+	 * Extracts and returns search keywords.
+	 *
+	 * @param keywords
+	 *            User input.
+	 * @return List of keywords.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static ArrayList<String> extractSearchKeywords(String keywords) throws Exception {
+
+		// create input list
+		ArrayList<String> inputs = new ArrayList<>();
+
+		// multiple keywords
+		if (keywords.contains(",")) {
+			StringTokenizer st = new StringTokenizer(keywords, ",");
+			while (st.hasMoreTokens()) {
+				String word = st.nextToken().trim();
+				if (!word.isEmpty()) {
+					inputs.add(word);
+				}
+			}
+		}
+
+		// single keyword
+		else {
+			inputs.add(keywords);
+		}
+
+		// return list
+		return inputs;
+	}
+
+	/**
+	 * Sets search engine settings to given search input.
+	 *
+	 * @param root
+	 *            Root input element.
+	 * @param input
+	 *            Search input.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static void setSearchEngineSettings(Element root, SearchInput input) throws Exception {
+
+		// get search engine settings
+		if (root.getChild("settings") != null) {
+
+			// logical operator
+			if (root.getChild("settings").getChild("logicalOperator") != null) {
+				input.setOperator(root.getChild("settings").getChild("logicalOperator").getTextNormalize().equals("and"));
+			}
+
+			// ignore case
+			if (root.getChild("settings").getChild("ignoreCase") != null) {
+				input.setCase(Boolean.parseBoolean(root.getChild("settings").getChild("ignoreCase").getTextNormalize()));
+			}
+
+			// maximum hits
+			if (root.getChild("settings").getChild("maxHits") != null) {
+				input.setMaxHits(Integer.parseInt(root.getChild("settings").getChild("maxHits").getTextNormalize()));
+			}
+
+			// order results by
+			if (root.getChild("settings").getChild("orderResultsBy") != null) {
+				input.setOrderByCriteria(root.getChild("settings").getChild("orderResultsBy").getTextNormalize());
+			}
+
+			// results order
+			if (root.getChild("settings").getChild("resultsOrder") != null) {
+				input.setOrder(root.getChild("settings").getChild("resultsOrder").getTextNormalize().equals("Ascending"));
+			}
+		}
+	}
+
+	/**
+	 * Returns true if given element has valid search entries.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param parentElement
+	 *            Parent of the element to check.
+	 * @param validAttributeNames
+	 *            List of valid attribute names.
+	 * @return True if given element has valid search entries.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkSearchEntries(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String... validAttributeNames) throws Exception {
+
+		// no search entry found
+		if (parentElement.getChild("searchEntry") == null) {
+			task.addWarning("Cannot locate element 'searchEntry' under " + XMLUtilities.getFamilyTree(parentElement) + " in instruction set '" + xmlFile.toString() + "'. At least one of this element is obligatory. Check failed.");
+			return false;
+		}
+
+		// loop over search entries
+		for (Element searchEntry : parentElement.getChildren("searchEntry")) {
+
+			// check attribute name
+			if (!checkStringValue(task, xmlFile, searchEntry, "attributeName", false, validAttributeNames))
+				return false;
+
+			// check keyword
+			if (!checkStringValue(task, xmlFile, searchEntry, "keyword", false))
+				return false;
+
+			// check criteria
+			if (!checkStringValue(task, xmlFile, searchEntry, "criteria", true, "Contains", "Equals", "Starts with", "Ends with"))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
 
 	/**
 	 * Returns true if given element has an online username.

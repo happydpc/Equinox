@@ -17,12 +17,10 @@ package equinox.task.automation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 
 import org.jdom2.Document;
@@ -34,15 +32,21 @@ import equinox.data.Pair;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
-import equinox.dataServer.remote.data.BasicSearchInput;
+import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
+import equinox.dataServer.remote.data.PilotPointSearchInput;
+import equinox.dataServer.remote.data.SearchItem;
 import equinox.dataServer.remote.data.SpectrumInfo;
+import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
+import equinox.dataServer.remote.data.SpectrumSearchInput;
 import equinox.plugin.FileType;
 import equinox.process.automation.ReadGenerateStressSequenceInput;
 import equinox.task.AddSTFFiles;
 import equinox.task.AddSpectrum;
 import equinox.task.AddStressSequence;
-import equinox.task.BasicSpectrumSearch;
+import equinox.task.AdvancedPilotPointSearch;
+import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.DeleteFiles;
+import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
 import equinox.task.ExportSpectrum;
 import equinox.task.GenerateStressSequence;
@@ -58,7 +62,9 @@ import equinox.task.SaveSpectrum;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
 import equinox.task.ShareSpectrum;
+import equinox.task.ShareSpectrumFile;
 import equinox.utility.Utility;
+import equinox.utility.XMLUtilities;
 
 /**
  * Class for run instruction set task.
@@ -155,9 +161,19 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			shareSpectrum(equinoxInput, tasks);
 		}
 
+		// share spectrum file
+		if (equinoxInput.getChild("shareSpectrumFile") != null) {
+			shareSpectrumFile(equinoxInput, tasks);
+		}
+
 		// export spectrum
 		if (equinoxInput.getChild("exportSpectrum") != null) {
 			exportSpectrum(equinoxInput, tasks);
+		}
+
+		// download STF
+		if (equinoxInput.getChild("downloadStf") != null) {
+			downloadStf(equinoxInput, tasks);
 		}
 
 		// add STF
@@ -348,19 +364,130 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// loop over add STF elements
 		for (Element addStf : equinoxInput.getChildren("addStf")) {
 
-			// create task
+			// get task and spectrum ids
 			String id = addStf.getChild("id").getTextNormalize();
 			String spectrumId = addStf.getChild("spectrumId").getTextNormalize();
-			Path stfPath = Paths.get(addStf.getChild("stfPath").getTextNormalize());
-			AddSTFFiles addSTFFilesTask = new AddSTFFiles(Arrays.asList(stfPath.toFile()), null, null);
 
-			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, addSTFFilesTask);
-			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			// STF path given
+			if (addStf.getChild("stfPath") != null) {
 
-			// put task to tasks
-			tasks.put(id, new InstructedTask(addSTFFilesTask, true));
+				// create task
+				Path stfPath = Paths.get(addStf.getChild("stfPath").getTextNormalize());
+				AddSTFFiles addSTFFilesTask = new AddSTFFiles(Arrays.asList(stfPath.toFile()), null, null);
+
+				// add to parent task
+				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addAutomaticTask(id, addSTFFilesTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(addSTFFilesTask, true));
+			}
+
+			// search entry given
+			else if (addStf.getChild("searchEntry") != null) {
+
+				// create search input
+				PilotPointSearchInput input = new PilotPointSearchInput();
+
+				// loop over search entries
+				for (Element searchEntry : addStf.getChildren("searchEntry")) {
+
+					// get sub elements
+					String attributeName = searchEntry.getChild("attributeName").getTextNormalize();
+					String keyword = searchEntry.getChild("keyword").getTextNormalize();
+
+					// get criteria
+					int criteriaIndex = 0;
+					if (searchEntry.getChild("criteria") != null) {
+						String criteria = searchEntry.getChild("criteria").getTextNormalize();
+						criteriaIndex = Arrays.asList("Contains", "Equals", "Starts with", "Ends with").indexOf(criteria);
+					}
+
+					// add input
+					PilotPointInfoType infoType = PilotPointInfoType.valueOf(attributeName.toUpperCase());
+					input.addInput(infoType, new SearchItem(keyword, criteriaIndex));
+				}
+
+				// set search engine settings
+				XMLUtilities.setSearchEngineSettings(equinoxInput, input);
+
+				// create tasks
+				AdvancedPilotPointSearch searchPilotPointTask = new AdvancedPilotPointSearch(input);
+				DownloadPilotPoint downloadPilotPointTask = new DownloadPilotPoint(null, null, null);
+
+				// add download task to search
+				searchPilotPointTask.addAutomaticTask(id, downloadPilotPointTask);
+				searchPilotPointTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// add search to add spectrum
+				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addAutomaticTask(id, searchPilotPointTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// add to tasks
+				tasks.put(id, new InstructedTask(downloadPilotPointTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(searchPilotPointTask, true));
+			}
+		}
+	}
+
+	/**
+	 * Creates download STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void downloadStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating download STF tasks...");
+
+		// loop over add STF elements
+		for (Element downloadStf : equinoxInput.getChildren("downloadStf")) {
+
+			// get sub elements
+			String id = downloadStf.getChild("id").getTextNormalize();
+			Path outputFile = Paths.get(downloadStf.getChild("outputPath").getTextNormalize());
+
+			// create search input
+			PilotPointSearchInput input = new PilotPointSearchInput();
+
+			// loop over search entries
+			for (Element searchEntry : downloadStf.getChildren("searchEntry")) {
+
+				// get sub elements
+				String attributeName = searchEntry.getChild("attributeName").getTextNormalize();
+				String keyword = searchEntry.getChild("keyword").getTextNormalize();
+
+				// get criteria
+				int criteriaIndex = 0;
+				if (searchEntry.getChild("criteria") != null) {
+					String criteria = searchEntry.getChild("criteria").getTextNormalize();
+					criteriaIndex = Arrays.asList("Contains", "Equals", "Starts with", "Ends with").indexOf(criteria);
+				}
+
+				// add input
+				PilotPointInfoType infoType = PilotPointInfoType.valueOf(attributeName.toUpperCase());
+				input.addInput(infoType, new SearchItem(keyword, criteriaIndex));
+			}
+
+			// set search engine settings
+			XMLUtilities.setSearchEngineSettings(equinoxInput, input);
+
+			// create tasks
+			AdvancedPilotPointSearch searchPilotPointTask = new AdvancedPilotPointSearch(input);
+			DownloadPilotPoint downloadPilotPointTask = new DownloadPilotPoint(null, outputFile, null);
+			searchPilotPointTask.addAutomaticTask(id, downloadPilotPointTask);
+			searchPilotPointTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// add to tasks
+			tasks.put(id, new InstructedTask(downloadPilotPointTask, true));
+			tasks.put("ownerOf_" + id, new InstructedTask(searchPilotPointTask, false));
 		}
 	}
 
@@ -441,6 +568,41 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(exportSpectrumTask, true));
+		}
+	}
+
+	/**
+	 * Creates share spectrum file tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void shareSpectrumFile(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating share spectrum file tasks...");
+
+		// loop over share spectrum file elements
+		for (Element shareSpectrumFile : equinoxInput.getChildren("shareSpectrumFile")) {
+
+			// create task
+			String id = shareSpectrumFile.getChild("id").getTextNormalize();
+			String spectrumId = shareSpectrumFile.getChild("spectrumId").getTextNormalize();
+			FileType fileType = FileType.getFileTypeForExtension("." + shareSpectrumFile.getChild("fileType").getTextNormalize());
+			String recipient = shareSpectrumFile.getChild("recipient").getTextNormalize();
+			ShareSpectrumFile shareSpectrumFileTask = new ShareSpectrumFile(null, fileType, Arrays.asList(recipient));
+
+			// add to parent task
+			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addAutomaticTask(id, shareSpectrumFileTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(shareSpectrumFileTask, true));
 		}
 	}
 
@@ -655,69 +817,42 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// get sub elements
 			String id = downloadSpectrum.getChild("id").getTextNormalize();
-			String keywords = downloadSpectrum.getChild("searchKeywords").getTextNormalize();
 			Path outputFile = Paths.get(downloadSpectrum.getChild("outputPath").getTextNormalize());
 
-			// create input list
-			ArrayList<String> inputs = new ArrayList<>();
+			// create search input
+			SpectrumSearchInput input = new SpectrumSearchInput();
 
-			// multiple keywords
-			if (keywords.contains(",")) {
-				StringTokenizer st = new StringTokenizer(keywords, ",");
-				while (st.hasMoreTokens()) {
-					String word = st.nextToken().trim();
-					if (!word.isEmpty()) {
-						inputs.add(word);
-					}
+			// loop over search entries
+			for (Element searchEntry : downloadSpectrum.getChildren("searchEntry")) {
+
+				// get sub elements
+				String attributeName = searchEntry.getChild("attributeName").getTextNormalize();
+				String keyword = searchEntry.getChild("keyword").getTextNormalize();
+
+				// get criteria
+				int criteriaIndex = 0;
+				if (searchEntry.getChild("criteria") != null) {
+					String criteria = searchEntry.getChild("criteria").getTextNormalize();
+					criteriaIndex = Arrays.asList("Contains", "Equals", "Starts with", "Ends with").indexOf(criteria);
 				}
+
+				// add input
+				SpectrumInfoType infoType = SpectrumInfoType.valueOf(attributeName.toUpperCase());
+				input.addInput(infoType, new SearchItem(keyword, criteriaIndex));
 			}
 
-			// single keyword
-			else {
-				inputs.add(keywords);
-			}
-
-			// create input
-			BasicSearchInput input = new BasicSearchInput();
-			input.setKeywords(inputs);
-
-			// get search engine settings
-			if (equinoxInput.getChild("settings") != null) {
-
-				// logical operator
-				if (equinoxInput.getChild("settings").getChild("logicalOperator") != null) {
-					input.setOperator(equinoxInput.getChild("settings").getChild("logicalOperator").getTextNormalize().equals("and"));
-				}
-
-				// ignore case
-				if (equinoxInput.getChild("settings").getChild("ignoreCase") != null) {
-					input.setCase(Boolean.parseBoolean(equinoxInput.getChild("settings").getChild("ignoreCase").getTextNormalize()));
-				}
-
-				// maximum hits
-				if (equinoxInput.getChild("settings").getChild("maxHits") != null) {
-					input.setMaxHits(Integer.parseInt(equinoxInput.getChild("settings").getChild("maxHits").getTextNormalize()));
-				}
-
-				// order results by
-				if (equinoxInput.getChild("settings").getChild("orderResultsBy") != null) {
-					input.setOrderByCriteria(equinoxInput.getChild("settings").getChild("orderResultsBy").getTextNormalize());
-				}
-
-				// results order
-				if (equinoxInput.getChild("settings").getChild("resultsOrder") != null) {
-					input.setOrder(equinoxInput.getChild("settings").getChild("resultsOrder").getTextNormalize().equals("Ascending"));
-				}
-			}
+			// set search engine settings
+			XMLUtilities.setSearchEngineSettings(equinoxInput, input);
 
 			// create tasks
-			BasicSpectrumSearch searchSpectrumTask = new BasicSpectrumSearch(input);
+			AdvancedSpectrumSearch searchSpectrumTask = new AdvancedSpectrumSearch(input);
 			DownloadSpectrum downloadSpectrumTask = new DownloadSpectrum(null, outputFile, false);
 			searchSpectrumTask.addAutomaticTask(id, downloadSpectrumTask);
 			searchSpectrumTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to tasks
-			tasks.put(id, new InstructedTask(downloadSpectrumTask, false));
+			tasks.put(id, new InstructedTask(downloadSpectrumTask, true));
+			tasks.put("ownerOf_" + id, new InstructedTask(searchSpectrumTask, false));
 		}
 	}
 }

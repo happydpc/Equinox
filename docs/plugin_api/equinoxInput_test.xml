@@ -3,13 +3,51 @@
 	<settings>
 		<runMode>sequential</runMode>
 		<runSilent>true</runSilent>
+		<overwriteFiles>true</overwriteFiles>
 	</settings>
+	<downloadSpectrum><id>1</id><searchEntry>
+			<attributeName>AC_PROGRAM</attributeName>
+			<keyword>a310</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry><searchEntry>
+			<attributeName>AC_SECTION</attributeName>
+			<keyword>sect13</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry>
+		<searchEntry>
+			<attributeName>FAT_MISSION</attributeName>
+			<keyword>31 Parabolas</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry>
+		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
+	</downloadSpectrum>
 	<addSpectrum>
-		<id>1</id>
-		<downloadId>2</downloadId>
-	</addSpectrum>
-	<downloadSpectrum>
 		<id>2</id>
-		<searchKeywords>A310Microgravity-211Sect13-MR2_31P</searchKeywords>
-		<outputPath>/Users/aurora/Temporary/testDownload.zip</outputPath></downloadSpectrum>
+		<downloadId>1</downloadId>
+	</addSpectrum>
+	<addStf>
+		<id>3</id>
+		<spectrumId>2</spectrumId>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>NAME</attributeName>
+			<keyword>Fuselage_F26_MY</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_PROGRAM</attributeName>
+			<keyword>a310</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_SECTION</attributeName>
+			<keyword>sect13</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>FAT_MISSION</attributeName>
+			<keyword>31 Parabolas</keyword>
+		</searchEntry>
+	</addStf>
+	
 </equinoxInput>

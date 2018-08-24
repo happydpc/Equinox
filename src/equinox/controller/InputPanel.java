@@ -671,6 +671,11 @@ public class InputPanel implements Initializable {
 	}
 
 	@FXML
+	public void onVisualizeInstructionSetClicked() {
+		// TODO
+	}
+
+	@FXML
 	public void onDownloadSampleInstructionSetClicked() {
 		// TODO
 	}

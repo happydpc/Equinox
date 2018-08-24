@@ -427,8 +427,49 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 							}
 						}
 
+						// input file is ZIP file
+						else if (type.equals(FileType.ZIP)) {
+
+							// extract
+							updateMessage("Extracting zipped STF file...");
+							Path stfFilePath = Utility.extractFileFromZIP(inputFile.toPath(), this, FileType.STF, null);
+
+							// load and add STF file
+							try {
+								STFFile stfFile = new LoadSTFFile(this, stfFilePath, spectrum_, info, updateProcessProgress, stressTableIDs[i / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[i / MAX_STF_FILES_PER_TABLE], updateStressState);
+								if (stfFile == null) {
+									connection.rollback();
+									connection.setAutoCommit(true);
+									return null;
+								}
+								if (automaticTasks_ != null) {
+									files.add(stfFile);
+								}
+								else {
+									if (files.size() < allowance) {
+										files.add(stfFile);
+									}
+									else {
+										addToBucket_ = true;
+									}
+									numAdded_++;
+								}
+							}
+
+							// exception occurred during loading STF file
+							catch (Exception e) {
+								if (numFiles == 1)
+									throw e;
+								Path fileNamePath = stfFilePath.getFileName();
+								if (fileNamePath != null) {
+									addWarning("Loading STF file '" + fileNamePath.toString() + "' has failed due to an exception.", e);
+								}
+							}
+						}
+
 						// input file is STF file
 						else if (type.equals(FileType.STF)) {
+
 							// load and add STF file
 							try {
 								STFFile stfFile = new LoadSTFFile(this, inputFile.toPath(), spectrum_, info, updateProcessProgress, stressTableIDs[i / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[i / MAX_STF_FILES_PER_TABLE], updateStressState);

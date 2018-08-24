@@ -24,8 +24,20 @@
 			<maxHits>100</maxHits><!--The setting orderResultsBy specifies which attribute to use when ordering search results. This can be one of 'Name', 'Aircraft program', 'Aircraft section', 'Fatigue mission' or 'Delivery reference'.-->
 			<orderResultsBy>Name</orderResultsBy><!--The attribute resultsOrder can be either 'Ascending' or 'Descending'.-->
 			<resultsOrder>Ascending</resultsOrder></searchEngine>
-	</settings><downloadSpectrum><id></id><!--Comma separated keywords which should uniquely identify the spectrum. Best practice is to use the full spectrum name (or ANA file name) which is always unique.--><searchKeywords></searchKeywords><!--Output path to where the downloaded spectrum archive will be saved.-->
-	<outputPath></outputPath></downloadSpectrum><!--Adds spectrum to workspace from supplied CDF set files.-->
+	</settings><!--Searches spectrum in central database matching with given search entries. If found, downloads the first found spectrum. Note that, as this instruction will download the first found spectrum, it is adviced to supply precise entries which uniquely identifies the spectrum.-->
+	<downloadSpectrum>
+		<id></id>
+		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<searchEntry>
+			<!--Spectrum attribute name. This can be one of 'NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'FAT_MISSION_ISSUE', 'FLP_ISSUE', 'IFLP_ISSUE', 'CDF_ISSUE', 'DELIVERY_REF_NUM', 'DESCRIPTION'.-->
+			<attributeName></attributeName><!--Search keyword for the selected attribute.-->
+			<keyword></keyword>
+			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
+			<criteria></criteria>
+		</searchEntry>
+		<!--Output path to where the downloaded spectrum archive will be saved.-->
+		<outputPath></outputPath>
+	</downloadSpectrum><!--Adds spectrum to workspace from supplied CDF set files.-->
 	<addSpectrum>
 		<id></id>
 		<anaPath></anaPath>
@@ -40,17 +52,19 @@
 	<addSpectrum>
 		<id></id>
 		<specPath></specPath>
-	</addSpectrum><!--Adds spectrum to workspace from central AF-Twin database.-->
+	</addSpectrum>
+	<!--Adds spectrum to workspace downloaded from central AF-Twin database.-->
 	<addSpectrum>
 		<id></id>
-		<downloadId></downloadId></addSpectrum>
+		<downloadId></downloadId>
+	</addSpectrum>
 	<!--Saves spectrum to given output path.-->
 	<saveSpectrum>
 		<id></id>
 		<spectrumId></spectrumId>
 		<!--Path to save spectrum bundle. To save as zip bundle, end file name with .zip. To save as spec bundle, end file name with .spec.-->
 		<outputPath></outputPath>
-	</saveSpectrum><!--Saves CDF set file to given otuput path.-->
+	</saveSpectrum><!--Saves CDF set file to given output path.-->
 
 	<saveSpectrumFile>
 		<id></id>
@@ -60,8 +74,13 @@
 	</saveSpectrumFile><!--Shares spectrum with given recipient.-->
 	<shareSpectrum>
 		<id></id>
-		<spectrumId></spectrumId><!--Recipient username. Note that, the resipient must be online at the time of execution.-->
-		<recipient></recipient></shareSpectrum><!--Packs and exports spectrum to given ouput path.-->
+		<spectrumId></spectrumId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient></shareSpectrum><!--Shares CDF set file with given recipient.-->
+	<shareSpectrumFile>
+		<id></id>
+		<spectrumId></spectrumId><!--Type of CDF set file to share. This cane be one of 'ana', 'cvt', 'txt', 'fls' or 'xls'.-->
+		<fileType></fileType><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient></shareSpectrumFile><!--Packs and exports spectrum to given ouput path.-->
 	<exportSpectrum>
 		<id></id>
 		<spectrumId></spectrumId><!--Delivery reference. This element is optional. If not supplied, DRAFT will be set.-->
@@ -70,12 +89,32 @@
 		<outputPath></outputPath></exportSpectrum><!--Deletes spectrum with given id. Note that, this instruction can only be used in sequential run mode.-->
 	<deleteSpectrum>
 		<id></id>
-		<spectrumId></spectrumId></deleteSpectrum>
-	
+		<spectrumId></spectrumId></deleteSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 
-	<!--Adds STF file to referenced spectrum.-->
+
+	<downloadStf>
+		<id></id><!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<searchEntry><!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName></attributeName>
+			<keyword></keyword><!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
+			<criteria></criteria></searchEntry>
+		
+		
+		
+		<outputPath></outputPath></downloadStf><!--Adds STF file to referenced spectrum.-->
 	<addStf>
 		<id></id><spectrumId></spectrumId><stfPath></stfPath>
+	</addStf><!--Searches pilot point in central database matching with given search entries, and if found, adds it to referenced spectrum. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
+	<addStf>
+		<id></id>
+		<spectrumId></spectrumId><!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName></attributeName>
+			<keyword></keyword>
+			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
+			<criteria></criteria>
+		</searchEntry>
 	</addStf>
 	<saveStf></saveStf>
 	<shareStf></shareStf>

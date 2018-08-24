@@ -20,9 +20,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import equinox.data.Pair;
+import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.dataServer.remote.data.PilotPointInfo;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
@@ -36,6 +41,8 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
@@ -47,19 +54,19 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date Feb 16, 2016
  * @time 11:04:03 AM
  */
-public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> implements LongRunningTask, DatabaseQueryListenerTask {
+public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> implements LongRunningTask, DatabaseQueryListenerTask, AutomaticTask<Pair<PilotPointInfo, Spectrum>>, AutomaticTaskOwner<STFFile> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
 
 	/** Pilot point info. */
-	private final PilotPointInfo info_;
+	private PilotPointInfo info_;
 
 	/** Output file. */
 	private Path output_;
 
 	/** Spectrum to add the pilot point. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_;
 
 	/** Server query completion indicator. */
 	private final AtomicBoolean isQueryCompleted;
@@ -67,11 +74,17 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 	/** Server query message. */
 	private final AtomicReference<DataMessage> serverMessageRef;
 
+	/** Automatic tasks. The key is the STF file name and the value is the task. */
+	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates download pilot point task.
 	 *
 	 * @param info
-	 *            Pilot point info.
+	 *            Pilot point info. Can be null for automatic execution.
 	 * @param output
 	 *            Output file. Null should be given if the pilot point should be added to spectrum.
 	 * @param spectrum
@@ -98,6 +111,30 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 	@Override
 	public void respondToDataMessage(DataMessage message) throws Exception {
 		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
+	}
+
+	@Override
+	public void setAutomaticInput(Pair<PilotPointInfo, Spectrum> input) {
+		info_ = input.getElement1();
+		spectrum_ = input.getElement2();
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<STFFile>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -161,6 +198,18 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 			// add to database
 			AddSTFFiles task = get();
 			if (task != null) {
+
+				// pass automatic tasks to resulting task
+				if (automaticTasks_ != null) {
+					task.setAutomaticTaskExecutionMode(executeAutomaticTasksInParallel_);
+					Iterator<Entry<String, AutomaticTask<STFFile>>> iterator = automaticTasks_.entrySet().iterator();
+					while (iterator.hasNext()) {
+						Entry<String, AutomaticTask<STFFile>> entry = iterator.next();
+						task.addAutomaticTask(entry.getKey(), entry.getValue());
+					}
+				}
+
+				// execute resulting task
 				taskPanel_.getOwner().runTaskSequentially(task);
 			}
 		}
