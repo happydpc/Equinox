@@ -27,6 +27,7 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
 import equinox.data.IsamiVersion;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.SearchInput;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
@@ -145,12 +146,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
-		// delete spectrum
-		if (equinoxInput.getChild("deleteSpectrum") != null) {
-			if (!checkDeleteSpectrum(equinoxInput))
-				return false;
-		}
-
 		// download STF
 		if (equinoxInput.getChild("downloadStf") != null) {
 			if (!checkDownloadStf(equinoxInput))
@@ -160,6 +155,24 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// add STF
 		if (equinoxInput.getChild("addStf") != null) {
 			if (!checkAddStf(equinoxInput))
+				return false;
+		}
+
+		// save STF
+		if (equinoxInput.getChild("saveStf") != null) {
+			if (!checkSaveStf(equinoxInput))
+				return false;
+		}
+
+		// share STF
+		if (equinoxInput.getChild("shareStf") != null) {
+			if (!checkShareStf(equinoxInput))
+				return false;
+		}
+
+		// export STF
+		if (equinoxInput.getChild("exportStf") != null) {
+			if (!checkExportStf(equinoxInput))
 				return false;
 		}
 
@@ -301,6 +314,133 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>exportStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>exportStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkExportStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking exportSpectrum elements...");
+
+		// loop over export spectrum elements
+		for (Element exportStf : equinoxInput.getChildren("exportStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, exportStf))
+				return false;
+
+			// check STF id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, exportStf, "stfId", "addStf"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, exportStf, "outputPath", false, overwriteFiles, FileType.ZIP))
+				return false;
+
+			// loop over pilot point info elements (if any)
+			String[] attributeNames = { "fatigueMission", "description", "dataSource", "generationSource", "deliveryReference", "issue", "eid", "elementType", "framePosition", "stringerPosition", "fatigueMaterial", "preffasMaterial", "linearMaterial" };
+			for (Element pilotPointInfo : exportStf.getChildren("pilotPointInfo")) {
+
+				// check attribute name
+				if (!XMLUtilities.checkStringValue(this, inputFile, pilotPointInfo, "attributeName", false, attributeNames))
+					return false;
+
+				// check attribute values
+				if (!XMLUtilities.checkStringValue(this, inputFile, pilotPointInfo, "attributeValue", false))
+					return false;
+			}
+
+			// loop over pilot point image elements
+			for (Element pilotPointImage : exportStf.getChildren("pilotPointImage")) {
+
+				// check image type
+				if (!XMLUtilities.checkStringValue(this, inputFile, pilotPointImage, "imageType", false, XMLUtilities.getStringArray(PilotPointImageType.values())))
+					return false;
+
+				// check image path
+				if (!XMLUtilities.checkOutputPathValue(this, inputFile, pilotPointImage, "imagePath", false, overwriteFiles, FileType.PNG))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>shareStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>shareStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkShareStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking shareStf elements...");
+
+		// loop over share STF elements
+		for (Element shareStf : equinoxInput.getChildren("shareStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareStf))
+				return false;
+
+			// check STF id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, shareStf, "stfId", "addStf"))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, shareStf, "recipient", false))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveStf elements...");
+
+		// loop over save STF elements
+		for (Element saveStf : equinoxInput.getChildren("saveStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveStf))
+				return false;
+
+			// check STF id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveStf, "stfId", "addStf"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveStf, "outputPath", false, overwriteFiles, FileType.STF, FileType.ZIP, FileType.GZ))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>addStf</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -409,42 +549,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// check search entries
 			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadSpectrum, XMLUtilities.getStringArray(SpectrumInfoType.values())))
-				return false;
-		}
-
-		// check passed
-		return true;
-	}
-
-	/**
-	 * Returns true if all <code>deleteSpectrum</code> elements pass checks.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @return True if all <code>deleteSpectrum</code> elements pass checks.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkDeleteSpectrum(Element equinoxInput) throws Exception {
-
-		// read input file
-		updateMessage("Checking deleteSpectrum elements...");
-
-		// check run mode
-		if (runMode.equals(RunInstructionSet.PARALLEL)) {
-			addWarning("Cannot execute instruction " + XMLUtilities.getFamilyTree(equinoxInput.getChild("deleteSpectrum")) + " in instruction set '" + inputFile.toString() + "' in parallel run mode. This instruction requires sequential run. Check failed.");
-			return false;
-		}
-
-		// loop over delete spectrum elements
-		for (Element deleteSpectrum : equinoxInput.getChildren("deleteSpectrum")) {
-
-			// no id
-			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, deleteSpectrum))
-				return false;
-
-			// check spectrum id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, deleteSpectrum, "spectrumId", "addSpectrum"))
 				return false;
 		}
 

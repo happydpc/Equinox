@@ -28,12 +28,14 @@ import java.util.Map.Entry;
 import javax.imageio.ImageIO;
 
 import equinox.Equinox;
+import equinox.data.Triple;
 import equinox.data.fileType.STFFile;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -56,19 +58,19 @@ import jxl.write.WriteException;
  * @date Feb 5, 2016
  * @time 1:10:31 PM
  */
-public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>> {
 
 	/** STF file. */
-	private final STFFile stfFile_;
+	private STFFile stfFile_;
 
 	/** Pilot point and spectrum names. */
-	private final String ppName_, spectrumName_, mission_;
+	private String ppName_, spectrumName_, mission_, userSetMission_;
 
 	/** Info array. */
-	private final String[] info_;
+	private String[] info_, userSetInfo_;
 
 	/** Pilot point images. */
-	private final HashMap<PilotPointImageType, Image> images_;
+	private HashMap<PilotPointImageType, Image> images_, userSetImages_;
 
 	/** Path to output ZIP file. */
 	private final File output_;
@@ -101,6 +103,46 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 		output_ = output;
 	}
 
+	/**
+	 * Creates export pilot point task. Note that, this constructor is intended to be used for automatic task execution.
+	 *
+	 * @param output
+	 *            Path to output ZIP file.
+	 */
+	public ExportSTF(File output) {
+		output_ = output;
+	}
+
+	/**
+	 * Sets fatigue mission.
+	 *
+	 * @param mission
+	 *            Fatigue mission.
+	 */
+	public void setMission(String mission) {
+		userSetMission_ = mission;
+	}
+
+	/**
+	 * Sets pilot point info.
+	 *
+	 * @param info
+	 *            Pilot point info.
+	 */
+	public void setInfo(String[] info) {
+		userSetInfo_ = info;
+	}
+
+	/**
+	 * Sets pilot point images.
+	 *
+	 * @param images
+	 *            Images to set.
+	 */
+	public void setImages(HashMap<PilotPointImageType, Image> images) {
+		userSetImages_ = images;
+	}
+
 	@Override
 	public boolean canBeCancelled() {
 		return true;
@@ -109,6 +151,16 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 	@Override
 	public String getTaskTitle() {
 		return "Export pilot point";
+	}
+
+	@Override
+	public void setAutomaticInput(Triple<STFFile, String[], HashMap<PilotPointImageType, Image>> input) {
+		stfFile_ = input.getElement1();
+		info_ = input.getElement2();
+		images_ = input.getElement3();
+		ppName_ = FileType.getNameWithoutExtension(stfFile_.getName());
+		spectrumName_ = stfFile_.getParentItem().getName();
+		mission_ = stfFile_.getMission();
 	}
 
 	@Override
@@ -146,7 +198,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 			return null;
 
 		// write images
-		Iterator<Entry<PilotPointImageType, Image>> iterator = images_.entrySet().iterator();
+		Iterator<Entry<PilotPointImageType, Image>> iterator = getImages();
 		while (iterator.hasNext()) {
 
 			// write image file
@@ -166,6 +218,36 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 
 		// return
 		return null;
+	}
+
+	/**
+	 * Returns image mapping.
+	 *
+	 * @return Image mapping.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private Iterator<Entry<PilotPointImageType, Image>> getImages() throws Exception {
+
+		// no user set image
+		if (userSetImages_ == null)
+			return images_.entrySet().iterator();
+
+		// no database-found image
+		if (images_ == null)
+			return userSetImages_.entrySet().iterator();
+
+		// create new image mapping
+		HashMap<PilotPointImageType, Image> images = new HashMap<>();
+		if (images_ != null) {
+			images.putAll(images_);
+		}
+		if (userSetImages_ != null) {
+			images.putAll(userSetImages_);
+		}
+
+		// return images
+		return images.entrySet().iterator();
 	}
 
 	/**
@@ -221,8 +303,6 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 
 			// create workbook
 			workbook = Workbook.createWorkbook(infoFile.toFile());
-
-			// TODO create material worksheets
 
 			// create pilot point info worksheet
 			WritableSheet sheet = workbook.createSheet("Pilot Point Info", 0);
@@ -282,56 +362,112 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 		column++;
 
 		// fatigue mission
-		sheet.addCell(new jxl.write.Label(column, 1, mission_, getDataFormat(1, CellType.LABEL, false)));
+		String mission = userSetMission_ == null ? mission_ : userSetMission_;
+		sheet.addCell(new jxl.write.Label(column, 1, mission, getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
+		// get info
+		String[] info = getInfo();
+
 		// description
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.DESCRIPTION], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.DESCRIPTION], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// data source
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.DATA_SOURCE], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.DATA_SOURCE], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// generation source
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.GEN_SOURCE], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.GEN_SOURCE], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// delivery reference
-		String deliveryRef = info_[GetSTFInfo2.DELIVERY_REF] == null ? "DRAFT" : info_[GetSTFInfo2.DELIVERY_REF];
+		String deliveryRef = info[GetSTFInfo2.DELIVERY_REF] == null ? "DRAFT" : info[GetSTFInfo2.DELIVERY_REF];
 		sheet.addCell(new jxl.write.Label(column, 1, deliveryRef, getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// pilot point issue
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.ISSUE], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.ISSUE], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// element ID
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.EID], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.EID], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// element type
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.ELEMENT_TYPE], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.ELEMENT_TYPE], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// frame/rib position
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.FRAME_RIB_POS], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.FRAME_RIB_POS], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// stringer position
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.STRINGER_POS], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.STRINGER_POS], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// fatigue material
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.FATIGUE_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.FATIGUE_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// preffas material
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.PREFFAS_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.PREFFAS_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
 		column++;
 
 		// linear material
-		sheet.addCell(new jxl.write.Label(column, 1, info_[GetSTFInfo2.LINEAR_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
+		sheet.addCell(new jxl.write.Label(column, 1, info[GetSTFInfo2.LINEAR_MATERIAL], getDataFormat(1, CellType.LABEL, false)));
+	}
+
+	/**
+	 * Returns pilot point info array.
+	 *
+	 * @return Pilot point info array.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private String[] getInfo() throws Exception {
+
+		// no user set info
+		if (userSetInfo_ == null || userSetInfo_.length == 0)
+			return checkInfo(info_);
+
+		// create info array
+		String[] info = new String[info_.length];
+		for (int i = 0; i < info_.length; i++) {
+			info[i] = userSetInfo_[i] == null || userSetInfo_[i].trim().isEmpty() ? info_[i] : userSetInfo_[i];
+		}
+
+		// return info array
+		return checkInfo(info);
+	}
+
+	/**
+	 * Checks pilot point info array for required attributes.
+	 *
+	 * @param info
+	 *            Info array to check.
+	 * @return Info array.
+	 * @throws IllegalArgumentException
+	 *             If check fails.
+	 */
+	private static String[] checkInfo(String[] info) throws IllegalArgumentException {
+
+		// null
+		if (info == null || info.length != 12)
+			throw new IllegalArgumentException("Invalid pilot point info supplied for exporting pilot point. Export aborted.");
+
+		// check required attributes
+		if (info[GetSTFInfo2.DESCRIPTION] == null || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
+			throw new IllegalArgumentException("Description is obligatory to export pilot point. Export aborted.");
+		if (info[GetSTFInfo2.DATA_SOURCE] == null || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
+			throw new IllegalArgumentException("Data source is obligatory to export pilot point. Export aborted.");
+		if (info[GetSTFInfo2.GEN_SOURCE] == null || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
+			throw new IllegalArgumentException("Generation source is obligatory to export pilot point. Export aborted.");
+		if (info[GetSTFInfo2.ISSUE] == null || info[GetSTFInfo2.DESCRIPTION].trim().isEmpty())
+			throw new IllegalArgumentException("Pilot point issue is obligatory to export pilot point. Export aborted.");
+
+		// return info
+		return info;
 	}
 
 	/**

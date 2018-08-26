@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <equinoxInput version="" title="" description="" author="" date="" time="">
 	<settings>
-		<runMode>sequential</runMode>
+		<runMode>parallel</runMode>
 		<runSilent>true</runSilent>
 		<overwriteFiles>true</overwriteFiles>
 	</settings>
@@ -50,4 +50,21 @@
 		</searchEntry>
 	</addStf>
 	
+	<exportStf>
+		<id>4</id>
+		<stfId>3</stfId>
+		<pilotPointInfo>
+			<attributeName>elementType</attributeName>
+			<attributeValue>Quad</attributeValue>
+		</pilotPointInfo>
+		<pilotPointInfo>
+			<attributeName>fatigueMission</attributeName>
+			<attributeValue>32 Parabolas</attributeValue>
+		</pilotPointInfo>
+		<pilotPointInfo>
+			<attributeName>description</attributeName>
+			<attributeValue>New description.</attributeValue>
+		</pilotPointInfo>
+		<outputPath>/Users/aurora/Temporary/export.zip</outputPath>
+	</exportStf>
 </equinoxInput>

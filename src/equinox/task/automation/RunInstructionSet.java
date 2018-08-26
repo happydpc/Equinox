@@ -15,6 +15,7 @@
  */
 package equinox.task.automation;
 
+import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -22,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -32,6 +36,7 @@ import equinox.data.Pair;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.PilotPointSearchInput;
 import equinox.dataServer.remote.data.SearchItem;
@@ -45,11 +50,13 @@ import equinox.task.AddSpectrum;
 import equinox.task.AddStressSequence;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
-import equinox.task.DeleteFiles;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
+import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
 import equinox.task.GenerateStressSequence;
+import equinox.task.GetSTFInfo2;
+import equinox.task.GetSTFInfo3;
 import equinox.task.GetSpectrumEditInfo;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
@@ -58,13 +65,16 @@ import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
 import equinox.task.SaveConversionTable;
 import equinox.task.SaveFLS;
+import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
+import equinox.task.ShareSTF;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
 import equinox.utility.Utility;
 import equinox.utility.XMLUtilities;
+import javafx.scene.image.Image;
 
 /**
  * Class for run instruction set task.
@@ -181,6 +191,21 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			addStf(equinoxInput, tasks);
 		}
 
+		// save STF
+		if (equinoxInput.getChild("saveStf") != null) {
+			saveStf(equinoxInput, tasks);
+		}
+
+		// share STF
+		if (equinoxInput.getChild("shareStf") != null) {
+			shareStf(equinoxInput, tasks);
+		}
+
+		// export STF
+		if (equinoxInput.getChild("exportStf") != null) {
+			exportStf(equinoxInput, tasks);
+		}
+
 		// add stress sequence
 		if (equinoxInput.getChild("addStressSequence") != null) {
 			addStressSequence(equinoxInput, tasks);
@@ -192,11 +217,6 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		}
 
 		// TODO
-
-		// delete spectrum
-		if (equinoxInput.getChild("deleteSpectrum") != null) {
-			deleteSpectrum(equinoxInput, tasks);
-		}
 
 		// return tasks to be executed
 		return tasks;
@@ -347,6 +367,230 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
+	 * Creates export STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void exportStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating export STF tasks...");
+
+		// loop over export STF elements
+		for (Element exportStf : equinoxInput.getChildren("exportStf")) {
+
+			// create task
+			String id = exportStf.getChild("id").getTextNormalize();
+			String stfId = exportStf.getChild("stfId").getTextNormalize();
+			Path outputPath = Paths.get(exportStf.getChild("outputPath").getTextNormalize());
+			GetSTFInfo3 getSTFInfoTask = new GetSTFInfo3(null);
+			ExportSTF exportSTFTask = new ExportSTF(outputPath.toFile());
+
+			// create info array
+			String[] info = new String[12];
+
+			// loop over pilot point info elements
+			for (Element pilotPointInfo : exportStf.getChildren("pilotPointInfo")) {
+
+				// get attribute name and value
+				String attributeName = pilotPointInfo.getChildTextNormalize("attributeName");
+				String attributeValue = pilotPointInfo.getChildTextNormalize("attributeValue");
+
+				// fatigue mission
+				if (attributeName.equals("fatigueMission")) {
+					exportSTFTask.setMission(attributeValue);
+				}
+
+				// description
+				else if (attributeName.equals("description")) {
+					info[GetSTFInfo2.DESCRIPTION] = attributeValue;
+				}
+
+				// data source
+				else if (attributeName.equals("dataSource")) {
+					info[GetSTFInfo2.DATA_SOURCE] = attributeValue;
+				}
+
+				// generation source
+				else if (attributeName.equals("generationSource")) {
+					info[GetSTFInfo2.GEN_SOURCE] = attributeValue;
+				}
+
+				// delivery reference
+				else if (attributeName.equals("deliveryReference")) {
+					info[GetSTFInfo2.DELIVERY_REF] = attributeValue;
+				}
+
+				// issue
+				else if (attributeName.equals("issue")) {
+					info[GetSTFInfo2.ISSUE] = attributeValue;
+				}
+
+				// eid
+				else if (attributeName.equals("eid")) {
+					info[GetSTFInfo2.EID] = attributeValue;
+				}
+
+				// element type
+				else if (attributeName.equals("elementType")) {
+					info[GetSTFInfo2.ELEMENT_TYPE] = attributeValue;
+				}
+
+				// frame position
+				else if (attributeName.equals("framePosition")) {
+					info[GetSTFInfo2.FRAME_RIB_POS] = attributeValue;
+				}
+
+				// stringer position
+				else if (attributeName.equals("stringerPosition")) {
+					info[GetSTFInfo2.STRINGER_POS] = attributeValue;
+				}
+
+				// fatigue material
+				else if (attributeName.equals("fatigueMaterial")) {
+					info[GetSTFInfo2.FATIGUE_MATERIAL] = attributeValue;
+				}
+
+				// preffas material
+				else if (attributeName.equals("preffasMaterial")) {
+					info[GetSTFInfo2.PREFFAS_MATERIAL] = attributeValue;
+				}
+
+				// linear material
+				else if (attributeName.equals("linearMaterial")) {
+					info[GetSTFInfo2.LINEAR_MATERIAL] = attributeValue;
+				}
+			}
+
+			// set info
+			exportSTFTask.setInfo(info);
+
+			// create image mapping
+			HashMap<PilotPointImageType, Image> images = new HashMap<>();
+
+			// loop over pilot point image elements
+			for (Element pilotPointImage : exportStf.getChildren("pilotPointImage")) {
+
+				// get attribute name and value
+				String imageTypeName = pilotPointImage.getChildTextNormalize("imageType");
+				Path imagePath = Paths.get(pilotPointImage.getChildTextNormalize("imagePath"));
+
+				// get image type
+				PilotPointImageType imageType = null;
+				for (PilotPointImageType type : PilotPointImageType.values()) {
+					if (type.toString().equals(imageTypeName)) {
+						imageType = type;
+						break;
+					}
+				}
+
+				// get image bytes
+				Image image = null;
+				byte[] imageBytes = new byte[(int) imagePath.toFile().length()];
+				try (ImageInputStream imgStream = ImageIO.createImageInputStream(imagePath.toFile())) {
+					imgStream.read(imageBytes);
+					try (ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+						image = new Image(inputStream);
+					}
+				}
+
+				// add to mapping
+				images.put(imageType, image);
+			}
+
+			// set images
+			if (!images.isEmpty()) {
+				exportSTFTask.setImages(images);
+			}
+
+			// add to first task
+			getSTFInfoTask.addAutomaticTask(id, exportSTFTask);
+			getSTFInfoTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// add to parent task
+			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addAutomaticTask(id, getSTFInfoTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(exportSTFTask, true));
+		}
+	}
+
+	/**
+	 * Creates share STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void shareStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating share STF tasks...");
+
+		// loop over share STF elements
+		for (Element shareStf : equinoxInput.getChildren("shareStf")) {
+
+			// create task
+			String id = shareStf.getChild("id").getTextNormalize();
+			String stfId = shareStf.getChild("stfId").getTextNormalize();
+			String recipient = shareStf.getChild("recipient").getTextNormalize();
+			ShareSTF shareSTFTask = new ShareSTF(null, Arrays.asList(recipient));
+
+			// add to parent task
+			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addAutomaticTask(id, shareSTFTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(shareSTFTask, true));
+		}
+	}
+
+	/**
+	 * Creates save STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save STF tasks...");
+
+		// loop over save STF elements
+		for (Element saveStf : equinoxInput.getChildren("saveStf")) {
+
+			// create task
+			String id = saveStf.getChild("id").getTextNormalize();
+			String stfId = saveStf.getChild("stfId").getTextNormalize();
+			Path outputPath = Paths.get(saveStf.getChild("outputPath").getTextNormalize());
+			SaveSTF saveSTFTask = new SaveSTF(null, outputPath.toFile(), FileType.getFileType(outputPath.toFile()));
+
+			// add to parent task
+			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addAutomaticTask(id, saveSTFTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(saveSTFTask, true));
+		}
+	}
+
+	/**
 	 * Creates add STF tasks.
 	 *
 	 * @param equinoxInput
@@ -488,39 +732,6 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// add to tasks
 			tasks.put(id, new InstructedTask(downloadPilotPointTask, true));
 			tasks.put("ownerOf_" + id, new InstructedTask(searchPilotPointTask, false));
-		}
-	}
-
-	/**
-	 * Creates delete spectrum tasks.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @param tasks
-	 *            List to store tasks to be executed.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private void deleteSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
-
-		// update info
-		updateMessage("Creating delete spectrum tasks...");
-
-		// loop over save spectrum elements
-		for (Element saveSpectrum : equinoxInput.getChildren("deleteSpectrum")) {
-
-			// create task
-			String id = saveSpectrum.getChild("id").getTextNormalize();
-			String spectrumId = saveSpectrum.getChild("spectrumId").getTextNormalize();
-			DeleteFiles deleteFilesTask = new DeleteFiles(null);
-
-			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, deleteFilesTask);
-			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-			// put task to tasks
-			tasks.put(id, new InstructedTask(deleteFilesTask, true));
 		}
 	}
 

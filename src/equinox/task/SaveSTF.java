@@ -25,6 +25,7 @@ import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 
 /**
@@ -34,10 +35,10 @@ import equinox.utility.Utility;
  * @date Feb 12, 2014
  * @time 12:27:42 PM
  */
-public class SaveSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class SaveSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<STFFile> {
 
 	/** File item to save. */
-	private final STFFile file_;
+	private STFFile file_;
 
 	/** Output file. */
 	private final File output_;
@@ -49,7 +50,7 @@ public class SaveSTF extends TemporaryFileCreatingTask<Void> implements LongRunn
 	 * Creates save STF task.
 	 *
 	 * @param file
-	 *            File item to save.
+	 *            File item to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 * @param type
@@ -72,6 +73,11 @@ public class SaveSTF extends TemporaryFileCreatingTask<Void> implements LongRunn
 	}
 
 	@Override
+	public void setAutomaticInput(STFFile input) {
+		file_ = input;
+	}
+
+	@Override
 	protected Void call() throws Exception {
 
 		// check permission
@@ -87,6 +93,8 @@ public class SaveSTF extends TemporaryFileCreatingTask<Void> implements LongRunn
 			if (type_.equals(FileType.STF)) {
 				new SaveSTFFile(this, file_, output_.toPath()).start(connection);
 			}
+
+			// ZIP format
 			else if (type_.equals(FileType.ZIP)) {
 				Path stfFile = getWorkingDirectory().resolve(FileType.appendExtension(file_.getName(), FileType.STF));
 				new SaveSTFFile(this, file_, stfFile).start(connection);

@@ -18,17 +18,19 @@ package equinox.data;
 import java.io.Serializable;
 
 /**
- * Class for pair data structure.
+ * Class for triple data structure.
  *
  * @author Murat Artim
+ * @date 25 Aug 2018
+ * @time 11:18:31
  * @param <V>
  *            Class for first element.
  * @param <T>
  *            Class for second element.
- * @date 22 Aug 2018
- * @time 13:09:33
+ * @param <Z>
+ *            Class for third element.
  */
-public class Pair<V, T> implements Serializable {
+public class Triple<V, T, Z> implements Serializable {
 
 	/** Serial id. */
 	private static final long serialVersionUID = 1L;
@@ -39,23 +41,29 @@ public class Pair<V, T> implements Serializable {
 	/** Second element. */
 	private T element2;
 
+	/** Third element. */
+	private Z element3;
+
 	/**
-	 * Creates a pair with empty content.
+	 * Creates a triple with empty content.
 	 */
-	public Pair() {
+	public Triple() {
 	}
 
 	/**
-	 * Creates a pair with given elements.
+	 * Creates a triple with given elements.
 	 *
 	 * @param element1
 	 *            First element.
 	 * @param element2
 	 *            Second element.
+	 * @param element3
+	 *            Third element.
 	 */
-	public Pair(V element1, T element2) {
+	public Triple(V element1, T element2, Z element3) {
 		this.element1 = element1;
 		this.element2 = element2;
+		this.element3 = element3;
 	}
 
 	/**
@@ -77,6 +85,15 @@ public class Pair<V, T> implements Serializable {
 	}
 
 	/**
+	 * Returns third element.
+	 *
+	 * @return Third element.
+	 */
+	public Z getElement3() {
+		return element3;
+	}
+
+	/**
 	 * Sets first element.
 	 *
 	 * @param element1
@@ -94,5 +111,15 @@ public class Pair<V, T> implements Serializable {
 	 */
 	public void setElement2(T element2) {
 		this.element2 = element2;
+	}
+
+	/**
+	 * Sets third element.
+	 *
+	 * @param element3
+	 *            Third element.
+	 */
+	public void setElement3(Z element3) {
+		this.element3 = element3;
 	}
 }

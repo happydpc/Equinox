@@ -2725,7 +2725,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 
 			// create task
-			tm.runTaskInParallel(new DeleteFiles(selected));
+			tm.runTaskInParallel(new DeleteFiles<>(selected));
 
 			// hide pop-over
 			popOver.hide();

@@ -59,10 +59,12 @@ import javafx.scene.control.TreeItem;
  * Class for delete files task.
  *
  * @author Murat Artim
+ * @param <V>
+ *            Type of file to delete.
  * @date Dec 12, 2013
  * @time 6:12:33 PM
  */
-public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
+public class DeleteFiles<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<V> {
 
 	/** File items to delete. */
 	private SpectrumItem[] files_;
@@ -93,7 +95,7 @@ public class DeleteFiles extends InternalEquinoxTask<Void> implements LongRunnin
 	}
 
 	@Override
-	public void setAutomaticInput(Spectrum input) {
+	public void setAutomaticInput(V input) {
 		files_ = new SpectrumItem[1];
 		files_[0] = input;
 	}

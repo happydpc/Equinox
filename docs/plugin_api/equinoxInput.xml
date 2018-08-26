@@ -86,10 +86,8 @@
 		<spectrumId></spectrumId><!--Delivery reference. This element is optional. If not supplied, DRAFT will be set.-->
 		<deliveryReference></deliveryReference><!--Spectrum description. This element is optional.-->
 		<description></description><!--Path to save export file. File name must end with '.zip'.-->
-		<outputPath></outputPath></exportSpectrum><!--Deletes spectrum with given id. Note that, this instruction can only be used in sequential run mode.-->
-	<deleteSpectrum>
-		<id></id>
-		<spectrumId></spectrumId></deleteSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
+		<outputPath></outputPath></exportSpectrum>
+	<uploadSpectrum></uploadSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 
 
 	<downloadStf>
@@ -115,14 +113,31 @@
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
-	</addStf>
-	<saveStf></saveStf>
-	<shareStf></shareStf>
-	<exportStf></exportStf>
-	<deleteStf></deleteStf>
-	<downloadStf></downloadStf>
+	</addStf><!--Saves stf file to given output path.-->
+	<saveStf>
+		<id></id>
+		<stfId></stfId><!--Path to save stf file. To save as stf file, end file name with .stf. To save as zip bundle, end file name with .zip. To save as gz bundle, end file name with .gz.-->
+		<outputPath></outputPath>
+	</saveStf><!--Shares stf file with given recipient.-->
+	<shareStf>
+		<id></id>
+		<stfId></stfId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient></shareStf><!--Exports pilot point to zip archive. The archive contains pilot point upload information.-->
+	<exportStf>
+		<id></id>
+		<stfId></stfId><!--Pilot point attribute. Multiple pilotPointInfo elements can be given for various pilot point attributes. This element is optional.-->
+		<pilotPointInfo><!--Pilot point attribute name. This can be one of 'fatigueMission', 'description', 'dataSource', 'generationSource', 'deliveryReference', 'issue', 'eid', 'elementType', 'framePosition', 'stringerPosition', 'fatigueMaterial', 'preffasMaterial' or 'linearMaterial'.-->
+			<attributeName></attributeName>
+			<attributeValue></attributeValue>
+		</pilotPointInfo><!--Pilot point image. Multiple pilotPointImage elements can be given for various pilot point images types. This element is optional.-->
+		<pilotPointImage><!--Pilot point image type. This can be one of 'Pilot Point Image', 'Mission Profile', 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Level Crossings', 'Damage Angles', 'Typical Flight Number Of Peaks', 'Typical Flight Occurrences', 'Rainflow Histogram', 'Loadcase Damage Contributions' or 'Flight Damage Contributions'.-->
+			<imageType></imageType><!--Pilot point image path. A png file is expected.-->
+			<imagePath></imagePath>
+		</pilotPointImage><!--Path to where the pilot point will be exported. File name must end with .zip.-->
+		<outputPath></outputPath>
+	</exportStf>
 
-	<!--Adds stress sequence to workspace from given SIGMA file.-->
+	<uploadStf></uploadStf><!--Adds stress sequence to workspace from given SIGMA file.-->
 	<addStressSequence>
 		<id></id>
 		<sigmaPath></sigmaPath>

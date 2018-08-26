@@ -17,17 +17,17 @@ package equinox.task;
 
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
-import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 
 /**
@@ -37,23 +37,23 @@ import equinox.utility.Utility;
  * @date Sep 23, 2014
  * @time 4:57:19 PM
  */
-public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask {
+public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, AutomaticTask<STFFile> {
 
 	/** Item to share. */
-	private final SpectrumItem item_;
+	private STFFile item_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final List<String> recipients_;
 
 	/**
 	 * Creates share spectrum item task.
 	 *
 	 * @param item
-	 *            File to share.
+	 *            STF file to share. Can be null for automatic execution.
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSTF(SpectrumItem item, ArrayList<String> recipients) {
+	public ShareSTF(STFFile item, List<String> recipients) {
 		item_ = item;
 		recipients_ = recipients;
 	}
@@ -66,6 +66,11 @@ public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRun
 	@Override
 	public boolean canBeCancelled() {
 		return false;
+	}
+
+	@Override
+	public void setAutomaticInput(STFFile input) {
+		item_ = input;
 	}
 
 	@Override
@@ -105,7 +110,7 @@ public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRun
 
 			// save STF file
 			Path stfFile = getWorkingDirectory().resolve(FileType.appendExtension(Utility.correctFileName(item_.getName()), FileType.STF));
-			new SaveSTFFile(this, (STFFile) item_, stfFile).start(connection);
+			new SaveSTFFile(this, item_, stfFile).start(connection);
 
 			// zip STF file
 			zipFile = getWorkingDirectory().resolve(FileType.getNameWithoutExtension(stfFile));

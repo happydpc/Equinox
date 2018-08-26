@@ -293,7 +293,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 
 		// STF file
 		else if (item_ instanceof STFFile) {
-			tm.runTaskInParallel(new ShareSTF(item_, recipients));
+			tm.runTaskInParallel(new ShareSTF((STFFile) item_, recipients));
 		}
 
 		// STF file bucket
