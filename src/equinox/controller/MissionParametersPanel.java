@@ -183,7 +183,7 @@ public class MissionParametersPanel implements InternalInputSubPanel, MissionPar
 
 		// edit CDF info
 		ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
-		tm.runTaskInParallel(new AssignMissionParameters(spectrumItem_, mps));
+		tm.runTaskInParallel(new AssignMissionParameters<>(spectrumItem_, mps));
 
 		// get back to files view
 		owner_.showSubPanel(InputPanel.FILE_VIEW_PANEL);
@@ -228,7 +228,7 @@ public class MissionParametersPanel implements InternalInputSubPanel, MissionPar
 
 		// no name given
 		String name = parameterName_.getText();
-		if ((name == null) || name.isEmpty()) {
+		if (name == null || name.isEmpty()) {
 			String message = "No parameter name given. Please enter parameter name.";
 			PopOver popOver = new PopOver();
 			popOver.setArrowLocation(ArrowLocation.TOP_LEFT);

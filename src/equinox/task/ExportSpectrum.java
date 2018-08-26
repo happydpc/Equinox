@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.Pair;
@@ -32,6 +34,7 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.Utility;
 import jxl.CellType;
 import jxl.Workbook;
@@ -52,7 +55,7 @@ import jxl.write.WriteException;
  * @date Feb 9, 2016
  * @time 2:45:37 PM
  */
-public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Pair<Spectrum, String[]>> {
+public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, AutomaticTask<Pair<Spectrum, String[]>>, AutomaticTaskOwner<Path> {
 
 	/** Spectrum. */
 	private Spectrum spectrum_;
@@ -65,6 +68,12 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 
 	/** Editable spectrum info. */
 	private String deliveryReference_, description_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates export spectrum task.
@@ -119,7 +128,25 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.EXPORT_SPECTRUM);
@@ -154,8 +181,40 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Void> implements L
 		updateMessage("Zipping exported files...");
 		Utility.zipFiles(inputFiles, output_, this);
 
-		// return
-		return null;
+		// return output path
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// set file info
+		try {
+
+			// get output path
+			Path output = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(output);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

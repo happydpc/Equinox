@@ -18,6 +18,7 @@ package equinox.task.automation;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
 import equinox.data.InstructedTask;
+import equinox.data.MissionParameter;
 import equinox.data.Pair;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
@@ -50,6 +52,7 @@ import equinox.task.AddSpectrum;
 import equinox.task.AddStressSequence;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
+import equinox.task.AssignMissionParameters;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
 import equinox.task.ExportSTF;
@@ -72,6 +75,8 @@ import equinox.task.SaveTask;
 import equinox.task.ShareSTF;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
+import equinox.task.UploadPilotPoints;
+import equinox.task.UploadSpectra;
 import equinox.utility.Utility;
 import equinox.utility.XMLUtilities;
 import javafx.scene.image.Image;
@@ -156,6 +161,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			addSpectrum(equinoxInput, tasks);
 		}
 
+		// assign mission parameters to spectrum
+		if (equinoxInput.getChild("assignMissionParametersToSpectrum") != null) {
+			assignMissionParametersToSpectrum(equinoxInput, tasks);
+		}
+
 		// save spectrum
 		if (equinoxInput.getChild("saveSpectrum") != null) {
 			saveSpectrum(equinoxInput, tasks);
@@ -181,6 +191,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			exportSpectrum(equinoxInput, tasks);
 		}
 
+		// upload spectrum
+		if (equinoxInput.getChild("uploadSpectrum") != null) {
+			uploadSpectrum(equinoxInput, tasks);
+		}
+
 		// download STF
 		if (equinoxInput.getChild("downloadStf") != null) {
 			downloadStf(equinoxInput, tasks);
@@ -189,6 +204,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// add STF
 		if (equinoxInput.getChild("addStf") != null) {
 			addStf(equinoxInput, tasks);
+		}
+
+		// assign mission parameters to STF
+		if (equinoxInput.getChild("assignMissionParametersToStf") != null) {
+			assignMissionParametersToStf(equinoxInput, tasks);
 		}
 
 		// save STF
@@ -204,6 +224,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// export STF
 		if (equinoxInput.getChild("exportStf") != null) {
 			exportStf(equinoxInput, tasks);
+		}
+
+		// upload STF
+		if (equinoxInput.getChild("uploadStf") != null) {
+			uploadStf(equinoxInput, tasks);
 		}
 
 		// add stress sequence
@@ -364,6 +389,39 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				tasks.put(id, new InstructedTask(new AddStressSequence(sthPath, flsPath), false));
 			}
 		}));
+	}
+
+	/**
+	 * Creates upload STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void uploadStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating upload STF tasks...");
+
+		// loop over upload STF elements
+		for (Element uploadStf : equinoxInput.getChildren("uploadStf")) {
+
+			// create task
+			String id = uploadStf.getChild("id").getTextNormalize();
+			String exportId = uploadStf.getChild("exportId").getTextNormalize();
+			UploadPilotPoints uploadStfTask = new UploadPilotPoints(null);
+
+			// add to parent task
+			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(exportId).getTask();
+			parentTask.addAutomaticTask(id, uploadStfTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(uploadStfTask, true));
+		}
 	}
 
 	/**
@@ -591,6 +649,53 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
+	 * Creates override mission parameters to STF tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void assignMissionParametersToStf(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating override mission parameters to STF tasks...");
+
+		// loop over override mission parameters elements
+		for (Element assignMissionParametersToStf : equinoxInput.getChildren("assignMissionParametersToStf")) {
+
+			// create task
+			String id = assignMissionParametersToStf.getChild("id").getTextNormalize();
+			String stfId = assignMissionParametersToStf.getChild("stfId").getTextNormalize();
+			ArrayList<MissionParameter> parameters = new ArrayList<>();
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToStf.getChildren("missionParameter")) {
+
+				// get parameter name and value
+				String name = missionParameter.getChildTextNormalize("name");
+				double value = Double.parseDouble(missionParameter.getChildTextNormalize("value"));
+
+				// create and add mission parameter
+				parameters.add(new MissionParameter(name, value));
+			}
+
+			// create task
+			AssignMissionParameters<STFFile> assignMissionParametersTask = new AssignMissionParameters<>(null, parameters.toArray(new MissionParameter[parameters.size()]));
+
+			// add to parent task
+			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addAutomaticTask(id, assignMissionParametersTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(assignMissionParametersTask, true));
+		}
+	}
+
+	/**
 	 * Creates add STF tasks.
 	 *
 	 * @param equinoxInput
@@ -732,6 +837,39 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// add to tasks
 			tasks.put(id, new InstructedTask(downloadPilotPointTask, true));
 			tasks.put("ownerOf_" + id, new InstructedTask(searchPilotPointTask, false));
+		}
+	}
+
+	/**
+	 * Creates upload spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void uploadSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating upload spectrum tasks...");
+
+		// loop over upload spectrum elements
+		for (Element uploadSpectrum : equinoxInput.getChildren("uploadSpectrum")) {
+
+			// create task
+			String id = uploadSpectrum.getChild("id").getTextNormalize();
+			String exportId = uploadSpectrum.getChild("exportId").getTextNormalize();
+			UploadSpectra uploadSectrumTask = new UploadSpectra(null);
+
+			// add to parent task
+			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(exportId).getTask();
+			parentTask.addAutomaticTask(id, uploadSectrumTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(uploadSectrumTask, true));
 		}
 	}
 
@@ -944,6 +1082,53 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(saveSpectrumTask, true));
+		}
+	}
+
+	/**
+	 * Creates assign mission parameters to spectrum tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void assignMissionParametersToSpectrum(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating assign mission parameters to spectrum tasks...");
+
+		// loop over assign mission parameters elements
+		for (Element assignMissionParametersToSpectrum : equinoxInput.getChildren("assignMissionParametersToSpectrum")) {
+
+			// create task
+			String id = assignMissionParametersToSpectrum.getChild("id").getTextNormalize();
+			String spectrumId = assignMissionParametersToSpectrum.getChild("spectrumId").getTextNormalize();
+			ArrayList<MissionParameter> parameters = new ArrayList<>();
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToSpectrum.getChildren("missionParameter")) {
+
+				// get parameter name and value
+				String name = missionParameter.getChildTextNormalize("name");
+				double value = Double.parseDouble(missionParameter.getChildTextNormalize("value"));
+
+				// create and add mission parameter
+				parameters.add(new MissionParameter(name, value));
+			}
+
+			// create task
+			AssignMissionParameters<Spectrum> assignMissionParametersTask = new AssignMissionParameters<>(null, parameters.toArray(new MissionParameter[parameters.size()]));
+
+			// add to parent task
+			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addAutomaticTask(id, assignMissionParametersTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(assignMissionParametersTask, true));
 		}
 	}
 

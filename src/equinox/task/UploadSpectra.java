@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,6 +36,7 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
@@ -48,13 +50,13 @@ import jxl.Workbook;
  * @date Feb 11, 2016
  * @time 10:27:44 AM
  */
-public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, DatabaseQueryListenerTask {
+public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, DatabaseQueryListenerTask, AutomaticTask<Path> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
 
 	/** Zip files containing the spectra to upload. */
-	private final List<File> files_;
+	private List<File> files_;
 
 	/** Server query completion indicator. */
 	private final AtomicBoolean isQueryCompleted;
@@ -66,7 +68,7 @@ public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements
 	 * Creates upload spectra task.
 	 *
 	 * @param files
-	 *            Zip files containing the spectra to upload.
+	 *            Zip files containing the spectra to upload. Can be null for automatic execution.
 	 */
 	public UploadSpectra(List<File> files) {
 		files_ = files;
@@ -87,6 +89,11 @@ public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements
 	@Override
 	public void respondToDataMessage(DataMessage message) throws Exception {
 		processServerDataMessage(message, this, serverMessageRef, isQueryCompleted);
+	}
+
+	@Override
+	public void setAutomaticInput(Path input) {
+		files_ = Arrays.asList(input.toFile());
 	}
 
 	@Override

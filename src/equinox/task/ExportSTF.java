@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 
@@ -36,6 +37,7 @@ import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.Utility;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -58,7 +60,7 @@ import jxl.write.WriteException;
  * @date Feb 5, 2016
  * @time 1:10:31 PM
  */
-public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>> {
+public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, AutomaticTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>>, AutomaticTaskOwner<Path> {
 
 	/** STF file. */
 	private STFFile stfFile_;
@@ -74,6 +76,12 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 
 	/** Path to output ZIP file. */
 	private final File output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save pilot point info task.
@@ -164,7 +172,25 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.EXPORT_PILOT_POINT);
@@ -216,8 +242,40 @@ public class ExportSTF extends TemporaryFileCreatingTask<Void> implements LongRu
 		updateMessage("Zipping exported files...");
 		Utility.zipFiles(inputFiles, output_, this);
 
-		// return
-		return null;
+		// return output file
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// set file info
+		try {
+
+			// get output path
+			Path output = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(output);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

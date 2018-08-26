@@ -55,9 +55,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	/** True to overwrite existing files. */
 	private boolean overwriteFiles = true;
 
-	/** True if tasks should be executed in parallel mode. */
-	private String runMode = RunInstructionSet.PARALLEL;
-
 	/**
 	 * Creates check instruction set task.
 	 *
@@ -116,6 +113,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// assign mission parameters to spectrum
+		if (equinoxInput.getChild("assignMissionParametersToSpectrum") != null) {
+			if (!checkAssignMissionParametersToSpectrum(equinoxInput))
+				return false;
+		}
+
 		// save spectrum
 		if (equinoxInput.getChild("saveSpectrum") != null) {
 			if (!checkSaveSpectrum(equinoxInput))
@@ -146,6 +149,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// upload spectrum
+		if (equinoxInput.getChild("uploadSpectrum") != null) {
+			if (!checkUploadSpectrum(equinoxInput))
+				return false;
+		}
+
 		// download STF
 		if (equinoxInput.getChild("downloadStf") != null) {
 			if (!checkDownloadStf(equinoxInput))
@@ -155,6 +164,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// add STF
 		if (equinoxInput.getChild("addStf") != null) {
 			if (!checkAddStf(equinoxInput))
+				return false;
+		}
+
+		// assign mission parameters to STF
+		if (equinoxInput.getChild("assignMissionParametersToStf") != null) {
+			if (!checkAssignMissionParametersToStf(equinoxInput))
 				return false;
 		}
 
@@ -173,6 +188,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// export STF
 		if (equinoxInput.getChild("exportStf") != null) {
 			if (!checkExportStf(equinoxInput))
+				return false;
+		}
+
+		// upload STF
+		if (equinoxInput.getChild("uploadStf") != null) {
+			if (!checkUploadStf(equinoxInput))
 				return false;
 		}
 
@@ -314,6 +335,36 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>uploadStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>uploadStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkUploadStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking uploadStf elements...");
+
+		// loop over upload STF elements
+		for (Element uploadStf : equinoxInput.getChildren("uploadStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, uploadStf))
+				return false;
+
+			// check export id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, uploadStf, "exportId", "exportStf"))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>exportStf</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -441,6 +492,54 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>assignMissionParametersToStf</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>assignMissionParametersToStf</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkAssignMissionParametersToStf(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking assignMissionParametersToStf elements...");
+
+		// loop over assign mission parameters elements
+		for (Element assignMissionParametersToStf : equinoxInput.getChildren("assignMissionParametersToStf")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, assignMissionParametersToStf))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, assignMissionParametersToStf, "stfId", "addStf"))
+				return false;
+
+			// no mission parameter element found
+			if (assignMissionParametersToStf.getChild("missionParameter") == null) {
+				addWarning("Cannot locate element 'missionParameter' under " + XMLUtilities.getFamilyTree(assignMissionParametersToStf) + " in instruction set '" + inputFile.toString() + "'. At least 1 of this element is obligatory. Check failed.");
+				return false;
+			}
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToStf.getChildren("missionParameter")) {
+
+				// check parameter name
+				if (!XMLUtilities.checkStringValue(this, inputFile, missionParameter, "name", false))
+					return false;
+
+				// check parameter value
+				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>addStf</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -549,6 +648,84 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// check search entries
 			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadSpectrum, XMLUtilities.getStringArray(SpectrumInfoType.values())))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>assignMissionParameters</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>assignMissionParameters</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkAssignMissionParametersToSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking assignMissionParametersToSpectrum elements...");
+
+		// loop over assign mission parameters elements
+		for (Element assignMissionParametersToSpectrum : equinoxInput.getChildren("assignMissionParametersToSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, assignMissionParametersToSpectrum))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, assignMissionParametersToSpectrum, "spectrumId", "addSpectrum"))
+				return false;
+
+			// no mission parameter element found
+			if (assignMissionParametersToSpectrum.getChild("missionParameter") == null) {
+				addWarning("Cannot locate element 'missionParameter' under " + XMLUtilities.getFamilyTree(assignMissionParametersToSpectrum) + " in instruction set '" + inputFile.toString() + "'. At least 1 of this element is obligatory. Check failed.");
+				return false;
+			}
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToSpectrum.getChildren("missionParameter")) {
+
+				// check parameter name
+				if (!XMLUtilities.checkStringValue(this, inputFile, missionParameter, "name", false))
+					return false;
+
+				// check parameter value
+				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>uploadSpectrum</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>uploadSpectrum</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkUploadSpectrum(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking uploadSpectrum elements...");
+
+		// loop over upload spectrum elements
+		for (Element uploadSpectrum : equinoxInput.getChildren("uploadSpectrum")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, uploadSpectrum))
+				return false;
+
+			// check export id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, uploadSpectrum, "exportId", "exportSpectrum"))
 				return false;
 		}
 
@@ -814,9 +991,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// check run mode
 		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
 			return false;
-		if (settings.getChild("runMode") != null) {
-			runMode = settings.getChild("runMode").getTextNormalize();
-		}
 
 		// check run silent
 		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "runSilent", true))

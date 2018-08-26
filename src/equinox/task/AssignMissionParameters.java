@@ -33,16 +33,18 @@ import equinox.task.automation.AutomaticTask;
  * Class for assign mission parameters task.
  *
  * @author Murat Artim
+ * @param <V>
+ *            Class for spectrum item to assign mission parameters.
  * @date Oct 7, 2014
  * @time 5:21:10 PM
  */
-public class AssignMissionParameters extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<Spectrum> {
+public class AssignMissionParameters<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<V> {
 
 	/** Spectrum item. */
-	private SpectrumItem spectrumItem_;
+	private V spectrumItem;
 
 	/** Mission parameters. */
-	private final MissionParameter[] missionParameters_;
+	private final MissionParameter[] missionParameters;
 
 	/**
 	 * Creates assign mission parameters task.
@@ -52,14 +54,14 @@ public class AssignMissionParameters extends InternalEquinoxTask<Void> implement
 	 * @param missionParameters
 	 *            Mission parameters.
 	 */
-	public AssignMissionParameters(SpectrumItem spectrumItem, MissionParameter[] missionParameters) {
-		spectrumItem_ = spectrumItem;
-		missionParameters_ = missionParameters;
+	public AssignMissionParameters(V spectrumItem, MissionParameter[] missionParameters) {
+		this.spectrumItem = spectrumItem;
+		this.missionParameters = missionParameters;
 	}
 
 	@Override
-	public void setAutomaticInput(Spectrum spectrum) {
-		spectrumItem_ = spectrum;
+	public void setAutomaticInput(V spectrumItem) {
+		this.spectrumItem = spectrumItem;
 	}
 
 	@Override
@@ -89,7 +91,7 @@ public class AssignMissionParameters extends InternalEquinoxTask<Void> implement
 				// disable auto-commit
 				connection.setAutoCommit(false);
 
-				// create statement
+				// assign parameters
 				try (Statement statement = connection.createStatement()) {
 					assignParameters(statement, connection);
 				}
@@ -128,29 +130,29 @@ public class AssignMissionParameters extends InternalEquinoxTask<Void> implement
 	private void assignParameters(Statement statement, Connection connection) throws Exception {
 
 		// update info
-		updateMessage("Assigning mission parameters to '" + spectrumItem_.getName() + "'...");
+		updateMessage("Assigning mission parameters to '" + spectrumItem.getName() + "'...");
 
 		// setup table and column names
 		String tableName = null, colName = null;
-		if (spectrumItem_ instanceof Spectrum) {
+		if (spectrumItem instanceof Spectrum) {
 			tableName = "cdf_mission_parameters";
 			colName = "cdf_id";
 		}
-		else if (spectrumItem_ instanceof STFFile) {
+		else if (spectrumItem instanceof STFFile) {
 			tableName = "stf_mission_parameters";
 			colName = "stf_id";
 		}
-		else if (spectrumItem_ instanceof ExternalStressSequence) {
+		else if (spectrumItem instanceof ExternalStressSequence) {
 			tableName = "ext_sth_mission_parameters";
 			colName = "sth_id";
 		}
 
 		// remove all mission parameters
-		String sql = "delete from " + tableName + " where " + colName + " = " + spectrumItem_.getID();
+		String sql = "delete from " + tableName + " where " + colName + " = " + spectrumItem.getID();
 		statement.executeUpdate(sql);
 
 		// there are no mission parameters
-		if (missionParameters_.length == 0)
+		if (missionParameters.length == 0)
 			return;
 
 		// insert mission parameters
@@ -158,10 +160,10 @@ public class AssignMissionParameters extends InternalEquinoxTask<Void> implement
 		try (PreparedStatement update = connection.prepareStatement(sql)) {
 
 			// loop over mission parameters
-			for (MissionParameter mp : missionParameters_) {
+			for (MissionParameter mp : missionParameters) {
 
 				// execute update
-				update.setInt(1, spectrumItem_.getID()); // spectrum item ID
+				update.setInt(1, spectrumItem.getID()); // spectrum item ID
 				update.setString(2, mp.getName()); // parameter name
 				update.setDouble(3, mp.getValue()); // parameter value
 				update.executeUpdate();

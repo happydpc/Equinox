@@ -57,7 +57,12 @@
 	<addSpectrum>
 		<id></id>
 		<downloadId></downloadId>
-	</addSpectrum>
+	</addSpectrum><!--Assigns mission parameters to spectrum.-->
+	<assignMissionParametersToSpectrum><id></id><spectrumId></spectrumId><!--Multiple mission parameters with unique names can be given.--><missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name></name><!--Mission parameter value. A real number is expected.-->
+			<value></value>
+		</missionParameter></assignMissionParametersToSpectrum>
+	
 	<!--Saves spectrum to given output path.-->
 	<saveSpectrum>
 		<id></id>
@@ -86,8 +91,10 @@
 		<spectrumId></spectrumId><!--Delivery reference. This element is optional. If not supplied, DRAFT will be set.-->
 		<deliveryReference></deliveryReference><!--Spectrum description. This element is optional.-->
 		<description></description><!--Path to save export file. File name must end with '.zip'.-->
-		<outputPath></outputPath></exportSpectrum>
-	<uploadSpectrum></uploadSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
+		<outputPath></outputPath></exportSpectrum><!--Uploads spectrum to central database.-->
+	<uploadSpectrum>
+		<id></id><!--Export package to upload. This must refer to an 'exportSpectrum' instruction.-->
+		<exportId></exportId></uploadSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 
 
 	<downloadStf>
@@ -113,7 +120,12 @@
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
-	</addStf><!--Saves stf file to given output path.-->
+	</addStf><!--Assigns mission parameters to stf file.-->
+	<assignMissionParametersToStf><id></id><stfId></stfId><!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name></name><!--Mission parameter value. A real number is expected.-->
+			<value></value>
+		</missionParameter></assignMissionParametersToStf><!--Saves stf file to given output path.-->
 	<saveStf>
 		<id></id>
 		<stfId></stfId><!--Path to save stf file. To save as stf file, end file name with .stf. To save as zip bundle, end file name with .zip. To save as gz bundle, end file name with .gz.-->
@@ -135,9 +147,11 @@
 			<imagePath></imagePath>
 		</pilotPointImage><!--Path to where the pilot point will be exported. File name must end with .zip.-->
 		<outputPath></outputPath>
-	</exportStf>
+	</exportStf><!--Uploads stf to central database.-->
 
-	<uploadStf></uploadStf><!--Adds stress sequence to workspace from given SIGMA file.-->
+	<uploadStf>
+		<id></id><!--Export package to upload. This must refer to an 'exportStf' instruction.-->
+		<exportId></exportId></uploadStf><!--Adds stress sequence to workspace from given SIGMA file.-->
 	<addStressSequence>
 		<id></id>
 		<sigmaPath></sigmaPath>
@@ -163,7 +177,6 @@
 		<stressSequenceId></stressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
 		<outputPath></outputPath></saveStressSequence>
 	<shareStressSequence></shareStressSequence>
-	<deleteStressSequence></deleteStressSequence>
 	<plotMissionProfile><id></id><stressSequenceId></stressSequenceId><!--Path to save mission profile plot. PNG extension will be appended to file name if necessary.--><outputPath></outputPath></plotMissionProfile>
 	<compareMissionProfiles></compareMissionProfiles>
 	<plotTypicalFlight><id></id><stressSequenceId></stressSequenceId><typicalFlightName></typicalFlightName><outputPath></outputPath></plotTypicalFlight>
