@@ -94,7 +94,8 @@
 		<outputPath></outputPath></exportSpectrum><!--Uploads spectrum to central database.-->
 	<uploadSpectrum>
 		<id></id><!--Export package to upload. This must refer to an 'exportSpectrum' instruction.-->
-		<exportId></exportId></uploadSpectrum><!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
+		<exportId></exportId></uploadSpectrum>
+	<!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 
 
 	<downloadStf>
@@ -120,7 +121,38 @@
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
-	</addStf><!--Assigns mission parameters to stf file.-->
+	</addStf><!--Creates a dummy stf and adds it to referenced spectrum.-->
+	<addStf><id></id><spectrumId></spectrumId><!--STF file name.-->
+		<stfName></stfName><!--STF stress state. This can be either '1d' or '2d'.-->
+		<stressState></stressState><!--1g stresses. This element is optional, if not set, 1g stresses will be set to 0.-->
+		<onegStresses>
+			<sx></sx>
+			<sy></sy>
+			<sxy></sxy></onegStresses><!--Increment stresses. This element is optional, if not set, increment stresses will be set to 0.-->
+		<incrementStresses>
+			<sx></sx>
+			<sy></sy>
+			<sxy></sxy></incrementStresses><!--Delta-p stresses. This element is optional, if not set, delta-p stresses will be set to 0.-->
+		<dpStresses>
+			<dpLoadcase></dpLoadcase>
+			<sx></sx>
+			<sy></sy>
+			<sxy></sxy></dpStresses><!--Delta-t stresses. This element is optional, if not set, delta-t stresses will be set to 0.-->
+		<dtStresses>
+			<superior>
+				<loadcase></loadcase>
+				<sx></sx>
+				<sy></sy>
+				<sxy></sxy></superior>
+			<inferior>
+				<loadcase></loadcase>
+				<sx></sx>
+				<sy></sy>
+				<sxy></sxy></inferior></dtStresses></addStf><!--Overrides fatigue mission inherited from the parent spectrum with the given mission.-->
+	<overrideFatigueMission>
+		<id></id>
+		<stfId></stfId>
+		<fatigueMission></fatigueMission></overrideFatigueMission><!--Assigns mission parameters to stf file.-->
 	<assignMissionParametersToStf><id></id><stfId></stfId><!--Multiple mission parameters with unique names can be given.-->
 		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
 			<name></name><!--Mission parameter value. A real number is expected.-->
@@ -151,21 +183,15 @@
 
 	<uploadStf>
 		<id></id><!--Export package to upload. This must refer to an 'exportStf' instruction.-->
-		<exportId></exportId></uploadStf><!--Adds stress sequence to workspace from given SIGMA file.-->
-	<addStressSequence>
-		<id></id>
-		<sigmaPath></sigmaPath>
-	</addStressSequence>
+		<exportId></exportId></uploadStf><!--Adds headless (as direct input) stress sequence to workspace from given SIGMA file.-->
+	<addHeadlessStressSequence><id></id><sigmaPath></sigmaPath></addHeadlessStressSequence>
 	
-	<!--Adds stress sequence to workspace from given STH and FLS files.-->
-	<addStressSequence>
-		<id></id>
-		
-		<sthPath></sthPath>
-		<flsPath></flsPath>
-	</addStressSequence>
-	
-	<!--Generates stress sequence from referenced STF file.-->
+	<!--Adds headless (as direct input) stress sequence to workspace from given STH and FLS files.-->
+	<addHeadlessStressSequence><id></id><sthPath></sthPath><flsPath></flsPath></addHeadlessStressSequence><!--Saves headless stress sequence to given output path.-->
+	<saveHeadlessStressSequence>
+		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
+		<outputPath></outputPath></saveHeadlessStressSequence><!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
 		<stfId></stfId><!--Path to XML file containing input parameters for generating stress sequence.-->
@@ -173,7 +199,7 @@
 	</generateStressSequence><!--Saves stress sequence to given output path.-->
 
 	<saveStressSequence>
-		<id></id>
+		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
 		<outputPath></outputPath></saveStressSequence>
 	<shareStressSequence></shareStressSequence>

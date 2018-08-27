@@ -23,6 +23,7 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.process.SaveExternalSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for save external stress sequence as STH task.
@@ -31,26 +32,35 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Mar 13, 2015
  * @time 11:26:53 AM
  */
-public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<ExternalStressSequence> {
 
-	/** Process of this task. */
-	private final SaveExternalSTH process_;
+	/** Stress sequence to save. */
+	private ExternalStressSequence sequence;
+
+	/** Output file. */
+	private final File output;
 
 	/**
 	 * Creates save external stress sequence as STH task.
 	 *
 	 * @param sequence
-	 *            Stress sequence to save.
+	 *            Stress sequence to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveExternalStressSequenceAsSTH(ExternalStressSequence sequence, File output) {
-		process_ = new SaveExternalSTH(this, sequence, output);
+		this.sequence = sequence;
+		this.output = output;
+	}
+
+	@Override
+	public void setAutomaticInput(ExternalStressSequence input) {
+		this.sequence = input;
 	}
 
 	@Override
 	public String getTaskTitle() {
-		return "Save external stress sequence to '" + process_.getOutputFile().getName() + "'";
+		return "Save external stress sequence";
 	}
 
 	@Override
@@ -64,12 +74,9 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> i
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
 
-		// update progress info
-		updateTitle("Saving external stress sequence to '" + process_.getOutputFile().getName() + "'");
-
 		// start process
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
-			process_.start(connection);
+			new SaveExternalSTH(this, sequence, output).start(connection);
 		}
 
 		// return

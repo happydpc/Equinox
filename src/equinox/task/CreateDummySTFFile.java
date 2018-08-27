@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.RandomUtils;
@@ -34,6 +35,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
 import equinox.serverUtilities.Permission;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for creating dummy STF files.
@@ -42,10 +45,10 @@ import equinox.serverUtilities.Permission;
  * @date May 20, 2014
  * @time 6:25:06 PM
  */
-public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
+public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> implements AutomaticTask<Spectrum>, AutomaticTaskOwner<STFFile> {
 
 	/** The owner spectrum. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_;
 
 	/** File name. */
 	private final String name_;
@@ -59,11 +62,17 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 	/** Delta-p and delta-t load cases. */
 	private String dpLC_ = null, dtInfLC_ = null, dtSupLC_ = null;
 
+	/** Automatic tasks. The key is the STF file name and the value is the task. */
+	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates dummy STF file task.
 	 *
 	 * @param spectrum
-	 *            Spectrum.
+	 *            Spectrum. Can be null for automatic execution.
 	 * @param name
 	 *            File name.
 	 * @param is1D
@@ -73,6 +82,29 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 		spectrum_ = spectrum;
 		name_ = name;
 		is1D_ = is1D;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<STFFile>> getAutomaticTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum spectrum) {
+		spectrum_ = spectrum;
 	}
 
 	@Override
@@ -253,7 +285,25 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> {
 
 		// add STF file to CDF set
 		try {
-			spectrum_.getChildren().add(get());
+
+			// get STF file
+			STFFile stfFile = get();
+
+			// add to spectrum
+			spectrum_.getChildren().add(stfFile);
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<STFFile> task : automaticTasks_.values()) {
+					task.setAutomaticInput(stfFile);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
 		}
 
 		// exception occurred

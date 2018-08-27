@@ -167,6 +167,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// override fatigue mission
+		if (equinoxInput.getChild("overrideFatigueMission") != null) {
+			if (!checkOverrideFatigueMission(equinoxInput))
+				return false;
+		}
+
 		// assign mission parameters to STF
 		if (equinoxInput.getChild("assignMissionParametersToStf") != null) {
 			if (!checkAssignMissionParametersToStf(equinoxInput))
@@ -197,15 +203,27 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
-		// add stress sequence
-		if (equinoxInput.getChild("addStressSequence") != null) {
-			if (!checkAddStressSequence(equinoxInput))
+		// add headless stress sequence
+		if (equinoxInput.getChild("addHeadlessStressSequence") != null) {
+			if (!checkAddHeadlessStressSequence(equinoxInput))
+				return false;
+		}
+
+		// save headless stress sequence
+		if (equinoxInput.getChild("saveHeadlessStressSequence") != null) {
+			if (!checkSaveHeadlessStressSequence(equinoxInput))
 				return false;
 		}
 
 		// generate stress sequence
 		if (equinoxInput.getChild("generateStressSequence") != null) {
 			if (!checkGenerateStressSequence(equinoxInput))
+				return false;
+		}
+
+		// save stress sequence
+		if (equinoxInput.getChild("saveStressSequence") != null) {
+			if (!checkSaveStressSequence(equinoxInput))
 				return false;
 		}
 
@@ -243,6 +261,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>saveStressSequence</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveStressSequence</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveStressSequence(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveStressSequence elements...");
+
+		// loop over save stress sequence elements
+		for (Element saveStressSequence : equinoxInput.getChildren("saveStressSequence")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveStressSequence))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveStressSequence, "stressSequenceId", "generateStressSequence"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveStressSequence, "outputPath", false, overwriteFiles, FileType.SIGMA, FileType.STH))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>generateStressSequence</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -270,7 +322,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, generateStressSequence, "stfId", "addStf"))
 				return false;
 
-			// check CML path
+			// check XML path
 			if (!XMLUtilities.checkInputPathValue(this, inputFile, generateStressSequence, "xmlPath", false, FileType.XML))
 				return false;
 
@@ -295,37 +347,71 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
-	 * Returns true if all <code>addStressSequence</code> elements pass checks.
+	 * Returns true if all <code>saveHeadlessStressSequence</code> elements pass checks.
 	 *
 	 * @param equinoxInput
 	 *            Root input element.
-	 * @return True if all <code>addStressSequence</code> elements pass checks.
+	 * @return True if all <code>saveHeadlessStressSequence</code> elements pass checks.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private boolean checkAddStressSequence(Element equinoxInput) throws Exception {
+	private boolean checkSaveHeadlessStressSequence(Element equinoxInput) throws Exception {
 
 		// read input file
-		updateMessage("Checking addStressSequence elements...");
+		updateMessage("Checking saveHeadlessStressSequence elements...");
 
-		// loop over add stress sequence elements
-		for (Element addStressSequence : equinoxInput.getChildren("addStressSequence")) {
+		// loop over save headless stress sequence elements
+		for (Element saveHeadlessStressSequence : equinoxInput.getChildren("saveHeadlessStressSequence")) {
 
 			// no id
-			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, addStressSequence))
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveHeadlessStressSequence))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveHeadlessStressSequence, "headlessStressSequenceId", "addHeadlessStressSequence"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveHeadlessStressSequence, "outputPath", false, overwriteFiles, FileType.SIGMA, FileType.STH))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>addHeadlessStressSequence</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>addHeadlessStressSequence</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkAddHeadlessStressSequence(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking addHeadlessStressSequence elements...");
+
+		// loop over add stress sequence elements
+		for (Element addHeadlessStressSequence : equinoxInput.getChildren("addHeadlessStressSequence")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, addHeadlessStressSequence))
 				return false;
 
 			// from SIGMA file
-			if (addStressSequence.getChild("sigmaPath") != null) {
-				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "sigmaPath", false, FileType.SIGMA))
+			if (addHeadlessStressSequence.getChild("sigmaPath") != null) {
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "sigmaPath", false, FileType.SIGMA))
 					return false;
 			}
 
 			// from STH file
 			else {
-				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "sthPath", false, FileType.STH))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "sthPath", false, FileType.STH))
 					return false;
-				if (!XMLUtilities.checkInputPathValue(this, inputFile, addStressSequence, "flsPath", false, FileType.FLS))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "flsPath", false, FileType.FLS))
 					return false;
 			}
 		}
@@ -414,7 +500,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 
 				// check image path
-				if (!XMLUtilities.checkOutputPathValue(this, inputFile, pilotPointImage, "imagePath", false, overwriteFiles, FileType.PNG))
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, pilotPointImage, "imagePath", false, FileType.PNG))
 					return false;
 			}
 		}
@@ -512,7 +598,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, assignMissionParametersToStf))
 				return false;
 
-			// check spectrum id
+			// check STF id
 			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, assignMissionParametersToStf, "stfId", "addStf"))
 				return false;
 
@@ -533,6 +619,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false))
 					return false;
 			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>overrideFatigueMission</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>overrideFatigueMission</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkOverrideFatigueMission(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking overrideFatigueMission elements...");
+
+		// loop over override fatigue mission elements
+		for (Element overrideFatigueMission : equinoxInput.getChildren("overrideFatigueMission")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, overrideFatigueMission))
+				return false;
+
+			// check STF id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, overrideFatigueMission, "stfId", "addStf"))
+				return false;
+
+			// check fatigue mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, overrideFatigueMission, "fatigueMission", false))
+				return false;
 		}
 
 		// check passed
@@ -576,10 +696,79 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 			}
 
-			// nothing given
+			// create dummy STF
 			else {
-				addWarning("Cannot locate element 'stfPath' or 'searchEntry' under " + XMLUtilities.getFamilyTree(addStf) + " in instruction set '" + inputFile.toString() + "'. At least one of the mentioned elements is obligatory. Check failed.");
-				return false;
+
+				// check file name
+				if (!XMLUtilities.checkStringValue(this, inputFile, addStf, "stfName", false))
+					return false;
+
+				// check stress state
+				if (!XMLUtilities.checkStringValue(this, inputFile, addStf, "stressState", false, "1d", "2d"))
+					return false;
+
+				// check 1g stresses
+				if (addStf.getChild("onegStresses") != null) {
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sx", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sy", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sxy", false))
+						return false;
+				}
+
+				// check increment stresses
+				if (addStf.getChild("incrementStresses") != null) {
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sx", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sy", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sxy", false))
+						return false;
+				}
+
+				// check delta-p stresses
+				if (addStf.getChild("dpStresses") != null) {
+					if (!XMLUtilities.checkStringValue(this, inputFile, addStf.getChild("dpStresses"), "dpLoadcase", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sx", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sy", false))
+						return false;
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sxy", false))
+						return false;
+				}
+
+				// check delta-t stresses
+				if (addStf.getChild("dtStresses") != null) {
+
+					// get element
+					Element dtStresses = addStf.getChild("dtStresses");
+
+					// superior
+					if (dtStresses.getChild("superior") != null) {
+						if (!XMLUtilities.checkStringValue(this, inputFile, dtStresses.getChild("superior"), "loadcase", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sx", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sy", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sxy", false))
+							return false;
+					}
+
+					// inferior
+					if (dtStresses.getChild("inferior") != null) {
+						if (!XMLUtilities.checkStringValue(this, inputFile, dtStresses.getChild("inferior"), "loadcase", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sx", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sy", false))
+							return false;
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sxy", false))
+							return false;
+					}
+				}
 			}
 		}
 

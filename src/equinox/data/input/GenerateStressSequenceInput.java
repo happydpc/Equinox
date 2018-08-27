@@ -99,8 +99,9 @@ public class GenerateStressSequenceInput implements Serializable {
 		if (loadcaseFactors == null)
 			return;
 		loadcaseFactors_ = new ArrayList<>();
-		for (LoadcaseFactor factor : loadcaseFactors)
+		for (LoadcaseFactor factor : loadcaseFactors) {
 			loadcaseFactors_.add(factor);
+		}
 	}
 
 	/**
@@ -113,8 +114,9 @@ public class GenerateStressSequenceInput implements Serializable {
 		if (segmentFactors == null)
 			return;
 		segmentFactors_ = new ArrayList<>();
-		for (SegmentFactor factor : segmentFactors)
+		for (SegmentFactor factor : segmentFactors) {
 			segmentFactors_.add(factor);
+		}
 	}
 
 	/**
@@ -208,7 +210,7 @@ public class GenerateStressSequenceInput implements Serializable {
 	}
 
 	/**
-	 * Sets the name of the STH file to be generated (null can also be given for automatic determination).
+	 * Sets the name of the stress sequence to be generated (null can also be given for automatic determination).
 	 *
 	 * @param fileName
 	 *            File name.

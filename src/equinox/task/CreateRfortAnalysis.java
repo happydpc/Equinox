@@ -364,7 +364,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressAnalysis fatigueAnalysis = new EquivalentStressAnalysis(null, fatigueInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveFatigueInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				fatigueAnalysis.addAutomaticTask(saveFatigueInfo);
-				generateStressSequence.addAutomaticTask(fatigueAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(fatigueAnalysis.hashCode()), fatigueAnalysis);
 			}
 
 			// preffas equivalent stress analysis
@@ -373,7 +373,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressAnalysis preffasAnalysis = new EquivalentStressAnalysis(null, preffasInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo savePreffasInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				preffasAnalysis.addAutomaticTask(savePreffasInfo);
-				generateStressSequence.addAutomaticTask(preffasAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(preffasAnalysis.hashCode()), preffasAnalysis);
 			}
 
 			// linear prop. equivalent stress analysis
@@ -382,7 +382,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressAnalysis linearAnalysis = new EquivalentStressAnalysis(null, linearInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveLinearInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				linearAnalysis.addAutomaticTask(saveLinearInfo);
-				generateStressSequence.addAutomaticTask(linearAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(linearAnalysis.hashCode()), linearAnalysis);
 			}
 
 			// add generate stress sequence task to add STF files task

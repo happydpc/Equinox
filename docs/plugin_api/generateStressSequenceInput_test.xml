@@ -2,18 +2,18 @@
 <generateStressSequenceInput>
 	<overallFactors>
 		<oneg>
-			<value>1.0</value><method>Multiply</method>
+			<value>0.001</value><method>Multiply</method>
 			</oneg>
 		<increment>
-			<value>1.0</value>
+			<value>0.001</value>
 			<method>Multiply</method></increment>
 		<deltaP>
-			<value>1.0</value>
+			<value>0.001</value>
 			<method>Multiply</method></deltaP>
 		<deltaT>
-			<value>1.0</value>
+			<value>0.001</value>
 			<method>Multiply</method></deltaT></overallFactors>
 	<loadcaseFactors>
-		<mutPath>/Users/aurora/Temporary/test2/A380-800MRB-511OWB1-M12-p45.mut</mutPath>
+		<mutPath>/Users/aurora/Temporary/A380-800MRB-511OWB1-M22-p45.mut</mutPath>
 		<tableColumn>1</tableColumn>
 		<method>Multiply</method></loadcaseFactors></generateStressSequenceInput>

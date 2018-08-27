@@ -29,6 +29,7 @@ import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for save stress sequence as SIGMA file task.
@@ -37,10 +38,10 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Jun 10, 2014
  * @time 1:43:02 PM
  */
-public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<StressSequence> {
 
 	/** Stress sequence to save. */
-	private final StressSequence sequence_;
+	private StressSequence sequence_;
 
 	/** Output file. */
 	private final File output_;
@@ -58,7 +59,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Void> impleme
 	 * Creates save stress sequence as SIGMA task.
 	 *
 	 * @param sequence
-	 *            Stress sequence to save.
+	 *            Stress sequence to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
@@ -75,6 +76,11 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Void> impleme
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public void setAutomaticInput(StressSequence input) {
+		sequence_ = input;
 	}
 
 	@Override

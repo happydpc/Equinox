@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for set STF file mission task.
@@ -29,10 +30,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Nov 12, 2015
  * @time 4:43:45 PM
  */
-public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRunningTask {
+public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<STFFile> {
 
 	/** STF file. */
-	private final STFFile stfFile_;
+	private STFFile stfFile_;
 
 	/** Mission to set. */
 	private final String mission_;
@@ -41,7 +42,7 @@ public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRun
 	 * Creates set STF file mission task.
 	 *
 	 * @param stfFile
-	 *            STF file.
+	 *            STF file. Can be null for automatic execution.
 	 * @param mission
 	 *            Mission.
 	 */
@@ -58,6 +59,11 @@ public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRun
 	@Override
 	public boolean canBeCancelled() {
 		return false;
+	}
+
+	@Override
+	public void setAutomaticInput(STFFile input) {
+		stfFile_ = input;
 	}
 
 	@Override

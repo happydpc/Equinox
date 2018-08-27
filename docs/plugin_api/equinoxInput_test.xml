@@ -5,23 +5,23 @@
 		<runSilent>true</runSilent>
 		<overwriteFiles>true</overwriteFiles>
 	</settings>
+	<downloadSpectrum>
+		<id>1</id>
+		<searchEntry>
+			<attributeName>NAME</attributeName>
+			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry>
+		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
+	</downloadSpectrum>
 	<addSpectrum>
 		<id>2</id>
-		<anaPath>/Users/aurora/Temporary/download/A310Microgravity-211Sect13-MR2_31P.ana</anaPath>
-		<cvtPath>/Users/aurora/Temporary/download/A310Microgravity-211Sect13-MR2_31P.cvt</cvtPath>
-		<flsPath>/Users/aurora/Temporary/download/A310Microgravity-211Sect13-MR2_31P.fls</flsPath>
-		<xlsPath>/Users/aurora/Temporary/download/ConvTableA310Microgravity-211Sect13-MR2_31P.xls</xlsPath>
-		<txtPath>/Users/aurora/Temporary/download/A310Microgravity-211Sect13-MR2_31P.txt</txtPath>
-		<convSheet>31 Parabolas</convSheet>
+		<downloadId>1</downloadId>
 	</addSpectrum>
-	<assignMissionParameters>
-		<id>4</id>
-		<spectrumId>2</spectrumId>
-		<missionParameter>
+	<assignMissionParametersToSpectrum><id>4</id><spectrumId>2</spectrumId><missionParameter>
 			<name>name1</name>
 			<value>12.8</value>
-		</missionParameter>
-	</assignMissionParameters>
+		</missionParameter></assignMissionParametersToSpectrum>
 	<addStf>
 		<id>3</id>
 		<spectrumId>2</spectrumId>
@@ -46,4 +46,20 @@
 			<keyword>61 Parabolas</keyword>
 		</searchEntry>
 	</addStf>
+	<generateStressSequence>
+		<id>6</id>
+		<stfId>3</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<saveStressSequence>
+		<id>7</id>
+		<stressSequenceId>6</stressSequenceId>
+		<outputPath>/Users/aurora/Temporary/saved_stress_sequence.sth</outputPath>
+	</saveStressSequence>
+	<addHeadlessStressSequence><id>8</id>
+		<sigmaPath>/Users/aurora/Temporary/saved_stress_sequence.sigma</sigmaPath></addHeadlessStressSequence>
+	<saveHeadlessStressSequence>
+		<id>9</id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId>8</headlessStressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
+		<outputPath>/Users/aurora/Temporary/saved_stress_sequence_new.sth</outputPath></saveHeadlessStressSequence>
 </equinoxInput>

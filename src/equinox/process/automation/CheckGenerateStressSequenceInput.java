@@ -106,6 +106,10 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 				return false;
 		}
 
+		// sequence name
+		if (!XMLUtilities.checkStringValue(task, inputFile, generateStressSequenceInput, "seqeunceName", true))
+			return false;
+
 		// check passed
 		return true;
 	}

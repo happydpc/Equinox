@@ -47,6 +47,7 @@ import equinox.data.input.GenerateStressSequenceInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.serializableTask.SerializableGenerateStressSequence;
 import equinox.utility.Utility;
 
@@ -57,7 +58,7 @@ import equinox.utility.Utility;
  * @date Mar 24, 2014
  * @time 9:13:59 PM
  */
-public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> implements LongRunningTask, SavableTask, AutomaticTask<STFFile> {
+public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> implements LongRunningTask, SavableTask, AutomaticTask<STFFile>, AutomaticTaskOwner<SpectrumItem> {
 
 	/** The owner STF file. */
 	private STFFile stfFile_ = null;
@@ -66,7 +67,10 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 	private final GenerateStressSequenceInput input_;
 
 	/** Automatic tasks. */
-	private ArrayList<AutomaticTask<SpectrumItem>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumItem>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates generate stress sequence task.
@@ -81,17 +85,22 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		input_ = input;
 	}
 
-	/**
-	 * Adds automatic task.
-	 *
-	 * @param task
-	 *            Task to add.
-	 */
-	public void addAutomaticTask(AutomaticTask<SpectrumItem> task) {
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumItem> task) {
 		if (automaticTasks_ == null) {
-			automaticTasks_ = new ArrayList<>();
+			automaticTasks_ = new HashMap<>();
 		}
-		automaticTasks_.add(task);
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<SpectrumItem>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -194,9 +203,14 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<SpectrumItem> task : automaticTasks_) {
+				for (AutomaticTask<SpectrumItem> task : automaticTasks_.values()) {
 					task.setAutomaticInput(sequence);
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
 				}
 			}
 		}

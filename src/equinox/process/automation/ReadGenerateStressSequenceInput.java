@@ -97,6 +97,12 @@ public class ReadGenerateStressSequenceInput implements EquinoxProcess<GenerateS
 			stressRotation(generateStressSequenceInput, input);
 		}
 
+		// sequence name
+		if (generateStressSequenceInput.getChild("sequenceName") != null) {
+			String sequenceName = generateStressSequenceInput.getChildTextNormalize("sequenceName");
+			input.setFileName(sequenceName);
+		}
+
 		// return input
 		return input;
 	}

@@ -35,8 +35,10 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.InstructedTask;
 import equinox.data.MissionParameter;
 import equinox.data.Pair;
+import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
+import equinox.data.fileType.StressSequence;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
@@ -53,6 +55,7 @@ import equinox.task.AddStressSequence;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.AssignMissionParameters;
+import equinox.task.CreateDummySTFFile;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
 import equinox.task.ExportSTF;
@@ -67,17 +70,21 @@ import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
 import equinox.task.SaveConversionTable;
+import equinox.task.SaveExternalStressSequenceAsSIGMA;
+import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
 import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
+import equinox.task.SaveStressSequenceAsSIGMA;
+import equinox.task.SaveStressSequenceAsSTH;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
+import equinox.task.SetSTFMission;
 import equinox.task.ShareSTF;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
 import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSpectra;
-import equinox.utility.Utility;
 import equinox.utility.XMLUtilities;
 import javafx.scene.image.Image;
 
@@ -206,6 +213,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			addStf(equinoxInput, tasks);
 		}
 
+		// override fatigue mission
+		if (equinoxInput.getChild("overrideFatigueMission") != null) {
+			overrideFatigueMission(equinoxInput, tasks);
+		}
+
 		// assign mission parameters to STF
 		if (equinoxInput.getChild("assignMissionParametersToStf") != null) {
 			assignMissionParametersToStf(equinoxInput, tasks);
@@ -231,14 +243,24 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			uploadStf(equinoxInput, tasks);
 		}
 
-		// add stress sequence
-		if (equinoxInput.getChild("addStressSequence") != null) {
-			addStressSequence(equinoxInput, tasks);
+		// add headless stress sequence
+		if (equinoxInput.getChild("addHeadlessStressSequence") != null) {
+			addHeadlessStressSequence(equinoxInput, tasks);
+		}
+
+		// save headless stress sequence
+		if (equinoxInput.getChild("saveHeadlessStressSequence") != null) {
+			saveHeadlessStressSequence(equinoxInput, tasks);
 		}
 
 		// generate stress sequence
 		if (equinoxInput.getChild("generateStressSequence") != null) {
 			generateStressSequence(equinoxInput, tasks);
+		}
+
+		// save stress sequence
+		if (equinoxInput.getChild("saveStressSequence") != null) {
+			saveStressSequence(equinoxInput, tasks);
 		}
 
 		// TODO
@@ -317,6 +339,53 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
+	 * Creates save stress sequence tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save stress sequence tasks...");
+
+		// loop over save stress sequence elements
+		for (Element saveStressSequence : equinoxInput.getChildren("saveStressSequence")) {
+
+			// create task
+			String id = saveStressSequence.getChild("id").getTextNormalize();
+			String stressSequenceId = saveStressSequence.getChild("stressSequenceId").getTextNormalize();
+			Path outputPath = Paths.get(saveStressSequence.getChild("outputPath").getTextNormalize());
+			AutomaticTask<StressSequence> task = null;
+
+			// get file type
+			FileType fileType = FileType.getFileType(outputPath.toFile());
+
+			// save as SIGMA
+			if (fileType.equals(FileType.SIGMA)) {
+				task = new SaveStressSequenceAsSIGMA(null, outputPath.toFile());
+			}
+
+			// save as STH
+			else if (fileType.equals(FileType.STH)) {
+				task = new SaveStressSequenceAsSTH(null, outputPath.toFile());
+			}
+
+			// add to parent task
+			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask((InternalEquinoxTask<?>) task, true));
+		}
+	}
+
+	/**
 	 * Creates generate stress sequence tasks.
 	 *
 	 * @param equinoxInput
@@ -331,7 +400,10 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// update info
 		updateMessage("Creating generate stress sequence tasks...");
 
-		// loop over add stress sequence elements
+		// input mapping
+		HashMap<Path, GenerateStressSequenceInput> inputs = new HashMap<>();
+
+		// loop over generate stress sequence elements
 		for (Element generateStressSequence : equinoxInput.getChildren("generateStressSequence")) {
 
 			// parse elements
@@ -339,8 +411,12 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String stfId = generateStressSequence.getChild("stfId").getTextNormalize();
 			Path xmlPath = Paths.get(generateStressSequence.getChild("xmlPath").getTextNormalize());
 
-			// read input parameters
-			GenerateStressSequenceInput input = new ReadGenerateStressSequenceInput(this, xmlPath).start(null);
+			// get input parameters
+			GenerateStressSequenceInput input = inputs.get(xmlPath);
+			if (input == null) {
+				input = new ReadGenerateStressSequenceInput(this, xmlPath).start(null);
+				inputs.put(xmlPath, input);
+			}
 
 			// create task
 			GenerateStressSequence generateStressSequenceTask = new GenerateStressSequence(null, input);
@@ -356,7 +432,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
-	 * Creates add stress sequence tasks.
+	 * Creates save headless stress sequence tasks.
 	 *
 	 * @param equinoxInput
 	 *            Root input element.
@@ -365,30 +441,77 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void addStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+	private void saveHeadlessStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
 
 		// update info
-		updateMessage("Creating add stress sequence tasks...");
+		updateMessage("Creating save headless stress sequence tasks...");
+
+		// loop over save headless stress sequence elements
+		for (Element saveHeadlessStressSequence : equinoxInput.getChildren("saveHeadlessStressSequence")) {
+
+			// create task
+			String id = saveHeadlessStressSequence.getChild("id").getTextNormalize();
+			String headlessStressSequenceId = saveHeadlessStressSequence.getChild("headlessStressSequenceId").getTextNormalize();
+			Path outputPath = Paths.get(saveHeadlessStressSequence.getChild("outputPath").getTextNormalize());
+			AutomaticTask<ExternalStressSequence> task = null;
+
+			// get file type
+			FileType fileType = FileType.getFileType(outputPath.toFile());
+
+			// save as SIGMA
+			if (fileType.equals(FileType.SIGMA)) {
+				task = new SaveExternalStressSequenceAsSIGMA(null, outputPath.toFile());
+			}
+
+			// save as STH
+			else if (fileType.equals(FileType.STH)) {
+				task = new SaveExternalStressSequenceAsSTH(null, outputPath.toFile());
+			}
+
+			// add to parent task
+			AutomaticTaskOwner<ExternalStressSequence> parentTask = (AutomaticTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask((InternalEquinoxTask<?>) task, true));
+		}
+	}
+
+	/**
+	 * Creates add headless stress sequence tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void addHeadlessStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating add headless stress sequence tasks...");
 
 		// get add stress sequence elements
-		equinoxInput.getChildren("addStressSequence").forEach(Utility.exceptionThrowingLambda(addStressSequence -> {
+		for (Element addHeadlessStressSequence : equinoxInput.getChildren("addHeadlessStressSequence")) {
 
 			// get id
-			String id = addStressSequence.getChild("id").getTextNormalize();
+			String id = addHeadlessStressSequence.getChild("id").getTextNormalize();
 
 			// from SIGMA
-			if (addStressSequence.getChild("sigmaPath") != null) {
-				Path sigmaPath = Paths.get(addStressSequence.getChild("sigmaPath").getTextNormalize());
+			if (addHeadlessStressSequence.getChild("sigmaPath") != null) {
+				Path sigmaPath = Paths.get(addHeadlessStressSequence.getChild("sigmaPath").getTextNormalize());
 				tasks.put(id, new InstructedTask(new AddStressSequence(sigmaPath), false));
 			}
 
 			// from STH
-			else {
-				Path sthPath = Paths.get(addStressSequence.getChild("sthPath").getTextNormalize());
-				Path flsPath = Paths.get(addStressSequence.getChild("flsPath").getTextNormalize());
+			else if (addHeadlessStressSequence.getChild("sthPath") != null) {
+				Path sthPath = Paths.get(addHeadlessStressSequence.getChild("sthPath").getTextNormalize());
+				Path flsPath = Paths.get(addHeadlessStressSequence.getChild("flsPath").getTextNormalize());
 				tasks.put(id, new InstructedTask(new AddStressSequence(sthPath, flsPath), false));
 			}
-		}));
+		}
 	}
 
 	/**
@@ -696,6 +819,40 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
+	 * Creates override fatigue mission tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void overrideFatigueMission(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating override fatigue mission tasks...");
+
+		// loop over override fatigue mission elements
+		for (Element overrideFatigueMission : equinoxInput.getChildren("overrideFatigueMission")) {
+
+			// create task
+			String id = overrideFatigueMission.getChild("id").getTextNormalize();
+			String stfId = overrideFatigueMission.getChild("stfId").getTextNormalize();
+			String fatigueMission = overrideFatigueMission.getChild("fatigueMission").getTextNormalize();
+			SetSTFMission setStfMissionTask = new SetSTFMission(null, fatigueMission);
+
+			// add to parent task
+			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addAutomaticTask(id, setStfMissionTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(setStfMissionTask, true));
+		}
+	}
+
+	/**
 	 * Creates add STF tasks.
 	 *
 	 * @param equinoxInput
@@ -777,6 +934,78 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				// add to tasks
 				tasks.put(id, new InstructedTask(downloadPilotPointTask, true));
 				tasks.put("ownerOf_" + id, new InstructedTask(searchPilotPointTask, true));
+			}
+
+			// create dummy STF
+			else {
+
+				// create task
+				String fileName = addStf.getChild("stfName").getTextNormalize();
+				boolean is1D = addStf.getChild("stressState").getTextNormalize().equals("1d");
+				CreateDummySTFFile createDummySTFTask = new CreateDummySTFFile(null, fileName, is1D);
+
+				// get 1g stresses
+				if (addStf.getChild("onegStresses") != null) {
+					Element onegStresses = addStf.getChild("onegStresses");
+					double sx = Double.parseDouble(onegStresses.getChildTextNormalize("sx"));
+					double sy = Double.parseDouble(onegStresses.getChildTextNormalize("sy"));
+					double sxy = Double.parseDouble(onegStresses.getChildTextNormalize("sxy"));
+					createDummySTFTask.setOneGStresses(sx, sy, sxy);
+				}
+
+				// get increment stresses
+				if (addStf.getChild("incrementStresses") != null) {
+					Element incrementStresses = addStf.getChild("incrementStresses");
+					double sx = Double.parseDouble(incrementStresses.getChildTextNormalize("sx"));
+					double sy = Double.parseDouble(incrementStresses.getChildTextNormalize("sy"));
+					double sxy = Double.parseDouble(incrementStresses.getChildTextNormalize("sxy"));
+					createDummySTFTask.setIncrementStresses(sx, sy, sxy);
+				}
+
+				// get delta-p stresses
+				if (addStf.getChild("dpStresses") != null) {
+					Element dpStresses = addStf.getChild("dpStresses");
+					String dpLoadcase = dpStresses.getChildTextNormalize("dpLoadcase");
+					double sx = Double.parseDouble(dpStresses.getChildTextNormalize("sx"));
+					double sy = Double.parseDouble(dpStresses.getChildTextNormalize("sy"));
+					double sxy = Double.parseDouble(dpStresses.getChildTextNormalize("sxy"));
+					createDummySTFTask.setDeltaPStresses(dpLoadcase, sx, sy, sxy);
+				}
+
+				// get delta-t stresses
+				if (addStf.getChild("dtStresses") != null) {
+
+					// get element
+					Element dtStresses = addStf.getChild("dtStresses");
+
+					// superior
+					if (dtStresses.getChild("superior") != null) {
+						Element superior = addStf.getChild("superior");
+						String loadcase = superior.getChildTextNormalize("loadcase");
+						double sx = Double.parseDouble(superior.getChildTextNormalize("sx"));
+						double sy = Double.parseDouble(superior.getChildTextNormalize("sy"));
+						double sxy = Double.parseDouble(superior.getChildTextNormalize("sxy"));
+						createDummySTFTask.setDeltaTSupStresses(loadcase, sx, sy, sxy);
+					}
+
+					// inferior
+					if (dtStresses.getChild("inferior") != null) {
+						Element inferior = addStf.getChild("inferior");
+						String loadcase = inferior.getChildTextNormalize("loadcase");
+						double sx = Double.parseDouble(inferior.getChildTextNormalize("sx"));
+						double sy = Double.parseDouble(inferior.getChildTextNormalize("sy"));
+						double sxy = Double.parseDouble(inferior.getChildTextNormalize("sxy"));
+						createDummySTFTask.setDeltaTInfStresses(loadcase, sx, sy, sxy);
+					}
+				}
+
+				// add to parent task
+				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addAutomaticTask(id, createDummySTFTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(createDummySTFTask, true));
 			}
 		}
 	}

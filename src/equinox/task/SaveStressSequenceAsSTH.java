@@ -23,6 +23,7 @@ import equinox.data.fileType.StressSequence;
 import equinox.process.SaveSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for save spectrum as STH task.
@@ -31,26 +32,35 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Jan 7, 2014
  * @time 2:13:14 PM
  */
-public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<StressSequence> {
 
-	/** Process of this task. */
-	private final SaveSTH process_;
+	/** Stress sequence. */
+	private StressSequence stressSequence;
+
+	/** Output file. */
+	private final File output;
 
 	/**
 	 * Creates save spectrum as STH task.
 	 *
 	 * @param stressSequence
-	 *            Stress sequence to save.
+	 *            Stress sequence to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveStressSequenceAsSTH(StressSequence stressSequence, File output) {
-		process_ = new SaveSTH(this, stressSequence, output);
+		this.stressSequence = stressSequence;
+		this.output = output;
+	}
+
+	@Override
+	public void setAutomaticInput(StressSequence input) {
+		this.stressSequence = input;
 	}
 
 	@Override
 	public String getTaskTitle() {
-		return "Save stress sequence to '" + process_.getOutputFile().getName() + "'";
+		return "Save stress sequence";
 	}
 
 	@Override
@@ -64,12 +74,9 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implement
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
 
-		// update progress info
-		updateTitle("Saving stress sequence to '" + process_.getOutputFile().getName() + "'");
-
 		// start process
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
-			process_.start(connection);
+			new SaveSTH(this, stressSequence, output).start(connection);
 		}
 
 		// return

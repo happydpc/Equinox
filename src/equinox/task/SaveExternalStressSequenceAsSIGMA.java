@@ -29,6 +29,7 @@ import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
 
 /**
  * Class for save external stress sequence as SIGMA task.
@@ -37,10 +38,10 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Mar 13, 2015
  * @time 12:06:02 PM
  */
-public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<ExternalStressSequence> {
 
 	/** Stress sequence to save. */
-	private final ExternalStressSequence sequence_;
+	private ExternalStressSequence sequence_;
 
 	/** Output file. */
 	private final File output_;
@@ -58,13 +59,18 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 	 * Creates save external stress sequence as SIGMA task.
 	 *
 	 * @param sequence
-	 *            Stress sequence to save.
+	 *            Stress sequence to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveExternalStressSequenceAsSIGMA(ExternalStressSequence sequence, File output) {
 		sequence_ = sequence;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(ExternalStressSequence input) {
+		sequence_ = input;
 	}
 
 	@Override

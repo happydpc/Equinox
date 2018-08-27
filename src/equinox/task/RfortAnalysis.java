@@ -265,7 +265,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressAnalysis fatigueAnalysis = new EquivalentStressAnalysis(null, fatigueInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveFatigueInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				fatigueAnalysis.addAutomaticTask(saveFatigueInfo);
-				generateStressSequence.addAutomaticTask(fatigueAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(fatigueAnalysis.hashCode()), fatigueAnalysis);
 			}
 
 			// preffas equivalent stress analysis
@@ -274,7 +274,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressAnalysis preffasAnalysis = new EquivalentStressAnalysis(null, preffasInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo savePreffasInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				preffasAnalysis.addAutomaticTask(savePreffasInfo);
-				generateStressSequence.addAutomaticTask(preffasAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(preffasAnalysis.hashCode()), preffasAnalysis);
 			}
 
 			// linear prop. equivalent stress analysis
@@ -283,7 +283,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressAnalysis linearAnalysis = new EquivalentStressAnalysis(null, linearInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveLinearInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				linearAnalysis.addAutomaticTask(saveLinearInfo);
-				generateStressSequence.addAutomaticTask(linearAnalysis);
+				generateStressSequence.addAutomaticTask(Integer.toString(linearAnalysis.hashCode()), linearAnalysis);
 			}
 
 			// add generate stress sequence task to add STF files task
