@@ -35,19 +35,25 @@ public class EquivalentStressInput implements Serializable {
 	public static final String MULTIPLY = "Multiply", ADD = "Add", SET = "Set";
 
 	/** True if omission should be applied to stress sequence. */
-	private final boolean removeNegativeStresses_, applyOmission_;
+	private boolean removeNegativeStresses_, applyOmission_;
 
 	/** Omission level. */
-	private final double omissionLevel_;
+	private double omissionLevel_;
 
 	/** Material. */
-	private final Material material_;
+	private Material material_;
 
 	/** Stress modification method. */
 	private String stressModificationMethod_ = MULTIPLY;
 
 	/** Stress modifier value. */
 	private double stressModifier_ = 1.0;
+
+	/**
+	 * Creates equivalent stress analysis input.
+	 */
+	public EquivalentStressInput() {
+	}
 
 	/**
 	 * Creates equivalent stress analysis input.
@@ -65,6 +71,46 @@ public class EquivalentStressInput implements Serializable {
 		removeNegativeStresses_ = removeNegativeStresses;
 		applyOmission_ = applyOmission;
 		omissionLevel_ = omissionLevel;
+		material_ = material;
+	}
+
+	/**
+	 * Sets whether omission should be applied to stress sequence.
+	 *
+	 * @param applyOmission
+	 *            True if omission should be applied to stress sequence.
+	 */
+	public void setApplyOmission(boolean applyOmission) {
+		applyOmission_ = applyOmission;
+	}
+
+	/**
+	 * Sets whether negative stresses should be removed.
+	 *
+	 * @param removeNegativeStresses
+	 *            True if negative stresses should be removed.
+	 */
+	public void setRemoveNegativeStresses(boolean removeNegativeStresses) {
+		removeNegativeStresses_ = removeNegativeStresses;
+	}
+
+	/**
+	 * Sets omission level.
+	 *
+	 * @param omissionLevel
+	 *            Omission level.
+	 */
+	public void setOmissionLevel(double omissionLevel) {
+		omissionLevel_ = omissionLevel;
+	}
+
+	/**
+	 * Sets material.
+	 *
+	 * @param material
+	 *            Material to set.
+	 */
+	public void setMaterial(Material material) {
 		material_ = material;
 	}
 

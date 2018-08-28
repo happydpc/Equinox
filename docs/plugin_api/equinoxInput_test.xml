@@ -2,7 +2,6 @@
 <equinoxInput version="" title="" description="" author="" date="" time="">
 	<settings>
 		<runMode>parallel</runMode>
-		<runSilent>true</runSilent>
 		<overwriteFiles>true</overwriteFiles>
 	</settings>
 	<downloadSpectrum>
@@ -56,10 +55,18 @@
 		<stressSequenceId>6</stressSequenceId>
 		<outputPath>/Users/aurora/Temporary/saved_stress_sequence.sth</outputPath>
 	</saveStressSequence>
-	<addHeadlessStressSequence><id>8</id>
-		<sigmaPath>/Users/aurora/Temporary/saved_stress_sequence.sigma</sigmaPath></addHeadlessStressSequence>
-	<saveHeadlessStressSequence>
-		<id>9</id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
-		<headlessStressSequenceId>8</headlessStressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
-		<outputPath>/Users/aurora/Temporary/saved_stress_sequence_new.sth</outputPath></saveHeadlessStressSequence>
+	<plotMissionProfile>
+		<id>8</id>
+		<stressSequenceId>6</stressSequenceId>
+		<outputPath>/Users/aurora/Temporary/missionProfile.png</outputPath>
+	</plotMissionProfile>
+	<plotTypicalFlight><id>9</id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId>6</stressSequenceId><!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
+		<plotType>Longest Typical Flight</plotType><!--Path to save typical flight plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/longestFlight.png</outputPath></plotTypicalFlight>
+		<equivalentStressAnalysis>
+		<id>10</id>
+		<stressSequenceId>6</stressSequenceId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+	</equivalentStressAnalysis>
 </equinoxInput>

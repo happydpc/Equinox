@@ -17,7 +17,7 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.task.SerializableTask;
 import equinox.task.ShareGeneratedItem;
@@ -39,7 +39,7 @@ public class SerializableShareGeneratedItem implements SerializableTask {
 	private final File file_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final List<String> recipients_;
 
 	/**
 	 * Creates share generated item task.
@@ -49,7 +49,7 @@ public class SerializableShareGeneratedItem implements SerializableTask {
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public SerializableShareGeneratedItem(Path file, ArrayList<String> recipients) {
+	public SerializableShareGeneratedItem(Path file, List<String> recipients) {
 		file_ = file.toFile();
 		recipients_ = recipients;
 	}

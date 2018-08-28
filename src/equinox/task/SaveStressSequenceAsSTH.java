@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 
 import equinox.Equinox;
@@ -32,7 +33,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Jan 7, 2014
  * @time 2:13:14 PM
  */
-public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<StressSequence> {
+public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<StressSequence> {
 
 	/** Stress sequence. */
 	private StressSequence stressSequence;
@@ -69,7 +70,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implement
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
@@ -79,7 +80,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Void> implement
 			new SaveSTH(this, stressSequence, output).start(connection);
 		}
 
-		// return
-		return null;
+		// return output path
+		return output.toPath();
 	}
 }

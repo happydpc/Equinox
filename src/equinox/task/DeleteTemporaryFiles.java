@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.FollowerTask;
 
 /**
  * Class for delete temporary files task.
@@ -32,7 +33,7 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date 10 Aug 2016
  * @time 12:22:20
  */
-public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements ShortRunningTask {
+public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements ShortRunningTask, FollowerTask {
 
 	/** Directory containing the temporary files to be deleted. */
 	private final Path directory_;
@@ -89,14 +90,16 @@ public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements S
 				Iterator<Path> iterator = dirStream.iterator();
 
 				// loop over files
-				while (iterator.hasNext())
+				while (iterator.hasNext()) {
 					deleteFiles(iterator.next());
+				}
 			}
 
 			// delete directory (if not excluded)
 			try {
-				if (excludedFiles_ == null || excludedFiles_ != null && !excludedFiles_.contains(file))
+				if (excludedFiles_ == null || excludedFiles_ != null && !excludedFiles_.contains(file)) {
 					Files.delete(file);
+				}
 			}
 
 			// directory not empty
@@ -107,8 +110,9 @@ public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements S
 
 		// delete file (if not excluded)
 		else {
-			if (excludedFiles_ == null || excludedFiles_ != null && !excludedFiles_.contains(file))
+			if (excludedFiles_ == null || excludedFiles_ != null && !excludedFiles_.contains(file)) {
 				Files.delete(file);
+			}
 		}
 	}
 }

@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import org.jdom2.Element;
 
 import equinox.Equinox;
-import equinox.dataServer.remote.data.SearchInput;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask;
 
@@ -70,48 +69,6 @@ public class XMLUtilities {
 
 		// return list
 		return inputs;
-	}
-
-	/**
-	 * Sets search engine settings to given search input.
-	 *
-	 * @param root
-	 *            Root input element.
-	 * @param input
-	 *            Search input.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	public static void setSearchEngineSettings(Element root, SearchInput input) throws Exception {
-
-		// get search engine settings
-		if (root.getChild("settings") != null) {
-
-			// logical operator
-			if (root.getChild("settings").getChild("logicalOperator") != null) {
-				input.setOperator(root.getChild("settings").getChild("logicalOperator").getTextNormalize().equals("and"));
-			}
-
-			// ignore case
-			if (root.getChild("settings").getChild("ignoreCase") != null) {
-				input.setCase(Boolean.parseBoolean(root.getChild("settings").getChild("ignoreCase").getTextNormalize()));
-			}
-
-			// maximum hits
-			if (root.getChild("settings").getChild("maxHits") != null) {
-				input.setMaxHits(Integer.parseInt(root.getChild("settings").getChild("maxHits").getTextNormalize()));
-			}
-
-			// order results by
-			if (root.getChild("settings").getChild("orderResultsBy") != null) {
-				input.setOrderByCriteria(root.getChild("settings").getChild("orderResultsBy").getTextNormalize());
-			}
-
-			// results order
-			if (root.getChild("settings").getChild("resultsOrder") != null) {
-				input.setOrder(root.getChild("settings").getChild("resultsOrder").getTextNormalize().equals("Ascending"));
-			}
-		}
 	}
 
 	/**

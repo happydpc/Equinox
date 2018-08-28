@@ -15,33 +15,29 @@
  */
 package equinox.task.automation;
 
-import java.util.HashMap;
+import java.util.List;
 
 /**
- * Interface for automatic task owner tasks. These tasks execute the automatic tasks after their process is complete.
+ * Interface for follower task owners.
  *
  * @author Murat Artim
- * @date 24 Jan 2017
- * @time 14:21:05
- * @param <V>
- *            Output class.
+ * @date 28 Aug 2018
+ * @time 09:43:06
  */
-public interface AutomaticTaskOwner<V> extends TaskOwner {
+public interface FollowerTaskOwner extends TaskOwner {
 
 	/**
-	 * Adds automatic task.
+	 * Adds follower task.
 	 *
-	 * @param taskID
-	 *            Automatic task ID. This must be unique to the task added.
 	 * @param task
 	 *            Task to add.
 	 */
-	void addAutomaticTask(String taskID, AutomaticTask<V> task);
+	void addFollowerTask(FollowerTask task);
 
 	/**
-	 * Returns a mapping containing the automatic tasks or null if no automatic tasks are defined.
+	 * Returns a list containing the follower tasks or null if no follower tasks are defined.
 	 *
-	 * @return Mapping containing automatic tasks or null if no automatic tasks are defined.
+	 * @return List containing the follower tasks or null if no follower tasks are defined.
 	 */
-	HashMap<String, AutomaticTask<V>> getAutomaticTasks();
+	List<FollowerTask> getFollowerTasks();
 }

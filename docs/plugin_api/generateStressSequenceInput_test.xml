@@ -14,6 +14,6 @@
 			<value>0.001</value>
 			<method>Multiply</method></deltaT></overallFactors>
 	<loadcaseFactors>
-		<mutPath>/Users/aurora/Temporary/A380-800MRB-511OWB1-M22-p45.mut</mutPath>
+		<mutPath>/Users/aurora/Temporary/A380PS_OWB1_p45_baseline.mut</mutPath>
 		<tableColumn>1</tableColumn>
 		<method>Multiply</method></loadcaseFactors></generateStressSequenceInput>

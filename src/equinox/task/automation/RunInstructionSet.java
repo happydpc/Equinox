@@ -18,6 +18,7 @@ package equinox.task.automation;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,13 +33,22 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
+import equinox.Equinox;
+import equinox.controller.InputPanel;
+import equinox.controller.SearchEngineSettingsPanel;
+import equinox.data.AnalysisEngine;
 import equinox.data.InstructedTask;
+import equinox.data.IsamiSubVersion;
+import equinox.data.IsamiVersion;
 import equinox.data.MissionParameter;
 import equinox.data.Pair;
+import equinox.data.Settings;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
+import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
+import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
@@ -48,6 +58,7 @@ import equinox.dataServer.remote.data.SpectrumInfo;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.dataServer.remote.data.SpectrumSearchInput;
 import equinox.plugin.FileType;
+import equinox.process.automation.ReadEquivalentStressAnalysisInput;
 import equinox.process.automation.ReadGenerateStressSequenceInput;
 import equinox.task.AddSTFFiles;
 import equinox.task.AddSpectrum;
@@ -56,8 +67,10 @@ import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.AssignMissionParameters;
 import equinox.task.CreateDummySTFFile;
+import equinox.task.DeleteTemporaryFiles;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
+import equinox.task.EquivalentStressAnalysis;
 import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
 import equinox.task.GenerateStressSequence;
@@ -77,15 +90,17 @@ import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
 import equinox.task.SaveStressSequenceAsSIGMA;
 import equinox.task.SaveStressSequenceAsSTH;
+import equinox.task.SaveStressSequencePlotToFile;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
 import equinox.task.SetSTFMission;
+import equinox.task.ShareGeneratedItem;
 import equinox.task.ShareSTF;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
 import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSpectra;
-import equinox.utility.XMLUtilities;
+import equinox.utility.Utility;
 import javafx.scene.image.Image;
 
 /**
@@ -103,9 +118,6 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 	/** True if tasks should be executed in parallel mode. */
 	private String runMode = PARALLEL;
-
-	/** True if all notifications should be suppressed. */
-	private boolean runSilent = false;
 
 	/** Input XML file. */
 	private final Path inputFile;
@@ -150,11 +162,6 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// get run mode (if given)
 			if (equinoxInput.getChild("settings").getChild("runMode") != null) {
 				runMode = equinoxInput.getChild("settings").getChild("runMode").getTextNormalize();
-			}
-
-			// get run silent (if given)
-			if (equinoxInput.getChild("settings").getChild("runSilent") != null) {
-				runSilent = Boolean.parseBoolean(equinoxInput.getChild("settings").getChild("runSilent").getTextNormalize());
 			}
 		}
 
@@ -263,6 +270,31 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			saveStressSequence(equinoxInput, tasks);
 		}
 
+		// share stress sequence
+		if (equinoxInput.getChild("shareStressSequence") != null) {
+			shareStressSequence(equinoxInput, tasks);
+		}
+
+		// plot mission profile
+		if (equinoxInput.getChild("plotMissionProfile") != null) {
+			plotMissionProfile(equinoxInput, tasks);
+		}
+
+		// plot typical flight
+		if (equinoxInput.getChild("plotTypicalFlight") != null) {
+			plotTypicalFlight(equinoxInput, tasks, "plotTypicalFlight");
+		}
+
+		// plot typical flight statistics
+		if (equinoxInput.getChild("plotTypicalFlightStatistics") != null) {
+			plotTypicalFlight(equinoxInput, tasks, "plotTypicalFlightStatistics");
+		}
+
+		// equivalent stress analysis
+		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
+			equivalentStressAnalysis(equinoxInput, tasks);
+		}
+
 		// TODO
 
 		// return tasks to be executed
@@ -302,32 +334,17 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 				// parallel
 				if (runMode.equals(PARALLEL)) {
-					if (runSilent) {
-						taskPanel_.getOwner().runTaskSilently(taskImpl, false);
-					}
-					else {
-						taskPanel_.getOwner().runTaskInParallel(taskImpl);
-					}
+					taskPanel_.getOwner().runTaskInParallel(taskImpl);
 				}
 
 				// sequential
 				else if (runMode.equals(SEQUENTIAL)) {
-					if (runSilent) {
-						taskPanel_.getOwner().runTaskSilently(taskImpl, true);
-					}
-					else {
-						taskPanel_.getOwner().runTaskSequentially(taskImpl);
-					}
+					taskPanel_.getOwner().runTaskSequentially(taskImpl);
 				}
 
 				// save
 				else if (runMode.equals(SAVE)) {
-					if (runSilent) {
-						taskPanel_.getOwner().runTaskSilently(new SaveTask((SavableTask) taskImpl, null), false);
-					}
-					else {
-						taskPanel_.getOwner().runTaskInParallel(new SaveTask((SavableTask) taskImpl, null));
-					}
+					taskPanel_.getOwner().runTaskInParallel(new SaveTask((SavableTask) taskImpl, null));
 				}
 			}
 		}
@@ -335,6 +352,193 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates equivalent stress analysis tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void equivalentStressAnalysis(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating equivalent stress analysis tasks...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+		IsamiSubVersion isamiSubVersion = (IsamiSubVersion) settings.getValue(Settings.ISAMI_SUB_VERSION);
+		boolean applyCompression = (boolean) settings.getValue(Settings.APPLY_COMPRESSION);
+
+		// input mapping
+		HashMap<Path, EquivalentStressInput> inputs = new HashMap<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over equivalent stress analysis elements
+			for (Element equivalentStressAnalysis : equinoxInput.getChildren("equivalentStressAnalysis")) {
+
+				// get inputs
+				String id = equivalentStressAnalysis.getChild("id").getTextNormalize();
+				String stressSequenceId = equivalentStressAnalysis.getChild("stressSequenceId").getTextNormalize();
+				Path xmlPath = Paths.get(equivalentStressAnalysis.getChild("xmlPath").getTextNormalize());
+
+				// get input parameters
+				EquivalentStressInput input = inputs.get(xmlPath);
+				if (input == null) {
+					input = new ReadEquivalentStressAnalysisInput(this, xmlPath, isamiVersion).start(connection);
+					inputs.put(xmlPath, input);
+				}
+
+				// create task
+				EquivalentStressAnalysis task = new EquivalentStressAnalysis(null, input, engine);
+				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
+
+				// add to parent task
+				AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				parentTask.addAutomaticTask(id, task);
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+		}
+	}
+
+	/**
+	 * Creates plot typical flight tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @param elementName
+	 *            Element name.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotTypicalFlight(Element equinoxInput, HashMap<String, InstructedTask> tasks, String elementName) throws Exception {
+
+		// update info
+		updateMessage("Creating plot typical flight tasks...");
+
+		// loop over plot typical flight elements
+		for (Element plotTypicalFlight : equinoxInput.getChildren(elementName)) {
+
+			// get inputs
+			String id = plotTypicalFlight.getChild("id").getTextNormalize();
+			String stressSequenceId = plotTypicalFlight.getChild("stressSequenceId").getTextNormalize();
+			Path outputPath = Paths.get(plotTypicalFlight.getChild("outputPath").getTextNormalize());
+			String plotTypeName = plotTypicalFlight.getChild("plotType").getTextNormalize();
+
+			// get plot type
+			PilotPointImageType plotType = null;
+			for (PilotPointImageType type : PilotPointImageType.values()) {
+				if (type.toString().equals(plotTypeName)) {
+					plotType = type;
+					break;
+				}
+			}
+
+			// create task
+			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, plotType, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates plot mission profile tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotMissionProfile(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot mission profile tasks...");
+
+		// loop over plot mission profile elements
+		for (Element plotMissionProfile : equinoxInput.getChildren("plotMissionProfile")) {
+
+			// get inputs
+			String id = plotMissionProfile.getChild("id").getTextNormalize();
+			String stressSequenceId = plotMissionProfile.getChild("stressSequenceId").getTextNormalize();
+			Path outputPath = Paths.get(plotMissionProfile.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, PilotPointImageType.MISSION_PROFILE, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates share stress sequence tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void shareStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating share stress sequence tasks...");
+
+		// loop over save stress sequence elements
+		for (Element shareStressSequence : equinoxInput.getChildren("shareStressSequence")) {
+
+			// create task
+			String id = shareStressSequence.getChild("id").getTextNormalize();
+			String stressSequenceId = shareStressSequence.getChild("stressSequenceId").getTextNormalize();
+			String recipient = shareStressSequence.getChild("recipient").getTextNormalize();
+
+			// create working directory
+			Path workingDirectory = Utility.createWorkingDirectory("ShareSequence");
+
+			// create tasks
+			SaveStressSequenceAsSIGMA saveTask = new SaveStressSequenceAsSIGMA(null, workingDirectory.resolve("sharedStressSequence.sigma").toFile());
+			ShareGeneratedItem shareTask = new ShareGeneratedItem(null, Arrays.asList(recipient));
+			DeleteTemporaryFiles deleteTask = new DeleteTemporaryFiles(workingDirectory, null);
+
+			// connect tasks
+			shareTask.addFollowerTask(deleteTask);
+			saveTask.addAutomaticTask(id, shareTask);
+
+			// add to parent task
+			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, saveTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(shareTask, true));
 		}
 	}
 
@@ -916,7 +1120,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				}
 
 				// set search engine settings
-				XMLUtilities.setSearchEngineSettings(equinoxInput, input);
+				SearchEngineSettingsPanel panel = (SearchEngineSettingsPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.SEARCH_ENGINE_SETTINGS_PANEL);
+				panel.setEngineSettings(input);
 
 				// create tasks
 				AdvancedPilotPointSearch searchPilotPointTask = new AdvancedPilotPointSearch(input);
@@ -1055,7 +1260,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// set search engine settings
-			XMLUtilities.setSearchEngineSettings(equinoxInput, input);
+			SearchEngineSettingsPanel panel = (SearchEngineSettingsPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.SEARCH_ENGINE_SETTINGS_PANEL);
+			panel.setEngineSettings(input);
 
 			// create tasks
 			AdvancedPilotPointSearch searchPilotPointTask = new AdvancedPilotPointSearch(input);
@@ -1467,7 +1673,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// set search engine settings
-			XMLUtilities.setSearchEngineSettings(equinoxInput, input);
+			SearchEngineSettingsPanel panel = (SearchEngineSettingsPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.SEARCH_ENGINE_SETTINGS_PANEL);
+			panel.setEngineSettings(input);
 
 			// create tasks
 			AdvancedSpectrumSearch searchSpectrumTask = new AdvancedSpectrumSearch(input);

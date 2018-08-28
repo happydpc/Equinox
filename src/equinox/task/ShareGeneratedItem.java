@@ -17,11 +17,15 @@ package equinox.task;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.FollowerTask;
+import equinox.task.automation.FollowerTaskOwner;
 import equinox.task.serializableTask.SerializableShareGeneratedItem;
 import equinox.utility.Utility;
 
@@ -32,25 +36,54 @@ import equinox.utility.Utility;
  * @date Sep 23, 2014
  * @time 6:19:36 PM
  */
-public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implements SavableTask, FileSharingTask {
+public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implements SavableTask, FileSharingTask, AutomaticTask<Path>, FollowerTaskOwner {
 
 	/** File to share. */
-	private final Path file_;
+	private Path file_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final List<String> recipients_;
+
+	/** Automatic tasks. */
+	private List<FollowerTask> followerTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates share generated item task.
 	 *
 	 * @param file
-	 *            File to share.
+	 *            File to share. Can be null for automatic execution.
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareGeneratedItem(Path file, ArrayList<String> recipients) {
+	public ShareGeneratedItem(Path file, List<String> recipients) {
 		file_ = file;
 		recipients_ = recipients;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addFollowerTask(FollowerTask task) {
+		if (followerTasks_ == null) {
+			followerTasks_ = new ArrayList<>();
+		}
+		followerTasks_.add(task);
+	}
+
+	@Override
+	public List<FollowerTask> getFollowerTasks() {
+		return followerTasks_;
+	}
+
+	@Override
+	public void setAutomaticInput(Path input) {
+		file_ = input;
 	}
 
 	@Override
@@ -85,5 +118,24 @@ public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implemen
 		// upload file to filer
 		shareFile(output, recipients_, SharedFileInfo.FILE);
 		return null;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// execute follower tasks
+		if (followerTasks_ != null) {
+			for (FollowerTask task : followerTasks_) {
+				if (executeAutomaticTasksInParallel_) {
+					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+				}
+				else {
+					taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+				}
+			}
+		}
 	}
 }

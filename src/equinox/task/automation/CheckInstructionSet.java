@@ -17,6 +17,7 @@ package equinox.task.automation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -24,14 +25,14 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
-import equinox.data.AnalysisEngine;
-import equinox.data.IsamiSubVersion;
+import equinox.Equinox;
 import equinox.data.IsamiVersion;
+import equinox.data.Settings;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
-import equinox.dataServer.remote.data.SearchInput;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
+import equinox.process.automation.CheckEquivalentStressAnalysisInput;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
@@ -227,6 +228,36 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// share stress sequence
+		if (equinoxInput.getChild("shareStressSequence") != null) {
+			if (!checkShareStressSequence(equinoxInput))
+				return false;
+		}
+
+		// plot mission profile
+		if (equinoxInput.getChild("plotMissionProfile") != null) {
+			if (!checkPlotMissionProfile(equinoxInput))
+				return false;
+		}
+
+		// plot typical flight
+		if (equinoxInput.getChild("plotTypicalFlight") != null) {
+			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlight"))
+				return false;
+		}
+
+		// plot typical flight statistics
+		if (equinoxInput.getChild("plotTypicalFlightStatistics") != null) {
+			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlightStatistics"))
+				return false;
+		}
+
+		// equivalent stress analysis
+		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
+			if (!checkEquivalentStressAnalysis(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// check passed
@@ -258,6 +289,174 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>equivalentStressAnalysis</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>equivalentStressAnalysis</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkEquivalentStressAnalysis(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking equivalentStressAnalysis elements...");
+
+		// get ISAMI version
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// create list of checked inputs
+		ArrayList<String> checkedInputs = new ArrayList<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over equivalent stress analysis elements
+			for (Element equivalentStressAnalysis : equinoxInput.getChildren("equivalentStressAnalysis")) {
+
+				// no id
+				if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, equivalentStressAnalysis))
+					return false;
+
+				// check stress sequence id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, equivalentStressAnalysis, "stressSequenceId", "generateStressSequence"))
+					return false;
+
+				// check XML path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "xmlPath", false, FileType.XML))
+					return false;
+
+				// get XML path
+				String xmlPath = equivalentStressAnalysis.getChild("xmlPath").getTextNormalize();
+
+				// already checked
+				if (checkedInputs.contains(xmlPath)) {
+					continue;
+				}
+
+				// check generate stress sequence input
+				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(xmlPath), isamiVersion).start(connection))
+					return false;
+
+				// add to checked inputs
+				checkedInputs.add(xmlPath);
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotTypicalFlight</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param elementName
+	 *            Element name.
+	 * @return True if all <code>plotTypicalFlight</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotTypicalFlight(Element equinoxInput, String elementName) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotTypicalFlight elements...");
+
+		// loop over plot typical flight elements
+		for (Element plotTypicalFlight : equinoxInput.getChildren(elementName)) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotTypicalFlight))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "stressSequenceId", "generateStressSequence"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotTypicalFlight, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check plot type
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotTypicalFlight, "plotType", false, XMLUtilities.getStringArray(PilotPointImageType.values())))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotMissionProfile</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotMissionProfile</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotMissionProfile(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotMissionProfile elements...");
+
+		// loop over plot mission profile elements
+		for (Element plotMissionProfile : equinoxInput.getChildren("plotMissionProfile")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotMissionProfile))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotMissionProfile, "stressSequenceId", "generateStressSequence"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotMissionProfile, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>shareStressSequence</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>shareStressSequence</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkShareStressSequence(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking shareStressSequence elements...");
+
+		// loop over share stress sequence elements
+		for (Element shareStressSequence : equinoxInput.getChildren("shareStressSequence")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareStressSequence))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, shareStressSequence, "stressSequenceId", "generateStressSequence"))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, shareStressSequence, "recipient", false))
+				return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
@@ -1181,77 +1380,11 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
 			return false;
 
-		// check run silent
-		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "runSilent", true))
-			return false;
-
 		// check overwrite files
 		if (!XMLUtilities.checkBooleanValue(this, inputFile, settings, "overwriteFiles", true))
 			return false;
 		if (settings.getChild("overwriteFiles") != null) {
 			overwriteFiles = Boolean.parseBoolean(settings.getChild("overwriteFiles").getTextNormalize());
-		}
-
-		// check analysis engine
-		if (settings.getChild("analysisEngine") != null) {
-
-			// get element
-			Element analysisEngine = settings.getChild("analysisEngine");
-
-			// engine
-			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "engine", true, XMLUtilities.getStringArray(AnalysisEngine.values())))
-				return false;
-
-			// version
-			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "version", true, XMLUtilities.getStringArray(IsamiVersion.values())))
-				return false;
-
-			// sub version
-			if (!XMLUtilities.checkStringValue(this, inputFile, analysisEngine, "subVersion", true, XMLUtilities.getStringArray(IsamiSubVersion.values())))
-				return false;
-
-			// keep output file
-			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "keepOutputFile", true))
-				return false;
-
-			// perform detailed analysis
-			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "performDetailedAnalysis", true))
-				return false;
-
-			// apply compression for propagation
-			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "applyCompressionForPropagation", true))
-				return false;
-
-			// fallback to inbuilt
-			if (!XMLUtilities.checkBooleanValue(this, inputFile, analysisEngine, "fallbackToInbuilt", true))
-				return false;
-		}
-
-		// check search engine
-		if (settings.getChild("searchEngine") != null) {
-
-			// get element
-			Element searchEngine = settings.getChild("searchEngine");
-
-			// logical operator
-			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "logicalOperator", true, "and", "or"))
-				return false;
-
-			// ignore case
-			if (!XMLUtilities.checkBooleanValue(this, inputFile, searchEngine, "ignoreCase", true))
-				return false;
-
-			// maximum hits
-			if (!XMLUtilities.checkIntegerValue(this, inputFile, searchEngine, "maxHits", true))
-				return false;
-
-			// order results by
-			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "orderResultsBy", true, SearchInput.NAME, SearchInput.PROGRAM, SearchInput.SECTION, SearchInput.MISSION, SearchInput.DELIVERY))
-				return false;
-
-			// results order
-			if (!XMLUtilities.checkStringValue(this, inputFile, searchEngine, "resultsOrder", true, "Ascending", "Descending"))
-				return false;
 		}
 
 		// check passed
