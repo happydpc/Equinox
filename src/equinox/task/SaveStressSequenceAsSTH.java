@@ -18,6 +18,8 @@ package equinox.task;
 import java.io.File;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
@@ -25,6 +27,7 @@ import equinox.process.SaveSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for save spectrum as STH task.
@@ -33,13 +36,19 @@ import equinox.task.automation.AutomaticTask;
  * @date Jan 7, 2014
  * @time 2:13:14 PM
  */
-public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<StressSequence> {
+public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<StressSequence>, AutomaticTaskOwner<Path> {
 
 	/** Stress sequence. */
 	private StressSequence stressSequence;
 
 	/** Output file. */
 	private final File output;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save spectrum as STH task.
@@ -52,6 +61,24 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	public SaveStressSequenceAsSTH(StressSequence stressSequence, File output) {
 		this.stressSequence = stressSequence;
 		this.output = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -82,5 +109,36 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 
 		// return output path
 		return output.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 }

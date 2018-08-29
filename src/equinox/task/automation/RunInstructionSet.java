@@ -87,6 +87,7 @@ import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveExternalStressSequenceAsSIGMA;
 import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
+import equinox.task.SaveMissionProfile;
 import equinox.task.SaveOutputFile;
 import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
@@ -282,6 +283,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			plotMissionProfile(equinoxInput, tasks);
 		}
 
+		// save mission profile info
+		if (equinoxInput.getChild("saveMissionProfileInfo") != null) {
+			saveMissionProfileInfo(equinoxInput, tasks);
+		}
+
 		// plot typical flight
 		if (equinoxInput.getChild("plotTypicalFlight") != null) {
 			plotTypicalFlight(equinoxInput, tasks, "plotTypicalFlight");
@@ -428,7 +434,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// update info
 		updateMessage("Creating save analysis output file tasks...");
 
-		// loop over ave analysis output file elements
+		// loop over save analysis output file elements
 		for (Element saveAnalysisOutputFile : equinoxInput.getChildren("saveAnalysisOutputFile")) {
 
 			// get inputs
@@ -616,6 +622,42 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// create task
 			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, plotType, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save mission profile info tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveMissionProfileInfo(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save mission profile info tasks...");
+
+		// loop over save mission profile info elements
+		for (Element saveMissionProfileInfo : equinoxInput.getChildren("saveMissionProfileInfo")) {
+
+			// get inputs
+			String id = saveMissionProfileInfo.getChild("id").getTextNormalize();
+			String stressSequenceId = saveMissionProfileInfo.getChild("stressSequenceId").getTextNormalize();
+			Path outputPath = Paths.get(saveMissionProfileInfo.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveMissionProfile task = new SaveMissionProfile(null, outputPath.toFile());
 
 			// connect to parent task
 			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
@@ -1622,7 +1664,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				saveSpectrumFileTask = new SaveANA(null, outputPath.toFile(), FileType.ANA);
 			}
 
-			// FIXME CVT
+			// CVT
 			else if (fileType.equals(FileType.CVT)) {
 				saveSpectrumFileTask = new SaveCVT(null, outputPath.toFile(), FileType.CVT);
 			}

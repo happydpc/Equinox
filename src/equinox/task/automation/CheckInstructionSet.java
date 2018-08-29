@@ -240,6 +240,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// save mission profile info
+		if (equinoxInput.getChild("saveMissionProfileInfo") != null) {
+			if (!checkSaveMissionProfileInfo(equinoxInput))
+				return false;
+		}
+
 		// plot typical flight
 		if (equinoxInput.getChild("plotTypicalFlight") != null) {
 			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlight"))
@@ -273,6 +279,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// save analysis output file
 		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
 			if (!checkSaveAnalysisOutputFile(equinoxInput))
+				return false;
+		}
+
+		// share file
+		if (equinoxInput.getChild("shareFile") != null) {
+			if (!checkShareFile(equinoxInput))
 				return false;
 		}
 
@@ -310,6 +322,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>shareFile</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>shareFile</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkShareFile(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking shareFile elements...");
+
+		// loop over share file elements
+		for (Element shareFile : equinoxInput.getChildren("shareFile")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareFile))
+				return false;
+
+			// check file id
+			if (!XMLUtilities.checkDependencyStartingWith(this, inputFile, equinoxInput, shareFile, "fileId", "save", "export", "plot"))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, shareFile, "recipient", false))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>saveAnalysisOutputFile</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -335,7 +381,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check output path
-			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveAnalysisOutputFile, "outputPath", false, overwriteFiles, FileType.PNG))
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveAnalysisOutputFile, "outputPath", false, overwriteFiles, FileType.DOSSIER, FileType.HTML))
 				return false;
 		}
 
@@ -504,6 +550,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// check plot type
 			if (!XMLUtilities.checkStringValue(this, inputFile, plotTypicalFlight, "plotType", false, XMLUtilities.getStringArray(PilotPointImageType.values())))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveMissionProfileInfo</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveMissionProfileInfo</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveMissionProfileInfo(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveMissionProfileInfo elements...");
+
+		// loop over save mission profile info elements
+		for (Element saveMissionProfileInfo : equinoxInput.getChildren("saveMissionProfileInfo")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveMissionProfileInfo))
+				return false;
+
+			// check stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveMissionProfileInfo, "stressSequenceId", "generateStressSequence"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveMissionProfileInfo, "outputPath", false, overwriteFiles, FileType.XLS))
 				return false;
 		}
 

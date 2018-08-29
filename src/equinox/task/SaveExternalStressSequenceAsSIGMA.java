@@ -19,17 +19,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for save external stress sequence as SIGMA task.
@@ -38,7 +42,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Mar 13, 2015
  * @time 12:06:02 PM
  */
-public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<ExternalStressSequence> {
+public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<ExternalStressSequence>, AutomaticTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private ExternalStressSequence sequence_;
@@ -55,6 +59,12 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 	/** Decimal format. */
 	private final DecimalFormat format_ = new DecimalFormat("0.000000E00");
 
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates save external stress sequence as SIGMA task.
 	 *
@@ -66,6 +76,24 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 	public SaveExternalStressSequenceAsSIGMA(ExternalStressSequence sequence, File output) {
 		sequence_ = sequence;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -84,7 +112,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
@@ -122,7 +150,38 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Void>
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

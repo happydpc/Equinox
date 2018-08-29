@@ -16,7 +16,10 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
@@ -24,6 +27,7 @@ import equinox.process.SaveExternalSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for save external stress sequence as STH task.
@@ -32,13 +36,19 @@ import equinox.task.automation.AutomaticTask;
  * @date Mar 13, 2015
  * @time 11:26:53 AM
  */
-public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<ExternalStressSequence> {
+public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<ExternalStressSequence>, AutomaticTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private ExternalStressSequence sequence;
 
 	/** Output file. */
 	private final File output;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save external stress sequence as STH task.
@@ -51,6 +61,24 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> i
 	public SaveExternalStressSequenceAsSTH(ExternalStressSequence sequence, File output) {
 		this.sequence = sequence;
 		this.output = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -69,7 +97,7 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> i
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
@@ -80,6 +108,37 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Void> i
 		}
 
 		// return
-		return null;
+		return output.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 }

@@ -189,7 +189,11 @@
 		<stressSequenceId></stressSequenceId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
 		<recipient></recipient></shareStressSequence><!--Plots mission profile to given output file.-->
 	<plotMissionProfile><id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Path to save mission profile plot. File name must end with .png.--><outputPath></outputPath></plotMissionProfile><!--Plots selected type of typical flight to given output file.-->
+		<stressSequenceId></stressSequenceId><!--Path to save mission profile plot. File name must end with .png.--><outputPath></outputPath></plotMissionProfile><!--Generates and saves mission profile information file. This file contains all stepping data.-->
+	<saveMissionProfileInfo>
+		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId><!--Path to save mission profile info. File name must end with .xls.-->
+		<outputPath></outputPath></saveMissionProfileInfo><!--Plots selected type of typical flight to given output file.-->
 	<plotTypicalFlight><id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId><!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence' or 'Flight With Highest Total Stress'.-->
 		<plotType></plotType><!--Path to save typical flight plot. File name must end with .png.-->
@@ -213,13 +217,17 @@
 	<plotRainflowHistogram>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId><!--Path to save rainflow histogram plot. File name must end with .png.-->
-		<outputPath></outputPath></plotRainflowHistogram><!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
+		<outputPath></outputPath></plotRainflowHistogram>
+	<saveRainflowCycleInfo>
+		<id></id>
+		<equivalentStressId></equivalentStressId>
+		<outputPath></outputPath></saveRainflowCycleInfo><!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
 	<saveAnalysisOutputFile>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId><!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
 		<outputPath></outputPath></saveAnalysisOutputFile><!--Shares refernced file with given recipent.-->
 	<shareFile>
-		<id></id><!--The fileId references to all instruction sets beginning with 'save' or 'plot'.-->
+		<id></id><!--The fileId references to all instruction sets beginning with 'save', 'export' or 'plot'.-->
 		<fileId></fileId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
 		<recipient></recipient></shareFile>
 	<equivalentStressAnalysis>

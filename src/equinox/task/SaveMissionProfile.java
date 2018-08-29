@@ -16,14 +16,20 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.PostProcessingTask;
 import jxl.CellType;
 import jxl.Workbook;
 import jxl.format.Border;
@@ -44,25 +50,54 @@ import jxl.write.WriteException;
  * @date May 21, 2015
  * @time 2:25:01 PM
  */
-public class SaveMissionProfile extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveMissionProfile extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<StressSequence>, PostProcessingTask, AutomaticTaskOwner<Path> {
 
 	/** Input stress sequence. */
-	private final StressSequence sequence_;
+	private StressSequence sequence_;
 
 	/** Output file. */
 	private final File output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save mission profile task.
 	 *
 	 * @param sequence
-	 *            Input stress sequence.
+	 *            Input stress sequence. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveMissionProfile(StressSequence sequence, File output) {
 		sequence_ = sequence;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(StressSequence input) {
+		sequence_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -76,7 +111,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Void> implements Lon
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// update progress info
 		updateTitle("Saving mission profile to '" + output_.getName() + "'");
@@ -118,7 +153,38 @@ public class SaveMissionProfile extends InternalEquinoxTask<Void> implements Lon
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**
@@ -298,7 +364,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Void> implements Lon
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		cellFormat.setWrap(true);
 		cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
 		return cellFormat;

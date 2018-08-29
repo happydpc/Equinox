@@ -60,6 +60,10 @@
 		<stressSequenceId>6</stressSequenceId>
 		<outputPath>/Users/aurora/Temporary/missionProfile.png</outputPath>
 	</plotMissionProfile>
+	<saveMissionProfileInfo>
+		<id>14</id>
+		<stressSequenceId>6</stressSequenceId>
+		<outputPath>/Users/aurora/Temporary/missionProfileInfo.xls</outputPath></saveMissionProfileInfo>
 	<plotTypicalFlight><id>9</id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId>6</stressSequenceId><!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
 		<plotType>Longest Typical Flight</plotType><!--Path to save typical flight plot. File name must end with .png.-->

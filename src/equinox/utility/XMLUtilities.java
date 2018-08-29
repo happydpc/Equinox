@@ -227,6 +227,63 @@ public class XMLUtilities {
 	}
 
 	/**
+	 * Returns true if the dependency of the given element is satisfied.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param root
+	 *            Root input element.
+	 * @param element
+	 *            Element to check its dependency.
+	 * @param dependencyName
+	 *            Dependency name.
+	 * @param targetElementNamePrefixes
+	 *            Target element name prefixes.
+	 * @return True if the dependency of the given element is satisfied.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkDependencyStartingWith(InternalEquinoxTask<?> task, Path xmlFile, Element root, Element element, String dependencyName, String... targetElementNamePrefixes) throws Exception {
+
+		// get source element
+		Element sourceElement = element.getChild(dependencyName);
+
+		// source element not found
+		if (sourceElement == null) {
+			task.addWarning("Cannot locate element '" + dependencyName + "' under " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
+
+		// get source id
+		String sourceId = sourceElement.getTextNormalize();
+
+		// empty id
+		if (sourceId.isEmpty()) {
+			task.addWarning("Empty value supplied for " + XMLUtilities.getFamilyTree(sourceElement) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// search for referenced element
+		for (Element targetElement : root.getChildren()) {
+			for (String prefix : targetElementNamePrefixes) {
+				if (targetElement.getName().startsWith(prefix)) {
+					Element id = targetElement.getChild("id");
+					if (id != null) {
+						if (sourceId.equals(id.getTextNormalize()))
+							return true;
+					}
+				}
+			}
+		}
+
+		// referenced element not found
+		task.addWarning("Cannot find element with task id '" + sourceId + "' which appears to be a dependency of " + XMLUtilities.getFamilyTree(sourceElement) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+		return false;
+	}
+
+	/**
 	 * Returns true if given element has at least 1 valid search keyword value.
 	 *
 	 * @param task
