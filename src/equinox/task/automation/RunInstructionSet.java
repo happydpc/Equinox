@@ -83,9 +83,11 @@ import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
 import equinox.task.SaveConversionTable;
+import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveExternalStressSequenceAsSIGMA;
 import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
+import equinox.task.SaveOutputFile;
 import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
 import equinox.task.SaveStressSequenceAsSIGMA;
@@ -295,6 +297,26 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			equivalentStressAnalysis(equinoxInput, tasks);
 		}
 
+		// plot level crossing
+		if (equinoxInput.getChild("plotLevelCrossing") != null) {
+			plotLevelCrossing(equinoxInput, tasks);
+		}
+
+		// plot rainflow histogram
+		if (equinoxInput.getChild("plotRainflowHistogram") != null) {
+			plotRainflowHistogram(equinoxInput, tasks);
+		}
+
+		// save analysis output file
+		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
+			saveAnalysisOutputFile(equinoxInput, tasks);
+		}
+
+		// share file
+		if (equinoxInput.getChild("shareFile") != null) {
+			shareFile(equinoxInput, tasks);
+		}
+
 		// TODO
 
 		// return tasks to be executed
@@ -352,6 +374,150 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates share file tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void shareFile(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating share file tasks...");
+
+		// loop over save stress sequence elements
+		for (Element shareFile : equinoxInput.getChildren("shareFile")) {
+
+			// create task
+			String id = shareFile.getChild("id").getTextNormalize();
+			String fileId = shareFile.getChild("fileId").getTextNormalize();
+			String recipient = shareFile.getChild("recipient").getTextNormalize();
+
+			// create tasks
+			ShareGeneratedItem shareTask = new ShareGeneratedItem(null, Arrays.asList(recipient));
+
+			// add to parent task
+			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(fileId).getTask();
+			parentTask.addAutomaticTask(id, shareTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(shareTask, true));
+		}
+	}
+
+	/**
+	 * Creates save analysis output file tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveAnalysisOutputFile(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save analysis output file tasks...");
+
+		// loop over ave analysis output file elements
+		for (Element saveAnalysisOutputFile : equinoxInput.getChildren("saveAnalysisOutputFile")) {
+
+			// get inputs
+			String id = saveAnalysisOutputFile.getChild("id").getTextNormalize();
+			String equivalentStressId = saveAnalysisOutputFile.getChild("equivalentStressId").getTextNormalize();
+			Path outputPath = Paths.get(saveAnalysisOutputFile.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveOutputFile task = new SaveOutputFile(null, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates plot rainflow histogram tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotRainflowHistogram(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot rainflow histogram tasks...");
+
+		// loop over plot rainflow histogram elements
+		for (Element plotRainflowHistogram : equinoxInput.getChildren("plotRainflowHistogram")) {
+
+			// get inputs
+			String id = plotRainflowHistogram.getChild("id").getTextNormalize();
+			String equivalentStressId = plotRainflowHistogram.getChild("equivalentStressId").getTextNormalize();
+			Path outputPath = Paths.get(plotRainflowHistogram.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.RAINFLOW_HISTOGRAM, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates plot level crossing tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotLevelCrossing(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot level crossing tasks...");
+
+		// loop over plot level crossing elements
+		for (Element plotLevelCrossing : equinoxInput.getChildren("plotLevelCrossing")) {
+
+			// get inputs
+			String id = plotLevelCrossing.getChild("id").getTextNormalize();
+			String equivalentStressId = plotLevelCrossing.getChild("equivalentStressId").getTextNormalize();
+			Path outputPath = Paths.get(plotLevelCrossing.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.LEVEL_CROSSING, outputPath);
+
+			// connect to parent task
+			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addAutomaticTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
 		}
 	}
 
@@ -1456,7 +1622,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				saveSpectrumFileTask = new SaveANA(null, outputPath.toFile(), FileType.ANA);
 			}
 
-			// CVT
+			// FIXME CVT
 			else if (fileType.equals(FileType.CVT)) {
 				saveSpectrumFileTask = new SaveCVT(null, outputPath.toFile(), FileType.CVT);
 			}

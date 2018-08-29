@@ -48,6 +48,7 @@ import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
 import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.PostProcessingTask;
 import equinox.task.serializableTask.SerializableGenerateStressSequence;
 import equinox.utility.Utility;
 
@@ -194,18 +195,18 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			stfFile_.getChildren().add(sequence);
 
 			// generate and save plots
-			taskPanel_.getOwner().runTaskInParallel(new SaveMissionProfilePlot(sequence));
-			taskPanel_.getOwner().runTaskInParallel(new SaveLongestFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskInParallel(new SaveHOFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskInParallel(new SaveHSFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskInParallel(new SaveNumPeaksPlot(sequence));
-			taskPanel_.getOwner().runTaskInParallel(new SaveFlightOccurrencePlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveMissionProfilePlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveLongestFlightPlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveHOFlightPlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveHSFlightPlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveNumPeaksPlot(sequence));
+			taskPanel_.getOwner().runTaskSequentially(new SaveFlightOccurrencePlot(sequence));
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
 				for (AutomaticTask<SpectrumItem> task : automaticTasks_.values()) {
 					task.setAutomaticInput(sequence);
-					if (executeAutomaticTasksInParallel_) {
+					if (executeAutomaticTasksInParallel_ && task instanceof PostProcessingTask == false) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
 					}
 					else {

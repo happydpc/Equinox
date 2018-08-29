@@ -19,6 +19,8 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
@@ -34,6 +36,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveOutputFileProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for save output file task.
@@ -43,25 +47,49 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @time 14:04:33
  *
  */
-public class SaveOutputFile extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, AutomaticTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** Spectrum item to save the output file for. */
-	private final SpectrumItem item_;
+	private SpectrumItem item_;
 
 	/** Output file. */
 	private final Path output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save output file task.
 	 *
 	 * @param item
-	 *            Spectrum item to save the output file for.
+	 *            Spectrum item to save the output file for. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveOutputFile(SpectrumItem item, Path output) {
 		item_ = item;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -75,7 +103,12 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Void> implements S
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	public void setAutomaticInput(SpectrumItem input) {
+		item_ = input;
+	}
+
+	@Override
+	protected Path call() throws Exception {
 
 		// update progress info
 		updateTitle("Saving output file to '" + output_.getFileName().toString() + "'");
@@ -95,10 +128,41 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Void> implements S
 
 			// save output file
 			new SaveOutputFileProcess(this, item_, output).start(connection);
+
+			// return output file
+			return output;
+		}
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
 		}
 
-		// return
-		return null;
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

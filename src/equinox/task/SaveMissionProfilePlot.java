@@ -40,6 +40,7 @@ import equinox.data.fileType.StressSequence;
 import equinox.plugin.FileType;
 import equinox.process.PlotMissionProfileProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.PostProcessingTask;
 import equinox.utility.CrosshairListenerXYPlot;
 
 /**
@@ -49,7 +50,7 @@ import equinox.utility.CrosshairListenerXYPlot;
  * @date 25 Jul 2016
  * @time 14:39:31
  */
-public class SaveMissionProfilePlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveMissionProfilePlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask, PostProcessingTask {
 
 	/** Stress sequence. */
 	private final StressSequence sequence_;

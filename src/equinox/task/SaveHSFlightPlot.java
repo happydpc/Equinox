@@ -41,6 +41,7 @@ import equinox.data.fileType.Flight;
 import equinox.data.fileType.StressSequence;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.PostProcessingTask;
 import equinox.utility.CrosshairListenerXYPlot;
 
 /**
@@ -50,7 +51,7 @@ import equinox.utility.CrosshairListenerXYPlot;
  * @date 25 Jul 2016
  * @time 16:30:30
  */
-public class SaveHSFlightPlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveHSFlightPlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask, PostProcessingTask {
 
 	/** Stress sequence. */
 	private final StressSequence sequence_;

@@ -258,6 +258,24 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// plot level crossing
+		if (equinoxInput.getChild("plotLevelCrossing") != null) {
+			if (!checkPlotLevelCrossing(equinoxInput))
+				return false;
+		}
+
+		// plot rainflow histogram
+		if (equinoxInput.getChild("plotRainflowHistogram") != null) {
+			if (!checkPlotRainflowHistogram(equinoxInput))
+				return false;
+		}
+
+		// save analysis output file
+		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
+			if (!checkSaveAnalysisOutputFile(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// check passed
@@ -289,6 +307,108 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>saveAnalysisOutputFile</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveAnalysisOutputFile</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveAnalysisOutputFile(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveAnalysisOutputFile elements...");
+
+		// loop over save analysis output file elements
+		for (Element saveAnalysisOutputFile : equinoxInput.getChildren("saveAnalysisOutputFile")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveAnalysisOutputFile))
+				return false;
+
+			// check equivalent stress id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "equivalentStressId", "equivalentStressAnalysis"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveAnalysisOutputFile, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotRainflowHistogram</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotRainflowHistogram</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotRainflowHistogram(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotRainflowHistogram elements...");
+
+		// loop over plot rainflow histogram elements
+		for (Element plotRainflowHistogram : equinoxInput.getChildren("plotRainflowHistogram")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotRainflowHistogram))
+				return false;
+
+			// check equivalent stress id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotRainflowHistogram, "equivalentStressId", "equivalentStressAnalysis"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotRainflowHistogram, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotLevelCrossing</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotLevelCrossing</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotLevelCrossing(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotLevelCrossing elements...");
+
+		// loop over plot level crossing elements
+		for (Element plotLevelCrossing : equinoxInput.getChildren("plotLevelCrossing")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLevelCrossing))
+				return false;
+
+			// check equivalent stress id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "equivalentStressId", "equivalentStressAnalysis"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLevelCrossing, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**

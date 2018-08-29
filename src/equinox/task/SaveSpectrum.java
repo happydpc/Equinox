@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.ConversionTableSheetName;
@@ -33,6 +35,7 @@ import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -42,13 +45,19 @@ import equinox.utility.Utility;
  * @date Apr 29, 2014
  * @time 10:32:51 AM
  */
-public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, AutomaticTask<Spectrum> {
+public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, AutomaticTask<Spectrum>, AutomaticTaskOwner<Path> {
 
 	/** File item to save. */
 	private Spectrum spectrum_ = null;
 
 	/** Output file. */
 	private final File output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save CDF set task.
@@ -61,6 +70,24 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 	public SaveSpectrum(Spectrum spectrum, File output) {
 		spectrum_ = spectrum;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -79,7 +106,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
@@ -138,7 +165,38 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Void> implements Lon
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

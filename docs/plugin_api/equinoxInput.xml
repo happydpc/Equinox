@@ -204,18 +204,34 @@
 		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId><!--Path to XML file containing input parameters for equivalent stress analysis.-->
 		<xmlPath></xmlPath>
-	</equivalentStressAnalysis><equivalentStressAnalysis>
+	</equivalentStressAnalysis><!--Plots level crossing to given output file.-->
+	<plotLevelCrossing>
+		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
+		<equivalentStressId></equivalentStressId><!--Path to save level crossing plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotLevelCrossing><!--Plots rainflow histogram to given output file.-->
+	<plotRainflowHistogram>
+		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
+		<equivalentStressId></equivalentStressId><!--Path to save rainflow histogram plot. File name must end with .png.-->
+		<outputPath></outputPath></plotRainflowHistogram><!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
+	<saveAnalysisOutputFile>
+		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
+		<equivalentStressId></equivalentStressId><!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
+		<outputPath></outputPath></saveAnalysisOutputFile><!--Shares refernced file with given recipent.-->
+	<shareFile>
+		<id></id><!--The fileId references to all instruction sets beginning with 'save' or 'plot'.-->
+		<fileId></fileId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient></shareFile>
+	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
 	</equivalentStressAnalysis>
 	
 	
-	<plotLevelCrossing><id></id><equivalentStressId></equivalentStressId><outputPath></outputPath></plotLevelCrossing>
+	
 	<compareLevelCrossings></compareLevelCrossings>
-	<saveAnalysisOutputFile>
-		<id></id>
-		<outputPath></outputPath></saveAnalysisOutputFile>
+	
 	<shareWorkspace></shareWorkspace>
 	<sendTextMessage></sendTextMessage>
 	<restart></restart>

@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 
 import equinox.Equinox;
-import equinox.data.fileType.StressSequence;
+import equinox.data.fileType.SpectrumItem;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.AutomaticTask;
@@ -38,16 +38,16 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
 /**
- * Class for save stress sequence plot to file task.
+ * Class for save equivalent stress plot to file task.
  *
  * @author Murat Artim
- * @date 28 Aug 2018
- * @time 10:53:48
+ * @date 29 Aug 2018
+ * @time 15:32:39
  */
-public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, AutomaticTask<StressSequence>, PostProcessingTask, AutomaticTaskOwner<Path> {
+public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, AutomaticTask<SpectrumItem>, PostProcessingTask, AutomaticTaskOwner<Path> {
 
-	/** Stress sequence. */
-	private StressSequence sequence;
+	/** Equivalent stress. */
+	private SpectrumItem equivalentStress;
 
 	/** Image file. */
 	private final Path output;
@@ -62,17 +62,17 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
-	 * Creates save mission profile plot to file task.
+	 * Creates save equivalent stress plot to file task.
 	 *
-	 * @param sequence
-	 *            Stress sequence. Can be null for automatic execution.
+	 * @param equivalentStress
+	 *            Equivalent stress. Can be null for automatic execution.
 	 * @param plotType
 	 *            Plot type.
 	 * @param output
 	 *            Output path.
 	 */
-	public SaveStressSequencePlotToFile(StressSequence sequence, PilotPointImageType plotType, Path output) {
-		this.sequence = sequence;
+	public SaveEquivalentStressPlotToFile(SpectrumItem equivalentStress, PilotPointImageType plotType, Path output) {
+		this.equivalentStress = equivalentStress;
 		this.plotType = plotType;
 		this.output = output;
 	}
@@ -102,12 +102,12 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 
 	@Override
 	public String getTaskTitle() {
-		return "Save stress sequence plot to file";
+		return "Save equivalent stress plot to file";
 	}
 
 	@Override
-	public void setAutomaticInput(StressSequence input) {
-		sequence = input;
+	public void setAutomaticInput(SpectrumItem input) {
+		equivalentStress = input;
 	}
 
 	@Override
@@ -185,7 +185,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	private Image getImage() throws Exception {
 
 		// update progress info
-		updateMessage("Getting mission profile image from database...");
+		updateMessage("Getting equivalent stress image from database...");
 
 		// initialize image
 		Image image = null;
@@ -197,7 +197,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 			try (Statement statement = connection.createStatement()) {
 
 				// create and execute query
-				String sql = "select image from " + plotType.getTableName() + " where id = " + sequence.getParentItem().getID();
+				String sql = "select image from " + plotType.getTableName() + " where id = " + equivalentStress.getParentItem().getParentItem().getID();
 				try (ResultSet resultSet = statement.executeQuery(sql)) {
 					while (resultSet.next()) {
 

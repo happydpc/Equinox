@@ -363,7 +363,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressInput fatigueInput = new EquivalentStressInput(false, true, 0.0, pp.getFatigueMaterial());
 				EquivalentStressAnalysis fatigueAnalysis = new EquivalentStressAnalysis(null, fatigueInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveFatigueInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				fatigueAnalysis.addAutomaticTask(saveFatigueInfo);
+				fatigueAnalysis.addAutomaticTask(Integer.toString(saveFatigueInfo.hashCode()), saveFatigueInfo);
 				generateStressSequence.addAutomaticTask(Integer.toString(fatigueAnalysis.hashCode()), fatigueAnalysis);
 			}
 
@@ -372,7 +372,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressInput preffasInput = new EquivalentStressInput(false, true, 0.0, pp.getPreffasMaterial());
 				EquivalentStressAnalysis preffasAnalysis = new EquivalentStressAnalysis(null, preffasInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo savePreffasInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				preffasAnalysis.addAutomaticTask(savePreffasInfo);
+				preffasAnalysis.addAutomaticTask(Integer.toString(savePreffasInfo.hashCode()), savePreffasInfo);
 				generateStressSequence.addAutomaticTask(Integer.toString(preffasAnalysis.hashCode()), preffasAnalysis);
 			}
 
@@ -381,7 +381,7 @@ public class CreateRfortAnalysis extends InternalEquinoxTask<Rfort> implements S
 				EquivalentStressInput linearInput = new EquivalentStressInput(false, true, 0.0, pp.getLinearMaterial());
 				EquivalentStressAnalysis linearAnalysis = new EquivalentStressAnalysis(null, linearInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveLinearInfo = new SaveRfortInfo(input_, null, analysisID, RfortOmission.INITIAL_ANALYSIS, RfortOmission.NO_OMISSION, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				linearAnalysis.addAutomaticTask(saveLinearInfo);
+				linearAnalysis.addAutomaticTask(Integer.toString(saveLinearInfo.hashCode()), saveLinearInfo);
 				generateStressSequence.addAutomaticTask(Integer.toString(linearAnalysis.hashCode()), linearAnalysis);
 			}
 

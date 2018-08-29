@@ -69,4 +69,18 @@
 		<stressSequenceId>6</stressSequenceId>
 		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
 	</equivalentStressAnalysis>
+	<plotLevelCrossing>
+		<id>11</id>
+		<equivalentStressId>10</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/levelCrossing.png</outputPath>
+	</plotLevelCrossing>
+	<plotRainflowHistogram>
+		<id>12</id>
+		<equivalentStressId>10</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/rainflowHistogram.png</outputPath></plotRainflowHistogram>
+	<saveAnalysisOutputFile>
+		<id>13</id>
+		<equivalentStressId>10</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/output.dossier</outputPath>
+	</saveAnalysisOutputFile>
 </equinoxInput>

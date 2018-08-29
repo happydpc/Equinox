@@ -43,7 +43,6 @@ import org.jfree.ui.RectangleInsets;
 
 import equinox.Equinox;
 import equinox.controller.DamageContributionViewPanel;
-import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.HistogramInput;
 import equinox.data.input.HistogramInput.HistogramDataType;
@@ -52,6 +51,7 @@ import equinox.plugin.FileType;
 import equinox.process.PlotHistogramProcess;
 import equinox.process.PlotLevelCrossingProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.PostProcessingTask;
 
 /**
  * Class for save level crossings plot task.
@@ -60,10 +60,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date 25 Jul 2016
  * @time 17:04:26
  */
-public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask, PostProcessingTask {
 
 	/** Fatigue equivalent stress. */
-	private final FatigueEquivalentStress eqStress_;
+	private final SpectrumItem eqStress_;
 
 	/**
 	 * Creates save level crossings plot task.
@@ -71,7 +71,7 @@ public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> impl
 	 * @param eqStress
 	 *            Fatigue equivalent stress.
 	 */
-	public SaveLevelCrossingsPlot(FatigueEquivalentStress eqStress) {
+	public SaveLevelCrossingsPlot(SpectrumItem eqStress) {
 		eqStress_ = eqStress;
 	}
 
@@ -335,7 +335,6 @@ public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> impl
 		input.setIncludeMission(true);
 
 		// create empty chart
-
 		String title = "Level Crossings\n(" + FileType.getNameWithoutExtension(eqStress_.getParentItem().getParentItem().getName()) + ")";
 		JFreeChart chart = ChartFactory.createXYLineChart(title, "", "", null);
 		chart.setBackgroundPaint(new Color(245, 245, 245));

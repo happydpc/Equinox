@@ -24,7 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
@@ -58,6 +58,8 @@ import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.PostProcessingTask;
 import equinox.task.serializableTask.SerializableEquivalentStressAnalysis;
 import equinox.utility.Utility;
 
@@ -68,7 +70,7 @@ import equinox.utility.Utility;
  * @date Jul 7, 2014
  * @time 11:11:39 AM
  */
-public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, SavableTask, AutomaticTask<SpectrumItem> {
+public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, SavableTask, AutomaticTask<SpectrumItem>, AutomaticTaskOwner<SpectrumItem> {
 
 	/** Maximum number of allowed peaks per typical flight for standard in-build/server analysis engine. */
 	public static final int MAX_PEAKS = 100000;
@@ -107,7 +109,10 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 	private volatile Exception rainflowException_, equivalentStressAnalysisException_;
 
 	/** Automatic tasks. */
-	private ArrayList<AutomaticTask<SpectrumItem>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumItem>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates equivalent stress analysis task.
@@ -143,17 +148,22 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		return this;
 	}
 
-	/**
-	 * Adds automatic task.
-	 *
-	 * @param task
-	 *            Task to add.
-	 */
-	public void addAutomaticTask(AutomaticTask<SpectrumItem> task) {
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumItem> task) {
 		if (automaticTasks_ == null) {
-			automaticTasks_ = new ArrayList<>();
+			automaticTasks_ = new HashMap<>();
 		}
-		automaticTasks_.add(task);
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, AutomaticTask<SpectrumItem>> getAutomaticTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -338,15 +348,20 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			stressSequence_.getChildren().add(eqStress);
 
 			// generate and save plots
-			if (eqStress instanceof FatigueEquivalentStress) {
-				taskPanel_.getOwner().runTaskInParallel(new SaveLevelCrossingsPlot((FatigueEquivalentStress) eqStress));
+			if (eqStress instanceof FatigueEquivalentStress || eqStress instanceof PreffasEquivalentStress || eqStress instanceof LinearEquivalentStress) {
+				taskPanel_.getOwner().runTaskSequentially(new SaveLevelCrossingsPlot(eqStress));
 			}
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<SpectrumItem> task : automaticTasks_) {
+				for (AutomaticTask<SpectrumItem> task : automaticTasks_.values()) {
 					task.setAutomaticInput(eqStress);
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					if (executeAutomaticTasksInParallel_ && task instanceof PostProcessingTask == false) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
 				}
 			}
 		}
