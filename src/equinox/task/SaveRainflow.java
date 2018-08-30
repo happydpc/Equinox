@@ -19,12 +19,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
@@ -36,6 +39,9 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.PostProcessingTask;
 
 /**
  * Class for save rainflow task.
@@ -44,10 +50,10 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Jun 19, 2014
  * @time 9:55:18 PM
  */
-public class SaveRainflow extends InternalEquinoxTask<Void> implements LongRunningTask {
+public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunningTask, PostProcessingTask, SingleInputTask<SpectrumItem>, SingleInputTaskOwner<Path> {
 
 	/** File item to save. */
-	private final SpectrumItem file_;
+	private SpectrumItem file_;
 
 	/** Output file. */
 	private final File output_;
@@ -55,17 +61,46 @@ public class SaveRainflow extends InternalEquinoxTask<Void> implements LongRunni
 	/** Decimal format. */
 	private final DecimalFormat format_ = new DecimalFormat("0.00");
 
+	/** Automatic tasks. */
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates save rainflow task.
 	 *
 	 * @param file
-	 *            File item to save.
+	 *            File item to save. Can be null for automatic execution.
 	 * @param output
 	 *            Output file.
 	 */
 	public SaveRainflow(SpectrumItem file, File output) {
 		file_ = file;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumItem input) {
+		file_ = input;
 	}
 
 	@Override
@@ -79,7 +114,7 @@ public class SaveRainflow extends InternalEquinoxTask<Void> implements LongRunni
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.SAVE_FILE);
@@ -106,7 +141,38 @@ public class SaveRainflow extends InternalEquinoxTask<Void> implements LongRunni
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// execute automatic tasks
+			if (automaticTasks_ != null) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
+					task.setAutomaticInput(file);
+					if (executeAutomaticTasksInParallel_) {
+						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+					}
+					else {
+						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+					}
+				}
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
 	}
 
 	/**

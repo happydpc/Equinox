@@ -27,7 +27,7 @@ import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
 /**
@@ -37,7 +37,7 @@ import equinox.utility.Utility;
  * @date Sep 23, 2014
  * @time 4:57:19 PM
  */
-public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, AutomaticTask<STFFile> {
+public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, SingleInputTask<STFFile> {
 
 	/** Item to share. */
 	private STFFile item_;

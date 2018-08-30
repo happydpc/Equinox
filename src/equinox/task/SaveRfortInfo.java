@@ -38,7 +38,7 @@ import equinox.data.ui.RfortOmission;
 import equinox.data.ui.RfortPercentOmission;
 import equinox.data.ui.SerializableRfortPilotPoint;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for save RFORT info task.
@@ -47,7 +47,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Mar 7, 2016
  * @time 1:56:19 PM
  */
-public class SaveRfortInfo extends InternalEquinoxTask<HashMap<String, Double>> implements ShortRunningTask, AutomaticTask<SpectrumItem> {
+public class SaveRfortInfo extends InternalEquinoxTask<HashMap<String, Double>> implements ShortRunningTask, SingleInputTask<SpectrumItem> {
 
 	/** Equivalent stress type. */
 	public static final String FATIGUE = "Fatigue", PREFFAS = "Preffas", LINEAR = "Linear";

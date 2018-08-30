@@ -36,8 +36,8 @@ import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.Utility;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -60,7 +60,7 @@ import jxl.write.WriteException;
  * @date Feb 5, 2016
  * @time 1:10:31 PM
  */
-public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, AutomaticTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>>, AutomaticTaskOwner<Path> {
+public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>>, SingleInputTaskOwner<Path> {
 
 	/** STF file. */
 	private STFFile stfFile_;
@@ -78,7 +78,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	private final File output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -177,7 +177,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -185,7 +185,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -260,7 +260,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(output);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

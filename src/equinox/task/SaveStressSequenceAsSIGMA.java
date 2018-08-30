@@ -32,8 +32,8 @@ import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 
 /**
  * Class for save stress sequence as SIGMA file task.
@@ -42,7 +42,7 @@ import equinox.task.automation.AutomaticTaskOwner;
  * @date Jun 10, 2014
  * @time 1:43:02 PM
  */
-public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<StressSequence>, AutomaticTaskOwner<Path> {
+public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, SingleInputTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private StressSequence sequence_;
@@ -60,7 +60,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 	private final DecimalFormat format_ = new DecimalFormat("0.000000E00");
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -84,7 +84,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -92,7 +92,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -166,7 +166,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(output);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

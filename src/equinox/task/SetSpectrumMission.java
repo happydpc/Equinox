@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for set spectrum mission task.
@@ -30,7 +30,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Mar 9, 2016
  * @time 2:49:03 PM
  */
-public class SetSpectrumMission extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<Spectrum> {
+public class SetSpectrumMission extends InternalEquinoxTask<Void> implements ShortRunningTask, SingleInputTask<Spectrum> {
 
 	/** Spectrum. */
 	private Spectrum spectrum_;

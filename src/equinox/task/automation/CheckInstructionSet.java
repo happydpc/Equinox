@@ -276,19 +276,25 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// save rainflow cycle info
+		if (equinoxInput.getChild("saveRainflowCycleInfo") != null) {
+			if (!checkSaveRainflowCycleInfo(equinoxInput))
+				return false;
+		}
+
 		// save analysis output file
 		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
 			if (!checkSaveAnalysisOutputFile(equinoxInput))
 				return false;
 		}
 
+		// TODO check next instructions
+
 		// share file
 		if (equinoxInput.getChild("shareFile") != null) {
 			if (!checkShareFile(equinoxInput))
 				return false;
 		}
-
-		// TODO check next instructions
 
 		// check passed
 		return true;
@@ -382,6 +388,40 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveAnalysisOutputFile, "outputPath", false, overwriteFiles, FileType.DOSSIER, FileType.HTML))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveRainflowCycleInfo</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveRainflowCycleInfo</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveRainflowCycleInfo(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveRainflowCycleInfo elements...");
+
+		// loop over save rainflow cycle info elements
+		for (Element saveRainflowCycleInfo : equinoxInput.getChildren("saveRainflowCycleInfo")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveRainflowCycleInfo))
+				return false;
+
+			// check equivalent stress id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveRainflowCycleInfo, "equivalentStressId", "equivalentStressAnalysis"))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveRainflowCycleInfo, "outputPath", false, overwriteFiles, FileType.RFLOW))
 				return false;
 		}
 

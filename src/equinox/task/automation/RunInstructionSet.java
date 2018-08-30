@@ -89,6 +89,7 @@ import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
 import equinox.task.SaveMissionProfile;
 import equinox.task.SaveOutputFile;
+import equinox.task.SaveRainflow;
 import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
 import equinox.task.SaveStressSequenceAsSIGMA;
@@ -313,17 +314,22 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			plotRainflowHistogram(equinoxInput, tasks);
 		}
 
+		// save rainflow cycle info
+		if (equinoxInput.getChild("saveRainflowCycleInfo") != null) {
+			saveRainflowCycleInfo(equinoxInput, tasks);
+		}
+
 		// save analysis output file
 		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
 			saveAnalysisOutputFile(equinoxInput, tasks);
 		}
 
+		// TODO
+
 		// share file
 		if (equinoxInput.getChild("shareFile") != null) {
 			shareFile(equinoxInput, tasks);
 		}
-
-		// TODO
 
 		// return tasks to be executed
 		return tasks;
@@ -410,8 +416,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			ShareGeneratedItem shareTask = new ShareGeneratedItem(null, Arrays.asList(recipient));
 
 			// add to parent task
-			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(fileId).getTask();
-			parentTask.addAutomaticTask(id, shareTask);
+			SingleInputTaskOwner<Path> parentTask = (SingleInputTaskOwner<Path>) tasks.get(fileId).getTask();
+			parentTask.addSingleInputTask(id, shareTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -446,8 +452,44 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveOutputFile task = new SaveOutputFile(null, outputPath);
 
 			// connect to parent task
-			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<SpectrumItem> parentTask = (SingleInputTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addSingleInputTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save rainflow cycle info tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveRainflowCycleInfo(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating rainflow cycle info tasks...");
+
+		// loop over rainflow cycle info elements
+		for (Element saveRainflowCycleInfo : equinoxInput.getChildren("saveRainflowCycleInfo")) {
+
+			// get inputs
+			String id = saveRainflowCycleInfo.getChild("id").getTextNormalize();
+			String equivalentStressId = saveRainflowCycleInfo.getChild("equivalentStressId").getTextNormalize();
+			Path outputPath = Paths.get(saveRainflowCycleInfo.getChild("outputPath").getTextNormalize());
+
+			// create task
+			SaveRainflow task = new SaveRainflow(null, outputPath.toFile());
+
+			// connect to parent task
+			SingleInputTaskOwner<SpectrumItem> parentTask = (SingleInputTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -482,8 +524,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.RAINFLOW_HISTOGRAM, outputPath);
 
 			// connect to parent task
-			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<SpectrumItem> parentTask = (SingleInputTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -518,8 +560,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.LEVEL_CROSSING, outputPath);
 
 			// connect to parent task
-			AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<SpectrumItem> parentTask = (SingleInputTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -575,9 +617,9 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
 
 				// add to parent task
-				AutomaticTaskOwner<SpectrumItem> parentTask = (AutomaticTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
+				SingleInputTaskOwner<SpectrumItem> parentTask = (SingleInputTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-				parentTask.addAutomaticTask(id, task);
+				parentTask.addSingleInputTask(id, task);
 
 				// put task to tasks
 				tasks.put(id, new InstructedTask(task, true));
@@ -624,8 +666,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, plotType, outputPath);
 
 			// connect to parent task
-			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<StressSequence> parentTask = (SingleInputTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -660,8 +702,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveMissionProfile task = new SaveMissionProfile(null, outputPath.toFile());
 
 			// connect to parent task
-			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<StressSequence> parentTask = (SingleInputTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -696,8 +738,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, PilotPointImageType.MISSION_PROFILE, outputPath);
 
 			// connect to parent task
-			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<StressSequence> parentTask = (SingleInputTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -738,11 +780,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// connect tasks
 			shareTask.addFollowerTask(deleteTask);
-			saveTask.addAutomaticTask(id, shareTask);
+			saveTask.addSingleInputTask(id, shareTask);
 
 			// add to parent task
-			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, saveTask);
+			SingleInputTaskOwner<StressSequence> parentTask = (SingleInputTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, saveTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -772,7 +814,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = saveStressSequence.getChild("id").getTextNormalize();
 			String stressSequenceId = saveStressSequence.getChild("stressSequenceId").getTextNormalize();
 			Path outputPath = Paths.get(saveStressSequence.getChild("outputPath").getTextNormalize());
-			AutomaticTask<StressSequence> task = null;
+			SingleInputTask<StressSequence> task = null;
 
 			// get file type
 			FileType fileType = FileType.getFileType(outputPath.toFile());
@@ -788,8 +830,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// add to parent task
-			AutomaticTaskOwner<StressSequence> parentTask = (AutomaticTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<StressSequence> parentTask = (SingleInputTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -834,8 +876,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			GenerateStressSequence generateStressSequenceTask = new GenerateStressSequence(null, input);
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, generateStressSequenceTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, generateStressSequenceTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -865,7 +907,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = saveHeadlessStressSequence.getChild("id").getTextNormalize();
 			String headlessStressSequenceId = saveHeadlessStressSequence.getChild("headlessStressSequenceId").getTextNormalize();
 			Path outputPath = Paths.get(saveHeadlessStressSequence.getChild("outputPath").getTextNormalize());
-			AutomaticTask<ExternalStressSequence> task = null;
+			SingleInputTask<ExternalStressSequence> task = null;
 
 			// get file type
 			FileType fileType = FileType.getFileType(outputPath.toFile());
@@ -881,8 +923,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// add to parent task
-			AutomaticTaskOwner<ExternalStressSequence> parentTask = (AutomaticTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
-			parentTask.addAutomaticTask(id, task);
+			SingleInputTaskOwner<ExternalStressSequence> parentTask = (SingleInputTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+			parentTask.addSingleInputTask(id, task);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -950,8 +992,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			UploadPilotPoints uploadStfTask = new UploadPilotPoints(null);
 
 			// add to parent task
-			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(exportId).getTask();
-			parentTask.addAutomaticTask(id, uploadStfTask);
+			SingleInputTaskOwner<Path> parentTask = (SingleInputTaskOwner<Path>) tasks.get(exportId).getTask();
+			parentTask.addSingleInputTask(id, uploadStfTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1102,12 +1144,12 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// add to first task
-			getSTFInfoTask.addAutomaticTask(id, exportSTFTask);
+			getSTFInfoTask.addSingleInputTask(id, exportSTFTask);
 			getSTFInfoTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, getSTFInfoTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, getSTFInfoTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1140,8 +1182,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			ShareSTF shareSTFTask = new ShareSTF(null, Arrays.asList(recipient));
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, shareSTFTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, shareSTFTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1174,8 +1216,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveSTF saveSTFTask = new SaveSTF(null, outputPath.toFile(), FileType.getFileType(outputPath.toFile()));
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, saveSTFTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, saveSTFTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1221,8 +1263,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			AssignMissionParameters<STFFile> assignMissionParametersTask = new AssignMissionParameters<>(null, parameters.toArray(new MissionParameter[parameters.size()]));
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, assignMissionParametersTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, assignMissionParametersTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1255,8 +1297,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SetSTFMission setStfMissionTask = new SetSTFMission(null, fatigueMission);
 
 			// add to parent task
-			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
-			parentTask.addAutomaticTask(id, setStfMissionTask);
+			SingleInputTaskOwner<STFFile> parentTask = (SingleInputTaskOwner<STFFile>) tasks.get(stfId).getTask();
+			parentTask.addSingleInputTask(id, setStfMissionTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1294,8 +1336,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				AddSTFFiles addSTFFilesTask = new AddSTFFiles(Arrays.asList(stfPath.toFile()), null, null);
 
 				// add to parent task
-				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-				parentTask.addAutomaticTask(id, addSTFFilesTask);
+				SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addSingleInputTask(id, addSTFFilesTask);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// put task to tasks
@@ -1336,12 +1378,12 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				DownloadPilotPoint downloadPilotPointTask = new DownloadPilotPoint(null, null, null);
 
 				// add download task to search
-				searchPilotPointTask.addAutomaticTask(id, downloadPilotPointTask);
+				searchPilotPointTask.addSingleInputTask(id, downloadPilotPointTask);
 				searchPilotPointTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// add search to add spectrum
-				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-				parentTask.addAutomaticTask(id, searchPilotPointTask);
+				SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addSingleInputTask(id, searchPilotPointTask);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// add to tasks
@@ -1413,8 +1455,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				}
 
 				// add to parent task
-				AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-				parentTask.addAutomaticTask(id, createDummySTFTask);
+				SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+				parentTask.addSingleInputTask(id, createDummySTFTask);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// put task to tasks
@@ -1474,7 +1516,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// create tasks
 			AdvancedPilotPointSearch searchPilotPointTask = new AdvancedPilotPointSearch(input);
 			DownloadPilotPoint downloadPilotPointTask = new DownloadPilotPoint(null, outputFile, null);
-			searchPilotPointTask.addAutomaticTask(id, downloadPilotPointTask);
+			searchPilotPointTask.addSingleInputTask(id, downloadPilotPointTask);
 			searchPilotPointTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to tasks
@@ -1507,8 +1549,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			UploadSpectra uploadSectrumTask = new UploadSpectra(null);
 
 			// add to parent task
-			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(exportId).getTask();
-			parentTask.addAutomaticTask(id, uploadSectrumTask);
+			SingleInputTaskOwner<Path> parentTask = (SingleInputTaskOwner<Path>) tasks.get(exportId).getTask();
+			parentTask.addSingleInputTask(id, uploadSectrumTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1550,12 +1592,12 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// add to first task
-			getSpectrumInfoTask.addAutomaticTask(id, exportSpectrumTask);
+			getSpectrumInfoTask.addSingleInputTask(id, exportSpectrumTask);
 			getSpectrumInfoTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, getSpectrumInfoTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, getSpectrumInfoTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1589,8 +1631,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			ShareSpectrumFile shareSpectrumFileTask = new ShareSpectrumFile(null, fileType, Arrays.asList(recipient));
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, shareSpectrumFileTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, shareSpectrumFileTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1623,8 +1665,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			ShareSpectrum shareSpectrumTask = new ShareSpectrum(null, Arrays.asList(recipient));
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, shareSpectrumTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, shareSpectrumTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1654,7 +1696,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = saveSpectrumFile.getChild("id").getTextNormalize();
 			String spectrumId = saveSpectrumFile.getChild("spectrumId").getTextNormalize();
 			Path outputPath = Paths.get(saveSpectrumFile.getChild("outputPath").getTextNormalize());
-			AutomaticTask<Spectrum> saveSpectrumFileTask = null;
+			SingleInputTask<Spectrum> saveSpectrumFileTask = null;
 
 			// get file type
 			FileType fileType = FileType.getFileType(outputPath.toFile());
@@ -1685,8 +1727,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			}
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, saveSpectrumFileTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, saveSpectrumFileTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1719,8 +1761,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveSpectrum saveSpectrumTask = new SaveSpectrum(null, outputPath.toFile());
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, saveSpectrumTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, saveSpectrumTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1766,8 +1808,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			AssignMissionParameters<Spectrum> assignMissionParametersTask = new AssignMissionParameters<>(null, parameters.toArray(new MissionParameter[parameters.size()]));
 
 			// add to parent task
-			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
-			parentTask.addAutomaticTask(id, assignMissionParametersTask);
+			SingleInputTaskOwner<Spectrum> parentTask = (SingleInputTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addSingleInputTask(id, assignMissionParametersTask);
 			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// put task to tasks
@@ -1812,8 +1854,8 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				AddSpectrum addSpectrumTask = new AddSpectrum(null, null);
 
 				// add to parent task
-				AutomaticTaskOwner<Pair<Path, SpectrumInfo>> parentTask = (AutomaticTaskOwner<Pair<Path, SpectrumInfo>>) tasks.get(downloadId).getTask();
-				parentTask.addAutomaticTask(id, addSpectrumTask);
+				SingleInputTaskOwner<Pair<Path, SpectrumInfo>> parentTask = (SingleInputTaskOwner<Pair<Path, SpectrumInfo>>) tasks.get(downloadId).getTask();
+				parentTask.addSingleInputTask(id, addSpectrumTask);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// put task to tasks
@@ -1887,7 +1929,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// create tasks
 			AdvancedSpectrumSearch searchSpectrumTask = new AdvancedSpectrumSearch(input);
 			DownloadSpectrum downloadSpectrumTask = new DownloadSpectrum(null, outputFile, false);
-			searchSpectrumTask.addAutomaticTask(id, downloadSpectrumTask);
+			searchSpectrumTask.addSingleInputTask(id, downloadSpectrumTask);
 			searchSpectrumTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 			// add to tasks

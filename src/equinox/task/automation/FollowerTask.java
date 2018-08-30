@@ -17,11 +17,11 @@ package equinox.task.automation;
 
 /**
  * Interface for follower tasks.
- * 
+ *
  * @author Murat Artim
  * @date 28 Aug 2018
  * @time 09:44:39
  */
-public interface FollowerTask {
+public interface FollowerTask extends AutomaticTask {
 	// no implementation
 }

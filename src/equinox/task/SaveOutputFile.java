@@ -36,8 +36,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveOutputFileProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 
 /**
  * Class for save output file task.
@@ -47,7 +47,7 @@ import equinox.task.automation.AutomaticTaskOwner;
  * @time 14:04:33
  *
  */
-public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, AutomaticTask<SpectrumItem>, AutomaticTaskOwner<Path> {
+public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, SingleInputTaskOwner<Path> {
 
 	/** Spectrum item to save the output file for. */
 	private SpectrumItem item_;
@@ -56,7 +56,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	private final Path output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -80,7 +80,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -88,7 +88,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -147,7 +147,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(file);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

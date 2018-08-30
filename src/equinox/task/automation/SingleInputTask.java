@@ -16,19 +16,21 @@
 package equinox.task.automation;
 
 /**
- * Interface for task owners.
- * 
+ * Interface for single input automatic tasks. These tasks are executed automatically after owner tasks are <u>successfully</u> completed.
+ *
  * @author Murat Artim
- * @date 28 Aug 2018
- * @time 09:49:31
+ * @param <V>
+ *            Input class.
+ * @date Mar 7, 2016
+ * @time 10:21:57 AM
  */
-public interface TaskOwner {
+public interface SingleInputTask<V> extends AutomaticTask {
 
 	/**
-	 * Sets automatic task execution mode. By default, tasks will be executed in parallel.
+	 * Sets automatic task input.
 	 *
-	 * @param isParallel
-	 *            True for parallel execution.
+	 * @param input
+	 *            Input.
 	 */
-	void setAutomaticTaskExecutionMode(boolean isParallel);
+	void setAutomaticInput(V input);
 }

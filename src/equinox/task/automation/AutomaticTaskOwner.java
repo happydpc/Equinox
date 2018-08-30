@@ -15,33 +15,20 @@
  */
 package equinox.task.automation;
 
-import java.util.HashMap;
-
 /**
- * Interface for automatic task owner tasks. These tasks execute the automatic tasks after their process is complete.
- *
+ * Interface for task owners.
+ * 
  * @author Murat Artim
- * @date 24 Jan 2017
- * @time 14:21:05
- * @param <V>
- *            Output class.
+ * @date 28 Aug 2018
+ * @time 09:49:31
  */
-public interface AutomaticTaskOwner<V> extends TaskOwner {
+public interface AutomaticTaskOwner {
 
 	/**
-	 * Adds automatic task.
+	 * Sets automatic task execution mode. By default, tasks will be executed in parallel.
 	 *
-	 * @param taskID
-	 *            Automatic task ID. This must be unique to the task added.
-	 * @param task
-	 *            Task to add.
+	 * @param isParallel
+	 *            True for parallel execution.
 	 */
-	void addAutomaticTask(String taskID, AutomaticTask<V> task);
-
-	/**
-	 * Returns a mapping containing the automatic tasks or null if no automatic tasks are defined.
-	 *
-	 * @return Mapping containing automatic tasks or null if no automatic tasks are defined.
-	 */
-	HashMap<String, AutomaticTask<V>> getAutomaticTasks();
+	void setAutomaticTaskExecutionMode(boolean isParallel);
 }

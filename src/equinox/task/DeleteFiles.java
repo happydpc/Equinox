@@ -50,7 +50,7 @@ import equinox.data.fileType.StressSequence;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -64,7 +64,7 @@ import javafx.scene.control.TreeItem;
  * @date Dec 12, 2013
  * @time 6:12:33 PM
  */
-public class DeleteFiles<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements LongRunningTask, AutomaticTask<V> {
+public class DeleteFiles<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements LongRunningTask, SingleInputTask<V> {
 
 	/** File items to delete. */
 	private SpectrumItem[] files_;

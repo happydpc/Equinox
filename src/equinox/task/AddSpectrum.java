@@ -42,8 +42,8 @@ import equinox.process.LoadFLSFile;
 import equinox.process.LoadTXTFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.task.serializableTask.SerializableAddSpectrum;
 import equinox.utility.Utility;
 
@@ -54,7 +54,7 @@ import equinox.utility.Utility;
  * @date Jan 21, 2014
  * @time 10:55:55 PM
  */
-public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, AutomaticTaskOwner<Spectrum>, AutomaticTask<Pair<Path, SpectrumInfo>> {
+public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, SingleInputTaskOwner<Spectrum>, SingleInputTask<Pair<Path, SpectrumInfo>> {
 
 	/** Paths to spectrum files. */
 	private Path anaFile_, txtFile_, cvtFile_, flsFile_, conversionTable_;
@@ -69,7 +69,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	private SpectrumInfo info_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Spectrum>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Spectrum>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -192,7 +192,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Spectrum> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Spectrum> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -200,7 +200,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Spectrum>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Spectrum>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -345,7 +345,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Spectrum> task : automaticTasks_.values()) {
+				for (SingleInputTask<Spectrum> task : automaticTasks_.values()) {
 					task.setAutomaticInput(spectrum);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

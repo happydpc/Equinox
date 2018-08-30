@@ -45,7 +45,7 @@ import equinox.process.FastGenerateSth;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableFastGenerateStressSequence;
 import equinox.utility.Utility;
 
@@ -56,7 +56,7 @@ import equinox.utility.Utility;
  * @date Jun 14, 2016
  * @time 9:21:27 PM
  */
-public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, AutomaticTask<STFFile> {
+public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, SingleInputTask<STFFile> {
 
 	/** The owner STF file. */
 	private STFFile stfFile_;

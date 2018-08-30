@@ -26,8 +26,8 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.process.SaveExternalSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 
 /**
  * Class for save external stress sequence as STH task.
@@ -36,7 +36,7 @@ import equinox.task.automation.AutomaticTaskOwner;
  * @date Mar 13, 2015
  * @time 11:26:53 AM
  */
-public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, AutomaticTask<ExternalStressSequence>, AutomaticTaskOwner<Path> {
+public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<ExternalStressSequence>, SingleInputTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private ExternalStressSequence sequence;
@@ -45,7 +45,7 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> i
 	private final File output;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -69,7 +69,7 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> i
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -77,7 +77,7 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> i
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -124,7 +124,7 @@ public class SaveExternalStressSequenceAsSTH extends InternalEquinoxTask<Path> i
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(file);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

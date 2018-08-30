@@ -16,21 +16,12 @@
 package equinox.task.automation;
 
 /**
- * Interface for automatic tasks. These tasks are executed automatically after owner tasks (i.e. <code>AutomaticTaskOwner</code> tasks) are completed.
+ * Interface for automatic tasks. Automatic tasks are connected to task owners to be executed in a sequential way.
  *
  * @author Murat Artim
- * @param <V>
- *            Input class.
- * @date Mar 7, 2016
- * @time 10:21:57 AM
+ * @date 30 Aug 2018
+ * @time 13:51:54
  */
-public interface AutomaticTask<V> {
-
-	/**
-	 * Sets automatic task input.
-	 *
-	 * @param input
-	 *            Input.
-	 */
-	void setAutomaticInput(V input);
+public interface AutomaticTask {
+	// no implementation
 }

@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for set STF file mission task.
@@ -30,7 +30,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Nov 12, 2015
  * @time 4:43:45 PM
  */
-public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<STFFile> {
+public class SetSTFMission extends InternalEquinoxTask<Void> implements ShortRunningTask, SingleInputTask<STFFile> {
 
 	/** STF file. */
 	private STFFile stfFile_;

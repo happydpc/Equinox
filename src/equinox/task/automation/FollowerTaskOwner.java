@@ -24,7 +24,7 @@ import java.util.List;
  * @date 28 Aug 2018
  * @time 09:43:06
  */
-public interface FollowerTaskOwner extends TaskOwner {
+public interface FollowerTaskOwner extends AutomaticTaskOwner {
 
 	/**
 	 * Adds follower task.

@@ -31,8 +31,8 @@ import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -44,7 +44,7 @@ import javafx.scene.image.Image;
  * @date 28 Aug 2018
  * @time 10:53:48
  */
-public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, AutomaticTask<StressSequence>, PostProcessingTask, AutomaticTaskOwner<Path> {
+public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, SingleInputTaskOwner<Path> {
 
 	/** Stress sequence. */
 	private StressSequence sequence;
@@ -56,7 +56,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	private final PilotPointImageType plotType;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -83,7 +83,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -91,7 +91,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -133,7 +133,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(file);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

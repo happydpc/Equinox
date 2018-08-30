@@ -41,8 +41,8 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
@@ -54,7 +54,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date Feb 16, 2016
  * @time 11:04:03 AM
  */
-public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> implements LongRunningTask, DatabaseQueryListenerTask, AutomaticTask<Pair<PilotPointInfo, Spectrum>>, AutomaticTaskOwner<STFFile> {
+public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> implements LongRunningTask, DatabaseQueryListenerTask, SingleInputTask<Pair<PilotPointInfo, Spectrum>>, SingleInputTaskOwner<STFFile> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -75,7 +75,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/** Automatic tasks. The key is the STF file name and the value is the task. */
-	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<STFFile>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -125,7 +125,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<STFFile> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -133,7 +133,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<STFFile>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<STFFile>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -202,10 +202,10 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 				// pass automatic tasks to resulting task
 				if (automaticTasks_ != null) {
 					task.setAutomaticTaskExecutionMode(executeAutomaticTasksInParallel_);
-					Iterator<Entry<String, AutomaticTask<STFFile>>> iterator = automaticTasks_.entrySet().iterator();
+					Iterator<Entry<String, SingleInputTask<STFFile>>> iterator = automaticTasks_.entrySet().iterator();
 					while (iterator.hasNext()) {
-						Entry<String, AutomaticTask<STFFile>> entry = iterator.next();
-						task.addAutomaticTask(entry.getKey(), entry.getValue());
+						Entry<String, SingleInputTask<STFFile>> entry = iterator.next();
+						task.addSingleInputTask(entry.getKey(), entry.getValue());
 					}
 				}
 

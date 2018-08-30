@@ -217,10 +217,10 @@
 	<plotRainflowHistogram>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId><!--Path to save rainflow histogram plot. File name must end with .png.-->
-		<outputPath></outputPath></plotRainflowHistogram>
+		<outputPath></outputPath></plotRainflowHistogram><!--Saves rainflow cycle information to given output file.-->
 	<saveRainflowCycleInfo>
-		<id></id>
-		<equivalentStressId></equivalentStressId>
+		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
+		<equivalentStressId></equivalentStressId><!--Path to save rainflow cycle info. File name must end with .rflow.-->
 		<outputPath></outputPath></saveRainflowCycleInfo><!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
 	<saveAnalysisOutputFile>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
@@ -238,8 +238,17 @@
 	
 	
 	
-	<compareLevelCrossings></compareLevelCrossings>
-	
+	<plotStressSequenceComparison></plotStressSequenceComparison>
+	<plotLevelCrossingComparison></plotLevelCrossingComparison>
+	<plotTypicalFlightComparison></plotTypicalFlightComparison>
+	<plotMissionProfileComparison></plotMissionProfileComparison>
+	<plotEquivalentStressComparison></plotEquivalentStressComparison>
+	<plotLifeFactors></plotLifeFactors>
+	<plotEquivalentStressRatios></plotEquivalentStressRatios>
+	<saveEquivalentStresses></saveEquivalentStresses>
+	<saveLifeFactors></saveLifeFactors>
+	<saveEquivalentStressRatios></saveEquivalentStressRatios>
+
 	<shareWorkspace></shareWorkspace>
 	<sendTextMessage></sendTextMessage>
 	<restart></restart>

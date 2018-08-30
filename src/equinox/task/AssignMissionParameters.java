@@ -27,7 +27,7 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for assign mission parameters task.
@@ -38,7 +38,7 @@ import equinox.task.automation.AutomaticTask;
  * @date Oct 7, 2014
  * @time 5:21:10 PM
  */
-public class AssignMissionParameters<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements ShortRunningTask, AutomaticTask<V> {
+public class AssignMissionParameters<V extends SpectrumItem> extends InternalEquinoxTask<Void> implements ShortRunningTask, SingleInputTask<V> {
 
 	/** Spectrum item. */
 	private V spectrumItem;

@@ -27,8 +27,8 @@ import equinox.process.LoadSIGMAFile;
 import equinox.process.LoadSTHFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.task.serializableTask.SerializableAddStressSequence;
 
 /**
@@ -38,13 +38,13 @@ import equinox.task.serializableTask.SerializableAddStressSequence;
  * @date Mar 11, 2015
  * @time 3:00:28 PM
  */
-public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, AutomaticTaskOwner<ExternalStressSequence> {
+public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, SingleInputTaskOwner<ExternalStressSequence> {
 
 	/** Path to input file. */
 	private final Path sequenceFile_, flsFile_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<ExternalStressSequence>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<ExternalStressSequence>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -94,7 +94,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<ExternalStressSequence> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<ExternalStressSequence> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -102,7 +102,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<ExternalStressSequence>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<ExternalStressSequence>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -183,7 +183,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<ExternalStressSequence> task : automaticTasks_.values()) {
+				for (SingleInputTask<ExternalStressSequence> task : automaticTasks_.values()) {
 					task.setAutomaticInput(sequence);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

@@ -25,8 +25,8 @@ import equinox.Equinox;
 import equinox.data.Pair;
 import equinox.data.fileType.Spectrum;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 
 /**
  * Class for get spectrum edit info task.
@@ -35,7 +35,7 @@ import equinox.task.automation.AutomaticTaskOwner;
  * @date Feb 3, 2016
  * @time 11:54:59 AM
  */
-public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implements ShortRunningTask, AutomaticTask<Spectrum>, AutomaticTaskOwner<Pair<Spectrum, String[]>> {
+public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implements ShortRunningTask, SingleInputTask<Spectrum>, SingleInputTaskOwner<Pair<Spectrum, String[]>> {
 
 	/** Info index. */
 	public static final int PROGRAM = 0, SECTION = 1, MISSION = 2, MISSION_ISSUE = 3, FLP_ISSUE = 4, IFLP_ISSUE = 5, CDF_ISSUE = 6, DELIVERY_REF = 7, DESCRIPTION = 8;
@@ -47,7 +47,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 	private final SpectrumInfoRequestingPanel panel_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Pair<Spectrum, String[]>>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Pair<Spectrum, String[]>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -97,7 +97,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Pair<Spectrum, String[]>> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Pair<Spectrum, String[]>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -105,7 +105,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Pair<Spectrum, String[]>>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Pair<Spectrum, String[]>>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -166,7 +166,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Pair<Spectrum, String[]>> task : automaticTasks_.values()) {
+				for (SingleInputTask<Pair<Spectrum, String[]>> task : automaticTasks_.values()) {
 					task.setAutomaticInput(new Pair<>(spectrum_, info));
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

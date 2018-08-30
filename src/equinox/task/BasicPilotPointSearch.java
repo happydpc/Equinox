@@ -34,8 +34,8 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -46,7 +46,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date Feb 15, 2016
  * @time 11:57:22 AM
  */
-public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, AutomaticTaskOwner<PilotPointInfo> {
+public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, SingleInputTaskOwner<PilotPointInfo> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -61,7 +61,7 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<PilotPointInfo>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<PilotPointInfo>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -99,7 +99,7 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<PilotPointInfo> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<PilotPointInfo> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -107,7 +107,7 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<PilotPointInfo>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<PilotPointInfo>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -216,7 +216,7 @@ public class BasicPilotPointSearch extends InternalEquinoxTask<ArrayList<Downloa
 				PilotPointInfo firstResult = (PilotPointInfo) results.get(0);
 
 				// set to automatic tasks and execute them
-				for (AutomaticTask<PilotPointInfo> task : automaticTasks_.values()) {
+				for (SingleInputTask<PilotPointInfo> task : automaticTasks_.values()) {
 					task.setAutomaticInput(firstResult);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

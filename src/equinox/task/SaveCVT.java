@@ -31,8 +31,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -42,7 +42,7 @@ import equinox.utility.Utility;
  * @date Apr 25, 2014
  * @time 3:07:13 PM
  */
-public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunningTask, AutomaticTask<Spectrum>, AutomaticTaskOwner<Path> {
+public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, SingleInputTaskOwner<Path> {
 
 	/** ID of file item to save. */
 	private Integer fileID_ = null;
@@ -54,7 +54,7 @@ public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunn
 	private final FileType type_;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -81,7 +81,7 @@ public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -89,7 +89,7 @@ public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -181,7 +181,7 @@ public class SaveCVT extends TemporaryFileCreatingTask<Path> implements LongRunn
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Path> task : automaticTasks_.values()) {
+				for (SingleInputTask<Path> task : automaticTasks_.values()) {
 					task.setAutomaticInput(file);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

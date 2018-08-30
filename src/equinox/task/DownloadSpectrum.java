@@ -28,8 +28,8 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -39,7 +39,7 @@ import equinox.utility.Utility;
  * @date Jul 29, 2014
  * @time 11:43:43 AM
  */
-public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask, AutomaticTask<SpectrumInfo>, AutomaticTaskOwner<Pair<Path, SpectrumInfo>> {
+public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask, SingleInputTask<SpectrumInfo>, SingleInputTaskOwner<Pair<Path, SpectrumInfo>> {
 
 	/** CDF set info. */
 	private SpectrumInfo info_;
@@ -54,7 +54,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<Pair<Path, SpectrumInfo>>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<Pair<Path, SpectrumInfo>>> automaticTasks_ = null;
 
 	/**
 	 * Creates download spectrum task.
@@ -93,7 +93,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<Pair<Path, SpectrumInfo>> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<Pair<Path, SpectrumInfo>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -101,7 +101,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<Pair<Path, SpectrumInfo>>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<Pair<Path, SpectrumInfo>>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -201,7 +201,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 
 			// execute automatic tasks
 			if (automaticTasks_ != null) {
-				for (AutomaticTask<Pair<Path, SpectrumInfo>> task : automaticTasks_.values()) {
+				for (SingleInputTask<Pair<Path, SpectrumInfo>> task : automaticTasks_.values()) {
 					task.setAutomaticInput(new Pair<>(output_, info_));
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

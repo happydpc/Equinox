@@ -34,8 +34,8 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.AutomaticTask;
-import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.SingleInputTask;
+import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -46,7 +46,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date May 7, 2014
  * @time 11:06:12 AM
  */
-public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, AutomaticTaskOwner<SpectrumInfo> {
+public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, SingleInputTaskOwner<SpectrumInfo> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -61,7 +61,7 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/** Automatic tasks. */
-	private HashMap<String, AutomaticTask<SpectrumInfo>> automaticTasks_ = null;
+	private HashMap<String, SingleInputTask<SpectrumInfo>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -99,7 +99,7 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	}
 
 	@Override
-	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumInfo> task) {
+	public void addSingleInputTask(String taskID, SingleInputTask<SpectrumInfo> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -107,7 +107,7 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 	}
 
 	@Override
-	public HashMap<String, AutomaticTask<SpectrumInfo>> getAutomaticTasks() {
+	public HashMap<String, SingleInputTask<SpectrumInfo>> getSingleInputTasks() {
 		return automaticTasks_;
 	}
 
@@ -216,7 +216,7 @@ public class BasicSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadI
 				SpectrumInfo firstResult = (SpectrumInfo) results.get(0);
 
 				// set to automatic tasks and execute them
-				for (AutomaticTask<SpectrumInfo> task : automaticTasks_.values()) {
+				for (SingleInputTask<SpectrumInfo> task : automaticTasks_.values()) {
 					task.setAutomaticInput(firstResult);
 					if (executeAutomaticTasksInParallel_) {
 						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);

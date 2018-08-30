@@ -34,7 +34,7 @@ import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
 /**
@@ -44,7 +44,7 @@ import equinox.utility.Utility;
  * @date Sep 23, 2014
  * @time 12:19:23 PM
  */
-public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, AutomaticTask<Spectrum> {
+public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements LongRunningTask, FileSharingTask, SingleInputTask<Spectrum> {
 
 	/** File item to save. */
 	private Spectrum spectrum_ = null;

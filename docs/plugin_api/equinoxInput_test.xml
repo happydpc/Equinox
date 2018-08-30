@@ -87,4 +87,9 @@
 		<equivalentStressId>10</equivalentStressId>
 		<outputPath>/Users/aurora/Temporary/output.dossier</outputPath>
 	</saveAnalysisOutputFile>
+	<saveRainflowCycleInfo>
+		<id>15</id>
+		<equivalentStressId>10</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/rainflowCyleInfo.rflow</outputPath>
+	</saveRainflowCycleInfo>
 </equinoxInput>

@@ -20,6 +20,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -33,6 +35,7 @@ import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
 
 /**
  * Class for compare stress sequences task.
@@ -41,13 +44,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 6, 2016
  * @time 9:11:56 PM
  */
-public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<StressSequence> {
 
 	/** Comparison input. */
 	private final StressSequenceComparisonInput input_;
 
 	/** Chart labels. */
 	private String xAxisLabel_, yAxisLabel_;
+
+	/** Automatic inputs. */
+	private List<StressSequence> automaticInputs_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeInParallel_ = true;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
 
 	/**
 	 * Creates compare stress sequences task.
@@ -506,5 +518,34 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				return spectrum.getParentItem().getMission();
 		}
 		return null;
+	}
+
+	// FIXME
+
+	public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(StressSequence input) {
+		synchronized (automaticInputs_) {
+			if (automaticInputs_ == null) {
+				automaticInputs_ = Collections.synchronizedList(new ArrayList<>());
+			}
+			automaticInputs_.add(input);
+			if (automaticInputs_.size() == inputThreshold_) {
+				if (executeInParallel_) {
+					taskPanel_.getOwner().runTaskInParallel(this);
+				}
+				else {
+					taskPanel_.getOwner().runTaskSequentially(this);
+				}
+			}
+		}
+	}
+
+	@Override
+	synchronized public void inputFailed() {
+		inputThreshold_--;
 	}
 }

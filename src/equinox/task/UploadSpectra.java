@@ -36,7 +36,7 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
@@ -50,7 +50,7 @@ import jxl.Workbook;
  * @date Feb 11, 2016
  * @time 10:27:44 AM
  */
-public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, DatabaseQueryListenerTask, AutomaticTask<Path> {
+public class UploadSpectra extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, DatabaseQueryListenerTask, SingleInputTask<Path> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
