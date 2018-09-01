@@ -28,7 +28,8 @@ import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import jxl.CellType;
 import jxl.Workbook;
@@ -50,7 +51,7 @@ import jxl.write.WriteException;
  * @date May 21, 2015
  * @time 2:25:01 PM
  */
-public class SaveMissionProfile extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, SingleInputTaskOwner<Path> {
+public class SaveMissionProfile extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, ParameterizedTaskOwner<Path> {
 
 	/** Input stress sequence. */
 	private StressSequence sequence_;
@@ -88,7 +89,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -96,7 +97,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

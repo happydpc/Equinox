@@ -32,7 +32,8 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -42,7 +43,7 @@ import equinox.utility.Utility;
  * @date Feb 7, 2014
  * @time 12:51:10 PM
  */
-public class SaveTXT extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, SingleInputTaskOwner<Path> {
+public class SaveTXT extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Path> {
 
 	/** ID of file item to save. */
 	private Integer fileID_ = null;
@@ -81,7 +82,7 @@ public class SaveTXT extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -89,7 +90,7 @@ public class SaveTXT extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

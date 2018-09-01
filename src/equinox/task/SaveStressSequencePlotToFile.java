@@ -32,7 +32,8 @@ import equinox.data.fileType.StressSequence;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -44,7 +45,7 @@ import javafx.scene.image.Image;
  * @date 28 Aug 2018
  * @time 10:53:48
  */
-public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, SingleInputTaskOwner<Path> {
+public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, ParameterizedTaskOwner<Path> {
 
 	/** Stress sequence. */
 	private StressSequence sequence;
@@ -83,7 +84,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -91,7 +92,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

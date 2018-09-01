@@ -31,8 +31,9 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -42,7 +43,7 @@ import equinox.utility.Utility;
  * @date Jan 15, 2014
  * @time 10:37:46 AM
  */
-public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, SingleInputTaskOwner<Path> {
+public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Path> {
 
 	/** ID of file item to save. */
 	private Integer fileID_ = null;
@@ -54,7 +55,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	private final FileType type_;
 
 	/** Automatic tasks. */
-	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -81,7 +82,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -89,7 +90,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
@@ -179,23 +180,33 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 			// get output file
 			Path file = get();
 
-			// execute automatic tasks
-			if (automaticTasks_ != null) {
-				for (SingleInputTask<Path> task : automaticTasks_.values()) {
-					task.setAutomaticInput(file);
-					if (executeAutomaticTasksInParallel_) {
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-					}
-					else {
-						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-					}
-				}
-			}
+			// manage automatic tasks
+			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
 	}
 }

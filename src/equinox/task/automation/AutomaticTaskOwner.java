@@ -17,7 +17,7 @@ package equinox.task.automation;
 
 /**
  * Interface for task owners.
- * 
+ *
  * @author Murat Artim
  * @date 28 Aug 2018
  * @time 09:49:31

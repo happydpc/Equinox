@@ -33,7 +33,8 @@ import equinox.data.fileType.StressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for save stress sequence as SIGMA file task.
@@ -42,7 +43,7 @@ import equinox.task.automation.SingleInputTaskOwner;
  * @date Jun 10, 2014
  * @time 1:43:02 PM
  */
-public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, SingleInputTaskOwner<Path> {
+public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, ParameterizedTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private StressSequence sequence_;
@@ -84,7 +85,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -92,7 +93,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

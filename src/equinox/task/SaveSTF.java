@@ -28,7 +28,8 @@ import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -38,7 +39,7 @@ import equinox.utility.Utility;
  * @date Feb 12, 2014
  * @time 12:27:42 PM
  */
-public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<STFFile>, SingleInputTaskOwner<Path> {
+public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<Path> {
 
 	/** File item to save. */
 	private STFFile file_;
@@ -77,7 +78,7 @@ public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -85,7 +86,7 @@ public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

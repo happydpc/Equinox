@@ -32,7 +32,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -44,7 +45,7 @@ import javafx.scene.image.Image;
  * @date 29 Aug 2018
  * @time 15:32:39
  */
-public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, PostProcessingTask, SingleInputTaskOwner<Path> {
+public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<Path> {
 
 	/** Equivalent stress. */
 	private SpectrumItem equivalentStress;
@@ -83,7 +84,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -91,7 +92,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

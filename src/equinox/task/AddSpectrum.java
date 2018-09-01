@@ -42,8 +42,9 @@ import equinox.process.LoadFLSFile;
 import equinox.process.LoadTXTFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
 import equinox.task.serializableTask.SerializableAddSpectrum;
 import equinox.utility.Utility;
 
@@ -54,7 +55,7 @@ import equinox.utility.Utility;
  * @date Jan 21, 2014
  * @time 10:55:55 PM
  */
-public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, SingleInputTaskOwner<Spectrum>, SingleInputTask<Pair<Path, SpectrumInfo>> {
+public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements LongRunningTask, SavableTask, ParameterizedTaskOwner<Spectrum>, SingleInputTask<Pair<Path, SpectrumInfo>> {
 
 	/** Paths to spectrum files. */
 	private Path anaFile_, txtFile_, cvtFile_, flsFile_, conversionTable_;
@@ -69,7 +70,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	private SpectrumInfo info_;
 
 	/** Automatic tasks. */
-	private HashMap<String, SingleInputTask<Spectrum>> automaticTasks_ = null;
+	private HashMap<String, ParameterizedTask<Spectrum>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -192,7 +193,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Spectrum> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<Spectrum> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -200,7 +201,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Spectrum>> getSingleInputTasks() {
+	public HashMap<String, ParameterizedTask<Spectrum>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
@@ -343,24 +344,34 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 				taskPanel_.getOwner().runTaskInParallel(addSTFFiles_);
 			}
 
-			// execute automatic tasks
-			if (automaticTasks_ != null) {
-				for (SingleInputTask<Spectrum> task : automaticTasks_.values()) {
-					task.setAutomaticInput(spectrum);
-					if (executeAutomaticTasksInParallel_) {
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-					}
-					else {
-						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-					}
-				}
-			}
+			// manage automatic tasks
+			taskSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
 	}
 
 	/**

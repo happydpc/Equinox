@@ -16,21 +16,14 @@
 package equinox.task.automation;
 
 /**
- * Interface for single input automatic tasks. These tasks are executed automatically after owner tasks are <u>successfully</u> completed.
+ * Interface for parameterized automatic tasks.
  *
  * @author Murat Artim
+ * @date 31 Aug 2018
+ * @time 10:05:20
  * @param <V>
- *            Input class.
- * @date Mar 7, 2016
- * @time 10:21:57 AM
+ *            Parameter (input) class.
  */
-public interface SingleInputTask<V> extends ParameterizedTask<V> {
-
-	/**
-	 * Sets automatic task input.
-	 *
-	 * @param input
-	 *            Input.
-	 */
-	void setAutomaticInput(V input);
+public interface ParameterizedTask<V> extends AutomaticTask {
+	// no implementation
 }

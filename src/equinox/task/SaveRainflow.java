@@ -40,7 +40,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 
 /**
@@ -50,7 +51,7 @@ import equinox.task.automation.PostProcessingTask;
  * @date Jun 19, 2014
  * @time 9:55:18 PM
  */
-public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunningTask, PostProcessingTask, SingleInputTask<SpectrumItem>, SingleInputTaskOwner<Path> {
+public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunningTask, PostProcessingTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** File item to save. */
 	private SpectrumItem file_;
@@ -86,7 +87,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -94,7 +95,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 

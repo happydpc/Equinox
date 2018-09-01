@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<equinoxInput>
+	<settings>
+		<runMode>parallel</runMode>
+		<overwriteFiles>true</overwriteFiles>
+	</settings>
+	<downloadSpectrum>
+		<id>1</id>
+		<searchEntry>
+			<attributeName>NAME</attributeName>
+			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry>
+		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
+	</downloadSpectrum>
+	<addSpectrum>
+		<id>2</id>
+		<downloadId>1</downloadId>
+	</addSpectrum>
+	<addStf>
+		<id>3</id>
+		<spectrumId>2</spectrumId>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>NAME</attributeName>
+			<keyword>Fuselage_F26_MY</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_PROGRAM</attributeName>
+			<keyword>a310</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_SECTION</attributeName>
+			<keyword>sect13</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>FAT_MISSION</attributeName>
+			<keyword>61 Parabolas</keyword>
+		</searchEntry>
+	</addStf>
+</equinoxInput>

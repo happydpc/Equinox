@@ -25,7 +25,7 @@ package equinox.task.automation;
  * @param <V>
  *            Input class.
  */
-public interface MultipleInputTask<V> extends AutomaticTask {
+public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 
 	/**
 	 * Sets input threshold. Once the threshold is reached, this task will execute itself.
@@ -36,15 +36,22 @@ public interface MultipleInputTask<V> extends AutomaticTask {
 	void setInputThreshold(int inputThreshold);
 
 	/**
-	 * Adds automatic task input.
+	 * Adds automatic task input. Note that, once the number of inputs reaches the input threshold, this task will execute itself.
 	 *
 	 * @param input
 	 *            Input.
+	 * @param executeInParallel
+	 *            True to execute this task in parallel mode (if the above mentioned condition is met).
 	 */
-	void addAutomaticInput(V input);
+	void addAutomaticInput(V input, boolean executeInParallel);
 
 	/**
-	 * Notifies this task that an input failed to arrive. This would decrement the input threshold.
+	 * Notifies this task that an input failed to arrive. Source tasks would normally call this method from their <code>failed</code> or <code>canceled</code> methods. The implementation could do one of the following:
+	 * <UL>
+	 * <LI>Decrement the input threshold (i.e. this task will be executed with less inputs than initially intended) and execute the task if the number of inputs is equal to the input threshold or,
+	 * <LI>Keep input threshold unchanged (i.e. this task would never execute).
+	 * </UL>
+	 * The decision depends on the nature of this task; whether all inputs should be available for running the task or not.
 	 */
 	void inputFailed();
 }

@@ -36,8 +36,9 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -48,7 +49,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date Feb 15, 2016
  * @time 1:15:42 PM
  */
-public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, SingleInputTaskOwner<Pair<PilotPointInfo, Spectrum>>, SingleInputTask<Spectrum> {
+public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, ParameterizedTaskOwner<Pair<PilotPointInfo, Spectrum>>, SingleInputTask<Spectrum> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -66,7 +67,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/** Automatic tasks. */
-	private HashMap<String, SingleInputTask<Pair<PilotPointInfo, Spectrum>>> automaticTasks_ = null;
+	private HashMap<String, ParameterizedTask<Pair<PilotPointInfo, Spectrum>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -104,7 +105,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Pair<PilotPointInfo, Spectrum>> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<PilotPointInfo, Spectrum>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -112,7 +113,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Pair<PilotPointInfo, Spectrum>>> getSingleInputTasks() {
+	public HashMap<String, ParameterizedTask<Pair<PilotPointInfo, Spectrum>>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
@@ -225,16 +226,8 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 				// get only first result
 				PilotPointInfo firstResult = (PilotPointInfo) results.get(0);
 
-				// set to automatic tasks and execute them
-				for (SingleInputTask<Pair<PilotPointInfo, Spectrum>> task : automaticTasks_.values()) {
-					task.setAutomaticInput(new Pair<>(firstResult, spectrum_));
-					if (executeAutomaticTasksInParallel_) {
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-					}
-					else {
-						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-					}
-				}
+				// manage automatic tasks
+				taskSucceeded(new Pair<>(firstResult, spectrum_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -242,5 +235,25 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
 	}
 }

@@ -35,7 +35,8 @@ import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.SingleInputTask;
-import equinox.task.automation.SingleInputTaskOwner;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.utility.Utility;
 
 /**
@@ -45,7 +46,7 @@ import equinox.utility.Utility;
  * @date Apr 29, 2014
  * @time 10:32:51 AM
  */
-public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, SingleInputTaskOwner<Path> {
+public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Path> {
 
 	/** File item to save. */
 	private Spectrum spectrum_ = null;
@@ -78,7 +79,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 	}
 
 	@Override
-	public void addSingleInputTask(String taskID, SingleInputTask<Path> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -86,7 +87,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getSingleInputTasks() {
+	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
