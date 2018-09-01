@@ -26,9 +26,9 @@ import equinox.data.fileType.StressSequence;
 import equinox.process.SaveSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.SingleInputTask;
 import equinox.task.automation.ParameterizedTask;
 import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for save spectrum as STH task.
@@ -46,7 +46,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	private final File output;
 
 	/** Automatic tasks. */
-	private HashMap<String, SingleInputTask<Path>> automaticTasks_ = null;
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -70,7 +70,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<V> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -78,7 +78,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	}
 
 	@Override
-	public HashMap<String, SingleInputTask<Path>> getParameterizedTasks() {
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
@@ -123,23 +123,33 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 			// get output file
 			Path file = get();
 
-			// execute automatic tasks
-			if (automaticTasks_ != null) {
-				for (SingleInputTask<Path> task : automaticTasks_.values()) {
-					task.setAutomaticInput(file);
-					if (executeAutomaticTasksInParallel_) {
-						taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-					}
-					else {
-						taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-					}
-				}
-			}
+			// manage automatic tasks
+			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		taskFailed(automaticTasks_);
 	}
 }

@@ -40,4 +40,6 @@ public interface FollowerTaskOwner extends AutomaticTaskOwner {
 	 * @return List containing the follower tasks or null if no follower tasks are defined.
 	 */
 	List<FollowerTask> getFollowerTasks();
+
+	default void
 }
