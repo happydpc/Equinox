@@ -345,7 +345,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 			}
 
 			// manage automatic tasks
-			taskSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -361,7 +361,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -371,7 +371,7 @@ public class AddSpectrum extends TemporaryFileCreatingTask<Spectrum> implements 
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

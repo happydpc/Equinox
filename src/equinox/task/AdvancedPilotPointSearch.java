@@ -227,7 +227,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 				PilotPointInfo firstResult = (PilotPointInfo) results.get(0);
 
 				// manage automatic tasks
-				taskSucceeded(new Pair<>(firstResult, spectrum_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				parameterizedTaskOwnerSucceeded(new Pair<>(firstResult, spectrum_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -244,7 +244,7 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -254,6 +254,6 @@ public class AdvancedPilotPointSearch extends InternalEquinoxTask<ArrayList<Down
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

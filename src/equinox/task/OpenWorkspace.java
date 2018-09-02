@@ -16,7 +16,6 @@
 package equinox.task;
 
 import java.nio.file.Path;
-import java.sql.Connection;
 import java.util.ArrayList;
 
 import equinox.Equinox;
@@ -88,7 +87,7 @@ public class OpenWorkspace extends InternalEquinoxTask<Void> {
 
 		// setup connection to new workspace
 		updateMessage("Setting up connection to new workspace...");
-		Utility.setupLocalDBPool(Connection.TRANSACTION_READ_UNCOMMITTED, path_);
+		Utility.setupLocalDBPool(path_);
 
 		// add path to last paths
 		Equinox.WORKSPACE_PATHS.addPath(path_);

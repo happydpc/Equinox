@@ -147,7 +147,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 			Path file = get();
 
 			// manage automatic tasks
-			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -163,7 +163,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

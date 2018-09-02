@@ -201,7 +201,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 			}
 
 			// manage automatic tasks
-			taskSucceeded(new Pair<>(output_, info_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(new Pair<>(output_, info_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -217,7 +217,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -227,7 +227,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

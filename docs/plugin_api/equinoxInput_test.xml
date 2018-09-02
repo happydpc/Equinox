@@ -92,4 +92,76 @@
 		<equivalentStressId>10</equivalentStressId>
 		<outputPath>/Users/aurora/Temporary/rainflowCyleInfo.rflow</outputPath>
 	</saveRainflowCycleInfo>
+	<addStf>
+		<id>16</id>
+		<spectrumId>2</spectrumId>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>NAME</attributeName>
+			<keyword>Fuselage_F26_TZ</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_PROGRAM</attributeName>
+			<keyword>a310</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_SECTION</attributeName>
+			<keyword>sect13</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>FAT_MISSION</attributeName>
+			<keyword>61 Parabolas</keyword>
+		</searchEntry>
+	</addStf>
+	<generateStressSequence>
+		<id>17</id>
+		<stfId>16</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<plotStressSequenceComparison>
+		<id>18</id>
+		<stressSequenceId>6</stressSequenceId>
+		<stressSequenceId>17</stressSequenceId>
+		<stressSequenceId>22</stressSequenceId>
+		<stressSequenceId>23</stressSequenceId>
+		<stressSequenceId>24</stressSequenceId>
+		<comparisonCriteria>NUM_FLIGHT_TYPES</comparisonCriteria>
+		<outputPath>/Users/aurora/Temporary/stressSequenceComparison.png</outputPath>
+	</plotStressSequenceComparison>
+	<addStf>
+		<id>19</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test1.stf</stfPath>
+	</addStf>
+	<generateStressSequence>
+		<id>22</id>
+		<stfId>19</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<addStf>
+		<id>20</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test2.stf</stfPath>
+	</addStf>
+	<generateStressSequence>
+		<id>23</id>
+		<stfId>20</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<addStf>
+		<id>21</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test3.stf</stfPath>
+	</addStf>
+	<generateStressSequence>
+		<id>24</id>
+		<stfId>21</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<addStf>
+		<id>25</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test4.stf</stfPath>
+	</addStf>
+	<addStf>
+		<id>26</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test5.stf</stfPath>
+	</addStf>
+	<addStf>
+		<id>27</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test6.stf</stfPath>
+	</addStf>
 </equinoxInput>

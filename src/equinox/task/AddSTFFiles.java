@@ -290,14 +290,14 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 				// only 1 STF file added
 				if (stfFiles.size() == 1) {
 					STFFile stfFile = stfFiles.get(0);
-					taskSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+					parameterizedTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 				}
 
 				// multiple STF files added
 				else {
 					for (STFFile stfFile : stfFiles) {
 						ParameterizedTask<STFFile> task = automaticTasks_.get(stfFile.getName());
-						taskSucceeded(stfFile, task, taskPanel_, executeAutomaticTasksInParallel_);
+						parameterizedTaskOwnerSucceeded(stfFile, task, taskPanel_, executeAutomaticTasksInParallel_);
 					}
 				}
 			}
@@ -316,7 +316,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -326,7 +326,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

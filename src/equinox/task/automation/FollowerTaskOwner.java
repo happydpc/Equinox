@@ -17,6 +17,9 @@ package equinox.task.automation;
 
 import java.util.List;
 
+import equinox.controller.TaskPanel;
+import equinox.task.InternalEquinoxTask;
+
 /**
  * Interface for follower task owners.
  *
@@ -41,5 +44,34 @@ public interface FollowerTaskOwner extends AutomaticTaskOwner {
 	 */
 	List<FollowerTask> getFollowerTasks();
 
-	default void
+	/**
+	 * Executes follower tasks (if any). This method should be called from <code>succeeded</code> method of this task.
+	 * 
+	 * @param followerTasks
+	 *            List of follower tasks.
+	 * @param taskPanel
+	 *            Task panel.
+	 * @param executeInParallel
+	 *            True to execute tasks in parallel.
+	 */
+	default void followerTaskOwnerSucceeded(List<FollowerTask> followerTasks, TaskPanel taskPanel, boolean executeInParallel) {
+
+		// there are no follower tasks
+		if (followerTasks == null)
+			return;
+
+		// loop over follower tasks
+		for (FollowerTask task : followerTasks) {
+
+			// execute in parallel
+			if (executeInParallel) {
+				taskPanel.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
+			}
+
+			// execute sequentially
+			else {
+				taskPanel.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
+			}
+		}
+	}
 }

@@ -90,7 +90,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import equinox.Equinox;
 import equinox.data.Settings;
@@ -132,15 +131,13 @@ public class Utility {
 
 	/**
 	 * Sets up database connection pool for connecting to local database.
-	 *
-	 * @param isolationLevel
-	 *            Transaction isolation level for database connections in the pool.
 	 * @param dbPath
 	 *            Path to local database.
+	 *
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	public static void setupLocalDBPool(int isolationLevel, Path dbPath) throws Exception {
+	public static void setupLocalDBPool(Path dbPath) throws Exception {
 
 		// set properties to configuration
 		HikariConfig config = new HikariConfig();
@@ -153,10 +150,9 @@ public class Utility {
 		config.setUsername("aurora");
 		config.setPassword("17891917");
 		config.addDataSourceProperty("databaseName", dbPath.toString());
-		// config.addDataSourceProperty("transactionIsolation", isolationLevel);
 
 		// create pool
-		Equinox.DBC_POOL = new HikariDataSource(config);
+		Equinox.DBC_POOL = new HikariEngine(config);
 
 		// check connection
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {

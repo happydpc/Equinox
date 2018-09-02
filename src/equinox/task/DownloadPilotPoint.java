@@ -228,7 +228,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -238,7 +238,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

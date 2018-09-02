@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jdom2.Element;
@@ -167,6 +168,79 @@ public class XMLUtilities {
 		if (!task.getTaskPanel().getOwner().getOwner().isUserAvailable(recipient)) {
 			task.addWarning("Recipient of " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "' is not online. Check failed.");
 			return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if the dependency of the given element is satisfied.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param root
+	 *            Root input element.
+	 * @param element
+	 *            Element to check its dependency.
+	 * @param dependencyName
+	 *            Dependency name.
+	 * @param targetElementName
+	 *            Target element name.
+	 * @param minDependecies
+	 *            Minimum number of required dependencies.
+	 * @return True if the dependency of the given element is satisfied.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkDependencies(InternalEquinoxTask<?> task, Path xmlFile, Element root, Element element, String dependencyName, String targetElementName, int minDependecies) throws Exception {
+
+		// get dependencies
+		List<Element> sourceElements = element.getChildren(dependencyName);
+
+		// less than minimum required dependencies
+		if (sourceElements.size() < minDependecies) {
+			task.addWarning("Minimum " + minDependecies + " dependencies are required for element " + XMLUtilities.getFamilyTree(element) + "." + dependencyName + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// loop over source elements
+		for (Element sourceElement : sourceElements) {
+
+			// source element not found
+			if (sourceElement == null) {
+				task.addWarning("Cannot locate element '" + dependencyName + "' under " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. This element is obligatory. Check failed.");
+				return false;
+			}
+
+			// get source id
+			String sourceId = sourceElement.getTextNormalize();
+
+			// empty id
+			if (sourceId.isEmpty()) {
+				task.addWarning("Empty value supplied for " + XMLUtilities.getFamilyTree(sourceElement) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+				return false;
+			}
+
+			// search for referenced element
+			boolean found = false;
+			for (Element targetElement : root.getChildren(targetElementName)) {
+				Element id = targetElement.getChild("id");
+				if (id != null) {
+					if (sourceId.equals(id.getTextNormalize())) {
+						found = true;
+						break;
+					}
+				}
+			}
+
+			// referenced element not found
+			if (!found) {
+				task.addWarning("Cannot find element with task id '" + sourceId + "' which appears to be a dependency of " + XMLUtilities.getFamilyTree(sourceElement) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+				return false;
+			}
 		}
 
 		// check passed

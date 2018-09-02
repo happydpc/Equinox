@@ -153,7 +153,7 @@ public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunn
 			Path file = get();
 
 			// manage automatic tasks
-			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -169,7 +169,7 @@ public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunn
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -179,6 +179,6 @@ public class SaveSTF extends TemporaryFileCreatingTask<Path> implements LongRunn
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

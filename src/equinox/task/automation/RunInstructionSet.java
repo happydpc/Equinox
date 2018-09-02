@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
@@ -50,6 +51,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.data.input.StressSequenceComparisonInput;
+import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.PilotPointSearchInput;
@@ -66,6 +69,7 @@ import equinox.task.AddStressSequence;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.AssignMissionParameters;
+import equinox.task.CompareStressSequences;
 import equinox.task.CreateDummySTFFile;
 import equinox.task.DeleteTemporaryFiles;
 import equinox.task.DownloadPilotPoint;
@@ -82,6 +86,7 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
+import equinox.task.SaveCategoryDataset;
 import equinox.task.SaveConversionTable;
 import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveExternalStressSequenceAsSIGMA;
@@ -324,6 +329,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			saveAnalysisOutputFile(equinoxInput, tasks);
 		}
 
+		// plot stress sequence comparison
+		if (equinoxInput.getChild("plotStressSequenceComparison") != null) {
+			plotStressSequenceComparison(equinoxInput, tasks);
+		}
+
 		// TODO
 
 		// share file
@@ -386,6 +396,96 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates plot stress sequence comparison tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotStressSequenceComparison(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot stress sequence comparison tasks...");
+
+		// loop over plot stress sequence comparison elements
+		for (Element plotStressSequenceComparison : equinoxInput.getChildren("plotStressSequenceComparison")) {
+
+			// get id and output path
+			String id = plotStressSequenceComparison.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotStressSequenceComparison.getChildTextNormalize("outputPath"));
+
+			// create comparison input
+			StressSequenceComparisonInput comparisonInput = new StressSequenceComparisonInput();
+			comparisonInput.setCriteria(ComparisonCriteria.valueOf(plotStressSequenceComparison.getChildTextNormalize("comparisonCriteria")));
+
+			// set options
+			if (plotStressSequenceComparison.getChild("options") != null) {
+				Element options = plotStressSequenceComparison.getChild("options");
+				if (options.getChild("resultsOrder") != null) {
+					comparisonInput.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+				}
+				if (options.getChild("showDataLabels") != null) {
+					comparisonInput.setLabelDisplay(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+				}
+			}
+
+			// set series naming
+			if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+				Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+				if (seriesNaming.getChild("includeSpectrumName") != null) {
+					comparisonInput.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+				}
+				if (seriesNaming.getChild("includeStfName") != null) {
+					comparisonInput.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				}
+				if (seriesNaming.getChild("includeElementId") != null) {
+					comparisonInput.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+				}
+				if (seriesNaming.getChild("includeStressSequenceName") != null) {
+					comparisonInput.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+				}
+				if (seriesNaming.getChild("includeAircraftProgram") != null) {
+					comparisonInput.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+				}
+				if (seriesNaming.getChild("includeAircraftSection") != null) {
+					comparisonInput.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+				}
+				if (seriesNaming.getChild("includeFatigueMission") != null) {
+					comparisonInput.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+				}
+			}
+
+			// create tasks
+			SaveCategoryDataset saveDatasetTask = new SaveCategoryDataset(null, outputPath);
+			CompareStressSequences compareTask = new CompareStressSequences(comparisonInput);
+			compareTask.addParameterizedTask(id, saveDatasetTask);
+			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> stressSequenceIds = plotStressSequenceComparison.getChildren("stressSequenceId");
+			compareTask.setInputThreshold(stressSequenceIds.size());
+
+			// loop over sequence ids
+			for (Element stressSequenceIdElement : stressSequenceIds) {
+
+				// get stress sequence id
+				String stressSequenceId = stressSequenceIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+				parentTask.addParameterizedTask(id, compareTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(compareTask, true));
 		}
 	}
 

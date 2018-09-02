@@ -260,7 +260,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 			Path output = get();
 
 			// manage automatic tasks
-			taskSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -276,7 +276,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -286,7 +286,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

@@ -166,7 +166,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 			}
 
 			// manage automatic tasks
-			taskSucceeded(new Pair<>(spectrum_, info), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(new Pair<>(spectrum_, info), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -182,7 +182,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class GetSpectrumEditInfo extends InternalEquinoxTask<String[]> implement
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

@@ -70,7 +70,7 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 	 * @param executeInParallel
 	 *            True to execute <code>SingleInputTask</code>s in parallel.
 	 */
-	default void taskSucceeded(V input, HashMap<String, ParameterizedTask<V>> parameterizedTasks, TaskPanel taskPanel, boolean executeInParallel) {
+	default void parameterizedTaskOwnerSucceeded(V input, HashMap<String, ParameterizedTask<V>> parameterizedTasks, TaskPanel taskPanel, boolean executeInParallel) {
 
 		// there are no parameterized tasks
 		if (parameterizedTasks == null)
@@ -81,7 +81,7 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 
 			// multiple input task (add input)
 			if (task instanceof MultipleInputTask<?>) {
-				((MultipleInputTask<V>) task).addAutomaticInput(input, executeInParallel);
+				((MultipleInputTask<V>) task).addAutomaticInput(this, input, executeInParallel);
 			}
 
 			// single input task
@@ -120,7 +120,7 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 	 * @param executeInParallel
 	 *            True to execute <code>SingleInputTask</code>s in parallel.
 	 */
-	default void taskSucceeded(V input, ParameterizedTask<V> task, TaskPanel taskPanel, boolean executeInParallel) {
+	default void parameterizedTaskOwnerSucceeded(V input, ParameterizedTask<V> task, TaskPanel taskPanel, boolean executeInParallel) {
 
 		// null task
 		if (task == null)
@@ -128,7 +128,7 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 
 		// multiple input task (add input)
 		if (task instanceof MultipleInputTask<?>) {
-			((MultipleInputTask<V>) task).addAutomaticInput(input, executeInParallel);
+			((MultipleInputTask<V>) task).addAutomaticInput(this, input, executeInParallel);
 		}
 
 		// single input task
@@ -154,8 +154,10 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 	 *
 	 * @param parameterizedTasks
 	 *            Parameterized tasks.
+	 * @param executeInParallel
+	 *            True to execute <code>SingleInputTask</code>s in parallel.
 	 */
-	default void taskFailed(HashMap<String, ParameterizedTask<V>> parameterizedTasks) {
+	default void parameterizedTaskOwnerFailed(HashMap<String, ParameterizedTask<V>> parameterizedTasks, boolean executeInParallel) {
 
 		// there are no parameterized tasks
 		if (parameterizedTasks == null)
@@ -166,7 +168,7 @@ public interface ParameterizedTaskOwner<V> extends AutomaticTaskOwner {
 
 			// multiple input task (add input)
 			if (task instanceof MultipleInputTask<?>) {
-				((MultipleInputTask<V>) task).inputFailed();
+				((MultipleInputTask<V>) task).inputFailed(this, executeInParallel);
 			}
 		}
 	}

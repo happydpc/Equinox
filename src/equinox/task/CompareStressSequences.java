@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -30,12 +31,16 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for compare stress sequences task.
@@ -44,7 +49,7 @@ import equinox.task.automation.MultipleInputTask;
  * @date Apr 6, 2016
  * @time 9:11:56 PM
  */
-public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<StressSequence> {
+public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<StressSequence>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/** Comparison input. */
 	private final StressSequenceComparisonInput input_;
@@ -53,13 +58,16 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 	private String xAxisLabel_, yAxisLabel_;
 
 	/** Automatic inputs. */
-	private List<StressSequence> automaticInputs_ = null;
-
-	/** Automatic task execution mode. */
-	private boolean executeInParallel_ = true;
+	private final List<StressSequence> stressSequences_;
 
 	/** Input threshold. Once the threshold is reached, this task will be executed. */
 	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates compare stress sequences task.
@@ -69,6 +77,50 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 	 */
 	public CompareStressSequences(StressSequenceComparisonInput input) {
 		input_ = input;
+		stressSequences_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds stress sequence.
+	 *
+	 * @param stressSequence
+	 *            Stress sequence to add.
+	 */
+	public void addStressSequence(StressSequence stressSequence) {
+		stressSequences_.add(stressSequence);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<StressSequence> task, StressSequence input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stressSequences_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<StressSequence> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stressSequences_, inputThreshold_);
 	}
 
 	@Override
@@ -115,34 +167,34 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				else if (criteria.equals(ComparisonCriteria.AVG_NUM_PEAKS)) {
 					averageNumberOfPeaks(connection, dataset);
 				}
-				else if (criteria.equals(ComparisonCriteria.MAX_TOTAL)) {
+				else if (criteria.equals(ComparisonCriteria.MAX_TOTAL_STRESS)) {
 					getHighestLowest(connection, dataset, "max_val", true);
 				}
-				else if (criteria.equals(ComparisonCriteria.MAX_1G)) {
+				else if (criteria.equals(ComparisonCriteria.MAX_1G_STRESS)) {
 					getHighestLowest(connection, dataset, "max_1g", true);
 				}
-				else if (criteria.equals(ComparisonCriteria.MAX_INC)) {
+				else if (criteria.equals(ComparisonCriteria.MAX_INC_STRESS)) {
 					getHighestLowest(connection, dataset, "max_inc", true);
 				}
-				else if (criteria.equals(ComparisonCriteria.MAX_DP)) {
+				else if (criteria.equals(ComparisonCriteria.MAX_DP_STRESS)) {
 					getHighestLowest(connection, dataset, "max_dp", true);
 				}
-				else if (criteria.equals(ComparisonCriteria.MAX_DT)) {
+				else if (criteria.equals(ComparisonCriteria.MAX_DT_STRESS)) {
 					getHighestLowest(connection, dataset, "max_dt", true);
 				}
-				else if (criteria.equals(ComparisonCriteria.MIN_TOTAL)) {
+				else if (criteria.equals(ComparisonCriteria.MIN_TOTAL_STRESS)) {
 					getHighestLowest(connection, dataset, "min_val", false);
 				}
-				else if (criteria.equals(ComparisonCriteria.MIN_1G)) {
+				else if (criteria.equals(ComparisonCriteria.MIN_1G_STRESS)) {
 					getHighestLowest(connection, dataset, "min_1g", false);
 				}
-				else if (criteria.equals(ComparisonCriteria.MIN_INC)) {
+				else if (criteria.equals(ComparisonCriteria.MIN_INC_STRESS)) {
 					getHighestLowest(connection, dataset, "min_inc", false);
 				}
-				else if (criteria.equals(ComparisonCriteria.MIN_DP)) {
+				else if (criteria.equals(ComparisonCriteria.MIN_DP_STRESS)) {
 					getHighestLowest(connection, dataset, "min_dp", false);
 				}
-				else if (criteria.equals(ComparisonCriteria.MIN_DT)) {
+				else if (criteria.equals(ComparisonCriteria.MIN_DT_STRESS)) {
 					getHighestLowest(connection, dataset, "min_dt", false);
 				}
 			}
@@ -164,21 +216,62 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 			// get dataset
 			CategoryDataset dataset = get();
 
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			// user started task
+			if (automaticTasks_ == null) {
 
-			// set chart data to panel
-			boolean legendVisible = dataset.getRowCount() > 1;
-			panel.setPlotData(dataset, yAxisLabel_, null, xAxisLabel_, yAxisLabel_, legendVisible, input_.getLabelDisplay(), false);
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+				// set chart data to panel
+				boolean legendVisible = dataset.getRowCount() > 1;
+				panel.setPlotData(dataset, yAxisLabel_, null, xAxisLabel_, yAxisLabel_, legendVisible, input_.getLabelDisplay(), false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(input_.getLabelDisplay());
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(dataset.getRowCount() > 1);
+				plotAttributes.setSubTitle(null);
+				plotAttributes.setTitle(yAxisLabel_);
+				plotAttributes.setXAxisLabel(xAxisLabel_);
+				plotAttributes.setYAxisLabel(yAxisLabel_);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -204,9 +297,8 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 
 		// create query
 		String sql = "select file_id, num_flights from sth_files where ";
-		ArrayList<StressSequence> sequences = input_.getStressSequences();
-		for (int i = 0; i < sequences.size(); i++) {
-			sql += "file_id = " + sequences.get(i).getID() + (i == sequences.size() - 1 ? "" : " or ");
+		for (int i = 0; i < stressSequences_.size(); i++) {
+			sql += "file_id = " + stressSequences_.get(i).getID() + (i == stressSequences_.size() - 1 ? "" : " or ");
 		}
 		sql += " order by num_flights " + (input_.getOrder() ? "desc" : "asc");
 
@@ -220,10 +312,10 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				int sthID = resultSet.getInt("file_id");
 
 				// get mission
-				String mission = getMission(sthID, sequences);
+				String mission = getMission(sthID, stressSequences_);
 
 				// get sequence name
-				String name = getSequenceName(sthID, sequences, dataset);
+				String name = getSequenceName(sthID, stressSequences_, dataset);
 
 				// add chart series
 				dataset.addValue(resultSet.getInt("num_flights"), mission, name);
@@ -259,8 +351,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
 			// loop over sequences
-			ArrayList<StressSequence> sequences = input_.getStressSequences();
-			for (StressSequence sequence : sequences) {
+			for (StressSequence sequence : stressSequences_) {
 
 				// get STH file ID
 				int sthID = sequence.getID();
@@ -269,7 +360,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				String mission = sequence.getParentItem().getMission();
 
 				// get sequence name
-				String name = getSequenceName(sthID, sequences, dataset);
+				String name = getSequenceName(sthID, stressSequences_, dataset);
 
 				// set STH file ID and execute query
 				statement.setInt(1, sthID);
@@ -306,8 +397,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
 			// loop over sequences
-			ArrayList<StressSequence> sequences = input_.getStressSequences();
-			for (StressSequence sequence : sequences) {
+			for (StressSequence sequence : stressSequences_) {
 
 				// get STH file ID
 				int sthID = sequence.getID();
@@ -316,7 +406,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				String mission = sequence.getParentItem().getMission();
 
 				// get sequence name
-				String name = getSequenceName(sthID, sequences, dataset);
+				String name = getSequenceName(sthID, stressSequences_, dataset);
 
 				// set sequence ID and execute query
 				statement.setInt(1, sthID);
@@ -354,8 +444,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
 			// loop over sequences
-			ArrayList<StressSequence> sequences = input_.getStressSequences();
-			for (StressSequence sequence : sequences) {
+			for (StressSequence sequence : stressSequences_) {
 
 				// get STH file ID
 				int sthID = sequence.getID();
@@ -364,7 +453,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				String mission = sequence.getParentItem().getMission();
 
 				// get sequence name
-				String name = getSequenceName(sthID, sequences, dataset);
+				String name = getSequenceName(sthID, stressSequences_, dataset);
 
 				// set STH file ID and execute query
 				statement.setInt(1, sthID);
@@ -395,7 +484,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 	private void getHighestLowest(Connection connection, DefaultCategoryDataset dataset, String colName, boolean isDesc) throws Exception {
 
 		// set label
-		String label = input_.getCriteria().toString();
+		String label = input_.getCriteria().getName();
 
 		// update progress info
 		updateMessage("Retrieving " + label + "...");
@@ -410,8 +499,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 			statement.setMaxRows(1);
 
 			// loop over sequences
-			ArrayList<StressSequence> sequences = input_.getStressSequences();
-			for (StressSequence sequence : sequences) {
+			for (StressSequence sequence : stressSequences_) {
 
 				// get STH file ID
 				int sthID = sequence.getID();
@@ -420,7 +508,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 				String mission = sequence.getParentItem().getMission();
 
 				// get sequence name
-				String name = getSequenceName(sthID, sequences, dataset);
+				String name = getSequenceName(sthID, stressSequences_, dataset);
 
 				// set STH file ID and execute query
 				statement.setInt(1, sthID);
@@ -447,7 +535,7 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 	 *            Series that this sequence belongs to.
 	 * @return The name of sequence.
 	 */
-	private String getSequenceName(int sequenceID, ArrayList<StressSequence> sequences, DefaultCategoryDataset dataset) {
+	private String getSequenceName(int sequenceID, List<StressSequence> sequences, DefaultCategoryDataset dataset) {
 
 		// initialize name
 		String name = "";
@@ -512,40 +600,11 @@ public class CompareStressSequences extends InternalEquinoxTask<CategoryDataset>
 	 *            List of compared sequences.
 	 * @return The name of series.
 	 */
-	private static String getMission(int sequenceID, ArrayList<StressSequence> spectra) {
+	private static String getMission(int sequenceID, List<StressSequence> spectra) {
 		for (StressSequence spectrum : spectra) {
 			if (sequenceID == spectrum.getID())
 				return spectrum.getParentItem().getMission();
 		}
 		return null;
-	}
-
-	// FIXME
-
-	public void setInputThreshold(int inputThreshold) {
-		inputThreshold_ = inputThreshold;
-	}
-
-	@Override
-	synchronized public void addAutomaticInput(StressSequence input) {
-		synchronized (automaticInputs_) {
-			if (automaticInputs_ == null) {
-				automaticInputs_ = Collections.synchronizedList(new ArrayList<>());
-			}
-			automaticInputs_.add(input);
-			if (automaticInputs_.size() == inputThreshold_) {
-				if (executeInParallel_) {
-					taskPanel_.getOwner().runTaskInParallel(this);
-				}
-				else {
-					taskPanel_.getOwner().runTaskSequentially(this);
-				}
-			}
-		}
-	}
-
-	@Override
-	synchronized public void inputFailed() {
-		inputThreshold_--;
 	}
 }

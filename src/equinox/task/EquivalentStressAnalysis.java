@@ -353,7 +353,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			}
 
 			// manage automatic tasks
-			taskSucceeded(eqStress, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(eqStress, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -369,7 +369,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 
 		// destroy sub processes (if still running)
 		if (omission_ != null && omission_.isAlive()) {
@@ -390,7 +390,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 
 		// destroy sub processes (if still running)
 		if (omission_ != null && omission_.isAlive()) {

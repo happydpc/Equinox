@@ -166,7 +166,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 			Path output = get();
 
 			// manage automatic tasks
-			taskSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -182,7 +182,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class SaveStressSequenceAsSIGMA extends InternalEquinoxTask<Path> impleme
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

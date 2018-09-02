@@ -15,6 +15,10 @@
  */
 package equinox.task.automation;
 
+import java.util.List;
+
+import equinox.task.InternalEquinoxTask;
+
 /**
  *
  * Interface for multiple input automatic task. Multiple input tasks collect inputs from multiple sources and <u>execute themselves</u> once all inputs are collected. It is up to the task to decide whether it will execute itself if not all inputs arrive.
@@ -38,12 +42,14 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	/**
 	 * Adds automatic task input. Note that, once the number of inputs reaches the input threshold, this task will execute itself.
 	 *
+	 * @param task
+	 *            Source task (i.e. the caller).
 	 * @param input
 	 *            Input.
 	 * @param executeInParallel
 	 *            True to execute this task in parallel mode (if the above mentioned condition is met).
 	 */
-	void addAutomaticInput(V input, boolean executeInParallel);
+	void addAutomaticInput(ParameterizedTaskOwner<V> task, V input, boolean executeInParallel);
 
 	/**
 	 * Notifies this task that an input failed to arrive. Source tasks would normally call this method from their <code>failed</code> or <code>canceled</code> methods. The implementation could do one of the following:
@@ -52,6 +58,85 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	 * <LI>Keep input threshold unchanged (i.e. this task would never execute).
 	 * </UL>
 	 * The decision depends on the nature of this task; whether all inputs should be available for running the task or not.
+	 *
+	 * @param task
+	 *            Source task (i.e. the caller).
+	 * @param executeInParallel
+	 *            True to execute this task in parallel mode (if the above mentioned condition is met).
 	 */
-	void inputFailed();
+	void inputFailed(ParameterizedTaskOwner<V> task, boolean executeInParallel);
+
+	/**
+	 * Called by implementing classes as a default implementation of <code>addAutomaticInput</code> method.
+	 *
+	 * @param task
+	 *            Source task.
+	 * @param input
+	 *            Input.
+	 * @param executeInParallel
+	 *            True to execute this task in parallel mode.
+	 * @param inputList
+	 *            List of inputs to add the given input.
+	 * @param inputThreshold
+	 *            Input threshold.
+	 */
+	default void automaticInputAdded(ParameterizedTaskOwner<V> task, V input, boolean executeInParallel, List<V> inputList, int inputThreshold) {
+
+		// synchronize on input list
+		synchronized (inputList) {
+
+			// add input
+			inputList.add(input);
+
+			// input threshold reached
+			if (inputList.size() == inputThreshold) {
+
+				// execute in parallel
+				if (executeInParallel) {
+					((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskInParallel((InternalEquinoxTask<?>) this);
+				}
+
+				// execute sequentially
+				else {
+					((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSequentially((InternalEquinoxTask<?>) this);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Called by implementing classes as a default implementation of <code>inputFailed</code> method.
+	 * 
+	 * @param task
+	 *            Source task.
+	 * @param executeInParallel
+	 *            True to execute this task in parallel mode.
+	 * @param inputList
+	 *            List of inputs to add the given input.
+	 * @param inputThreshold
+	 *            Input threshold.
+	 * @return The updated input threshold.
+	 */
+	default int automaticInputFailed(ParameterizedTaskOwner<V> task, boolean executeInParallel, List<V> inputList, int inputThreshold) {
+
+		// decrement threshold
+		inputThreshold--;
+
+		// input threshold reached
+		if (inputList.size() == inputThreshold && inputThreshold >= 2) {
+
+			// execute in parallel
+			if (executeInParallel) {
+				((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskInParallel((InternalEquinoxTask<?>) this);
+			}
+
+			// execute sequentially
+			else {
+				((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSequentially((InternalEquinoxTask<?>) this);
+			}
+		}
+
+		// return input threshold
+		return inputThreshold;
+	}
 }

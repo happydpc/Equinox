@@ -216,7 +216,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 				SpectrumInfo firstResult = (SpectrumInfo) results.get(0);
 
 				// manage automatic tasks
-				taskSucceeded(firstResult, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				parameterizedTaskOwnerSucceeded(firstResult, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -233,7 +233,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -243,6 +243,6 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

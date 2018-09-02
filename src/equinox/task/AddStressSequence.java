@@ -182,7 +182,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 			taskPanel_.getOwner().getOwner().getInputPanel().getFileTreeRoot().getChildren().add(sequence);
 
 			// manage automatic tasks
-			taskSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -198,7 +198,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -208,6 +208,6 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

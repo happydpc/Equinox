@@ -294,7 +294,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 			spectrum_.getChildren().add(stfFile);
 
 			// manage automatic tasks
-			taskSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -310,7 +310,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -320,7 +320,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

@@ -225,21 +225,37 @@
 	<saveAnalysisOutputFile>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId><!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
-		<outputPath></outputPath></saveAnalysisOutputFile><!--Shares refernced file with given recipent.-->
+		<outputPath></outputPath></saveAnalysisOutputFile><!--Shares referenced file with given recipent.-->
 	<shareFile>
 		<id></id><!--The fileId references to all instruction sets beginning with 'save', 'export' or 'plot'.-->
 		<fileId></fileId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
 		<recipient></recipient></shareFile>
+	<!--Plots stress sequence comparison to given output file.-->
+
+
+
+	<plotStressSequenceComparison>
+		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction. Minimum 2 stressSequenceId elements are required.-->
+		<stressSequenceId></stressSequenceId><!--Comparison criteria. This can be one of 'NUM_FLIGHT_TYPES', 'NUM_PEAKS_WITH_OCCURRENCE', 'NUM_PEAKS_WITHOUT_OCCURRENCE', 'VALIDITY', 'AVG_NUM_PEAKS', 'MAX_TOTAL_STRESS', 'MAX_1G_STRESS', 'MAX_INC_STRESS', 'MAX_DP_STRESS', 'MAX_DT_STRESS', 'MIN_TOTAL_STRESS', 'MIN_1G_STRESS', 'MIN_INC_STRESS', 'MIN_DP_STRESS' or 'MIN_DT_STRESS'.-->
+		<comparisonCriteria></comparisonCriteria><!--Path to save stress sequence comparison plot. File name must end with .png.-->
+		<outputPath></outputPath><!--Plotting options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<options><!--Results ordering. This can be either 'descending' or 'ascending'.-->
+			<resultsOrder></resultsOrder><!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels></options><!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+
+		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission></seriesNaming></plotStressSequenceComparison>
 	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
-	</equivalentStressAnalysis>
-	
-	
-	
-	<plotStressSequenceComparison></plotStressSequenceComparison>
-	<plotLevelCrossingComparison></plotLevelCrossingComparison>
+	</equivalentStressAnalysis><plotLevelCrossingComparison></plotLevelCrossingComparison>
 	<plotTypicalFlightComparison></plotTypicalFlightComparison>
 	<plotMissionProfileComparison></plotMissionProfileComparison>
 	<plotEquivalentStressComparison></plotEquivalentStressComparison>

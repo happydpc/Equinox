@@ -133,7 +133,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 			Path file = get();
 
 			// manage automatic tasks
-			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -149,7 +149,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public class SaveStressSequencePlotToFile extends InternalEquinoxTask<Path> impl
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

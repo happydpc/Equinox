@@ -166,7 +166,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 			Path file = get();
 
 			// manage automatic tasks
-			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -182,7 +182,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

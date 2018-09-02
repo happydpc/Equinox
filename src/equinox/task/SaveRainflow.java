@@ -157,7 +157,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 			Path file = get();
 
 			// manage automatic tasks
-			taskSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -173,7 +173,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

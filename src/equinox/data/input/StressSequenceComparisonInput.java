@@ -15,10 +15,6 @@
  */
 package equinox.data.input;
 
-import java.util.ArrayList;
-
-import equinox.data.fileType.StressSequence;
-
 /**
  * Class for stress sequence comparison input.
  *
@@ -37,13 +33,10 @@ public class StressSequenceComparisonInput {
 	 */
 	public enum ComparisonCriteria {
 
-		/** Statistic. */
-		NUM_FLIGHT_TYPES("Number of flight types"), NUM_PEAKS_WITH_OCCURRENCE("Number of peaks w/ occurrences"), NUM_PEAKS_WITHOUT_OCCURRENCE(
-				"Number of peaks w/o occurrences"), VALIDITY("Number of flights"), AVG_NUM_PEAKS("Average number of peaks"), MAX_TOTAL(
-						"Maximum total stress"), MAX_1G("Maximum 1g stress"), MAX_INC("Maximum increment stress"), MAX_DP(
-								"Maximum delta-p stress"), MAX_DT("Maximum delta-t stress"), MIN_TOTAL("Minimum total stress"), MIN_1G(
-										"Minimum 1g stress"), MIN_INC("Minimum increment stress"), MIN_DP("Minimum delta-p stress"), MIN_DT(
-												"Minimum delta-t stress");
+	/** Statistic. */
+	NUM_FLIGHT_TYPES("Number of flight types"), NUM_PEAKS_WITH_OCCURRENCE("Number of peaks with occurrences"), NUM_PEAKS_WITHOUT_OCCURRENCE("Number of peaks without occurrences"), VALIDITY("Number of flights"), AVG_NUM_PEAKS("Average number of peaks"), MAX_TOTAL_STRESS("Maximum total stress"),
+	MAX_1G_STRESS("Maximum 1g stress"), MAX_INC_STRESS("Maximum increment stress"), MAX_DP_STRESS("Maximum delta-p stress"), MAX_DT_STRESS("Maximum delta-t stress"), MIN_TOTAL_STRESS("Minimum total stress"), MIN_1G_STRESS("Minimum 1g stress"), MIN_INC_STRESS("Minimum increment stress"), MIN_DP_STRESS("Minimum delta-p stress"),
+	MIN_DT_STRESS("Minimum delta-t stress");
 
 		/** Name of comparison criteria. */
 		private final String name_;
@@ -58,31 +51,21 @@ public class StressSequenceComparisonInput {
 			name_ = name;
 		}
 
-		@Override
-		public String toString() {
+		/**
+		 * Returns display name of comparison criteria.
+		 * 
+		 * @return Display name.
+		 */
+		public String getName() {
 			return name_;
 		}
 	}
 
-	/** Stress sequences to compare. */
-	private final ArrayList<StressSequence> stressSequences_ = new ArrayList<>();
-
 	/** Order and data label options. */
-	private boolean descending_ = true, showlabels_ = true, includeSpectrumName_ = false, includeSTFName_ = false, includeEID_ = false,
-			includeSequenceName_ = true, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
+	private boolean descending_ = true, showlabels_ = true, includeSpectrumName_ = false, includeSTFName_ = false, includeEID_ = false, includeSequenceName_ = true, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/** Criteria type. */
 	private ComparisonCriteria criteria_ = ComparisonCriteria.NUM_FLIGHT_TYPES;
-
-	/**
-	 * Adds stress sequence.
-	 *
-	 * @param stressSequence
-	 *            Stress sequence to add.
-	 */
-	public void addStressSequence(StressSequence stressSequence) {
-		stressSequences_.add(stressSequence);
-	}
 
 	/**
 	 * Sets the criteria.
@@ -182,15 +165,6 @@ public class StressSequenceComparisonInput {
 	 */
 	public void setIncludeMission(boolean includeMission) {
 		includeMission_ = includeMission;
-	}
-
-	/**
-	 * Returns the stress sequences to plot.
-	 *
-	 * @return The stress sequences to plot.
-	 */
-	public ArrayList<StressSequence> getStressSequences() {
-		return stressSequences_;
 	}
 
 	/**

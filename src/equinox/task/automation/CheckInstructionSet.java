@@ -28,6 +28,7 @@ import org.jdom2.input.SAXBuilder;
 import equinox.Equinox;
 import equinox.data.IsamiVersion;
 import equinox.data.Settings;
+import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
@@ -288,6 +289,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// plot stress sequence comparison
+		if (equinoxInput.getChild("plotStressSequenceComparison") != null) {
+			if (!checkPlotStressSequenceComparison(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// share file
@@ -325,6 +332,82 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>plotStressSequenceComparison</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotStressSequenceComparison</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotStressSequenceComparison(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotStressSequenceComparison elements...");
+
+		// loop over plot stress sequence comparison elements
+		for (Element plotStressSequenceComparison : equinoxInput.getChildren("plotStressSequenceComparison")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotStressSequenceComparison))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotStressSequenceComparison, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check comparison criteria
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotStressSequenceComparison, "comparisonCriteria", false, XMLUtilities.getStringArray(ComparisonCriteria.values())))
+				return false;
+
+			// check options
+			if (plotStressSequenceComparison.getChild("options") != null) {
+
+				// get element
+				Element options = plotStressSequenceComparison.getChild("options");
+
+				// check results order
+				if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+					return false;
+
+				// check show data labels
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+					return false;
+			}
+
+			// set series naming
+			if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check stress sequence ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotStressSequenceComparison, "stressSequenceId", "generateStressSequence", 2))
+				return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**

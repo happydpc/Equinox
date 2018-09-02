@@ -203,7 +203,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			taskPanel_.getOwner().runTaskSequentially(new SaveFlightOccurrencePlot(sequence));
 
 			// manage automatic tasks
-			taskSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			parameterizedTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -219,7 +219,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		super.failed();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -229,7 +229,7 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		super.cancelled();
 
 		// manage automatic tasks
-		taskFailed(automaticTasks_);
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -290,101 +290,96 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			// insert STH flights
 			ArrayList<Flight> sthFlights = insertSTHFlights(anaFileID, sthFileID, statement, connection);
 
-			// prepare statement for inserting STH flights
-			String sql = "insert into sth_flights(file_id, flight_num, name, severity, num_peaks, validity, block_size) values(?, ?, ?, ?, ?, ?, ?)";
-			try (PreparedStatement insertSTHFlight = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			// prepare statement for selecting ANA peaks
+			String sql = "select peak_num, fourteen_digit_code, delta_p, delta_t from ana_peaks_" + anaFileID + " where flight_id = ?";
+			try (PreparedStatement selectANAPeak = connection.prepareStatement(sql)) {
 
-				// prepare statement for selecting ANA peaks
-				sql = "select peak_num, fourteen_digit_code, delta_p, delta_t from ana_peaks_" + anaFileID + " where flight_id = ?";
-				try (PreparedStatement selectANAPeak = connection.prepareStatement(sql)) {
+				// prepare statement for inserting STH peaks
+				sql = "insert into " + sthPeaksTableName + "(flight_id, peak_num, peak_val, oneg_stress, inc_stress, dp_stress, dt_stress, oneg_event, inc_event, segment, segment_num) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				try (PreparedStatement insertSTHPeak = connection.prepareStatement(sql)) {
 
-					// prepare statement for inserting STH peaks
-					sql = "insert into " + sthPeaksTableName + "(flight_id, peak_num, peak_val, oneg_stress, inc_stress, dp_stress, dt_stress, oneg_event, inc_event, segment, segment_num) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-					try (PreparedStatement insertSTHPeak = connection.prepareStatement(sql)) {
+					// prepare statement for selecting 1g issy code
+					sql = "select flight_phase, issy_code, oneg_order from txt_codes where file_id = " + txtFileID + " and one_g_code = ? and increment_num = 0";
+					try (PreparedStatement select1GIssyCode = connection.prepareStatement(sql)) {
 
-						// prepare statement for selecting 1g issy code
-						sql = "select flight_phase, issy_code, oneg_order from txt_codes where file_id = " + txtFileID + " and one_g_code = ? and increment_num = 0";
-						try (PreparedStatement select1GIssyCode = connection.prepareStatement(sql)) {
+						// prepare statement for selecting increment issy code
+						sql = "select flight_phase, issy_code, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, factor_7, factor_8 ";
+						sql += " from txt_codes where file_id = " + txtFileID;
+						sql += " and one_g_code = ? and increment_num = ? and direction_num = ? and (nl_factor_num is null or nl_factor_num = ?)";
+						try (PreparedStatement selectIncrementIssyCode = connection.prepareStatement(sql)) {
 
-							// prepare statement for selecting increment issy code
-							sql = "select flight_phase, issy_code, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, factor_7, factor_8 ";
-							sql += " from txt_codes where file_id = " + txtFileID;
-							sql += " and one_g_code = ? and increment_num = ? and direction_num = ? and (nl_factor_num is null or nl_factor_num = ?)";
-							try (PreparedStatement selectIncrementIssyCode = connection.prepareStatement(sql)) {
+							// prepare statement for selecting STF stress
+							sql = "select stress_x, stress_y, stress_xy from stf_stresses_" + stfFile_.getStressTableID() + " where file_id = " + stfFile_.getID() + " and issy_code = ?";
+							try (PreparedStatement selectSTFStress = connection.prepareStatement(sql)) {
 
-								// prepare statement for selecting STF stress
-								sql = "select stress_x, stress_y, stress_xy from stf_stresses_" + stfFile_.getStressTableID() + " where file_id = " + stfFile_.getID() + " and issy_code = ?";
-								try (PreparedStatement selectSTFStress = connection.prepareStatement(sql)) {
+								// prepare statement for setting max-min values to flight
+								sql = "update sth_flights set max_val = ?, min_val = ?, max_1g = ?, min_1g = ?, max_inc = ?, min_inc = ?, max_dp = ?, min_dp = ?, max_dt = ?, min_dt = ? where flight_id = ?";
+								try (PreparedStatement setMaxMinToFlight = connection.prepareStatement(sql)) {
 
-									// prepare statement for setting max-min values to flight
-									sql = "update sth_flights set max_val = ?, min_val = ?, max_1g = ?, min_1g = ?, max_inc = ?, min_inc = ?, max_dp = ?, min_dp = ?, max_dt = ?, min_dt = ? where flight_id = ?";
-									try (PreparedStatement setMaxMinToFlight = connection.prepareStatement(sql)) {
+									// execute query for selecting ANA flights
+									sql = "select flight_id from ana_flights where file_id = " + anaFileID + " order by flight_num";
+									try (ResultSet anaFlights = statement.executeQuery(sql)) {
 
-										// execute query for selecting ANA flights
-										sql = "select flight_id from ana_flights where file_id = " + anaFileID + " order by flight_num";
-										try (ResultSet anaFlights = statement.executeQuery(sql)) {
+										// loop over flights
+										HashMap<String, Stress> oneg = new HashMap<>();
+										HashMap<String, Stress> inc = new HashMap<>();
+										ArrayList<Integer> factorNumbers = new ArrayList<>();
+										double[] maxMin = new double[10];
+										int peakCount = 0, flightIndex = 0;
+										while (anaFlights.next()) {
 
-											// loop over flights
-											HashMap<String, Stress> oneg = new HashMap<>();
-											HashMap<String, Stress> inc = new HashMap<>();
-											ArrayList<Integer> factorNumbers = new ArrayList<>();
-											double[] maxMin = new double[10];
-											int peakCount = 0, flightIndex = 0;
-											while (anaFlights.next()) {
+											// task cancelled
+											if (isCancelled() || Thread.currentThread().isInterrupted())
+												return null;
 
-												// task cancelled
-												if (isCancelled() || Thread.currentThread().isInterrupted())
-													return null;
+											// reset max-min values
+											maxMin[0] = Double.NEGATIVE_INFINITY; // max peak
+											maxMin[1] = Double.POSITIVE_INFINITY; // min peak
+											maxMin[2] = Double.NEGATIVE_INFINITY; // max 1g
+											maxMin[3] = Double.POSITIVE_INFINITY; // min 1g
+											maxMin[4] = Double.NEGATIVE_INFINITY; // max inc
+											maxMin[5] = Double.POSITIVE_INFINITY; // min inc
+											maxMin[6] = Double.NEGATIVE_INFINITY; // max dp
+											maxMin[7] = Double.POSITIVE_INFINITY; // min dp
+											maxMin[8] = Double.NEGATIVE_INFINITY; // max dt
+											maxMin[9] = Double.POSITIVE_INFINITY; // min dt
 
-												// reset max-min values
-												maxMin[0] = Double.NEGATIVE_INFINITY; // max peak
-												maxMin[1] = Double.POSITIVE_INFINITY; // min peak
-												maxMin[2] = Double.NEGATIVE_INFINITY; // max 1g
-												maxMin[3] = Double.POSITIVE_INFINITY; // min 1g
-												maxMin[4] = Double.NEGATIVE_INFINITY; // max inc
-												maxMin[5] = Double.POSITIVE_INFINITY; // min inc
-												maxMin[6] = Double.NEGATIVE_INFINITY; // max dp
-												maxMin[7] = Double.POSITIVE_INFINITY; // min dp
-												maxMin[8] = Double.NEGATIVE_INFINITY; // max dt
-												maxMin[9] = Double.POSITIVE_INFINITY; // min dt
+											// get STH flight
+											Flight flight = sthFlights.get(flightIndex);
+											updateMessage("Generating flight '" + flight.getName() + "'...");
 
-												// get STH flight
-												Flight flight = sthFlights.get(flightIndex);
-												updateMessage("Generating flight '" + flight.getName() + "'...");
+											// execute statement for getting ANA peaks
+											selectANAPeak.setInt(1, anaFlights.getInt("flight_id"));
+											try (ResultSet anaPeaks = selectANAPeak.executeQuery()) {
 
-												// execute statement for getting ANA peaks
-												selectANAPeak.setInt(1, anaFlights.getInt("flight_id"));
-												try (ResultSet anaPeaks = selectANAPeak.executeQuery()) {
+												// loop over peaks
+												while (anaPeaks.next()) {
 
-													// loop over peaks
-													while (anaPeaks.next()) {
+													// task cancelled
+													if (isCancelled() || Thread.currentThread().isInterrupted())
+														return null;
 
-														// task cancelled
-														if (isCancelled() || Thread.currentThread().isInterrupted())
-															return null;
+													// update progress
+													updateProgress(peakCount, numPeaks);
+													peakCount++;
 
-														// update progress
-														updateProgress(peakCount, numPeaks);
-														peakCount++;
-
-														// insert peak into STH peaks table
-														maxMin = insertSTHPeak(anaPeaks, flight.getID(), dpRatio, dtInterpolator, insertSTHPeak, select1GIssyCode, selectSTFStress, selectIncrementIssyCode, maxMin, oneg, inc, incStresses, steadyStresses, factorNumbers);
-													}
+													// insert peak into STH peaks table
+													maxMin = insertSTHPeak(anaPeaks, flight.getID(), dpRatio, dtInterpolator, insertSTHPeak, select1GIssyCode, selectSTFStress, selectIncrementIssyCode, maxMin, oneg, inc, incStresses, steadyStresses, factorNumbers);
 												}
-
-												// set max-min values to flight
-												setMaxMinToFlight(flight.getID(), setMaxMinToFlight, maxMin);
-
-												// add flight to flights folder
-												flights.getChildren().add(flight);
-
-												// increment flight index
-												flightIndex++;
 											}
 
-											// add flights folder to spectrum
-											sthFile.getChildren().add(flights);
+											// set max-min values to flight
+											setMaxMinToFlight(flight.getID(), setMaxMinToFlight, maxMin);
+
+											// add flight to flights folder
+											flights.getChildren().add(flight);
+
+											// increment flight index
+											flightIndex++;
 										}
+
+										// add flights folder to spectrum
+										sthFile.getChildren().add(flights);
 									}
 								}
 							}
@@ -401,6 +396,21 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 		}
 	}
 
+	/**
+	 * Inserts STH flights into database.
+	 *
+	 * @param anaFileID
+	 *            ANA file id.
+	 * @param sthFileID
+	 *            STH file ID.
+	 * @param statement
+	 *            Database statement.
+	 * @param connection
+	 *            Database connection.
+	 * @return List of STH flights.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
 	private static ArrayList<Flight> insertSTHFlights(int anaFileID, int sthFileID, Statement statement, Connection connection) throws Exception {
 
 		// create list

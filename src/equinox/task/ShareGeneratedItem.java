@@ -23,9 +23,9 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
-import equinox.task.automation.SingleInputTask;
 import equinox.task.automation.FollowerTask;
 import equinox.task.automation.FollowerTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableShareGeneratedItem;
 import equinox.utility.Utility;
 
@@ -127,15 +127,6 @@ public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implemen
 		super.succeeded();
 
 		// execute follower tasks
-		if (followerTasks_ != null) {
-			for (FollowerTask task : followerTasks_) {
-				if (executeAutomaticTasksInParallel_) {
-					taskPanel_.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-				}
-				else {
-					taskPanel_.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-				}
-			}
-		}
+		followerTaskOwnerSucceeded(followerTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 	}
 }

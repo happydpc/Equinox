@@ -19,7 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.sql.Connection;
 
 import equinox.Equinox;
 import equinox.controller.IntroPanel;
@@ -89,7 +88,7 @@ public class LoadWorkspacePaths extends InternalEquinoxTask<Boolean> implements 
 
 		// setup local database pool
 		updateMessage("Setting up local database pool...");
-		Utility.setupLocalDBPool(Connection.TRANSACTION_READ_UNCOMMITTED, paths.getCurrentPath());
+		Utility.setupLocalDBPool(paths.getCurrentPath());
 
 		// set last paths to Equinox
 		Equinox.WORKSPACE_PATHS = paths;
