@@ -251,11 +251,27 @@
 			<includeAircraftProgram></includeAircraftProgram>
 			<includeAircraftSection></includeAircraftSection>
 			<includeFatigueMission></includeFatigueMission></seriesNaming></plotStressSequenceComparison>
+	<plotLevelCrossingComparison>
+		<id></id>
+		<equivalentStressId></equivalentStressId>
+		<outputPath></outputPath>
+		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeMaterialName></includeMaterialName>
+			<includeOmissionLevel></includeOmissionLevel>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+	</plotLevelCrossingComparison>
 	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
-	</equivalentStressAnalysis><plotLevelCrossingComparison></plotLevelCrossingComparison>
+	</equivalentStressAnalysis>
 	<plotTypicalFlightComparison></plotTypicalFlightComparison>
 	<plotMissionProfileComparison></plotMissionProfileComparison>
 	<plotEquivalentStressComparison></plotEquivalentStressComparison>

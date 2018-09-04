@@ -32,6 +32,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -518,8 +519,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		Path output = getWorkingDirectory().resolve("levelCrossings.png");
 
 		// create input
-		SpectrumItem[] eqStresses = { eqStress_ };
-		LevelCrossingInput input = new LevelCrossingInput(true, eqStresses, null);
+		LevelCrossingInput input = new LevelCrossingInput(true, null);
 
 		// set naming parameters
 		input.setIncludeSpectrumName(false);
@@ -554,7 +554,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
 
 		// plot
-		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input, rainflowCyclesTableName).start(connection);
+		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input, rainflowCyclesTableName, Arrays.asList(eqStress_)).start(connection);
 
 		// set dataset
 		plot.setDataset(dataset);

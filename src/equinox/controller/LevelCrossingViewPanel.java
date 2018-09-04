@@ -129,15 +129,11 @@ public class LevelCrossingViewPanel implements InternalViewSubPanel, CrosshairLi
 		plot.addAnnotation(ta);
 
 		// create swing node content
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				ChartPanel panel = new ChartPanel(chart_);
-				panel.setPopupMenu(null);
-				panel.setMouseWheelEnabled(true);
-				container_.setContent(panel);
-			}
+		SwingUtilities.invokeLater(() -> {
+			ChartPanel panel = new ChartPanel(chart_);
+			panel.setPopupMenu(null);
+			panel.setMouseWheelEnabled(true);
+			container_.setContent(panel);
 		});
 	}
 
@@ -222,7 +218,7 @@ public class LevelCrossingViewPanel implements InternalViewSubPanel, CrosshairLi
 	public void crosshairValueChanged(double x, double y) {
 
 		// crosshair coordinates did not change
-		if ((crosshairX_ == x) && (crosshairY_ == y))
+		if (crosshairX_ == x && crosshairY_ == y)
 			return;
 
 		// update coordinates
@@ -238,7 +234,7 @@ public class LevelCrossingViewPanel implements InternalViewSubPanel, CrosshairLi
 		for (int i = 0; i < dataset.getSeriesCount(); i++) {
 			XYSeries series = dataset.getSeries(i);
 			for (int j = 0; j < series.getItemCount(); j++) {
-				if ((series.getX(j).doubleValue() == x) && (series.getY(j).doubleValue() == y)) {
+				if (series.getX(j).doubleValue() == x && series.getY(j).doubleValue() == y) {
 					if (plot.getRenderer().isSeriesVisible(i)) {
 						info_.setBackgroundPaint(plot.getRenderer().getSeriesPaint(i));
 						return;

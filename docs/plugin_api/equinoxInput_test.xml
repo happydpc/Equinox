@@ -4,23 +4,6 @@
 		<runMode>parallel</runMode>
 		<overwriteFiles>true</overwriteFiles>
 	</settings>
-	<downloadSpectrum>
-		<id>1</id>
-		<searchEntry>
-			<attributeName>NAME</attributeName>
-			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
-			<criteria>Contains</criteria>
-		</searchEntry>
-		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
-	</downloadSpectrum>
-	<addSpectrum>
-		<id>2</id>
-		<downloadId>1</downloadId>
-	</addSpectrum>
-	<assignMissionParametersToSpectrum><id>4</id><spectrumId>2</spectrumId><missionParameter>
-			<name>name1</name>
-			<value>12.8</value>
-		</missionParameter></assignMissionParametersToSpectrum>
 	<addStf>
 		<id>3</id>
 		<spectrumId>2</spectrumId>
@@ -44,7 +27,24 @@
 			<attributeName>FAT_MISSION</attributeName>
 			<keyword>61 Parabolas</keyword>
 		</searchEntry>
-	</addStf>
+	</addStf><downloadSpectrum>
+		<id>1</id>
+		<searchEntry>
+			<attributeName>NAME</attributeName>
+			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
+			<criteria>Contains</criteria>
+		</searchEntry>
+		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
+	</downloadSpectrum>
+	<addSpectrum>
+		<id>2</id>
+		<downloadId>1</downloadId>
+	</addSpectrum>
+	<assignMissionParametersToSpectrum><id>4</id><spectrumId>2</spectrumId><missionParameter>
+			<name>name1</name>
+			<value>12.8</value>
+		</missionParameter></assignMissionParametersToSpectrum>
+	
 	<generateStressSequence>
 		<id>6</id>
 		<stfId>3</stfId>
@@ -67,8 +67,9 @@
 	<plotTypicalFlight><id>9</id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId>6</stressSequenceId><!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
 		<plotType>Longest Typical Flight</plotType><!--Path to save typical flight plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/longestFlight.png</outputPath></plotTypicalFlight>
-		<equivalentStressAnalysis>
+		<outputPath>/Users/aurora/Temporary/longestFlight.png</outputPath>
+	</plotTypicalFlight>
+	<equivalentStressAnalysis>
 		<id>10</id>
 		<stressSequenceId>6</stressSequenceId>
 		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
@@ -164,4 +165,31 @@
 	<addStf>
 		<id>27</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test6.stf</stfPath>
 	</addStf>
+	<equivalentStressAnalysis>
+		<id>28</id>
+		<stressSequenceId>24</stressSequenceId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+	</equivalentStressAnalysis>
+	<equivalentStressAnalysis>
+		<id>29</id>
+		<stressSequenceId>23</stressSequenceId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+	</equivalentStressAnalysis>
+	<equivalentStressAnalysis>
+		<id>30</id>
+		<stressSequenceId>22</stressSequenceId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+	</equivalentStressAnalysis>
+	<plotLevelCrossingComparison>
+		<id>31</id>
+		<equivalentStressId>10</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<equivalentStressId>29</equivalentStressId>
+		<equivalentStressId>30</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/levelCrossingComparison.png</outputPath>
+		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeStfName>true</includeStfName>
+			<includeMaterialName>false</includeMaterialName>
+		</seriesNaming>
+	</plotLevelCrossingComparison>
 </equinoxInput>

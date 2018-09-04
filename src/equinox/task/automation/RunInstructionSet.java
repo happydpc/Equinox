@@ -51,6 +51,7 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.data.input.LevelCrossingInput;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
@@ -83,6 +84,7 @@ import equinox.task.GetSTFInfo3;
 import equinox.task.GetSpectrumEditInfo;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.PlotLevelCrossing;
 import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
@@ -102,6 +104,7 @@ import equinox.task.SaveStressSequenceAsSTH;
 import equinox.task.SaveStressSequencePlotToFile;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
+import equinox.task.SaveXYSeriesCollection;
 import equinox.task.SetSTFMission;
 import equinox.task.ShareGeneratedItem;
 import equinox.task.ShareSTF;
@@ -334,6 +337,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			plotStressSequenceComparison(equinoxInput, tasks);
 		}
 
+		// plot level crossing comparison
+		if (equinoxInput.getChild("plotLevelCrossingComparison") != null) {
+			plotLevelCrossingComparison(equinoxInput, tasks);
+		}
+
 		// TODO
 
 		// share file
@@ -396,6 +404,90 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates plot level crossing comparison tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotLevelCrossingComparison(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating level crossing comparison tasks...");
+
+		// loop over plot level crossing comparison elements
+		for (Element plotLevelCrossingComparison : equinoxInput.getChildren("plotLevelCrossingComparison")) {
+
+			// get id and output path
+			String id = plotLevelCrossingComparison.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotLevelCrossingComparison.getChildTextNormalize("outputPath"));
+
+			// create comparison input
+			LevelCrossingInput input = new LevelCrossingInput(true, null);
+
+			// set series naming
+			if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+				Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+				if (seriesNaming.getChild("includeSpectrumName") != null) {
+					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+				}
+				if (seriesNaming.getChild("includeStfName") != null) {
+					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				}
+				if (seriesNaming.getChild("includeElementId") != null) {
+					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+				}
+				if (seriesNaming.getChild("includeStressSequenceName") != null) {
+					input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+				}
+				if (seriesNaming.getChild("includeMaterialName") != null) {
+					input.setIncludeMaterialName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName")));
+				}
+				if (seriesNaming.getChild("includeOmissionLevel") != null) {
+					input.setIncludeOmissionLevel(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeOmissionLevel")));
+				}
+				if (seriesNaming.getChild("includeAircraftProgram") != null) {
+					input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+				}
+				if (seriesNaming.getChild("includeAircraftSection") != null) {
+					input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+				}
+				if (seriesNaming.getChild("includeFatigueMission") != null) {
+					input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+				}
+			}
+
+			// create tasks
+			SaveXYSeriesCollection saveDatasetTask = new SaveXYSeriesCollection(null, outputPath);
+			PlotLevelCrossing compareTask = new PlotLevelCrossing(input);
+			compareTask.addParameterizedTask(id, saveDatasetTask);
+			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> equivalentStressIds = plotLevelCrossingComparison.getChildren("equivalentStressId");
+			compareTask.setInputThreshold(equivalentStressIds.size());
+
+			// loop over equivalent stress ids
+			for (Element equivalentStressIdElement : equivalentStressIds) {
+
+				// get stress id
+				String equivalentStressId = equivalentStressIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, compareTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(compareTask, true));
 		}
 	}
 

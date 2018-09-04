@@ -15,7 +15,7 @@
  */
 package equinox.data.input;
 
-import equinox.data.fileType.SpectrumItem;
+import java.util.List;
 
 /**
  * Class for level crossing input.
@@ -29,29 +29,22 @@ public class LevelCrossingInput {
 	/** True if the DSGs should be normalized with spectrum validities. */
 	private final boolean normalize_;
 
-	/** Equivalent stresses to plot. */
-	private final SpectrumItem[] equivalentStresses_;
-
 	/** DSGs. */
-	private final int[] dsgs_;
+	private final List<Integer> dsgs_;
 
 	/** Spectrum naming parameters. */
-	private boolean includeSpectrumName_ = false, includeSTFName_ = true, includeEID_ = false, includeSequenceName_ = false,
-			includeMaterialName_ = true, includeOmissionLevel_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
+	private boolean includeSpectrumName_ = false, includeSTFName_ = true, includeEID_ = false, includeSequenceName_ = false, includeMaterialName_ = true, includeOmissionLevel_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/**
 	 * Creates level crossing input.
 	 *
 	 * @param normalize
 	 *            True if the DSGs should be normalized with spectrum validities.
-	 * @param equivalentStresses
-	 *            Equivalent stresses to plot.
 	 * @param dsgs
-	 *            DSGs. Null can be given if normalize option is selected.
+	 *            DSGs. Can be null for normalizing.
 	 */
-	public LevelCrossingInput(boolean normalize, SpectrumItem[] equivalentStresses, int[] dsgs) {
+	public LevelCrossingInput(boolean normalize, List<Integer> dsgs) {
 		normalize_ = normalize;
-		equivalentStresses_ = equivalentStresses;
 		dsgs_ = dsgs;
 	}
 
@@ -65,20 +58,11 @@ public class LevelCrossingInput {
 	}
 
 	/**
-	 * Returns array containing the equivalent stresses to plot.
-	 *
-	 * @return An array containing the equivalent stresses to plot.
-	 */
-	public SpectrumItem[] getEquivalentStresses() {
-		return equivalentStresses_;
-	}
-
-	/**
 	 * Returns DSGs.
-	 *
-	 * @return DSGs, or null if normalize option is selected.
+	 * 
+	 * @return DSGs.
 	 */
-	public int[] getDSGs() {
+	public List<Integer> getDsgs() {
 		return dsgs_;
 	}
 

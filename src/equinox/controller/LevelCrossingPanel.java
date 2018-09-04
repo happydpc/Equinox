@@ -17,6 +17,7 @@ package equinox.controller;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import org.controlsfx.control.PopOver;
@@ -42,7 +43,6 @@ import equinox.data.input.LevelCrossingInput;
 import equinox.task.PlotLevelCrossing;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -92,43 +92,13 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// set listeners
-		normalize_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onNormalizeSelected(newValue);
-			}
-		});
-		showInfo_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowInfoSelected(newValue);
-			}
-		});
-		showMarkers_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowMarkersSelected(newValue);
-			}
-		});
-		showCrosshair_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowCrosshairSelected(newValue);
-			}
-		});
+		normalize_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onNormalizeSelected(newValue));
+		showInfo_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowInfoSelected(newValue));
+		showMarkers_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowMarkersSelected(newValue));
+		showCrosshair_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowCrosshairSelected(newValue));
 		ToggleSwitch[] namingOptions = { includeSequenceName_, includeEID_, includeMaterialName_, includeOmissionLevel_, includeProgram_, includeSection_, includeMission_, includeSTFName_ };
 		for (ToggleSwitch ts : namingOptions) {
-			ts.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					setupRefreshButton();
-				}
-			});
+			ts.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> setupRefreshButton());
 		}
 
 		// expand first pane
@@ -221,13 +191,7 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 			hBox.getChildren().add(label);
 
 			// set listener to toggle switch
-			tSwitch.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					onShowSeriesSelected(newValue, (int) tSwitch.getUserData());
-				}
-			});
+			tSwitch.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowSeriesSelected(newValue, (int) tSwitch.getUserData()));
 
 			// add to container
 			seriesContainer_.getChildren().add(hBox);
@@ -344,21 +308,17 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		// get normalize
 		boolean isNormalize = normalize_.isSelected();
 
-		// get equivalent stresses and DSGs
-		SpectrumItem[] eqStresses = new SpectrumItem[dsgContainer_.getChildren().size()];
-		int[] dsgs = new int[eqStresses.length];
-		int index = 0;
+		// get DSGs
+		ArrayList<Integer> dsgs = new ArrayList<>();
 		for (Node node : dsgContainer_.getChildren()) {
 			IntegerValidationField tf = (IntegerValidationField) node;
-			eqStresses[index] = (SpectrumItem) tf.getUserData();
 			if (!isNormalize) {
-				dsgs[index] = Integer.parseInt(tf.getText());
+				dsgs.add(Integer.parseInt(tf.getText()));
 			}
-			index++;
 		}
 
 		// create input
-		input_ = new LevelCrossingInput(isNormalize, eqStresses, dsgs);
+		input_ = new LevelCrossingInput(isNormalize, dsgs);
 
 		// set naming parameters
 		input_.setIncludeSpectrumName(includeSpectrumName_.isSelected());
@@ -371,8 +331,17 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		input_.setIncludeSection(includeSection_.isSelected());
 		input_.setIncludeMission(includeMission_.isSelected());
 
-		// create and start comparison task
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new PlotLevelCrossing(input_));
+		// create task
+		PlotLevelCrossing task = new PlotLevelCrossing(input_);
+
+		// get equivalent stresses
+		for (Node node : dsgContainer_.getChildren()) {
+			IntegerValidationField tf = (IntegerValidationField) node;
+			task.addEquivalentStress((SpectrumItem) tf.getUserData());
+		}
+
+		// start comparison task
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**
@@ -472,17 +441,16 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		}
 
 		// DSG
-		int[] dsgs = input_.getDSGs();
 		for (int i = 0; i < dsgContainer_.getChildren().size(); i++) {
 			IntegerValidationField tf = (IntegerValidationField) dsgContainer_.getChildren().get(i);
 			String dsg = tf.getText();
-			if ((dsg == null) || dsg.isEmpty()) {
-				if (dsgs[i] != 0) {
+			if (dsg == null || dsg.isEmpty()) {
+				if (input_.getDsgs().get(i) != 0) {
 					refresh_.setDisable(false);
 					return;
 				}
 			}
-			else if (Integer.parseInt(dsg) != dsgs[i]) {
+			else if (Integer.parseInt(dsg) != input_.getDsgs().get(i)) {
 				refresh_.setDisable(false);
 				return;
 			}
@@ -500,8 +468,8 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		boolean includeMission = includeMission_.isSelected();
 
 		// series naming
-		if ((includeSpectrumName != input_.getIncludeSpectrumName()) || (includeSTFName != input_.getIncludeSTFName()) || (includeEID != input_.getIncludeEID()) || (includeSequenceName != input_.getIncludeSequenceName()) || (includeMaterialName != input_.getIncludeMaterialName())
-				|| (includeOmissionLevel != input_.getIncludeOmissionLevel()) || (includeProgram != input_.getIncludeProgram()) || (includeSection != input_.getIncludeSection()) || (includeMission != input_.getIncludeMission())) {
+		if (includeSpectrumName != input_.getIncludeSpectrumName() || includeSTFName != input_.getIncludeSTFName() || includeEID != input_.getIncludeEID() || includeSequenceName != input_.getIncludeSequenceName() || includeMaterialName != input_.getIncludeMaterialName()
+				|| includeOmissionLevel != input_.getIncludeOmissionLevel() || includeProgram != input_.getIncludeProgram() || includeSection != input_.getIncludeSection() || includeMission != input_.getIncludeMission()) {
 			refresh_.setDisable(false);
 			return;
 		}
@@ -524,13 +492,7 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		tf.setMaxWidth(Double.MAX_VALUE);
 		tf.setDefaultValue(null);
 		tf.setMinimumValue(1, true);
-		tf.textProperty().addListener(new ChangeListener<String>() {
-
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				setupRefreshButton();
-			}
-		});
+		tf.textProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> setupRefreshButton());
 		tf.setDisable(true);
 		dsgContainer_.getChildren().add(tf);
 	}
@@ -549,13 +511,7 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		tf.setMaxWidth(Double.MAX_VALUE);
 		tf.setDefaultValue(null);
 		tf.setMinimumValue(1, true);
-		tf.textProperty().addListener(new ChangeListener<String>() {
-
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				setupRefreshButton();
-			}
-		});
+		tf.textProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> setupRefreshButton());
 		tf.setDisable(true);
 		dsgContainer_.getChildren().add(tf);
 	}
@@ -574,13 +530,7 @@ public class LevelCrossingPanel implements InternalInputSubPanel {
 		tf.setMaxWidth(Double.MAX_VALUE);
 		tf.setDefaultValue(null);
 		tf.setMinimumValue(1, true);
-		tf.textProperty().addListener(new ChangeListener<String>() {
-
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				setupRefreshButton();
-			}
-		});
+		tf.textProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> setupRefreshButton());
 		tf.setDisable(true);
 		dsgContainer_.getChildren().add(tf);
 	}

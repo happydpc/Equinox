@@ -767,14 +767,8 @@ public class GenerateRfortReport extends TemporaryFileCreatingTask<Void> impleme
 	 */
 	private void drawLevelCrossings(String ppName, ArrayList<FatigueEquivalentStress> stresses, Document document, PdfWriter writer, Connection connection, int pageIndex) throws Exception {
 
-		// create equivalent stress array
-		SpectrumItem[] eqStresses = new SpectrumItem[stresses.size()];
-		for (int i = 0; i < stresses.size(); i++) {
-			eqStresses[i] = stresses.get(i);
-		}
-
 		// create input
-		LevelCrossingInput input = new LevelCrossingInput(true, eqStresses, null);
+		LevelCrossingInput input = new LevelCrossingInput(true, null);
 
 		// set naming parameters
 		input.setIncludeSpectrumName(false);
@@ -809,7 +803,7 @@ public class GenerateRfortReport extends TemporaryFileCreatingTask<Void> impleme
 		plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
 
 		// plot
-		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input).start(connection);
+		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input, new ArrayList<SpectrumItem>(stresses)).start(connection);
 
 		// set dataset
 		plot.setDataset(dataset);

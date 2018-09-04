@@ -192,42 +192,14 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		// get connection to database
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
-			try {
-
-				// disable auto-commit
-				connection.setAutoCommit(false);
-
-				// add from directory
-				if (stfFiles_ == null) {
-					files = addFromDirectory(connection, allowance);
-				}
-				else {
-					files = addFromSTFFiles(connection, allowance);
-				}
-
-				// null files
-				if (files == null) {
-					connection.rollback();
-					connection.setAutoCommit(true);
-					return null;
-				}
-
-				// commit updates
-				connection.commit();
-				connection.setAutoCommit(true);
+			// add from directory
+			if (stfFiles_ == null) {
+				files = addFromDirectory(connection, allowance);
 			}
 
-			// exception occurred during process
-			catch (Exception e) {
-
-				// roll back updates
-				if (connection != null) {
-					connection.rollback();
-					connection.setAutoCommit(true);
-				}
-
-				// propagate exception
-				throw e;
+			// add individual STF files
+			else {
+				files = addFromSTFFiles(connection, allowance);
 			}
 		}
 
@@ -404,11 +376,6 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 							// load and add STF file
 							try {
 								STFFile stfFile = new LoadSTFFile(this, stfFilePath, spectrum_, info, updateProcessProgress, stressTableIDs[i / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[i / MAX_STF_FILES_PER_TABLE], updateStressState);
-								if (stfFile == null) {
-									connection.rollback();
-									connection.setAutoCommit(true);
-									return null;
-								}
 								if (automaticTasks_ != null) {
 									files.add(stfFile);
 								}
@@ -444,11 +411,6 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 							// load and add STF file
 							try {
 								STFFile stfFile = new LoadSTFFile(this, stfFilePath, spectrum_, info, updateProcessProgress, stressTableIDs[i / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[i / MAX_STF_FILES_PER_TABLE], updateStressState);
-								if (stfFile == null) {
-									connection.rollback();
-									connection.setAutoCommit(true);
-									return null;
-								}
 								if (automaticTasks_ != null) {
 									files.add(stfFile);
 								}
@@ -480,11 +442,6 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 							// load and add STF file
 							try {
 								STFFile stfFile = new LoadSTFFile(this, inputFile.toPath(), spectrum_, info, updateProcessProgress, stressTableIDs[i / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[i / MAX_STF_FILES_PER_TABLE], updateStressState);
-								if (stfFile == null) {
-									connection.rollback();
-									connection.setAutoCommit(true);
-									return null;
-								}
 								if (automaticTasks_ != null) {
 									files.add(stfFile);
 								}
@@ -611,11 +568,6 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 								// load and add STF file
 								try {
 									STFFile stfFile = new LoadSTFFile(this, stfFilePath, spectrum_, null, updateProcessProgress, stressTableIDs[index / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[index / MAX_STF_FILES_PER_TABLE], updateStressState);
-									if (stfFile == null) {
-										connection.rollback();
-										connection.setAutoCommit(true);
-										return null;
-									}
 									if (automaticTasks_ != null) {
 										files.add(stfFile);
 									}
@@ -646,11 +598,6 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 								// load and add STF file
 								try {
 									STFFile stfFile = new LoadSTFFile(this, file, spectrum_, null, updateProcessProgress, stressTableIDs[index / MAX_STF_FILES_PER_TABLE]).start(connection, insertFile, insertStresses[index / MAX_STF_FILES_PER_TABLE], updateStressState);
-									if (stfFile == null) {
-										connection.rollback();
-										connection.setAutoCommit(true);
-										return null;
-									}
 									if (automaticTasks_ != null) {
 										files.add(stfFile);
 									}

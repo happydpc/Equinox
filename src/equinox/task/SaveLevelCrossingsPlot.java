@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -320,8 +321,7 @@ public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> impl
 		Path output = getWorkingDirectory().resolve("levelCrossings.png");
 
 		// create input
-		SpectrumItem[] eqStresses = { eqStress_ };
-		LevelCrossingInput input = new LevelCrossingInput(true, eqStresses, null);
+		LevelCrossingInput input = new LevelCrossingInput(true, null);
 
 		// set naming parameters
 		input.setIncludeSpectrumName(false);
@@ -356,7 +356,7 @@ public class SaveLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> impl
 		plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
 
 		// plot
-		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input).start(connection);
+		XYSeriesCollection dataset = new PlotLevelCrossingProcess(this, input, Arrays.asList(eqStress_)).start(connection);
 
 		// set dataset
 		plot.setDataset(dataset);

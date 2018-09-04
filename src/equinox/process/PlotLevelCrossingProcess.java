@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -48,6 +49,9 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 	/** Input. */
 	private final LevelCrossingInput input_;
 
+	/** Equivalent stresses. */
+	private final List<SpectrumItem> equivalentStresses_;
+
 	/** Rainflow cycles table name. */
 	private final String rainflowTableName_;
 
@@ -58,11 +62,14 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 	 *            The owner task.
 	 * @param input
 	 *            Level crossing input.
+	 * @param equivalentStresses
+	 *            List of equivalent stresses.
 	 */
-	public PlotLevelCrossingProcess(InternalEquinoxTask<?> task, LevelCrossingInput input) {
+	public PlotLevelCrossingProcess(InternalEquinoxTask<?> task, LevelCrossingInput input, List<SpectrumItem> equivalentStresses) {
 		task_ = task;
 		input_ = input;
 		rainflowTableName_ = null;
+		equivalentStresses_ = equivalentStresses;
 	}
 
 	/**
@@ -74,11 +81,14 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 	 *            Level crossing input.
 	 * @param rainflowTableName
 	 *            Rainflow cycles table name.
+	 * @param equivalentStresses
+	 *            List of equivalent stresses.
 	 */
-	public PlotLevelCrossingProcess(InternalEquinoxTask<?> task, LevelCrossingInput input, String rainflowTableName) {
+	public PlotLevelCrossingProcess(InternalEquinoxTask<?> task, LevelCrossingInput input, String rainflowTableName, List<SpectrumItem> equivalentStresses) {
 		task_ = task;
 		input_ = input;
 		rainflowTableName_ = rainflowTableName;
+		equivalentStresses_ = equivalentStresses;
 	}
 
 	@Override
@@ -92,27 +102,28 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 
 		// set table names
 		String stressTable = null, rainflowTable = null;
-		if (input_.getEquivalentStresses()[0] instanceof FatigueEquivalentStress) {
+		SpectrumItem item = equivalentStresses_.get(0);
+		if (item instanceof FatigueEquivalentStress) {
 			stressTable = "fatigue_equivalent_stresses";
 			rainflowTable = "fatigue_rainflow_cycles";
 		}
-		else if (input_.getEquivalentStresses()[0] instanceof PreffasEquivalentStress) {
+		else if (item instanceof PreffasEquivalentStress) {
 			stressTable = "preffas_equivalent_stresses";
 			rainflowTable = "preffas_rainflow_cycles";
 		}
-		else if (input_.getEquivalentStresses()[0] instanceof LinearEquivalentStress) {
+		else if (item instanceof LinearEquivalentStress) {
 			stressTable = "linear_equivalent_stresses";
 			rainflowTable = "linear_rainflow_cycles";
 		}
-		else if (input_.getEquivalentStresses()[0] instanceof FastFatigueEquivalentStress) {
+		else if (item instanceof FastFatigueEquivalentStress) {
 			stressTable = "fast_fatigue_equivalent_stresses";
 			rainflowTable = rainflowTableName_;
 		}
-		else if (input_.getEquivalentStresses()[0] instanceof FastPreffasEquivalentStress) {
+		else if (item instanceof FastPreffasEquivalentStress) {
 			stressTable = "fast_preffas_equivalent_stresses";
 			rainflowTable = rainflowTableName_;
 		}
-		else if (input_.getEquivalentStresses()[0] instanceof FastLinearEquivalentStress) {
+		else if (item instanceof FastLinearEquivalentStress) {
 			stressTable = "fast_linear_equivalent_stresses";
 			rainflowTable = rainflowTableName_;
 		}
@@ -126,16 +137,14 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 			try (PreparedStatement getCycles = connection.prepareStatement(sql)) {
 
 				// loop over equivalent stresses
-				SpectrumItem[] eqStresses = input_.getEquivalentStresses();
-				int[] dsgs = input_.getDSGs();
-				for (int i = 0; i < eqStresses.length; i++) {
+				for (int i = 0; i < equivalentStresses_.size(); i++) {
 
 					// create series
-					XYSeries series = new XYSeries(getSpectrumName(eqStresses[i], dataset), false, true);
+					XYSeries series = new XYSeries(getSpectrumName(equivalentStresses_.get(i), dataset), false, true);
 
 					// get validity
 					double validity = -1;
-					getValidity.setInt(1, eqStresses[i].getID());
+					getValidity.setInt(1, equivalentStresses_.get(i).getID());
 					try (ResultSet resultSet = getValidity.executeQuery()) {
 						while (resultSet.next()) {
 							validity = resultSet.getDouble("validity");
@@ -149,7 +158,7 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 
 					// get rainflow cycles
 					double max = Double.NEGATIVE_INFINITY, min = Double.POSITIVE_INFINITY;
-					getCycles.setInt(1, eqStresses[i].getID());
+					getCycles.setInt(1, equivalentStresses_.get(i).getID());
 					try (ResultSet resultSet = getCycles.executeQuery()) {
 						while (resultSet.next()) {
 
@@ -174,7 +183,7 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 					}
 
 					// set DSG
-					double dsg = input_.isNormalize() ? validity : dsgs[i];
+					double dsg = input_.isNormalize() ? validity : input_.getDsgs().get(i);
 
 					// create plot
 					createPlot(series, dsg, validity, N, Smax, Smin, max, min);
@@ -209,7 +218,7 @@ public class PlotLevelCrossingProcess implements EquinoxProcess<XYSeriesCollecti
 		// compute Nc values
 		for (int i = 0; i < N.size(); i++) {
 			for (int j = 0; j < 65; j++) {
-				if ((Smax.get(i) >= Class[j]) && (Smin.get(i) < Class[j])) {
+				if (Smax.get(i) >= Class[j] && Smin.get(i) < Class[j]) {
 					Nc[j] = N.get(i) + Nc[j];
 				}
 			}

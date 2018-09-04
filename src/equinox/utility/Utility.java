@@ -131,6 +131,7 @@ public class Utility {
 
 	/**
 	 * Sets up database connection pool for connecting to local database.
+	 *
 	 * @param dbPath
 	 *            Path to local database.
 	 *
