@@ -41,7 +41,6 @@ import equinox.task.CompareFlights;
 import equinox.task.GetFlightSegments;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -100,23 +99,11 @@ public class CompareFlightsPanel implements InternalInputSubPanel {
 		componentOptions_[FlightPlotInput.DT_STRESS_COMP] = dt_;
 		componentOptions_[FlightPlotInput.ONE_G_STRESS_COMP] = oneg_;
 		for (ToggleSwitch toggle : componentOptions_) {
-			toggle.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					onComponentSelected();
-				}
-			});
+			toggle.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onComponentSelected());
 		}
 
 		// set display options
-		showMarkers_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowMarkersSelected();
-			}
-		});
+		showMarkers_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowMarkersSelected());
 	}
 
 	@Override
@@ -231,13 +218,7 @@ public class CompareFlightsPanel implements InternalInputSubPanel {
 				hBox.getChildren().add(label);
 
 				// set listener to toggle switch
-				tSwitch.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-					@Override
-					public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-						onShowFlightSelected(newValue, (int) tSwitch.getUserData());
-					}
-				});
+				tSwitch.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowFlightSelected(newValue, (int) tSwitch.getUserData()));
 
 				// add to container
 				flightsContainer_.getChildren().add(hBox);
@@ -302,15 +283,11 @@ public class CompareFlightsPanel implements InternalInputSubPanel {
 		if (!checkInputs())
 			return;
 
-		// get selected flights
-		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
-		Flight[] flights = selected.toArray(new Flight[selected.size()]);
-
 		// get selected segment
 		Segment segment = selectSegment_.getSelectionModel().getSelectedIndex() == 0 ? null : selectSegment_.getValue();
 
 		// create input
-		FlightComparisonInput input = new FlightComparisonInput(flights, segment);
+		FlightComparisonInput input = new FlightComparisonInput(segment);
 		input.setPlotComponentOptions(getComponentOptions(), total_.isSelected());
 		input.setShowMarkers(showMarkers_.isSelected());
 
@@ -342,8 +319,18 @@ public class CompareFlightsPanel implements InternalInputSubPanel {
 			input.setFlightVisible(flightID, ts.isSelected());
 		}
 
+		// create task
+		CompareFlights task = new CompareFlights(input);
+
+		// add typical flights
+		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
+		Flight[] flights = selected.toArray(new Flight[selected.size()]);
+		for (Flight flight : flights) {
+			task.addTypicalFlight(flight);
+		}
+
 		// compare flights
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new CompareFlights(input));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**

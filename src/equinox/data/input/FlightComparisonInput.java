@@ -15,8 +15,9 @@
  */
 package equinox.data.input;
 
+import java.util.HashMap;
+
 import equinox.data.Segment;
-import equinox.data.fileType.Flight;
 
 /**
  * Class for flight comparison input.
@@ -30,37 +31,27 @@ public class FlightComparisonInput {
 	/** Plot component option index. */
 	public static final int INCREMENT_STRESS_COMP = 0, DP_STRESS_COMP = 1, DT_STRESS_COMP = 2, ONE_G_STRESS_COMP = 3;
 
-	/** Flights to plot. */
-	private final Flight[] flights_;
-
 	/** Segment to plot. */
 	private final Segment segment_;
 
 	/** Peak option. */
-	private boolean plotOnTotalStress_ = false, showMarkers_ = false, includeFlightName_ = true, includeSpectrumName_ = false,
-			includeSTFName_ = false, includeEID_ = false, includeSequenceName_ = false, includeProgram_ = false, includeSection_ = false,
-			includeMission_ = false;
+	private boolean plotOnTotalStress_ = false, showMarkers_ = false, includeFlightName_ = true, includeSpectrumName_ = false, includeSTFName_ = false, includeEID_ = false, includeSequenceName_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/** Plot component options. */
 	private boolean[] plotComponentOptions_ = { true, true, true, true };
 
 	/** Show/hide flights. */
-	private final boolean[] showFlights_;
+	private final HashMap<Integer, Boolean> showFlights_;
 
 	/**
 	 * Creates plot input.
 	 *
-	 * @param flights
-	 *            Flights to plot.
 	 * @param segment
 	 *            Segment to plot. Null should be given for all segments.
 	 */
-	public FlightComparisonInput(Flight[] flights, Segment segment) {
-		flights_ = flights;
+	public FlightComparisonInput(Segment segment) {
 		segment_ = segment;
-		showFlights_ = new boolean[flights_.length];
-		for (int i = 0; i < showFlights_.length; i++)
-			showFlights_[i] = true;
+		showFlights_ = new HashMap<>();
 	}
 
 	/**
@@ -85,12 +76,7 @@ public class FlightComparisonInput {
 	 *            True for visible.
 	 */
 	public void setFlightVisible(int flightID, boolean visible) {
-		for (int i = 0; i < flights_.length; i++) {
-			if (flightID == flights_[i].getID()) {
-				showFlights_[i] = visible;
-				break;
-			}
-		}
+		showFlights_.put(flightID, visible);
 	}
 
 	/**
@@ -184,15 +170,6 @@ public class FlightComparisonInput {
 	}
 
 	/**
-	 * Returns the flights to plot.
-	 *
-	 * @return The flights to plot.
-	 */
-	public Flight[] getFlights() {
-		return flights_;
-	}
-
-	/**
 	 * Returns segment.
 	 *
 	 * @return Segment.
@@ -260,11 +237,7 @@ public class FlightComparisonInput {
 	 * @return True if the flight with the given ID is visible.
 	 */
 	public boolean isFlightVisible(int flightID) {
-		for (int i = 0; i < flights_.length; i++) {
-			if (flightID == flights_[i].getID())
-				return showFlights_[i];
-		}
-		return true;
+		return showFlights_.containsKey(flightID) ? showFlights_.get(flightID) : true;
 	}
 
 	/**

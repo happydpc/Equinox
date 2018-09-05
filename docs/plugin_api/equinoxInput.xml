@@ -269,10 +269,27 @@
 	</plotLevelCrossingComparison>
 	<plotTypicalFlightComparison>
 		<id></id>
-		<stressSequenceId>
-			<typicalFlightName></typicalFlightName></stressSequenceId>
+		<typicalFlight><stressSequenceId>
+			</stressSequenceId><typicalFlightName></typicalFlightName></typicalFlight>
+		
 		<outputPath></outputPath>
-		<seriesNaming></seriesNaming></plotTypicalFlightComparison><equivalentStressAnalysis>
+		<stressComponents>
+			<plotIncrements></plotIncrements>
+			<plotDp></plotDp>
+			<plotDt></plotDt>
+			<plot1g></plot1g></stressComponents>
+		<seriesNaming>
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeTypicalFlightName></includeTypicalFlightName>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+	</plotTypicalFlightComparison>
+	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>

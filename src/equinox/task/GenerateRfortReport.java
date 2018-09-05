@@ -399,14 +399,8 @@ public class GenerateRfortReport extends TemporaryFileCreatingTask<Void> impleme
 	 */
 	private void drawFlightComparison(String ppName, ArrayList<Flight> flightsList, Document document, PdfWriter writer, Connection connection, int pageIndex) throws Exception {
 
-		// create flights array
-		Flight[] flights = new Flight[flightsList.size()];
-		for (int i = 0; i < flightsList.size(); i++) {
-			flights[i] = flightsList.get(i);
-		}
-
 		// create input
-		FlightComparisonInput input = new FlightComparisonInput(flights, null);
+		FlightComparisonInput input = new FlightComparisonInput(null);
 		input.setPlotComponentOptions(new boolean[] { true, true, true, true }, false);
 		input.setShowMarkers(false);
 
@@ -421,12 +415,12 @@ public class GenerateRfortReport extends TemporaryFileCreatingTask<Void> impleme
 		input.setIncludeMission(true);
 
 		// set flight visibility
-		for (int i = 0; i < flightsList.size(); i++) {
-			input.setFlightVisible(flights[i].getID(), true);
+		for (Flight flight : flightsList) {
+			input.setFlightVisible(flight.getID(), true);
 		}
 
 		// plot
-		JFreeChart chart = new CompareFlightsProcess(this, input).start(connection);
+		JFreeChart chart = new CompareFlightsProcess(this, input, flightsList).start(connection);
 		chart.setTitle("Typical Flight Comparison\n(" + FileType.getNameWithoutExtension(ppName) + ")");
 
 		// setup chart dimensions

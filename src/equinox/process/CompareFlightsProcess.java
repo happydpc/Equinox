@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -53,6 +54,9 @@ public class CompareFlightsProcess implements EquinoxProcess<JFreeChart> {
 	/** Comparison input. */
 	private final FlightComparisonInput input_;
 
+	/** Typical flights. */
+	private final List<Flight> flights_;
+
 	/** Dataset count. */
 	private int datasetCount_ = 0;
 
@@ -63,10 +67,13 @@ public class CompareFlightsProcess implements EquinoxProcess<JFreeChart> {
 	 *            The owner task.
 	 * @param input
 	 *            Comparison input.
+	 * @param flights
+	 *            Typical flights to compare.
 	 */
-	public CompareFlightsProcess(InternalEquinoxTask<?> task, FlightComparisonInput input) {
+	public CompareFlightsProcess(InternalEquinoxTask<?> task, FlightComparisonInput input, List<Flight> flights) {
 		task_ = task;
 		input_ = input;
+		flights_ = flights;
 	}
 
 	@Override
@@ -116,7 +123,7 @@ public class CompareFlightsProcess implements EquinoxProcess<JFreeChart> {
 		try (Statement statement = connection.createStatement()) {
 
 			// loop over flights
-			for (Flight flight : input_.getFlights()) {
+			for (Flight flight : flights_) {
 
 				// update info
 				task_.updateMessage("Getting peaks for flight '" + flight.getName() + "' from database...");

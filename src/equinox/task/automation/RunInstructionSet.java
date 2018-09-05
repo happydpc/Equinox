@@ -50,6 +50,7 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.EquivalentStressInput;
+import equinox.data.input.FlightComparisonInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.LevelCrossingInput;
 import equinox.data.input.StressSequenceComparisonInput;
@@ -70,6 +71,7 @@ import equinox.task.AddStressSequence;
 import equinox.task.AdvancedPilotPointSearch;
 import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.AssignMissionParameters;
+import equinox.task.CompareFlights;
 import equinox.task.CompareStressSequences;
 import equinox.task.CreateDummySTFFile;
 import equinox.task.DeleteTemporaryFiles;
@@ -82,6 +84,7 @@ import equinox.task.GenerateStressSequence;
 import equinox.task.GetSTFInfo2;
 import equinox.task.GetSTFInfo3;
 import equinox.task.GetSpectrumEditInfo;
+import equinox.task.GetTypicalFlight;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.PlotLevelCrossing;
@@ -89,6 +92,7 @@ import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
 import equinox.task.SaveCategoryDataset;
+import equinox.task.SaveChart;
 import equinox.task.SaveConversionTable;
 import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveExternalStressSequenceAsSIGMA;
@@ -342,6 +346,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			plotLevelCrossingComparison(equinoxInput, tasks);
 		}
 
+		// plot typical flight comparison
+		if (equinoxInput.getChild("plotTypicalFlightComparison") != null) {
+			plotTypicalFlightComparison(equinoxInput, tasks);
+		}
+
 		// TODO
 
 		// share file
@@ -404,6 +413,113 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates plot typical flight comparison tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotTypicalFlightComparison(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating typical flight comparison tasks...");
+
+		// loop over typical flight comparison elements
+		for (Element plotTypicalFlightComparison : equinoxInput.getChildren("plotTypicalFlightComparison")) {
+
+			// get id and output path
+			String id = plotTypicalFlightComparison.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotTypicalFlightComparison.getChildTextNormalize("outputPath"));
+
+			// create comparison input
+			FlightComparisonInput input = new FlightComparisonInput(null);
+			input.setShowMarkers(false);
+
+			// stress components
+			if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
+				Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
+				boolean[] plotComponentOptions = { true, true, true, true };
+				if (stressComponents.getChild("plotIncrements") != null) {
+					plotComponentOptions[FlightComparisonInput.INCREMENT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotIncrements").getTextNormalize());
+				}
+				if (stressComponents.getChild("plotDp") != null) {
+					plotComponentOptions[FlightComparisonInput.DP_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDp").getTextNormalize());
+				}
+				if (stressComponents.getChild("plotDt") != null) {
+					plotComponentOptions[FlightComparisonInput.DT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDt").getTextNormalize());
+				}
+				if (stressComponents.getChild("plot1g") != null) {
+					plotComponentOptions[FlightComparisonInput.ONE_G_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plot1g").getTextNormalize());
+				}
+				input.setPlotComponentOptions(plotComponentOptions, false);
+			}
+
+			// set series naming
+			if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
+				Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+				if (seriesNaming.getChild("includeSpectrumName") != null) {
+					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+				}
+				if (seriesNaming.getChild("includeStfName") != null) {
+					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				}
+				if (seriesNaming.getChild("includeElementId") != null) {
+					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+				}
+				if (seriesNaming.getChild("includeStressSequenceName") != null) {
+					input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+				}
+				if (seriesNaming.getChild("includeTypicalFlightName") != null) {
+					input.setIncludeFlightName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeTypicalFlightName")));
+				}
+				if (seriesNaming.getChild("includeAircraftProgram") != null) {
+					input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+				}
+				if (seriesNaming.getChild("includeAircraftSection") != null) {
+					input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+				}
+				if (seriesNaming.getChild("includeFatigueMission") != null) {
+					input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+				}
+			}
+
+			// create tasks
+			SaveChart saveTask = new SaveChart(null, outputPath);
+			CompareFlights compareTask = new CompareFlights(input);
+			compareTask.addParameterizedTask(id, saveTask);
+			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+			compareTask.setInputThreshold(typicalFlights.size());
+
+			// loop over typical flights
+			for (Element typicalFlight : typicalFlights) {
+
+				// get sequence id and flight name
+				String stressSequenceId = typicalFlight.getChildText("stressSequenceId");
+				String flightName = typicalFlight.getChildText("typicalFlightName");
+
+				// create get flight task
+				GetTypicalFlight getFlightTask = new GetTypicalFlight(flightName);
+				getFlightTask.addParameterizedTask(Integer.toString(compareTask.hashCode()), compareTask);
+				getFlightTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// connect to parent task
+				ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+				parentTask.addParameterizedTask(Integer.toString(getFlightTask.hashCode()), getFlightTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(compareTask, true));
 		}
 	}
 

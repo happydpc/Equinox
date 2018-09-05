@@ -192,4 +192,20 @@
 			<includeMaterialName>false</includeMaterialName>
 		</seriesNaming>
 	</plotLevelCrossingComparison>
+	<plotTypicalFlightComparison>
+		<id>32</id>
+		<typicalFlight>
+			<stressSequenceId>22</stressSequenceId>
+			<typicalFlightName>TF_1_2s</typicalFlightName>
+		</typicalFlight>
+		<typicalFlight>
+			<stressSequenceId>22</stressSequenceId>
+			<typicalFlightName>TF_2_2s</typicalFlightName>
+		</typicalFlight>
+		<typicalFlight>
+			<stressSequenceId>23</stressSequenceId>
+			<typicalFlightName>TF_4_2s</typicalFlightName>
+		</typicalFlight>
+		<outputPath>/Users/aurora/Temporary/typicalFlightComparison.png</outputPath>
+	</plotTypicalFlightComparison>
 </equinoxInput>

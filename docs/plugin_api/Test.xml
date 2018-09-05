@@ -83,4 +83,25 @@
 	<addStf>
 		<id>27</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test6.stf</stfPath>
 	</addStf>
+	<generateStressSequence>
+		<id>28</id>
+		<stfId>3</stfId>
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+	</generateStressSequence>
+	<plotTypicalFlightComparison>
+		<id>29</id>
+		<typicalFlight>
+			<stressSequenceId>28</stressSequenceId>
+			<typicalFlightName>TF_1_2s</typicalFlightName>
+		</typicalFlight>
+		<typicalFlight>
+			<stressSequenceId>28</stressSequenceId>
+			<typicalFlightName>TF_2_2s</typicalFlightName>
+		</typicalFlight>
+		<typicalFlight>
+			<stressSequenceId>28</stressSequenceId>
+			<typicalFlightName>TF_4_2s</typicalFlightName>
+		</typicalFlight>
+		<outputPath>/Users/aurora/Temporary/typicalFlightComparison.png</outputPath>
+	</plotTypicalFlightComparison>
 </equinoxInput>
