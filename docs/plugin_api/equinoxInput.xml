@@ -268,7 +268,11 @@
 		</seriesNaming>
 	</plotLevelCrossingComparison>
 	<plotTypicalFlightComparison>
-		<id></id></plotTypicalFlightComparison><equivalentStressAnalysis>
+		<id></id>
+		<stressSequenceId>
+			<typicalFlightName></typicalFlightName></stressSequenceId>
+		<outputPath></outputPath>
+		<seriesNaming></seriesNaming></plotTypicalFlightComparison><equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
