@@ -250,11 +250,11 @@
 			<includeStressSequenceName></includeStressSequenceName>
 			<includeAircraftProgram></includeAircraftProgram>
 			<includeAircraftSection></includeAircraftSection>
-			<includeFatigueMission></includeFatigueMission></seriesNaming></plotStressSequenceComparison>
+			<includeFatigueMission></includeFatigueMission></seriesNaming></plotStressSequenceComparison><!--Plots level crossing comparison to given output file.-->
 	<plotLevelCrossingComparison>
-		<id></id>
-		<equivalentStressId></equivalentStressId>
-		<outputPath></outputPath>
+		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction. Minimum 2 equivalentStressId elements are required.-->
+		<equivalentStressId></equivalentStressId><!--Path to save level crossinge comparison plot. File name must end with .png.-->
+		<outputPath></outputPath><!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
 		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
 			<includeSpectrumName></includeSpectrumName>
 			<includeStfName></includeStfName>
@@ -267,12 +267,13 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotLevelCrossingComparison>
-	<equivalentStressAnalysis>
+	<plotTypicalFlightComparison>
+		<id></id></plotTypicalFlightComparison><equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
 	</equivalentStressAnalysis>
-	<plotTypicalFlightComparison></plotTypicalFlightComparison>
+	
 	<plotMissionProfileComparison></plotMissionProfileComparison>
 	<plotEquivalentStressComparison></plotEquivalentStressComparison>
 	<plotLifeFactors></plotLifeFactors>

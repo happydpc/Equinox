@@ -295,6 +295,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// plot level crossing comparison
+		if (equinoxInput.getChild("plotLevelCrossingComparison") != null) {
+			if (!checkPlotLevelCrossingComparison(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// share file
@@ -332,6 +338,67 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>plotLevelCrossingComparison</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotLevelCrossingComparison</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotLevelCrossingComparison(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotLevelCrossingComparison elements...");
+
+		// loop over plot level crossing comparison elements
+		for (Element plotLevelCrossingComparison : equinoxInput.getChildren("plotLevelCrossingComparison")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLevelCrossingComparison))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLevelCrossingComparison, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// set series naming
+			if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check stress sequence ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLevelCrossingComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
+				return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
