@@ -266,19 +266,21 @@
 			<includeAircraftSection></includeAircraftSection>
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
-	</plotLevelCrossingComparison>
+	</plotLevelCrossingComparison><!--Plots typical flight comparison to given output file.-->
 	<plotTypicalFlightComparison>
-		<id></id>
-		<typicalFlight><stressSequenceId>
-			</stressSequenceId><typicalFlightName></typicalFlightName></typicalFlight>
-		
-		<outputPath></outputPath>
-		<stressComponents>
+		<id></id><!--Typical flight to compare. Note that minimum 2 of typicalFlight element is expected.-->
+		<typicalFlight><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+			<stressSequenceId>
+			</stressSequenceId><!--Name of typical flight.-->
+			<typicalFlightName></typicalFlightName></typicalFlight><!--Path to save typical flight comparison plot. File name must end with .png.-->
+
+		<outputPath></outputPath><!--Stress components to be plotted on the  comparison. This element and all its children are optional, if not supplied, default values will be set.-->
+		<stressComponents><!--To plot increment peaks in comparison plot. This can be either 'true' or 'false'.-->
 			<plotIncrements></plotIncrements>
 			<plotDp></plotDp>
 			<plotDt></plotDt>
-			<plot1g></plot1g></stressComponents>
-		<seriesNaming>
+			<plot1g></plot1g></stressComponents><!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
 			<includeSpectrumName></includeSpectrumName>
 			<includeStfName></includeStfName>
 			<includeElementId></includeElementId>
@@ -288,15 +290,16 @@
 			<includeAircraftSection></includeAircraftSection>
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
-	</plotTypicalFlightComparison>
-	<equivalentStressAnalysis>
+	</plotTypicalFlightComparison><plotEquivalentStressComparison>
+	<id></id>
+	<equivalentStressId></equivalentStressId></plotEquivalentStressComparison><equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
 		<xmlPath></xmlPath>
 	</equivalentStressAnalysis>
 	
-	<plotMissionProfileComparison></plotMissionProfileComparison>
-	<plotEquivalentStressComparison></plotEquivalentStressComparison>
+	
+	
 	<plotLifeFactors></plotLifeFactors>
 	<plotEquivalentStressRatios></plotEquivalentStressRatios>
 	<saveEquivalentStresses></saveEquivalentStresses>

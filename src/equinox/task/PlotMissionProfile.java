@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.xy.IntervalXYDataset;
@@ -27,10 +28,15 @@ import equinox.controller.MissionProfileComparisonViewPanel;
 import equinox.controller.MissionProfilePanel;
 import equinox.controller.MissionProfileViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.MissionProfileComparisonPlotAttributes;
+import equinox.data.Pair;
 import equinox.data.fileType.StressSequence;
 import equinox.process.PlotMissionProfileProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for plot mission profile task.
@@ -39,10 +45,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date May 30, 2016
  * @time 10:14:48 PM
  */
-public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> implements ShortRunningTask {
+public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> implements ShortRunningTask, SingleInputTask<StressSequence>, ParameterizedTaskOwner<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> {
 
 	/** Input stress sequence. */
-	private final StressSequence sequence_;
+	private StressSequence sequence_;
 
 	/** Step plotting options. */
 	private final boolean[] plotStep_;
@@ -56,11 +62,17 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 	/** Mode of this task. */
 	private final boolean isComparison_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates plot mission profile task.
 	 *
 	 * @param sequence
-	 *            Input stress sequence.
+	 *            Input stress sequence. Can be null for automatic execution.
 	 * @param plotPosInc
 	 *            True to plot positive increments.
 	 * @param plotNegInc
@@ -81,6 +93,29 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 			plotStep_ = plotStep;
 		}
 		isComparison_ = isComparison;
+	}
+
+	@Override
+	public void setAutomaticInput(StressSequence input) {
+		sequence_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -124,48 +159,89 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 		// set chart data
 		try {
 
-			// single profile plot
-			if (!isComparison_) {
+			// get chart data
+			XYDataset[] datasets = get();
 
-				// get mission profile view panel
-				MissionProfileViewPanel panel = (MissionProfileViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PROFILE_VIEW);
+			// user initiated execution
+			if (automaticTasks_ == null) {
 
-				// set data and title
-				XYDataset[] datasets = get();
-				String title = "Mission Profile";
-				String subTitle = sequence_.getName() + ", " + sequence_.getParentItem().getMission();
-				double maxDiff = process_.getMaxPositiveIncrement() - process_.getMinNegativeIncrement();
-				panel.plottingCompleted((IntervalXYDataset) datasets[0], datasets[1], datasets[2], process_.getSegments(), maxDiff, title, subTitle);
+				// single profile plot
+				if (!isComparison_) {
 
-				// show view
-				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PROFILE_VIEW);
+					// get mission profile view panel
+					MissionProfileViewPanel panel = (MissionProfileViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PROFILE_VIEW);
+
+					// set data and title
+					String title = "Mission Profile";
+					String subTitle = sequence_.getName() + ", " + sequence_.getParentItem().getMission();
+					double maxDiff = process_.getMaxPositiveIncrement() - process_.getMinNegativeIncrement();
+					panel.plottingCompleted((IntervalXYDataset) datasets[0], datasets[1], datasets[2], process_.getSegments(), maxDiff, title, subTitle);
+
+					// show view
+					taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PROFILE_VIEW);
+				}
+
+				// comparison
+				else {
+
+					// get mission profile view panel
+					MissionProfileComparisonViewPanel panel = (MissionProfileComparisonViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PROFILE_COMPARISON_VIEW);
+
+					// set data and title
+					String title = sequence_.getName() + ", " + sequence_.getParentItem().getMission();
+					double maxDiff = process_.getMaxPositiveIncrement() - process_.getMinNegativeIncrement();
+					panel.plottingCompleted((IntervalXYDataset) datasets[0], datasets[1], datasets[2], process_.getSegments(), maxDiff, title, sequence_);
+
+					// show view
+					taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PROFILE_COMPARISON_VIEW);
+				}
+
+				// show plot input panel
+				MissionProfilePanel panel = (MissionProfilePanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.MISSION_PROFILE_PANEL);
+				panel.setMode(isComparison_);
+				taskPanel_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.MISSION_PROFILE_PANEL);
 			}
 
-			// comparison
+			// automatic execution
 			else {
 
-				// get mission profile view panel
-				MissionProfileComparisonViewPanel panel = (MissionProfileComparisonViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PROFILE_COMPARISON_VIEW);
+				// single profile plot
+				if (isComparison_) {
 
-				// set data and title
-				XYDataset[] datasets = get();
-				String title = sequence_.getName() + ", " + sequence_.getParentItem().getMission();
-				double maxDiff = process_.getMaxPositiveIncrement() - process_.getMinNegativeIncrement();
-				panel.plottingCompleted((IntervalXYDataset) datasets[0], datasets[1], datasets[2], process_.getSegments(), maxDiff, title, sequence_);
+					// create plot attributes
+					String title = sequence_.getName() + ", " + sequence_.getParentItem().getMission();
+					double maxDiff = process_.getMaxPositiveIncrement() - process_.getMinNegativeIncrement();
+					MissionProfileComparisonPlotAttributes attributes = new MissionProfileComparisonPlotAttributes(maxDiff, title);
 
-				// show view
-				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PROFILE_COMPARISON_VIEW);
+					// manage automatic tasks
+					parameterizedTaskOwnerSucceeded(new Pair<>(datasets, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				}
 			}
-
-			// show plot input panel
-			MissionProfilePanel panel = (MissionProfilePanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.MISSION_PROFILE_PANEL);
-			panel.setMode(isComparison_);
-			taskPanel_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.MISSION_PROFILE_PANEL);
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

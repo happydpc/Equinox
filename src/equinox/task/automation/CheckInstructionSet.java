@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jdom2.Document;
@@ -301,6 +302,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// plot typical flight comparison
+		if (equinoxInput.getChild("plotTypicalFlightComparison") != null) {
+			if (!checkPlotTypicalFlightComparison(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// share file
@@ -338,6 +345,97 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>plotTypicalFlightComparison</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotTypicalFlightComparison</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotTypicalFlightComparison(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotTypicalFlightComparison elements...");
+
+		// loop over plot typical flight comparison elements
+		for (Element plotTypicalFlightComparison : equinoxInput.getChildren("plotTypicalFlightComparison")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotTypicalFlightComparison))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotTypicalFlightComparison, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check series naming
+			if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeTypicalFlightName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check stress components
+			if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
+
+				// get element
+				Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotIncrements", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDp", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDt", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plot1g", true))
+					return false;
+			}
+
+			// check typical flights
+			List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+			if (typicalFlights == null || typicalFlights.size() < 2) {
+				addWarning("Cannot locate element 'typicalFlight' under " + XMLUtilities.getFamilyTree(plotTypicalFlightComparison) + " in instruction set '" + inputFile.toString() + "'. Minimum 2 of this element is obligatory. Check failed.");
+				return false;
+			}
+
+			// loop over typical flights
+			for (Element typicalFlight : typicalFlights) {
+
+				// check typical flight name
+				if (!XMLUtilities.checkStringValue(this, inputFile, typicalFlight, "typicalFlightName", false))
+					return false;
+
+				// check stress sequence id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, typicalFlight, "stressSequenceId", "generateStressSequence"))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**

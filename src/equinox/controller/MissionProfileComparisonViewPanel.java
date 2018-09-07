@@ -78,7 +78,7 @@ import javafx.stage.FileChooser;
 public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 
 	/** Plot factors. */
-	private static final double RANGE_FACTOR = 1.1;
+	public static final double RANGE_FACTOR = 1.1;
 
 	/** The owner panel. */
 	private ViewPanel owner_;
@@ -196,23 +196,19 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 		plot2.addAnnotation(ta2);
 
 		// create swing node content
-		SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(() -> {
 
-			@Override
-			public void run() {
+			// create and set chart panel-1
+			ChartPanel panel1 = new ChartPanel(chart_[0]);
+			panel1.setPopupMenu(null);
+			panel1.setMouseWheelEnabled(true);
+			container1_.setContent(panel1);
 
-				// create and set chart panel-1
-				ChartPanel panel1 = new ChartPanel(chart_[0]);
-				panel1.setPopupMenu(null);
-				panel1.setMouseWheelEnabled(true);
-				container1_.setContent(panel1);
-
-				// create and set chart panel-2
-				ChartPanel panel2 = new ChartPanel(chart_[1]);
-				panel2.setPopupMenu(null);
-				panel2.setMouseWheelEnabled(true);
-				container2_.setContent(panel2);
-			}
+			// create and set chart panel-2
+			ChartPanel panel2 = new ChartPanel(chart_[1]);
+			panel2.setPopupMenu(null);
+			panel2.setMouseWheelEnabled(true);
+			container2_.setContent(panel2);
 		});
 	}
 
@@ -497,13 +493,9 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 	public void updatePeakInfo() {
 
 		// get peak info
-		Platform.runLater(new Runnable() {
-
-			@Override
-			public void run() {
-				updatePeakInfo(crosshairX1_, crosshairY1_, sequence1_);
-				updatePeakInfo(crosshairX2_, crosshairY2_, sequence2_);
-			}
+		Platform.runLater(() -> {
+			updatePeakInfo(crosshairX1_, crosshairY1_, sequence1_);
+			updatePeakInfo(crosshairX2_, crosshairY2_, sequence2_);
 		});
 	}
 
@@ -526,12 +518,12 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 		// get segment name
 		String segment = null;
 		if (sequence.getID() == sequence1_.getID()) {
-			if ((segmentMarkers1_ == null) || segmentMarkers1_.isEmpty() || (segmentMarkers1_.size() <= (int) x))
+			if (segmentMarkers1_ == null || segmentMarkers1_.isEmpty() || segmentMarkers1_.size() <= (int) x)
 				return;
 			segment = segmentMarkers1_.get((int) x).getLabel();
 		}
 		else {
-			if ((segmentMarkers2_ == null) || segmentMarkers2_.isEmpty() || (segmentMarkers2_.size() <= (int) x))
+			if (segmentMarkers2_ == null || segmentMarkers2_.isEmpty() || segmentMarkers2_.size() <= (int) x)
 				return;
 			segment = segmentMarkers2_.get((int) x).getLabel();
 		}
@@ -565,7 +557,7 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 		}
 
 		// compute factor number
-		int factorNum = (int) (0.5 * ((16.0 * (x - segmentNum)) + 1.0));
+		int factorNum = (int) (0.5 * (16.0 * (x - segmentNum) + 1.0));
 
 		// not an incremental point
 		if (factorNum == 0) {
@@ -624,7 +616,7 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 		public void crosshairValueChanged(double x, double y) {
 
 			// crosshair coordinates did not change
-			if ((crosshairX1_ == x) && (crosshairY1_ == y))
+			if (crosshairX1_ == x && crosshairY1_ == y)
 				return;
 
 			// update coordinates
@@ -632,13 +624,7 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 			crosshairY1_ = y;
 
 			// get peak info
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					updatePeakInfo(x, y, sequence1_);
-				}
-			});
+			Platform.runLater(() -> updatePeakInfo(x, y, sequence1_));
 		}
 	}
 
@@ -655,7 +641,7 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 		public void crosshairValueChanged(double x, double y) {
 
 			// crosshair coordinates did not change
-			if ((crosshairX2_ == x) && (crosshairY2_ == y))
+			if (crosshairX2_ == x && crosshairY2_ == y)
 				return;
 
 			// update coordinates
@@ -663,13 +649,7 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 			crosshairY2_ = y;
 
 			// get peak info
-			Platform.runLater(new Runnable() {
-
-				@Override
-				public void run() {
-					updatePeakInfo(x, y, sequence2_);
-				}
-			});
+			Platform.runLater(() -> updatePeakInfo(x, y, sequence2_));
 		}
 	}
 
@@ -699,14 +679,14 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 
 			// range too big, clear markers
 			if (range > MissionProfileViewPanel.SHOWN_SEGMENTS) {
-				if ((c != null) && !c.isEmpty()) {
+				if (c != null && !c.isEmpty()) {
 					plot.clearDomainMarkers();
 				}
 			}
 
 			// add markers (if not already added)
 			else {
-				if ((c == null) || c.isEmpty()) {
+				if (c == null || c.isEmpty()) {
 					for (IntervalMarker marker : segmentMarkers1_) {
 						plot.addDomainMarker(marker, Layer.BACKGROUND);
 					}
@@ -741,14 +721,14 @@ public class MissionProfileComparisonViewPanel implements InternalViewSubPanel {
 
 			// range too big, clear markers
 			if (range > MissionProfileViewPanel.SHOWN_SEGMENTS) {
-				if ((c != null) && !c.isEmpty()) {
+				if (c != null && !c.isEmpty()) {
 					plot.clearDomainMarkers();
 				}
 			}
 
 			// add markers (if not already added)
 			else {
-				if ((c == null) || c.isEmpty()) {
+				if (c == null || c.isEmpty()) {
 					for (IntervalMarker marker : segmentMarkers2_) {
 						plot.addDomainMarker(marker, Layer.BACKGROUND);
 					}
