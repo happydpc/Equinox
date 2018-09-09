@@ -15,8 +15,6 @@
  */
 package equinox.data.input;
 
-import equinox.data.fileType.ExternalFlight;
-
 /**
  * Class for external flight plot input.
  *
@@ -29,21 +27,8 @@ public class ExternalFlightPlotInput {
 	/** Plot component option index. */
 	public static final int INCREMENT_STRESS_COMP = 0, DP_STRESS_COMP = 1, DT_STRESS_COMP = 2, ONE_G_STRESS_COMP = 3;
 
-	/** Flights to plot. */
-	private final ExternalFlight[] flights_;
-
 	/** Plot component options. */
 	private boolean[] namingOptions_ = { false, false, true, false, false, false };
-
-	/**
-	 * Creates plot input.
-	 *
-	 * @param flights
-	 *            Flights to plot.
-	 */
-	public ExternalFlightPlotInput(ExternalFlight[] flights) {
-		flights_ = flights;
-	}
 
 	/**
 	 * Sets series naming options.
@@ -53,15 +38,6 @@ public class ExternalFlightPlotInput {
 	 */
 	public void setNamingOptions(boolean[] options) {
 		namingOptions_ = options;
-	}
-
-	/**
-	 * Returns the flights to plot.
-	 *
-	 * @return The flights to plot.
-	 */
-	public ExternalFlight[] getFlights() {
-		return flights_;
 	}
 
 	/**

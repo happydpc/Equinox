@@ -45,9 +45,9 @@ import equinox.task.GenerateStressRatios;
 import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GetMissionParameterNames;
 import equinox.task.GetMissionParameterNames.MissionParameterNamesRequestingPanel;
+import equinox.task.InternalEquinoxTask;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -94,34 +94,12 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// set listeners
-		plotMissionParameters_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onPlotMissionParametersSelected(newValue);
-			}
-		});
-		showMarkers_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowMarkersSelected(newValue);
-			}
-		});
-		showCrosshairs_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowCrosshairsSelected(newValue);
-			}
-		});
-		dataLabels_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-				panel.setLabelsVisible(newValue);
-			}
+		plotMissionParameters_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onPlotMissionParametersSelected(newValue));
+		showMarkers_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowMarkersSelected(newValue));
+		showCrosshairs_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowCrosshairsSelected(newValue));
+		dataLabels_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			panel.setLabelsVisible(newValue);
 		});
 
 		// expand first panel
@@ -158,14 +136,14 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 		TreeItem<String> first = selected.get(0);
 
 		// equivalent stress
-		if ((first instanceof FatigueEquivalentStress) || (first instanceof PreffasEquivalentStress) || (first instanceof LinearEquivalentStress)) {
+		if (first instanceof FatigueEquivalentStress || first instanceof PreffasEquivalentStress || first instanceof LinearEquivalentStress) {
 			includeSTFName_.setDisable(false);
 			includeSpectrumName_.setDisable(false);
 			includeSequenceName_.setDisable(false);
 		}
 
 		// external equivalent stress
-		else if ((first instanceof ExternalFatigueEquivalentStress) || (first instanceof ExternalPreffasEquivalentStress) || (first instanceof ExternalLinearEquivalentStress)) {
+		else if (first instanceof ExternalFatigueEquivalentStress || first instanceof ExternalPreffasEquivalentStress || first instanceof ExternalLinearEquivalentStress) {
 			includeSTFName_.setDisable(true);
 			includeSpectrumName_.setDisable(true);
 			includeSTFName_.setSelected(false);
@@ -174,7 +152,7 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 		}
 
 		// fast equivalent stress
-		else if ((first instanceof FastFatigueEquivalentStress) || (first instanceof FastPreffasEquivalentStress) || (first instanceof FastLinearEquivalentStress)) {
+		else if (first instanceof FastFatigueEquivalentStress || first instanceof FastPreffasEquivalentStress || first instanceof FastLinearEquivalentStress) {
 			includeSTFName_.setDisable(false);
 			includeSpectrumName_.setDisable(false);
 			includeSequenceName_.setDisable(true);
@@ -273,13 +251,7 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 			hBox.getChildren().add(label);
 
 			// set listener to toggle switch
-			tSwitch.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-				@Override
-				public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-					onShowSeriesSelected(newValue, (int) tSwitch.getUserData());
-				}
-			});
+			tSwitch.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowSeriesSelected(newValue, (int) tSwitch.getUserData()));
 
 			// add to container
 			seriesContainer_.getChildren().add(hBox);
@@ -333,14 +305,14 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 		SpectrumItem selected = (SpectrumItem) owner_.getSelectedFiles().get(0);
 
 		// select specific options
-		if ((selected instanceof FatigueEquivalentStress) || (selected instanceof PreffasEquivalentStress) || (selected instanceof LinearEquivalentStress) || (selected instanceof FastFatigueEquivalentStress) || (selected instanceof FastPreffasEquivalentStress)
-				|| (selected instanceof FastLinearEquivalentStress)) {
+		if (selected instanceof FatigueEquivalentStress || selected instanceof PreffasEquivalentStress || selected instanceof LinearEquivalentStress || selected instanceof FastFatigueEquivalentStress || selected instanceof FastPreffasEquivalentStress
+				|| selected instanceof FastLinearEquivalentStress) {
 			if (!includeSTFName_.isSelected()) {
 				includeSTFName_.setSelected(true);
 			}
 			includeSequenceName_.setSelected(false);
 		}
-		else if ((selected instanceof ExternalFatigueEquivalentStress) || (selected instanceof ExternalPreffasEquivalentStress) || (selected instanceof ExternalLinearEquivalentStress)) {
+		else if (selected instanceof ExternalFatigueEquivalentStress || selected instanceof ExternalPreffasEquivalentStress || selected instanceof ExternalLinearEquivalentStress) {
 			if (!includeSequenceName_.isSelected()) {
 				includeSequenceName_.setSelected(true);
 			}
@@ -371,12 +343,6 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 		input.setIncludeBasisMission(includeBasis_.isSelected());
 		input.setMissionParameterName(missionParameters_.getSelectionModel().getSelectedItem());
 
-		// add selected equivalent stresses
-		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
-		for (TreeItem<String> item : selected) {
-			input.addEquivalentStress((SpectrumItem) item);
-		}
-
 		// set naming parameters
 		input.setIncludeSpectrumName(includeSpectrumName_.isSelected());
 		input.setIncludeSTFName(includeSTFName_.isSelected());
@@ -388,16 +354,36 @@ public class GenerateEquivalentStressRatioPanel implements InternalInputSubPanel
 		input.setIncludeSection(includeSection_.isSelected());
 		input.setIncludeMission(includeMission_.isSelected());
 
+		// with mission parameters
+		InternalEquinoxTask<?> task = null;
+		if (plotMissionParameters_.isSelected()) {
+
+			// create task
+			task = new GenerateStressRatiosWithMissionParameters(input, this);
+
+			// add selected equivalent stresses
+			ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
+			for (TreeItem<String> item : selected) {
+				((GenerateStressRatiosWithMissionParameters) task).addEquivalentStress((SpectrumItem) item);
+			}
+		}
+
+		// without mission parameters
+		else {
+
+			// create task
+			task = new GenerateStressRatios(input);
+
+			// add selected equivalent stresses
+			ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
+			for (TreeItem<String> item : selected) {
+				((GenerateStressRatios) task).addEquivalentStress((SpectrumItem) item);
+			}
+		}
+
 		// get task manager
 		ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
-
-		// with mission parameters
-		if (plotMissionParameters_.isSelected()) {
-			tm.runTaskInParallel(new GenerateStressRatiosWithMissionParameters(input, this));
-		}
-		else {
-			tm.runTaskInParallel(new GenerateStressRatios(input));
-		}
+		tm.runTaskInParallel(task);
 	}
 
 	/**

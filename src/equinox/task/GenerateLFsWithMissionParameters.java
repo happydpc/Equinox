@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.xy.XYSeries;
@@ -28,6 +31,8 @@ import equinox.Equinox;
 import equinox.controller.MissionParameterPlotViewPanel;
 import equinox.controller.MissionParameterPlotViewPanel.PlotCompletionPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.MissionParameterPlotAttributes;
+import equinox.data.Pair;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -42,6 +47,9 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LifeFactorComparisonInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for generate life factors with mission parameters task.
@@ -50,7 +58,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Nov 27, 2014
  * @time 4:14:20 PM
  */
-public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask {
+public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> {
+
+	/** Equivalent stresses to compare. */
+	private final List<SpectrumItem> stresses_;
 
 	/** Input. */
 	private final LifeFactorComparisonInput input_;
@@ -58,17 +69,70 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 	/** Requesting panel. */
 	private final PlotCompletionPanel panel_;
 
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates generate life factors with mission parameters task.
 	 *
 	 * @param input
 	 *            Comparison input.
 	 * @param panel
-	 *            Requesting panel.
+	 *            Requesting panel. Can be null for automatic execution.
 	 */
 	public GenerateLFsWithMissionParameters(LifeFactorComparisonInput input, PlotCompletionPanel panel) {
 		input_ = input;
 		panel_ = panel;
+		stresses_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds given stress to this task.
+	 *
+	 * @param stress
+	 *            Equivalent stress to add.
+	 */
+	public void addEquivalentStress(SpectrumItem stress) {
+		stresses_.add(stress);
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -97,7 +161,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
 			// get type of equivalent stress
-			SpectrumItem item = input_.getEquivalentStresses().get(0);
+			SpectrumItem item = stresses_.get(0);
 
 			// equivalent stress
 			if (item instanceof FatigueEquivalentStress || item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof FastFatigueEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
@@ -121,24 +185,66 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 		// set chart data
 		try {
 
-			// get mission parameters view panel
-			MissionParameterPlotViewPanel panel = (MissionParameterPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
-
-			// set data
-			String factorType = getFactorType(input_.getEquivalentStresses().get(0));
+			// get chart dataset
+			XYSeriesCollection dataset = get();
+			String factorType = getFactorType(stresses_.get(0));
 			String title = factorType + " based on mission '" + input_.getBasisMission() + "'";
 			String xAxisLabel = input_.getMissionParameterName();
 			String yAxisLabel = factorType;
-			panel.plottingCompleted(get(), title, xAxisLabel, yAxisLabel, panel_, false, false, "Mission Parameters View");
 
-			// show mission parameters view panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+			// user initiated task
+			if (automaticTasks_ == null) {
+
+				// get mission parameters view panel
+				MissionParameterPlotViewPanel panel = (MissionParameterPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+
+				// set data
+				panel.plottingCompleted(dataset, title, xAxisLabel, yAxisLabel, panel_, false, false, "Mission Parameters View");
+
+				// show mission parameters view panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				MissionParameterPlotAttributes attributes = new MissionParameterPlotAttributes();
+				attributes.setTitle(title);
+				attributes.setxAxisLabel(xAxisLabel);
+				attributes.setyAxisLabel(yAxisLabel);
+				attributes.setxAxisInverted(false);
+				attributes.setyAxisInverted(false);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -198,13 +304,12 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 		// get inputs
 		String basisMission = input_.getBasisMission();
 		String missionParameterName = input_.getMissionParameterName();
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
 
 		// set table name
-		String tableName = getTableName(equivalentStresses.get(0));
+		String tableName = getTableName(stresses_.get(0));
 
 		// set material column
-		String materialCol = getMaterialColumn(equivalentStresses.get(0));
+		String materialCol = getMaterialColumn(stresses_.get(0));
 
 		// prepare statement to get equivalent stress and material slope for the basis
 		String sql = "select " + materialCol + ", stress from " + tableName + " where id = ?";
@@ -219,7 +324,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 				try (PreparedStatement getMP = connection.prepareStatement(sql)) {
 
 					// loop over equivalent stresses
-					for (SpectrumItem item1 : equivalentStresses) {
+					for (SpectrumItem item1 : stresses_) {
 
 						// get mission
 						String mission = getMission(item1);
@@ -252,7 +357,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 							getLF.setDouble(2, p);
 
 							// loop over equivalent stresses
-							for (SpectrumItem item2 : equivalentStresses) {
+							for (SpectrumItem item2 : stresses_) {
 
 								// get mission
 								mission = getMission(item2);
@@ -311,13 +416,12 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 		// get inputs
 		String basisMission = input_.getBasisMission();
 		String missionParameterName = input_.getMissionParameterName();
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
 
 		// set table name
-		String tableName = getTableName(equivalentStresses.get(0));
+		String tableName = getTableName(stresses_.get(0));
 
 		// set material column
-		String materialCol = getMaterialColumn(equivalentStresses.get(0));
+		String materialCol = getMaterialColumn(stresses_.get(0));
 
 		// prepare statement to get equivalent stress and material slope for the basis
 		String sql = "select " + materialCol + ", stress from " + tableName + " where id = ?";
@@ -336,7 +440,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 					try (PreparedStatement getMPFromCDF = connection.prepareStatement(sql)) {
 
 						// loop over equivalent stresses
-						for (SpectrumItem item1 : equivalentStresses) {
+						for (SpectrumItem item1 : stresses_) {
 
 							// get mission
 							String mission = getMission(item1);
@@ -369,7 +473,7 @@ public class GenerateLFsWithMissionParameters extends InternalEquinoxTask<XYSeri
 								getLF.setDouble(2, p);
 
 								// loop over equivalent stresses
-								for (SpectrumItem item2 : equivalentStresses) {
+								for (SpectrumItem item2 : stresses_) {
 
 									// get mission
 									mission = getMission(item2);

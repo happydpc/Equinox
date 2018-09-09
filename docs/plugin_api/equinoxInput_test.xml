@@ -135,6 +135,11 @@
 	<addStf>
 		<id>19</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test1.stf</stfPath>
 	</addStf>
+	<assignMissionParametersToStf><id>36</id><stfId>19</stfId><!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name>Param1</name><!--Mission parameter value. A real number is expected.-->
+			<value>4.5</value>
+		</missionParameter></assignMissionParametersToStf>
 	<generateStressSequence>
 		<id>22</id>
 		<stfId>19</stfId>
@@ -151,6 +156,11 @@
 	<addStf>
 		<id>21</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test3.stf</stfPath>
 	</addStf>
+	<assignMissionParametersToStf><id>35</id><stfId>21</stfId><!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name>Param1</name><!--Mission parameter value. A real number is expected.-->
+			<value>12.7</value>
+		</missionParameter></assignMissionParametersToStf>
 	<generateStressSequence>
 		<id>24</id>
 		<stfId>21</stfId>
@@ -208,4 +218,115 @@
 		</typicalFlight>
 		<outputPath>/Users/aurora/Temporary/typicalFlightComparison.png</outputPath>
 	</plotTypicalFlightComparison>
+	<plotEquivalentStressComparison>
+		<id>33</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/equivalentStressComparison.png</outputPath>
+	</plotEquivalentStressComparison>
+	<plotEquivalentStressComparison>
+		<id>34</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/equivalentStressComparison_withMissionParams.png</outputPath>
+		<missionParameter>Param1</missionParameter>
+	</plotEquivalentStressComparison>
+	<plotLifeFactors>
+		<id>37</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<outputPath>/Users/aurora/Temporary/lifeFactors.png</outputPath>
+	</plotLifeFactors>
+	<plotLifeFactors>
+		<id>38</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<missionParameter>Param1</missionParameter>
+		<outputPath>/Users/aurora/Temporary/lifeFactors_withMissionParams.png</outputPath>
+	</plotLifeFactors>
+	<plotEquivalentStressRatios>
+		<id>39</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<outputPath>/Users/aurora/Temporary/equivalentStressRatios.png</outputPath>
+	</plotEquivalentStressRatios>
+	<plotEquivalentStressRatios>
+		<id>40</id>
+		<equivalentStressId>30</equivalentStressId>
+		<equivalentStressId>28</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<missionParameter>Param1</missionParameter>
+		<outputPath>/Users/aurora/Temporary/equivalentStressRatios_withMissionParams.png</outputPath>
+	</plotEquivalentStressRatios>
+	<saveEquivalentStresses>
+		<id>41</id>
+		<equivalentStressId>28</equivalentStressId>
+		<equivalentStressId>29</equivalentStressId>
+		<equivalentStressId>30</equivalentStressId>
+		<outputPath>/Users/aurora/Temporary/eqStresses.xls</outputPath>
+		<options>
+			<equivalentStress>true</equivalentStress>
+			<materialName>true</materialName>
+			<materialData>true</materialData>
+			<pilotPointName>true</pilotPointName>
+			<stressSequenceName>true</stressSequenceName>
+			<spectrumName>true</spectrumName>
+			<aircraftProgram>true</aircraftProgram>
+			<aircraftSection>true</aircraftSection>
+			<fatigueMission>true</fatigueMission>
+			<spectrumValidity>true</spectrumValidity>
+			<maximumStress>true</maximumStress>
+			<minimumStress>true</minimumStress>
+			<rRatio>true</rRatio>
+		</options>
+	</saveEquivalentStresses>
+	<saveLifeFactors>
+		<id>42</id>
+		<equivalentStressId>28</equivalentStressId>
+		<equivalentStressId>29</equivalentStressId>
+		<equivalentStressId>30</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<outputPath>/Users/aurora/Temporary/lifeFactors.xls</outputPath>
+		<options>
+			<lifeFactor>true</lifeFactor>
+			<materialName>true</materialName>
+			<materialData>true</materialData>
+			<pilotPointName>true</pilotPointName>
+			<stressSequenceName>true</stressSequenceName>
+			<spectrumName>true</spectrumName>
+			<aircraftProgram>true</aircraftProgram>
+			<aircraftSection>true</aircraftSection>
+			<fatigueMission>true</fatigueMission>
+			<spectrumValidity>true</spectrumValidity>
+			<maximumStress>true</maximumStress>
+			<minimumStress>true</minimumStress>
+			<rRatio>true</rRatio>
+		</options>
+	</saveLifeFactors>
+	<saveEquivalentStressRatios>
+		<id>43</id>
+		<equivalentStressId>28</equivalentStressId>
+		<equivalentStressId>29</equivalentStressId>
+		<equivalentStressId>30</equivalentStressId>
+		<basisMission>61 Parabolas</basisMission>
+		<outputPath>/Users/aurora/Temporary/eqStressRatios.xls</outputPath>
+		<options>
+			<equivalentStressRatio>true</equivalentStressRatio>
+			<materialName>true</materialName>
+			<materialData>true</materialData>
+			<pilotPointName>true</pilotPointName>
+			<stressSequenceName>true</stressSequenceName>
+			<spectrumName>true</spectrumName>
+			<aircraftProgram>true</aircraftProgram>
+			<aircraftSection>true</aircraftSection>
+			<fatigueMission>true</fatigueMission>
+			<spectrumValidity>true</spectrumValidity>
+			<maximumStress>true</maximumStress>
+			<minimumStress>true</minimumStress>
+			<rRatio>true</rRatio>
+		</options>
+	</saveEquivalentStressRatios>
 </equinoxInput>

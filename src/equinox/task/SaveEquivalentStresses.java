@@ -16,10 +16,15 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
@@ -34,6 +39,9 @@ import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.serializableTask.SerializableSaveEquivalentStresses;
 import javafx.beans.property.BooleanProperty;
 import jxl.CellType;
@@ -55,13 +63,13 @@ import jxl.write.WriteException;
  * @date May 6, 2015
  * @time 1:53:12 PM
  */
-public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements LongRunningTask, SavableTask {
+public class SaveEquivalentStresses extends InternalEquinoxTask<Path> implements LongRunningTask, SavableTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** Option index. */
 	public static final int EQUIVALENT_STRESS = 0, MAT_NAME = 1, MAT_DATA = 2, PP_NAME = 3, EID = 4, SEQ_NAME = 5, SPEC_NAME = 6, PROGRAM = 7, SECTION = 8, MISSION = 9, VALIDITY = 10, MAX_STRESS = 11, MIN_STRESS = 12, R_RATIO = 13, OMISSION = 14;
 
 	/** Equivalent stresses. */
-	private final ArrayList<SpectrumItem> stresses_;
+	private final List<SpectrumItem> stresses_;
 
 	/** Options. */
 	private final BooleanProperty[] options_;
@@ -69,20 +77,62 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 	/** Output file. */
 	private final File output_;
 
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates save equivalent stresses task.
 	 *
 	 * @param stresses
-	 *            Equivalent stresses.
+	 *            Equivalent stresses. Can be null for automatic execution.
 	 * @param options
 	 *            Options.
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveEquivalentStresses(ArrayList<SpectrumItem> stresses, BooleanProperty[] options, File output) {
-		stresses_ = stresses;
+	public SaveEquivalentStresses(List<SpectrumItem> stresses, BooleanProperty[] options, File output) {
+		stresses_ = stresses == null ? Collections.synchronizedList(new ArrayList<>()) : stresses;
 		options_ = options;
 		output_ = output;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -101,7 +151,7 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// update progress info
 		updateTitle("Saving equivalent stresses to '" + output_.getName() + "'");
@@ -188,7 +238,48 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -1576,7 +1667,7 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 		if (options_[MAT_DATA].get()) {
 
 			// fatigue
-			if ((item instanceof FatigueEquivalentStress) || (item instanceof ExternalFatigueEquivalentStress) || (item instanceof FastFatigueEquivalentStress)) {
+			if (item instanceof FatigueEquivalentStress || item instanceof ExternalFatigueEquivalentStress || item instanceof FastFatigueEquivalentStress) {
 
 				// p
 				String header = "Material slope (p)";
@@ -1598,8 +1689,7 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 			}
 
 			// propagation
-			else if ((item instanceof PreffasEquivalentStress) || (item instanceof LinearEquivalentStress) || (item instanceof ExternalPreffasEquivalentStress) || (item instanceof ExternalLinearEquivalentStress) || (item instanceof FastPreffasEquivalentStress)
-					|| (item instanceof FastLinearEquivalentStress)) {
+			else if (item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof ExternalPreffasEquivalentStress || item instanceof ExternalLinearEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
 
 				// Ceff
 				String header = "Material constant (Ceff)";
@@ -1702,11 +1792,11 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 	 * @return The name of equivalent stress.
 	 */
 	private static String getStressName(SpectrumItem stress) {
-		if ((stress instanceof FatigueEquivalentStress) || (stress instanceof ExternalFatigueEquivalentStress) || (stress instanceof FastFatigueEquivalentStress))
+		if (stress instanceof FatigueEquivalentStress || stress instanceof ExternalFatigueEquivalentStress || stress instanceof FastFatigueEquivalentStress)
 			return "Fatigue equivalent stress";
-		else if ((stress instanceof PreffasEquivalentStress) || (stress instanceof ExternalPreffasEquivalentStress) || (stress instanceof FastPreffasEquivalentStress))
+		else if (stress instanceof PreffasEquivalentStress || stress instanceof ExternalPreffasEquivalentStress || stress instanceof FastPreffasEquivalentStress)
 			return "Preffas propagation equivalent stress";
-		else if ((stress instanceof LinearEquivalentStress) || (stress instanceof ExternalLinearEquivalentStress) || (stress instanceof FastLinearEquivalentStress))
+		else if (stress instanceof LinearEquivalentStress || stress instanceof ExternalLinearEquivalentStress || stress instanceof FastLinearEquivalentStress)
 			return "Linear propagation equivalent stress";
 		return null;
 	}
@@ -1783,7 +1873,7 @@ public class SaveEquivalentStresses extends InternalEquinoxTask<Void> implements
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct, boolean isScientific) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(isScientific ? NumberFormats.EXPONENTIAL : NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

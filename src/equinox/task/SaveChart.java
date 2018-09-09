@@ -16,11 +16,15 @@
 package equinox.task;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -30,13 +34,19 @@ import equinox.task.automation.SingleInputTask;
  * @date 5 Sep 2018
  * @time 21:53:20
  */
-public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<JFreeChart> {
+public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<JFreeChart>, ParameterizedTaskOwner<Path> {
 
 	/** Chart. */
 	private JFreeChart chart;
 
 	/** Path to output file. */
 	private final Path output;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save chart task.
@@ -54,6 +64,24 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 	@Override
 	public void setAutomaticInput(JFreeChart input) {
 		this.chart = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -81,5 +109,46 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 
 		// return output path
 		return output;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

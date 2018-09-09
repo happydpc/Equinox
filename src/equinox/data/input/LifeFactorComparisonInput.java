@@ -15,10 +15,6 @@
  */
 package equinox.data.input;
 
-import java.util.ArrayList;
-
-import equinox.data.fileType.SpectrumItem;
-
 /**
  * Class for life factor comparison input.
  *
@@ -28,26 +24,12 @@ import equinox.data.fileType.SpectrumItem;
  */
 public class LifeFactorComparisonInput {
 
-	/** Equivalent stresses to compare. */
-	private final ArrayList<SpectrumItem> stresses_ = new ArrayList<>();
-
 	/** Order and data label options. */
-	private boolean showlabels_ = true, includeBasis_ = true, includeSpectrumName_ = false, includeSTFName_ = true, includeEID_ = false,
-			includeSequenceName_ = false, includeMaterialName_ = true, includeOmissionLevel_ = false, includeProgram_ = false,
-			includeSection_ = false, includeMission_ = false;
+	private boolean showlabels_ = true, includeBasis_ = true, includeSpectrumName_ = false, includeSTFName_ = true, includeEID_ = false, includeSequenceName_ = false, includeMaterialName_ = true, includeOmissionLevel_ = false, includeProgram_ = false, includeSection_ = false,
+			includeMission_ = false;
 
 	/** Mission parameter name. */
 	private String basisMission_, missionParameterName_;
-
-	/**
-	 * Adds equivalent stress.
-	 *
-	 * @param stress
-	 *            Equivalent stress to add.
-	 */
-	public void addEquivalentStress(SpectrumItem stress) {
-		stresses_.add(stress);
-	}
 
 	/**
 	 * Sets basis mission.
@@ -177,15 +159,6 @@ public class LifeFactorComparisonInput {
 	 */
 	public void setIncludeBasisMission(boolean includeBasis) {
 		includeBasis_ = includeBasis;
-	}
-
-	/**
-	 * Returns the equivalent stresses to compare.
-	 *
-	 * @return The equivalent stresses to compare.
-	 */
-	public ArrayList<SpectrumItem> getEquivalentStresses() {
-		return stresses_;
 	}
 
 	/**

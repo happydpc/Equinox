@@ -17,6 +17,8 @@ package equinox.task;
 
 import java.awt.Color;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -37,6 +39,8 @@ import equinox.controller.DamageContributionViewPanel;
 import equinox.data.Pair;
 import equinox.data.StatisticsPlotAttributes;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -46,7 +50,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 2 Sep 2018
  * @time 00:46:37
  */
-public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, StatisticsPlotAttributes>>, ParameterizedTaskOwner<Path> {
 
 	/** Category dataset. */
 	private CategoryDataset dataset;
@@ -56,6 +60,12 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 
 	/** Path to output file. */
 	private final Path output;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save category dataset task.
@@ -74,6 +84,24 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 	public void setAutomaticInput(Pair<CategoryDataset, StatisticsPlotAttributes> input) {
 		this.dataset = input.getElement1();
 		this.plotAttributes = input.getElement2();
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -180,5 +208,46 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 
 		// return output path
 		return output;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		try {
+
+			// get output file
+			Path file = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.xy.XYSeries;
@@ -28,6 +31,8 @@ import equinox.Equinox;
 import equinox.controller.MissionParameterPlotViewPanel;
 import equinox.controller.MissionParameterPlotViewPanel.PlotCompletionPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.MissionParameterPlotAttributes;
+import equinox.data.Pair;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -42,6 +47,9 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for compare equivalent stresses with mission parameters.
@@ -50,7 +58,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Jan 9, 2015
  * @time 1:00:10 PM
  */
-public class CompareEquivalentStressesWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask {
+public class CompareEquivalentStressesWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> {
+
+	/** Equivalent stresses to compare. */
+	private final List<SpectrumItem> stresses_;
 
 	/** Input. */
 	private final EquivalentStressComparisonInput input_;
@@ -58,17 +69,70 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 	/** Requesting panel. */
 	private final PlotCompletionPanel panel_;
 
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates compare equivalent stresses with mission parameters task.
 	 *
 	 * @param input
 	 *            Comparison input.
 	 * @param panel
-	 *            Requesting panel.
+	 *            Requesting panel. Can be null for automatic execution.
 	 */
 	public CompareEquivalentStressesWithMissionParameters(EquivalentStressComparisonInput input, PlotCompletionPanel panel) {
 		input_ = input;
 		panel_ = panel;
+		stresses_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds given stress to this task.
+	 *
+	 * @param stress
+	 *            Equivalent stress to add.
+	 */
+	public void addEquivalentStress(SpectrumItem stress) {
+		stresses_.add(stress);
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -97,7 +161,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
 			// get type of equivalent stress
-			SpectrumItem item = input_.getEquivalentStresses().get(0);
+			SpectrumItem item = stresses_.get(0);
 
 			// equivalent stress
 			if (item instanceof FatigueEquivalentStress || item instanceof PreffasEquivalentStress || item instanceof LinearEquivalentStress || item instanceof FastFatigueEquivalentStress || item instanceof FastPreffasEquivalentStress || item instanceof FastLinearEquivalentStress) {
@@ -121,24 +185,66 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		// set chart data
 		try {
 
-			// get mission parameters view panel
-			MissionParameterPlotViewPanel panel = (MissionParameterPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
-
-			// set data
+			// get dataset
+			XYSeriesCollection dataset = get();
 			String xAxisLabel = input_.getMissionParameterName();
-			String stressType = getStressType(input_.getEquivalentStresses().get(0));
+			String stressType = getStressType(stresses_.get(0));
 			String yAxisLabel = stressType;
 			String title = stressType + " Comparison";
-			panel.plottingCompleted(get(), title, xAxisLabel, yAxisLabel, panel_, false, false, "Mission Parameters View");
 
-			// show mission parameters view panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+			// user initiated task
+			if (automaticTasks_ == null) {
+
+				// get mission parameters view panel
+				MissionParameterPlotViewPanel panel = (MissionParameterPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+
+				// set data
+				panel.plottingCompleted(dataset, title, xAxisLabel, yAxisLabel, panel_, false, false, "Mission Parameters View");
+
+				// show mission parameters view panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.MISSION_PARAMETERS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				MissionParameterPlotAttributes attributes = new MissionParameterPlotAttributes();
+				attributes.setTitle(title);
+				attributes.setxAxisInverted(false);
+				attributes.setyAxisInverted(false);
+				attributes.setxAxisLabel(xAxisLabel);
+				attributes.setyAxisLabel(yAxisLabel);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -195,27 +301,24 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		// update progress info
 		updateMessage("Retreiving equivalent stresses...");
 
-		// get stresses
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
-
 		// set table name
 		String tableName = null;
-		if (equivalentStresses.get(0) instanceof FatigueEquivalentStress) {
+		if (stresses_.get(0) instanceof FatigueEquivalentStress) {
 			tableName = "fatigue_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof PreffasEquivalentStress) {
+		else if (stresses_.get(0) instanceof PreffasEquivalentStress) {
 			tableName = "preffas_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof LinearEquivalentStress) {
+		else if (stresses_.get(0) instanceof LinearEquivalentStress) {
 			tableName = "linear_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof FastFatigueEquivalentStress) {
+		else if (stresses_.get(0) instanceof FastFatigueEquivalentStress) {
 			tableName = "fast_fatigue_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof FastPreffasEquivalentStress) {
+		else if (stresses_.get(0) instanceof FastPreffasEquivalentStress) {
 			tableName = "fast_preffas_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof FastLinearEquivalentStress) {
+		else if (stresses_.get(0) instanceof FastLinearEquivalentStress) {
 			tableName = "fast_linear_equivalent_stresses";
 		}
 
@@ -232,7 +335,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 				try (PreparedStatement getMPFromCDF = connection.prepareStatement(sql)) {
 
 					// loop over equivalent stresses
-					for (SpectrumItem item : equivalentStresses) {
+					for (SpectrumItem item : stresses_) {
 
 						// get mission parameter value
 						Double missionParameterValue = getMissionParameterValueForEquivalentStress(item, getMPFromSTF, getMPFromCDF);
@@ -277,18 +380,15 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		// update progress info
 		updateMessage("Retreiving equivalent stresses...");
 
-		// get stresses
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
-
 		// set table name
 		String tableName = null;
-		if (equivalentStresses.get(0) instanceof ExternalFatigueEquivalentStress) {
+		if (stresses_.get(0) instanceof ExternalFatigueEquivalentStress) {
 			tableName = "ext_fatigue_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof ExternalPreffasEquivalentStress) {
+		else if (stresses_.get(0) instanceof ExternalPreffasEquivalentStress) {
 			tableName = "ext_preffas_equivalent_stresses";
 		}
-		else if (equivalentStresses.get(0) instanceof ExternalLinearEquivalentStress) {
+		else if (stresses_.get(0) instanceof ExternalLinearEquivalentStress) {
 			tableName = "ext_linear_equivalent_stresses";
 		}
 
@@ -301,7 +401,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 			try (PreparedStatement getMP = connection.prepareStatement(sql)) {
 
 				// loop over equivalent stresses
-				for (SpectrumItem item : equivalentStresses) {
+				for (SpectrumItem item : stresses_) {
 
 					// get mission parameter value
 					Double missionParameterValue = getMissionParameterValueForExternalEquivalentStress(item, getMP);

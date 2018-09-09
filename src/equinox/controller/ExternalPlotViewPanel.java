@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import javax.swing.SwingUtilities;
@@ -81,6 +82,9 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 	/** Plot input. */
 	private ExternalFlightPlotInput input_;
 
+	/** Typical flights. */
+	private ExternalFlight[] flights_;
+
 	/** Crosshair coordinates. */
 	private double crosshairX_ = 0.0, crosshairY_ = 0.0;
 
@@ -122,15 +126,11 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 		plot.addAnnotation(ta);
 
 		// create swing node content
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				ChartPanel panel = new ChartPanel(chart_);
-				panel.setPopupMenu(null);
-				panel.setMouseWheelEnabled(true);
-				container_.setContent(panel);
-			}
+		SwingUtilities.invokeLater(() -> {
+			ChartPanel panel = new ChartPanel(chart_);
+			panel.setPopupMenu(null);
+			panel.setMouseWheelEnabled(true);
+			container_.setContent(panel);
 		});
 	}
 
@@ -215,7 +215,7 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 	public void crosshairValueChanged(double x, double y) {
 
 		// crosshair coordinates did not change
-		if ((crosshairX_ == x) && (crosshairY_ == y))
+		if (crosshairX_ == x && crosshairY_ == y)
 			return;
 
 		// update coordinates
@@ -231,7 +231,7 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 		for (int i = 0; i < dataset.getSeriesCount(); i++) {
 			XYSeries series = dataset.getSeries(i);
 			for (int j = 0; j < series.getItemCount(); j++) {
-				if ((series.getX(j).doubleValue() == x) && (series.getY(j).doubleValue() == y)) {
+				if (series.getX(j).doubleValue() == x && series.getY(j).doubleValue() == y) {
 					if (plot.getRenderer().isSeriesVisible(i)) {
 						peakInfo_.setBackgroundPaint(plot.getRenderer().getSeriesPaint(i));
 						return;
@@ -259,7 +259,8 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 	public void plot(ExternalFlight[] flights) {
 
 		// create plot input
-		input_ = new ExternalFlightPlotInput(flights);
+		input_ = new ExternalFlightPlotInput();
+		flights_ = flights;
 
 		// plot
 		plot();
@@ -272,7 +273,7 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 	public void plot() {
 
 		// no input
-		if (input_ == null)
+		if (input_ == null || flights_ == null)
 			return;
 
 		// get options panel
@@ -282,7 +283,9 @@ public class ExternalPlotViewPanel implements InternalViewSubPanel, CrosshairLis
 		input_.setNamingOptions(panel.getNamingOptions());
 
 		// plot
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new PlotExternalTypicalFlights(input_));
+		PlotExternalTypicalFlights task = new PlotExternalTypicalFlights(input_);
+		Arrays.asList(flights_).forEach(x -> task.addTypicalFlight(x));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**

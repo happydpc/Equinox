@@ -17,6 +17,7 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.controlsfx.control.ToggleSwitch;
 
@@ -39,7 +40,7 @@ public class SerializableSaveEquivalentStresses implements SerializableTask {
 	private static final long serialVersionUID = 1L;
 
 	/** Equivalent stresses. */
-	private final ArrayList<SerializableSpectrumItem> stresses_;
+	private final List<SerializableSpectrumItem> stresses_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -60,10 +61,11 @@ public class SerializableSaveEquivalentStresses implements SerializableTask {
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveEquivalentStresses(ArrayList<SpectrumItem> stresses, BooleanProperty[] options, File output) {
+	public SerializableSaveEquivalentStresses(List<SpectrumItem> stresses, BooleanProperty[] options, File output) {
 		stresses_ = new ArrayList<>();
-		for (SpectrumItem item : stresses)
+		for (SpectrumItem item : stresses) {
 			stresses_.add(new SerializableSpectrumItem(item));
+		}
 		options_ = new boolean[options.length];
 		optionNames_ = new String[options.length];
 		for (int i = 0; i < options.length; i++) {
@@ -77,7 +79,7 @@ public class SerializableSaveEquivalentStresses implements SerializableTask {
 	public SaveEquivalentStresses getTask(TreeItem<String> fileTreeRoot) {
 
 		// get stresses
-		ArrayList<SpectrumItem> stresses = new ArrayList<>();
+		List<SpectrumItem> stresses = new ArrayList<>();
 		for (SerializableSpectrumItem item : stresses_) {
 
 			// get stress

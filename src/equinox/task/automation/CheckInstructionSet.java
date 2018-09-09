@@ -212,12 +212,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
-		// save headless stress sequence
-		if (equinoxInput.getChild("saveHeadlessStressSequence") != null) {
-			if (!checkSaveHeadlessStressSequence(equinoxInput))
-				return false;
-		}
-
 		// generate stress sequence
 		if (equinoxInput.getChild("generateStressSequence") != null) {
 			if (!checkGenerateStressSequence(equinoxInput))
@@ -227,12 +221,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// save stress sequence
 		if (equinoxInput.getChild("saveStressSequence") != null) {
 			if (!checkSaveStressSequence(equinoxInput))
-				return false;
-		}
-
-		// share stress sequence
-		if (equinoxInput.getChild("shareStressSequence") != null) {
-			if (!checkShareStressSequence(equinoxInput))
 				return false;
 		}
 
@@ -308,6 +296,42 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// plot equivalent stress comparison
+		if (equinoxInput.getChild("plotEquivalentStressComparison") != null) {
+			if (!checkPlotEquivalentStressComparison(equinoxInput))
+				return false;
+		}
+
+		// plot life factors
+		if (equinoxInput.getChild("plotLifeFactors") != null) {
+			if (!checkPlotLifeFactors(equinoxInput))
+				return false;
+		}
+
+		// plot equivalent stress ratios
+		if (equinoxInput.getChild("plotEquivalentStressRatios") != null) {
+			if (!checkPlotEquivalentStressRatios(equinoxInput))
+				return false;
+		}
+
+		// save equivalent stresses
+		if (equinoxInput.getChild("saveEquivalentStresses") != null) {
+			if (!checkSaveEquivalentStresses(equinoxInput))
+				return false;
+		}
+
+		// save life factors
+		if (equinoxInput.getChild("saveLifeFactors") != null) {
+			if (!checkSaveLifeFactors(equinoxInput))
+				return false;
+		}
+
+		// save equivalent stress ratios
+		if (equinoxInput.getChild("saveEquivalentStressRatios") != null) {
+			if (!checkSaveEquivalentStressRatios(equinoxInput))
+				return false;
+		}
+
 		// TODO check next instructions
 
 		// share file
@@ -345,6 +369,466 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>saveEquivalentStressRatios</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveEquivalentStressRatios</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveEquivalentStressRatios(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveEquivalentStressRatios elements...");
+
+		// loop over save equivalent stress ratios elements
+		for (Element saveEquivalentStressRatios : equinoxInput.getChildren("saveEquivalentStressRatios")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveEquivalentStressRatios))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveEquivalentStressRatios, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveEquivalentStressRatios.getChild("options") != null) {
+
+				// get element
+				Element options = saveEquivalentStressRatios.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "equivalentStressRatio", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialData", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "stressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumValidity", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "maximumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "minimumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "rRatio", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+
+			// check basis mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, saveEquivalentStressRatios, "basisMission", false))
+				return false;
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveLifeFactors</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveLifeFactors</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveLifeFactors(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveLifeFactors elements...");
+
+		// loop over save life factors elements
+		for (Element saveLifeFactors : equinoxInput.getChildren("saveLifeFactors")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveLifeFactors))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveLifeFactors, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveLifeFactors.getChild("options") != null) {
+
+				// get element
+				Element options = saveLifeFactors.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "lifeFactor", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialData", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "stressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumValidity", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "maximumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "minimumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "rRatio", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+
+			// check basis mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, saveLifeFactors, "basisMission", false))
+				return false;
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveEquivalentStresses</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveEquivalentStresses</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveEquivalentStresses(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveEquivalentStresses elements...");
+
+		// loop over save equivalent stresses elements
+		for (Element saveEquivalentStresses : equinoxInput.getChildren("saveEquivalentStresses")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveEquivalentStresses))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveEquivalentStresses, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveEquivalentStresses.getChild("options") != null) {
+
+				// get element
+				Element options = saveEquivalentStresses.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "equivalentStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialData", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "stressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumValidity", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "maximumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "minimumStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "rRatio", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "equivalentStressId", "equivalentStressAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotEquivalentStressRatios</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotEquivalentStressRatios</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotEquivalentStressRatios(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotEquivalentStressRatios elements...");
+
+		// loop over plot equivalent stress ratios elements
+		for (Element plotEquivalentStressRatios : equinoxInput.getChildren("plotEquivalentStressRatios")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotEquivalentStressRatios))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotEquivalentStressRatios, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check series naming
+			if (plotEquivalentStressRatios.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotEquivalentStressRatios.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check basis mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotEquivalentStressRatios, "basisMission", false))
+				return false;
+
+			// check options
+			if (plotEquivalentStressRatios.getChild("options") != null) {
+
+				// get element
+				Element options = plotEquivalentStressRatios.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "includeBasisMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+					return false;
+			}
+
+			// check mission parameter
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotEquivalentStressRatios, "missionParameter", true))
+				return false;
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 2))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotLifeFactors</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotLifeFactors</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotLifeFactors(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotLifeFactors elements...");
+
+		// loop over plot life factors elements
+		for (Element plotLifeFactors : equinoxInput.getChildren("plotLifeFactors")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLifeFactors))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLifeFactors, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check series naming
+			if (plotLifeFactors.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotLifeFactors.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check basis mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotLifeFactors, "basisMission", false))
+				return false;
+
+			// check options
+			if (plotLifeFactors.getChild("options") != null) {
+
+				// get element
+				Element options = plotLifeFactors.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "includeBasisMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+					return false;
+			}
+
+			// check mission parameter
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotLifeFactors, "missionParameter", true))
+				return false;
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 2))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotEquivalentStressComparison</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotEquivalentStressComparison</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotEquivalentStressComparison(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotEquivalentStressComparison elements...");
+
+		// loop over plot equivalent stress comparison elements
+		for (Element plotEquivalentStressComparison : equinoxInput.getChildren("plotEquivalentStressComparison")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotEquivalentStressComparison))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotEquivalentStressComparison, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check series naming
+			if (plotEquivalentStressComparison.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotEquivalentStressComparison.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check label display
+			if (!XMLUtilities.checkBooleanValue(this, inputFile, plotEquivalentStressComparison, "showDataLabels", true))
+				return false;
+
+			// check mission parameter
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotEquivalentStressComparison, "missionParameter", true))
+				return false;
+
+			// check equivalent stress ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
+				return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
@@ -829,8 +1313,14 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check stress sequence id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "stressSequenceId", "generateStressSequence"))
-				return false;
+			if (plotTypicalFlight.getChild("stressSequenceId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "stressSequenceId", "generateStressSequence"))
+					return false;
+			}
+			else if (plotTypicalFlight.getChild("headlessStressSequenceId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "headlessStressSequenceId", "addHeadlessStressSequence"))
+					return false;
+			}
 
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotTypicalFlight, "outputPath", false, overwriteFiles, FileType.PNG))
@@ -914,40 +1404,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
-	 * Returns true if all <code>shareStressSequence</code> elements pass checks.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @return True if all <code>shareStressSequence</code> elements pass checks.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkShareStressSequence(Element equinoxInput) throws Exception {
-
-		// read input file
-		updateMessage("Checking shareStressSequence elements...");
-
-		// loop over share stress sequence elements
-		for (Element shareStressSequence : equinoxInput.getChildren("shareStressSequence")) {
-
-			// no id
-			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, shareStressSequence))
-				return false;
-
-			// check stress sequence id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, shareStressSequence, "stressSequenceId", "generateStressSequence"))
-				return false;
-
-			// check recipient
-			if (!XMLUtilities.checkRecipient(this, inputFile, shareStressSequence, "recipient", false))
-				return false;
-		}
-
-		// check passed
-		return true;
-	}
-
-	/**
 	 * Returns true if all <code>saveStressSequence</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -969,8 +1425,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check stress sequence id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveStressSequence, "stressSequenceId", "generateStressSequence"))
-				return false;
+			if (saveStressSequence.getChild("stressSequenceId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveStressSequence, "stressSequenceId", "generateStressSequence"))
+					return false;
+			}
+
+			// check headless stress sequence id
+			else if (saveStressSequence.getChild("headlessStressSequenceId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveStressSequence, "headlessStressSequenceId", "addHeadlessStressSequence"))
+					return false;
+			}
 
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveStressSequence, "outputPath", false, overwriteFiles, FileType.SIGMA, FileType.STH))
@@ -1027,40 +1491,6 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 			// add to checked inputs
 			checkedInputs.add(xmlPath);
-		}
-
-		// check passed
-		return true;
-	}
-
-	/**
-	 * Returns true if all <code>saveHeadlessStressSequence</code> elements pass checks.
-	 *
-	 * @param equinoxInput
-	 *            Root input element.
-	 * @return True if all <code>saveHeadlessStressSequence</code> elements pass checks.
-	 * @throws Exception
-	 *             If exception occurs during process.
-	 */
-	private boolean checkSaveHeadlessStressSequence(Element equinoxInput) throws Exception {
-
-		// read input file
-		updateMessage("Checking saveHeadlessStressSequence elements...");
-
-		// loop over save headless stress sequence elements
-		for (Element saveHeadlessStressSequence : equinoxInput.getChildren("saveHeadlessStressSequence")) {
-
-			// no id
-			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveHeadlessStressSequence))
-				return false;
-
-			// check stress sequence id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveHeadlessStressSequence, "headlessStressSequenceId", "addHeadlessStressSequence"))
-				return false;
-
-			// check output path
-			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveHeadlessStressSequence, "outputPath", false, overwriteFiles, FileType.SIGMA, FileType.STH))
-				return false;
 		}
 
 		// check passed

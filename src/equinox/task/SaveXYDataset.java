@@ -22,14 +22,11 @@ import java.util.concurrent.ExecutionException;
 
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.LogarithmicAxis;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
 
-import equinox.data.Pair;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.ParameterizedTask;
 import equinox.task.automation.ParameterizedTaskOwner;
@@ -37,19 +34,16 @@ import equinox.task.automation.SingleInputTask;
 import equinox.utility.CrosshairListenerXYPlot;
 
 /**
- * Class for save XY series collection task.
+ * Class for save XY dataset task.
  *
  * @author Murat Artim
- * @date 4 Sep 2018
- * @time 09:35:12
+ * @date 9 Sep 2018
+ * @time 23:04:32
  */
-public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<XYSeriesCollection, String>>, ParameterizedTaskOwner<Path> {
+public class SaveXYDataset extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<XYDataset>, ParameterizedTaskOwner<Path> {
 
 	/** Dataset. */
-	private XYSeriesCollection dataset;
-
-	/** X-axis label. */
-	private String xAxisLabel;
+	private XYDataset dataset;
 
 	/** Path to output file. */
 	private final Path output;
@@ -61,22 +55,21 @@ public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements
 	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
-	 * Creates save XY series collection task.
+	 * Creates save XY dataset task.
 	 *
 	 * @param dataset
-	 *            XY series collection. Can be null for automatic execution.
+	 *            XY dataset. Can be null for automatic execution.
 	 * @param output
 	 *            Path to output file.
 	 */
-	public SaveXYSeriesCollection(XYSeriesCollection dataset, Path output) {
+	public SaveXYDataset(XYDataset dataset, Path output) {
 		this.dataset = dataset;
 		this.output = output;
 	}
 
 	@Override
-	public void setAutomaticInput(Pair<XYSeriesCollection, String> input) {
-		this.dataset = input.getElement1();
-		this.xAxisLabel = input.getElement2();
+	public void setAutomaticInput(XYDataset input) {
+		this.dataset = input;
 	}
 
 	@Override
@@ -104,40 +97,31 @@ public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements
 
 	@Override
 	public String getTaskTitle() {
-		return "Save XY series collection";
+		return "Save XY dataset";
 	}
 
 	@Override
 	protected Path call() throws Exception {
 
 		// update info
-		updateMessage("Saving XY series collection plot...");
+		updateMessage("Saving XY dataset...");
 
-		// create empty chart
-		JFreeChart chart = CrosshairListenerXYPlot.createXYLineChart("Level Crossings", null, null, null, PlotOrientation.VERTICAL, true, false, false, null);
+		// create XY line chart
+		JFreeChart chart = CrosshairListenerXYPlot.createXYLineChart("Stress Time History", "Time", "Stress", null, PlotOrientation.VERTICAL, true, false, false, null);
 		chart.setBackgroundPaint(new Color(245, 245, 245));
 		chart.setAntiAlias(true);
 		chart.setTextAntiAlias(true);
 
 		// setup plot
 		XYPlot plot = chart.getXYPlot();
-		LogarithmicAxis xAxis = new LogarithmicAxis("Number of Cycles");
-		xAxis.setAllowNegativesFlag(true);
-		plot.setDomainAxis(xAxis);
-		plot.setRangeAxis(new NumberAxis("Stress"));
 		plot.setOutlinePaint(Color.lightGray);
 		plot.setBackgroundPaint(null);
 		plot.setDomainGridlinePaint(Color.lightGray);
 		plot.setRangeGridlinePaint(Color.lightGray);
-		plot.setDomainCrosshairVisible(true);
-		plot.setRangeCrosshairVisible(true);
 		plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
-		plot.setDomainPannable(true);
-		plot.setRangePannable(true);
 
-		// set chart data
+		// set dataset
 		plot.setDataset(dataset);
-		plot.getDomainAxis().setLabel(xAxisLabel);
 
 		// setup chart dimensions
 		int width = 658;

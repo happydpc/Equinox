@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -27,6 +30,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -41,6 +46,9 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for generate stress ratios task.
@@ -49,10 +57,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 7, 2016
  * @time 9:57:13 AM
  */
-public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+
+	/** Equivalent stresses to compare. */
+	private final List<SpectrumItem> stresses_;
 
 	/** Input. */
 	private final EquivalentStressRatioComparisonInput input_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates generate stress ratios task.
@@ -62,6 +82,50 @@ public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> i
 	 */
 	public GenerateStressRatios(EquivalentStressRatioComparisonInput input) {
 		input_ = input;
+		stresses_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds given stress to this task.
+	 *
+	 * @param stress
+	 *            Equivalent stress to add.
+	 */
+	public void addEquivalentStress(SpectrumItem stress) {
+		stresses_.add(stress);
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -106,24 +170,65 @@ public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> i
 
 			// get dataset
 			CategoryDataset dataset = get();
-
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-
-			// set chart data to panel
 			String xAxisLabel = "Pilot Point";
-			String yAxisLabel = getRatioType(input_.getEquivalentStresses().get(0));
+			String yAxisLabel = getRatioType(stresses_.get(0));
 			String subTitle = "Based on mission '" + input_.getBasisMission() + "'";
-			panel.setPlotData(dataset, yAxisLabel, subTitle, xAxisLabel, yAxisLabel, true, input_.getLabelDisplay(), false);
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			// user initiated task
+			if (automaticTasks_ == null) {
+
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+
+				// set chart data to panel
+				panel.setPlotData(dataset, yAxisLabel, subTitle, xAxisLabel, yAxisLabel, true, input_.getLabelDisplay(), false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(input_.getLabelDisplay());
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(true);
+				plotAttributes.setSubTitle(subTitle);
+				plotAttributes.setTitle(yAxisLabel);
+				plotAttributes.setXAxisLabel(xAxisLabel);
+				plotAttributes.setYAxisLabel(yAxisLabel);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -143,10 +248,9 @@ public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> i
 
 		// get inputs
 		String basisMission = input_.getBasisMission();
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
 
 		// set table name
-		String tableName = getTableName(equivalentStresses.get(0));
+		String tableName = getTableName(stresses_.get(0));
 
 		// prepare statement to get equivalent stress for the basis
 		String sql = "select stress from " + tableName + " where id = ?";
@@ -157,7 +261,7 @@ public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> i
 			try (PreparedStatement getRatio = connection.prepareStatement(sql)) {
 
 				// loop over equivalent stresses
-				for (SpectrumItem stress1 : equivalentStresses) {
+				for (SpectrumItem stress1 : stresses_) {
 
 					// get mission
 					String mission = getMission(stress1);
@@ -179,7 +283,7 @@ public class GenerateStressRatios extends InternalEquinoxTask<CategoryDataset> i
 						getRatio.setDouble(1, basisStress);
 
 						// loop over equivalent stresses
-						for (SpectrumItem stress2 : equivalentStresses) {
+						for (SpectrumItem stress2 : stresses_) {
 
 							// get mission
 							mission = getMission(stress2);

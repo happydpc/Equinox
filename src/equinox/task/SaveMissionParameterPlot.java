@@ -20,39 +20,39 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
+import equinox.data.MissionParameterPlotAttributes;
 import equinox.data.Pair;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.ParameterizedTask;
 import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
-import equinox.utility.CrosshairListenerXYPlot;
 
 /**
- * Class for save XY series collection task.
+ * Class for save mission parameter plot task.
  *
  * @author Murat Artim
- * @date 4 Sep 2018
- * @time 09:35:12
+ * @date 8 Sep 2018
+ * @time 19:06:17
  */
-public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<XYSeriesCollection, String>>, ParameterizedTaskOwner<Path> {
-
-	/** Dataset. */
-	private XYSeriesCollection dataset;
-
-	/** X-axis label. */
-	private String xAxisLabel;
+public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>, ParameterizedTaskOwner<Path> {
 
 	/** Path to output file. */
 	private final Path output;
+
+	/** Chart dataset. */
+	private XYSeriesCollection dataset;
+
+	/** Plot attributes. */
+	private MissionParameterPlotAttributes attributes;
 
 	/** Automatic tasks. */
 	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
@@ -61,22 +61,25 @@ public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements
 	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
-	 * Creates save XY series collection task.
+	 * Creates save mission parameter plot task.
 	 *
 	 * @param dataset
-	 *            XY series collection. Can be null for automatic execution.
+	 *            Chart dataset. Can be null for automatic execution.
+	 * @param attributes
+	 *            Plot attributes. Can be null for automatic execution.
 	 * @param output
 	 *            Path to output file.
 	 */
-	public SaveXYSeriesCollection(XYSeriesCollection dataset, Path output) {
-		this.dataset = dataset;
+	public SaveMissionParameterPlot(XYSeriesCollection dataset, MissionParameterPlotAttributes attributes, Path output) {
 		this.output = output;
+		this.dataset = dataset;
+		this.attributes = attributes;
 	}
 
 	@Override
-	public void setAutomaticInput(Pair<XYSeriesCollection, String> input) {
+	public void setAutomaticInput(Pair<XYSeriesCollection, MissionParameterPlotAttributes> input) {
 		this.dataset = input.getElement1();
-		this.xAxisLabel = input.getElement2();
+		this.attributes = input.getElement2();
 	}
 
 	@Override
@@ -104,40 +107,46 @@ public class SaveXYSeriesCollection extends InternalEquinoxTask<Path> implements
 
 	@Override
 	public String getTaskTitle() {
-		return "Save XY series collection";
+		return "Save mission parameter plot";
 	}
 
 	@Override
 	protected Path call() throws Exception {
 
 		// update info
-		updateMessage("Saving XY series collection plot...");
+		updateMessage("Saving mission parameter plot...");
 
 		// create empty chart
-		JFreeChart chart = CrosshairListenerXYPlot.createXYLineChart("Level Crossings", null, null, null, PlotOrientation.VERTICAL, true, false, false, null);
+		JFreeChart chart = ChartFactory.createXYLineChart("Mission Parameters Plot", "Mission Parameter", "", null);
 		chart.setBackgroundPaint(new Color(245, 245, 245));
 		chart.setAntiAlias(true);
 		chart.setTextAntiAlias(true);
 
 		// setup plot
 		XYPlot plot = chart.getXYPlot();
-		LogarithmicAxis xAxis = new LogarithmicAxis("Number of Cycles");
-		xAxis.setAllowNegativesFlag(true);
-		plot.setDomainAxis(xAxis);
-		plot.setRangeAxis(new NumberAxis("Stress"));
 		plot.setOutlinePaint(Color.lightGray);
 		plot.setBackgroundPaint(null);
 		plot.setDomainGridlinePaint(Color.lightGray);
 		plot.setRangeGridlinePaint(Color.lightGray);
-		plot.setDomainCrosshairVisible(true);
-		plot.setRangeCrosshairVisible(true);
 		plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
+		NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
+		xAxis.setAutoRangeIncludesZero(false);
+		NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
+		yAxis.setAutoRangeIncludesZero(false);
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+		renderer.setBaseShapesVisible(true);
 		plot.setDomainPannable(true);
 		plot.setRangePannable(true);
 
 		// set chart data
 		plot.setDataset(dataset);
-		plot.getDomainAxis().setLabel(xAxisLabel);
+		chart.setTitle(attributes.getTitle());
+		plot.getDomainAxis().setLabel(attributes.getxAxisLabel());
+		plot.getRangeAxis().setLabel(attributes.getyAxisLabel());
+
+		// inverted axis
+		plot.getDomainAxis().setInverted(attributes.isxAxisInverted());
+		plot.getRangeAxis().setInverted(attributes.isyAxisInverted());
 
 		// setup chart dimensions
 		int width = 658;

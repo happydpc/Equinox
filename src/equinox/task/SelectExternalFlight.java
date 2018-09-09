@@ -18,6 +18,7 @@ package equinox.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
@@ -26,6 +27,9 @@ import equinox.controller.InputPanel;
 import equinox.data.fileType.ExternalFlight;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for select external flight task.
@@ -34,22 +38,28 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Mar 13, 2015
  * @time 3:44:47 PM
  */
-public class SelectExternalFlight extends InternalEquinoxTask<ExternalFlight> implements ShortRunningTask {
+public class SelectExternalFlight extends InternalEquinoxTask<ExternalFlight> implements ShortRunningTask, SingleInputTask<ExternalStressSequence>, ParameterizedTaskOwner<ExternalFlight> {
 
 	/** Selection criteria. */
 	public static final int LONGEST_FLIGHT = 0, SHORTEST_FLIGHT = 1, MAX_VALIDITY = 2, MIN_VALIDITY = 3, MAX_PEAK = 4, MIN_PEAK = 5;
 
-	/** Input STH file. */
-	private final ExternalStressSequence file_;
+	/** External stress sequence. */
+	private ExternalStressSequence file_;
 
 	/** Selection criteria. */
 	private final int criteria_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<ExternalFlight>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates select external flight task.
 	 *
 	 * @param file
-	 *            STH file.
+	 *            External stress sequence. Can be null for automatic execution.
 	 * @param criteria
 	 *            Selection criteria.
 	 */
@@ -59,8 +69,31 @@ public class SelectExternalFlight extends InternalEquinoxTask<ExternalFlight> im
 	}
 
 	@Override
+	public void setAutomaticInput(ExternalStressSequence input) {
+		file_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<ExternalFlight> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<ExternalFlight>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
 	public String getTaskTitle() {
-		return "Search external flight within '" + file_.getName() + "'";
+		return "Search external flight";
 	}
 
 	@Override
@@ -120,14 +153,46 @@ public class SelectExternalFlight extends InternalEquinoxTask<ExternalFlight> im
 
 		// select file
 		try {
-			FileViewPanel panel = (FileViewPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.FILE_VIEW_PANEL);
-			panel.selectFile(get(), panel.getFileTreeRoot());
+
+			// get flight
+			ExternalFlight flight = get();
+
+			// user initiated task
+			if (automaticTasks_ == null) {
+				FileViewPanel panel = (FileViewPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.FILE_VIEW_PANEL);
+				panel.selectFile(flight, panel.getFileTreeRoot());
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(flight, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

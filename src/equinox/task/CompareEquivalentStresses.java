@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -27,6 +30,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -41,6 +46,9 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for compare equivalent stresses task.
@@ -49,10 +57,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 6, 2016
  * @time 3:10:01 PM
  */
-public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+
+	/** Equivalent stresses to compare. */
+	private final List<SpectrumItem> stresses_;
 
 	/** Input. */
 	private final EquivalentStressComparisonInput input_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates compare equivalent stresses task.
@@ -62,6 +82,17 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 	 */
 	public CompareEquivalentStresses(EquivalentStressComparisonInput input) {
 		input_ = input;
+		stresses_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds given stress to this task.
+	 * 
+	 * @param stress
+	 *            Equivalent stress to add.
+	 */
+	public void addEquivalentStress(SpectrumItem stress) {
+		stresses_.add(stress);
 	}
 
 	@Override
@@ -72,6 +103,39 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 	@Override
 	public boolean canBeCancelled() {
 		return false;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -106,25 +170,67 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 
 			// get dataset
 			CategoryDataset dataset = get();
-
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-
-			// set chart data to panel
 			String xAxisLabel = "Pilot point";
-			String stressType = getStressType(input_.getEquivalentStresses().get(0));
+			String stressType = getStressType(stresses_.get(0));
 			String title = stressType + " Comparison";
 			boolean legendVisible = dataset.getRowCount() > 1;
-			panel.setPlotData(dataset, title, null, xAxisLabel, stressType, legendVisible, input_.getLabelDisplay(), false);
+			boolean displayLabels = input_.getLabelDisplay();
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			// user initiated task
+			if (automaticTasks_ == null) {
+
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+
+				// set chart data to panel
+				panel.setPlotData(dataset, title, null, xAxisLabel, stressType, legendVisible, displayLabels, false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(displayLabels);
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(legendVisible);
+				plotAttributes.setSubTitle(null);
+				plotAttributes.setTitle(title);
+				plotAttributes.setXAxisLabel(xAxisLabel);
+				plotAttributes.setYAxisLabel(stressType);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -142,18 +248,15 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 		// update progress info
 		updateMessage("Retreiving equivalent stresses...");
 
-		// get inputs
-		ArrayList<SpectrumItem> equivalentStresses = input_.getEquivalentStresses();
-
 		// set table name
-		String tableName = getTableName(equivalentStresses.get(0));
+		String tableName = getTableName(stresses_.get(0));
 
 		// prepare statement to get equivalent stress
 		String sql = "select stress from " + tableName + " where id = ?";
 		try (PreparedStatement getStress = connection.prepareStatement(sql)) {
 
 			// loop over equivalent stresses
-			for (SpectrumItem item : equivalentStresses) {
+			for (SpectrumItem item : stresses_) {
 
 				// get mission
 				String mission = getMission(item);

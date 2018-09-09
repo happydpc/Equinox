@@ -18,6 +18,10 @@ package equinox.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.xy.XYDataset;
@@ -34,6 +38,9 @@ import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.input.ExternalFlightPlotInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for plot external typical flights task.
@@ -42,10 +49,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Mar 15, 2015
  * @time 5:10:42 PM
  */
-public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> implements ShortRunningTask {
+public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> implements ShortRunningTask, MultipleInputTask<ExternalFlight>, ParameterizedTaskOwner<XYDataset> {
+
+	/** Automatic inputs. */
+	private final List<ExternalFlight> flights_;
 
 	/** Plot input. */
 	private final ExternalFlightPlotInput input_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<XYDataset>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates plot STH flights task.
@@ -55,6 +74,50 @@ public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> i
 	 */
 	public PlotExternalTypicalFlights(ExternalFlightPlotInput input) {
 		input_ = input;
+		flights_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds typical flight.
+	 *
+	 * @param flight
+	 *            Typical flight to add.
+	 */
+	public void addTypicalFlight(ExternalFlight flight) {
+		flights_.add(flight);
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<ExternalFlight> task, ExternalFlight input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, flights_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<ExternalFlight> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, flights_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<XYDataset> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<XYDataset>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -99,21 +162,53 @@ public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> i
 		// set chart data
 		try {
 
-			// get spectrum view panel
-			ExternalPlotViewPanel panel = (ExternalPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.EXTERNAL_PLOT_VIEW);
+			// get chart data
+			XYDataset dataset = get();
 
-			// set data
-			panel.plottingCompleted(get());
+			// user initiated task
+			if (automaticTasks_ == null) {
 
-			// show spectrum plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.EXTERNAL_PLOT_VIEW);
-			taskPanel_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.PLOT_EXTERNAL_FLIGHTS_PANEL);
+				// get spectrum view panel
+				ExternalPlotViewPanel panel = (ExternalPlotViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.EXTERNAL_PLOT_VIEW);
+
+				// set data
+				panel.plottingCompleted(dataset);
+
+				// show spectrum plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.EXTERNAL_PLOT_VIEW);
+				taskPanel_.getOwner().getOwner().getInputPanel().showSubPanel(InputPanel.PLOT_EXTERNAL_FLIGHTS_PANEL);
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(dataset, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -135,7 +230,7 @@ public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> i
 		try (Statement statement = connection.createStatement()) {
 
 			// loop over flights
-			for (ExternalFlight flight : input_.getFlights()) {
+			for (ExternalFlight flight : flights_) {
 
 				// update info
 				updateMessage("Getting peaks for flight '" + flight.getName() + "' from database...");
