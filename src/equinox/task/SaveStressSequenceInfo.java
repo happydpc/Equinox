@@ -17,10 +17,15 @@ package equinox.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for save stress sequence info task.
@@ -29,28 +34,57 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Jun 17, 2016
  * @time 11:29:50 PM
  */
-public class SaveStressSequenceInfo extends InternalEquinoxTask<Void> implements ShortRunningTask {
+public class SaveStressSequenceInfo extends InternalEquinoxTask<ExternalStressSequence> implements ShortRunningTask, SingleInputTask<ExternalStressSequence>, ParameterizedTaskOwner<ExternalStressSequence> {
 
 	/** Info index. */
 	public static final int PROGRAM = 0, SECTION = 1, MISSION = 2;
 
 	/** Spectrum. */
-	private final ExternalStressSequence sequence_;
+	private ExternalStressSequence sequence_;
 
 	/** Info array. */
 	private final String[] info_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<ExternalStressSequence>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save stress sequence info task.
 	 *
 	 * @param sequence
-	 *            Stress sequence.
+	 *            Stress sequence. Can be null for automatic execution.
 	 * @param info
 	 *            Info array.
 	 */
 	public SaveStressSequenceInfo(ExternalStressSequence sequence, String[] info) {
 		sequence_ = sequence;
 		info_ = info;
+	}
+
+	@Override
+	public void setAutomaticInput(ExternalStressSequence input) {
+		sequence_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<ExternalStressSequence> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<ExternalStressSequence>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -64,7 +98,7 @@ public class SaveStressSequenceInfo extends InternalEquinoxTask<Void> implements
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected ExternalStressSequence call() throws Exception {
 
 		// update progress info
 		updateMessage("Saving stress sequence info to database");
@@ -85,7 +119,7 @@ public class SaveStressSequenceInfo extends InternalEquinoxTask<Void> implements
 				connection.setAutoCommit(true);
 
 				// return
-				return null;
+				return sequence_;
 			}
 
 			// exception occurred during process
@@ -109,10 +143,46 @@ public class SaveStressSequenceInfo extends InternalEquinoxTask<Void> implements
 		// call ancestor
 		super.succeeded();
 
-		// update sequence info
-		sequence_.setProgram(info_[PROGRAM]);
-		sequence_.setSection(info_[SECTION]);
-		sequence_.setMission(info_[MISSION]);
+		try {
+
+			// get spectrum
+			ExternalStressSequence sequence = get();
+
+			// update sequence info
+			sequence.setProgram(info_[PROGRAM]);
+			sequence.setSection(info_[SECTION]);
+			sequence.setMission(info_[MISSION]);
+
+			// manage automatic tasks
+			if (automaticTasks_ != null) {
+				parameterizedTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -129,19 +199,19 @@ public class SaveStressSequenceInfo extends InternalEquinoxTask<Void> implements
 		String sql = "update ext_sth_files set ac_program = ?, ac_section = ?, fat_mission = ? ";
 		sql += "where file_id = " + sequence_.getID();
 		try (PreparedStatement update = connection.prepareStatement(sql)) {
-			if ((info_[PROGRAM] == null) || info_[PROGRAM].trim().isEmpty()) {
+			if (info_[PROGRAM] == null || info_[PROGRAM].trim().isEmpty()) {
 				update.setNull(1, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(1, info_[PROGRAM].trim());
 			}
-			if ((info_[SECTION] == null) || info_[SECTION].trim().isEmpty()) {
+			if (info_[SECTION] == null || info_[SECTION].trim().isEmpty()) {
 				update.setNull(2, java.sql.Types.VARCHAR);
 			}
 			else {
 				update.setString(2, info_[SECTION].trim());
 			}
-			if ((info_[MISSION] == null) || info_[MISSION].trim().isEmpty()) {
+			if (info_[MISSION] == null || info_[MISSION].trim().isEmpty()) {
 				update.setNull(3, java.sql.Types.VARCHAR);
 			}
 			else {

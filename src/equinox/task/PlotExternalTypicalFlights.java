@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -229,41 +230,54 @@ public class PlotExternalTypicalFlights extends InternalEquinoxTask<XYDataset> i
 		// create statement
 		try (Statement statement = connection.createStatement()) {
 
-			// loop over flights
-			for (ExternalFlight flight : flights_) {
+			// prepare statement to get file id
+			String sql = "select file_id from ext_sth_flights where flight_id = ?";
+			try (PreparedStatement getFileId = connection.prepareStatement(sql)) {
 
-				// update info
-				updateMessage("Getting peaks for flight '" + flight.getName() + "' from database...");
+				// loop over flights
+				for (ExternalFlight flight : flights_) {
 
-				// create series name
-				String name = getFlightName(flight);
+					// update info
+					updateMessage("Getting peaks for flight '" + flight.getName() + "' from database...");
 
-				// create series
-				XYSeries series = new XYSeries(new SeriesKey(checkName(name, dataset), flight.getID()));
+					// create series name
+					String name = getFlightName(flight);
 
-				// create query
-				String sql = "select peak_num, peak_val";
-				sql += " from ext_sth_peaks_" + flight.getParentItem().getParentItem().getID() + " where flight_id = " + flight.getID() + " order by peak_num";
+					// create series
+					XYSeries series = new XYSeries(new SeriesKey(checkName(name, dataset), flight.getID()));
 
-				// add chart data to series
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-
-					// loop over peaks
-					while (resultSet.next()) {
-
-						// get peak number
-						int peakNum = resultSet.getInt("peak_num");
-
-						// get stress
-						double stress = resultSet.getDouble("peak_val");
-
-						// add to data
-						series.add(peakNum, stress);
+					// get file id
+					int fileId = -1;
+					getFileId.setInt(1, flight.getID());
+					try (ResultSet resultSet = getFileId.executeQuery()) {
+						if (resultSet.next()) {
+							fileId = resultSet.getInt("file_id");
+						}
 					}
-				}
 
-				// add series to dataset
-				dataset.addSeries(series);
+					// create query
+					sql = "select peak_num, peak_val from ext_sth_peaks_" + fileId + " where flight_id = " + flight.getID() + " order by peak_num";
+
+					// add chart data to series
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+
+						// loop over peaks
+						while (resultSet.next()) {
+
+							// get peak number
+							int peakNum = resultSet.getInt("peak_num");
+
+							// get stress
+							double stress = resultSet.getDouble("peak_val");
+
+							// add to data
+							series.add(peakNum, stress);
+						}
+					}
+
+					// add series to dataset
+					dataset.addSeries(series);
+				}
 			}
 		}
 	}

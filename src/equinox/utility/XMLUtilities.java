@@ -717,11 +717,15 @@ public class XMLUtilities {
 	 *            Name of the element to check.
 	 * @param isOptionalElement
 	 *            True if the element is optional.
+	 * @param minimum
+	 *            Minimum allowed value (exclusive). Can be <code>null</code> if there is no minimum boundary.
+	 * @param maximum
+	 *            Maximum allowed value (exclusive). Can be <code>null</code> if there is no maximum boundary.
 	 * @return True if given element has a valid <code>double</code> value.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	public static boolean checkDoubleValue(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
+	public static boolean checkDoubleValue(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement, Double minimum, Double maximum) throws Exception {
 
 		// get element
 		Element element = parentElement.getChild(elementName);
@@ -740,7 +744,25 @@ public class XMLUtilities {
 
 		// parse value
 		try {
-			Double.parseDouble(element.getTextNormalize());
+
+			// parse value
+			double value = Double.parseDouble(element.getTextNormalize());
+
+			// check against minimum
+			if (minimum != null) {
+				if (value < minimum) {
+					task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Value must be greater than '" + minimum + "'. Check failed.");
+					return false;
+				}
+			}
+
+			// check against maximum
+			if (maximum != null) {
+				if (value > maximum) {
+					task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Value must be smaller than '" + maximum + "'. Check failed.");
+					return false;
+				}
+			}
 		}
 
 		// invalid value
@@ -766,11 +788,15 @@ public class XMLUtilities {
 	 *            Name of the element to check.
 	 * @param isOptionalElement
 	 *            True if the element is optional.
+	 * @param minimum
+	 *            Minimum allowed value (exclusive). Can be <code>null</code> if there is no minimum boundary.
+	 * @param maximum
+	 *            Maximum allowed value (exclusive). Can be <code>null</code> if there is no maximum boundary.
 	 * @return True if given element has a valid <code>int</code> value.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	public static boolean checkIntegerValue(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
+	public static boolean checkIntegerValue(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement, Integer minimum, Integer maximum) throws Exception {
 
 		// get element
 		Element element = parentElement.getChild(elementName);
@@ -789,12 +815,30 @@ public class XMLUtilities {
 
 		// parse value
 		try {
-			Integer.parseInt(element.getTextNormalize());
+
+			// parse value
+			int value = Integer.parseInt(element.getTextNormalize());
+
+			// check against minimum
+			if (minimum != null) {
+				if (value < minimum) {
+					task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Value must be greater than '" + minimum + "'. Check failed.");
+					return false;
+				}
+			}
+
+			// check against maximum
+			if (maximum != null) {
+				if (value > maximum) {
+					task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Value must be smaller than '" + maximum + "'. Check failed.");
+					return false;
+				}
+			}
 		}
 
 		// invalid value
 		catch (NumberFormatException e) {
-			task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Valid values are 'true' or 'false'. Check failed.");
+			task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. A numeric value is expected. Check failed.");
 			return false;
 		}
 

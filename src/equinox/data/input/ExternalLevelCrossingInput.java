@@ -15,8 +15,6 @@
  */
 package equinox.data.input;
 
-import equinox.data.fileType.SpectrumItem;
-
 /**
  * Class for external level crossing input.
  *
@@ -29,29 +27,22 @@ public class ExternalLevelCrossingInput {
 	/** True if the DSGs should be normalized with spectrum validities. */
 	private final boolean normalize_;
 
-	/** External equivalent stresses to plot. */
-	private final SpectrumItem[] equivalentStresses_;
-
 	/** DSGs. */
 	private final int[] dsgs_;
 
 	/** Spectrum naming parameters. */
-	private boolean includeSequenceName_ = false, includeEID_ = false, includeMaterialName_ = true, includeOmissionLevel_ = false,
-			includeProgram_ = false, includeSection_ = false, includeMission_ = false;
+	private boolean includeSequenceName_ = false, includeEID_ = false, includeMaterialName_ = true, includeOmissionLevel_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/**
 	 * Creates external level crossing input.
 	 *
 	 * @param normalize
 	 *            True if the DSGs should be normalized with spectrum validities.
-	 * @param equivalentStresses
-	 *            External equivalent stresses to plot.
 	 * @param dsgs
 	 *            DSGs. Null can be given if normalize option is selected.
 	 */
-	public ExternalLevelCrossingInput(boolean normalize, SpectrumItem[] equivalentStresses, int[] dsgs) {
+	public ExternalLevelCrossingInput(boolean normalize, int[] dsgs) {
 		normalize_ = normalize;
-		equivalentStresses_ = equivalentStresses;
 		dsgs_ = dsgs;
 	}
 
@@ -62,15 +53,6 @@ public class ExternalLevelCrossingInput {
 	 */
 	public boolean isNormalize() {
 		return normalize_;
-	}
-
-	/**
-	 * Returns array containing the equivalent stresses to plot.
-	 *
-	 * @return An array containing the equivalent stresses to plot.
-	 */
-	public SpectrumItem[] getEquivalentStresses() {
-		return equivalentStresses_;
 	}
 
 	/**

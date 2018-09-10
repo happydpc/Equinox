@@ -26,6 +26,7 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
 import equinox.data.IsamiVersion;
+import equinox.data.input.EquivalentStressInput;
 import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.dataServer.remote.data.LinearMaterial;
 import equinox.dataServer.remote.data.Material;
@@ -88,6 +89,80 @@ public class CheckEquivalentStressAnalysisInput implements EquinoxProcess<Boolea
 		// material
 		if (!checkMaterial(equivalentStressAnalysisInput, connection))
 			return false;
+
+		// omission
+		if (!checkOmission(equivalentStressAnalysisInput))
+			return false;
+
+		// stress modifier
+		if (!stressModifier(equivalentStressAnalysisInput))
+			return false;
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if <code>stressModifier</code> element passes checks.
+	 *
+	 * @param equivalentStressAnalysisInput
+	 *            Root input element.
+	 * @return True if <code>stressModifier</code> element passes checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean stressModifier(Element equivalentStressAnalysisInput) throws Exception {
+
+		// update info
+		task.updateMessage("Checking stress modifier...");
+
+		// stress modifier element exists
+		if (equivalentStressAnalysisInput.getChild("stressModifier") != null) {
+
+			// get stress modifier element
+			Element stressModifier = equivalentStressAnalysisInput.getChild("stressModifier");
+
+			// check value
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, stressModifier, "value", false, null, null))
+				return false;
+
+			// check method
+			if (!XMLUtilities.checkStringValue(task, inputFile, stressModifier, "method", false, EquivalentStressInput.MULTIPLY, EquivalentStressInput.ADD, EquivalentStressInput.SET))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if <code>omission</code> element passes checks.
+	 *
+	 * @param equivalentStressAnalysisInput
+	 *            Root input element.
+	 * @return True if <code>omission</code> element passes checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkOmission(Element equivalentStressAnalysisInput) throws Exception {
+
+		// update info
+		task.updateMessage("Checking omission...");
+
+		// omission element exists
+		if (equivalentStressAnalysisInput.getChild("omission") != null) {
+
+			// get omission element
+			Element omission = equivalentStressAnalysisInput.getChild("omission");
+
+			// remove negative stresses
+			if (!XMLUtilities.checkBooleanValue(task, inputFile, omission, "removeNegativeStresses", true))
+				return false;
+
+			// stress range
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, omission, "stressRange", true, 0.0, null))
+				return false;
+		}
 
 		// check passed
 		return true;

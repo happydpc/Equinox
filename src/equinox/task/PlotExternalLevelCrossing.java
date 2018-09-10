@@ -19,6 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.xy.XYSeries;
@@ -35,6 +38,10 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.ExternalLevelCrossingInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.PostProcessingTask;
 
 /**
  * Class for plot external level crossing task.
@@ -43,10 +50,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Mar 15, 2015
  * @time 4:05:33 PM
  */
-public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask {
+public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<XYSeriesCollection> {
+
+	/** Equivalent stresses. */
+	private final List<SpectrumItem> stresses_;
 
 	/** Input. */
 	private final ExternalLevelCrossingInput input_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<XYSeriesCollection>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
 
 	/**
 	 * Creates plot external level crossing task.
@@ -56,6 +75,50 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	 */
 	public PlotExternalLevelCrossing(ExternalLevelCrossingInput input) {
 		input_ = input;
+		stresses_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds external equivalent stress.
+	 *
+	 * @param externalEquivalentStress
+	 *            External equivalent stress to add.
+	 */
+	public void addEquivalentStress(SpectrumItem externalEquivalentStress) {
+		stresses_.add(externalEquivalentStress);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<XYSeriesCollection> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<XYSeriesCollection>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
 	}
 
 	@Override
@@ -85,15 +148,15 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 
 			// set table names
 			String stressTable = null, rainflowTable = null;
-			if (input_.getEquivalentStresses()[0] instanceof ExternalFatigueEquivalentStress) {
+			if (stresses_.get(0) instanceof ExternalFatigueEquivalentStress) {
 				stressTable = "ext_fatigue_equivalent_stresses";
 				rainflowTable = "ext_fatigue_rainflow_cycles";
 			}
-			else if (input_.getEquivalentStresses()[0] instanceof ExternalPreffasEquivalentStress) {
+			else if (stresses_.get(0) instanceof ExternalPreffasEquivalentStress) {
 				stressTable = "ext_preffas_equivalent_stresses";
 				rainflowTable = "ext_preffas_rainflow_cycles";
 			}
-			else if (input_.getEquivalentStresses()[0] instanceof ExternalLinearEquivalentStress) {
+			else if (stresses_.get(0) instanceof ExternalLinearEquivalentStress) {
 				stressTable = "ext_linear_equivalent_stresses";
 				rainflowTable = "ext_linear_rainflow_cycles";
 			}
@@ -107,16 +170,15 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 				try (PreparedStatement getCycles = connection.prepareStatement(sql)) {
 
 					// loop over equivalent stresses
-					SpectrumItem[] eqStresses = input_.getEquivalentStresses();
 					int[] dsgs = input_.getDSGs();
-					for (int i = 0; i < eqStresses.length; i++) {
+					for (int i = 0; i < stresses_.size(); i++) {
 
 						// create series
-						XYSeries series = new XYSeries(getSpectrumName(eqStresses[i], dataset), false, true);
+						XYSeries series = new XYSeries(getSpectrumName(stresses_.get(i), dataset), false, true);
 
 						// get validity
 						double validity = -1;
-						getValidity.setInt(1, eqStresses[i].getID());
+						getValidity.setInt(1, stresses_.get(i).getID());
 						try (ResultSet resultSet = getValidity.executeQuery()) {
 							while (resultSet.next()) {
 								validity = resultSet.getDouble("validity");
@@ -130,7 +192,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 
 						// get rainflow cycles
 						double max = Double.NEGATIVE_INFINITY, min = Double.POSITIVE_INFINITY;
-						getCycles.setInt(1, eqStresses[i].getID());
+						getCycles.setInt(1, stresses_.get(i).getID());
 						try (ResultSet resultSet = getCycles.executeQuery()) {
 							while (resultSet.next()) {
 
@@ -180,21 +242,53 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 		// set chart data
 		try {
 
-			// get level crossing view panel
-			LevelCrossingViewPanel panel = (LevelCrossingViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.LEVEL_CROSSING_VIEW);
+			// get dataset
+			XYSeriesCollection dataset = get();
 
-			// set data
-			String xAxisLabel = input_.isNormalize() ? "Number of Cycles (Normalized by spectrum validities)" : "Number of Cycles";
-			panel.plottingCompleted(get(), xAxisLabel, true);
+			// user initiated task
+			if (automaticTasks_ == null) {
 
-			// show level crossing view panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.LEVEL_CROSSING_VIEW);
+				// get level crossing view panel
+				LevelCrossingViewPanel panel = (LevelCrossingViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.LEVEL_CROSSING_VIEW);
+
+				// set data
+				String xAxisLabel = input_.isNormalize() ? "Number of Cycles (Normalized by spectrum validities)" : "Number of Cycles";
+				panel.plottingCompleted(dataset, xAxisLabel, true);
+
+				// show level crossing view panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.LEVEL_CROSSING_VIEW);
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(dataset, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	private static void createPlot(XYSeries series, double dsg, double bls, ArrayList<Double> N, ArrayList<Double> Smax, ArrayList<Double> Smin, double smax, double smin) throws Exception {

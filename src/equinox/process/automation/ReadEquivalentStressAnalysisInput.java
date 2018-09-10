@@ -87,8 +87,41 @@ public class ReadEquivalentStressAnalysisInput implements EquinoxProcess<Equival
 		// omission
 		omission(equivalentStressAnalysisInput, input);
 
+		// stress modifier
+		stressModifier(equivalentStressAnalysisInput, input);
+
 		// return input
 		return input;
+	}
+
+	/**
+	 * Gets stress modifier inputs.
+	 *
+	 * @param equivalentStressAnalysisInput
+	 *            Root input element.
+	 * @param input
+	 *            Analysis input.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void stressModifier(Element equivalentStressAnalysisInput, EquivalentStressInput input) throws Exception {
+
+		// update info
+		task.updateMessage("Reading omission...");
+
+		// stress modifier inputs given
+		if (equivalentStressAnalysisInput.getChild("stressModifier") != null) {
+
+			// get stress modifier element
+			Element stressModifier = equivalentStressAnalysisInput.getChild("stressModifier");
+
+			// modification value and method
+			double value = Double.parseDouble(stressModifier.getChildTextNormalize("value"));
+			String method = stressModifier.getChildTextNormalize("method");
+
+			// set to input
+			input.setStressModifier(value, method);
+		}
 	}
 
 	/**

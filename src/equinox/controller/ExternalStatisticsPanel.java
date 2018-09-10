@@ -34,7 +34,6 @@ import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.task.GenerateExternalStatistics;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -95,13 +94,9 @@ public class ExternalStatisticsPanel implements InternalInputSubPanel {
 		limit_.setMinimumValue(1, true);
 
 		// set listeners
-		dataLabels_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-				panel.setLabelsVisible(newValue);
-			}
+		dataLabels_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			panel.setLabelsVisible(newValue);
 		});
 
 		// expand first panel
@@ -177,24 +172,27 @@ public class ExternalStatisticsPanel implements InternalInputSubPanel {
 		input.setLimit(Integer.parseInt(limit_.getText()));
 		input.setOrder(order_.getSelectionModel().getSelectedItem().equals("Descending"));
 
+		// create task
+		GenerateExternalStatistics task = new GenerateExternalStatistics(input);
+
 		// add flights
 		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
 		for (TreeItem<String> item : selected) {
 
 			// flight
 			if (item instanceof ExternalFlight) {
-				input.addFlight((ExternalFlight) item);
+				task.addTypicalFlight((ExternalFlight) item);
 			}
 			else if (item instanceof ExternalStressSequence) {
 				ArrayList<ExternalFlight> flights = ((ExternalStressSequence) item).getFlights().getFlights();
 				for (ExternalFlight flight : flights) {
-					input.addFlight(flight);
+					task.addTypicalFlight(flight);
 				}
 			}
 		}
 
 		// create and start statistics task
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new GenerateExternalStatistics(input));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	/**

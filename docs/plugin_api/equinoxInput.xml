@@ -134,12 +134,20 @@
 	<overrideFatigueMission>
 		<id></id>
 		<stfId></stfId>
-		<fatigueMission></fatigueMission></overrideFatigueMission><!--Assigns mission parameters to stf file.-->
-	<assignMissionParametersToStf><id></id><stfId></stfId><!--Multiple mission parameters with unique names can be given.-->
-		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
-			<name></name><!--Mission parameter value. A real number is expected.-->
+		<fatigueMission></fatigueMission></overrideFatigueMission>
+	<!--Assigns mission parameters to stf file.-->
+	<assignMissionParametersToStf>
+		<id></id>
+		<stfId></stfId>
+		<!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter>
+			<!--Mission parameter name. This must be unique among parameter names.-->
+			<name></name>
+			<!--Mission parameter value. A real number is expected.-->
 			<value></value>
-		</missionParameter></assignMissionParametersToStf><!--Saves stf file to given output path.-->
+		</missionParameter>
+	</assignMissionParametersToStf>
+	<!--Saves stf file to given output path.-->
 	<saveStf>
 		<id></id>
 		<stfId></stfId><!--Path to save stf file. To save as stf file, end file name with .stf. To save as zip bundle, end file name with .zip. To save as gz bundle, end file name with .gz.-->
@@ -175,9 +183,26 @@
 		<id></id>
 		<stfId></stfId><!--Path to XML file containing input parameters for generating stress sequence.-->
 		<xmlPath></xmlPath>
-	</generateStressSequence><!--Saves stress sequence to given output path.-->
-
-	<saveStressSequence>
+	</generateStressSequence>
+	<!--Assigns mission parameters to headless stress sequence.-->
+	<assignMissionParametersToStressSequence>
+		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId>
+		<!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter>
+			<!--Mission parameter name. This must be unique among parameter names.-->
+			<name></name>
+			<!--Mission parameter value. A real number is expected.-->
+			<value></value>
+		</missionParameter>
+	</assignMissionParametersToStressSequence><!--Edits headless stress sequence info.-->
+	<editStressSequenceInfo>
+		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId><!--Aircraft program. This element is optional.-->
+		<aircraftProgram></aircraftProgram><!--Aircraft section. This element is optional.-->
+		<aircraftSection></aircraftSection><!--Fatigue mission. This element is optional.-->
+		<fatigueMission></fatigueMission></editStressSequenceInfo>
+	<!--Saves stress sequence to given output path.--><saveStressSequence>
 		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
 		<outputPath></outputPath></saveStressSequence><!--Saves headless stress sequence to given output path.--><saveStressSequence>
@@ -212,21 +237,61 @@
 	</plotTypicalFlight>
 	<!--Plots selected type of typical flight statistics to given output file.-->
 	<plotTypicalFlightStatistics>
-		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
-		<plotType></plotType><!--Path to save typical flight statistics plot. File name must end with .png.-->
-		<outputPath></outputPath></plotTypicalFlightStatistics><!--Performs equivalent stress analysis with referenced stress sequence.-->
-
-	<equivalentStressAnalysis>
-		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Path to XML file containing input parameters for equivalent stress analysis.-->
-		<xmlPath></xmlPath>
-	</equivalentStressAnalysis><!--Plots level crossing to given output file.-->
-	<plotLevelCrossing>
-		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
-		<equivalentStressId></equivalentStressId><!--Path to save level crossing plot. File name must end with .png.-->
+		<id></id>
+		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId>
+		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
+		<plotType></plotType>
+		<!--Path to save typical flight statistics plot. File name must end with .png.-->
 		<outputPath></outputPath>
-	</plotLevelCrossing><!--Plots rainflow histogram to given output file.-->
+	</plotTypicalFlightStatistics>
+	<!--Plots selected type of typical flight statistics to given output file.-->
+	<plotTypicalFlightStatistics>
+		<id></id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId>
+		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
+		<plotType></plotType>
+		<!--Path to save typical flight statistics plot. File name must end with .png.-->
+		<outputPath></outputPath><!--Plotting options. This element and all its children are optional.-->
+		<options><!--Maximum number of flights to plot. An integer value is expected.-->
+			<maxFlights></maxFlights><!--Results ordering. This can be either 'descending' or 'ascending'.-->
+			<resultsOrder></resultsOrder><!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels></options>
+	</plotTypicalFlightStatistics>
+	<!--Performs equivalent stress analysis with referenced stress sequence.-->
+	<equivalentStressAnalysis>
+		<id></id>
+		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId>
+		<!--Path to XML file containing input parameters for equivalent stress analysis.-->
+		<xmlPath></xmlPath>
+	</equivalentStressAnalysis>
+	<!--Performs equivalent stress analysis with referenced headless stress sequence.-->
+	<equivalentStressAnalysis>
+		<id></id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId>
+		<!--Path to XML file containing input parameters for equivalent stress analysis.-->
+		<xmlPath></xmlPath>
+	</equivalentStressAnalysis>
+	<!--Plots level crossing to given output file.-->
+	<plotLevelCrossing>
+		<id></id>
+		<!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
+		<equivalentStressId></equivalentStressId>
+		<!--Path to save level crossing plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotLevelCrossing>
+	<!--Plots level crossing to given output file.-->
+	<plotLevelCrossing>
+		<id></id>
+		<!--The headlessEquivalentStressId refers to 'equivalentStressAnalysis' instruction which refers to headlessStressSequenceId.-->
+		<headlessEquivalentStressId></headlessEquivalentStressId>
+		<!--Path to save level crossing plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotLevelCrossing>
+	<!--Plots rainflow histogram to given output file.-->
 	<plotRainflowHistogram>
 		<id></id><!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId><!--Path to save rainflow histogram plot. File name must end with .png.-->

@@ -159,6 +159,8 @@ public class SelectExternalFlight extends InternalEquinoxTask<ExternalFlight> im
 
 			// user initiated task
 			if (automaticTasks_ == null) {
+
+				// select flight
 				FileViewPanel panel = (FileViewPanel) taskPanel_.getOwner().getOwner().getInputPanel().getSubPanel(InputPanel.FILE_VIEW_PANEL);
 				panel.selectFile(flight, panel.getFileTreeRoot());
 			}

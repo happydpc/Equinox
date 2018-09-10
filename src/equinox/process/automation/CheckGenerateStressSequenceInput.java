@@ -138,7 +138,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 		// check rotation angle
 		StressComponent comp = StressComponent.getStressComponent(stressRotation.getChild("component").getTextNormalize());
 		if (comp.equals(StressComponent.ROTATED)) {
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, stressRotation, "rotationAngle", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, stressRotation, "rotationAngle", false, null, null))
 				return false;
 		}
 
@@ -170,7 +170,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 		// check superior loadcase and reference delta-t
 		if (!XMLUtilities.checkStringValue(task, inputFile, temperature, "dtLoadcaseSuperior", false))
 			return false;
-		if (!XMLUtilities.checkDoubleValue(task, inputFile, temperature, "referenceDtSuperior", false))
+		if (!XMLUtilities.checkDoubleValue(task, inputFile, temperature, "referenceDtSuperior", false, null, null))
 			return false;
 
 		// set inferior loadcase and reference delta-t
@@ -178,7 +178,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 		if (dtInterpolation.equals(DTInterpolation.TWO_POINTS)) {
 			if (!XMLUtilities.checkStringValue(task, inputFile, temperature, "dtLoadcaseInferior", false))
 				return false;
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, temperature, "referenceDtInferior", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, temperature, "referenceDtInferior", false, null, null))
 				return false;
 		}
 
@@ -208,7 +208,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 			return false;
 
 		// check reference delta-p
-		if (!XMLUtilities.checkDoubleValue(task, inputFile, pressure, "referenceDp", true))
+		if (!XMLUtilities.checkDoubleValue(task, inputFile, pressure, "referenceDp", true, null, null))
 			return false;
 
 		// check passed
@@ -237,7 +237,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 			return false;
 
 		// check table column
-		if (!XMLUtilities.checkIntegerValue(task, inputFile, loadcaseFactors, "tableColumn", false))
+		if (!XMLUtilities.checkIntegerValue(task, inputFile, loadcaseFactors, "tableColumn", false, null, null))
 			return false;
 
 		// check method
@@ -267,7 +267,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 
 		// check 1g
 		if (overallFactors.getChild("oneg") != null) {
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("oneg"), "value", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("oneg"), "value", false, null, null))
 				return false;
 			if (!XMLUtilities.checkStringValue(task, inputFile, overallFactors.getChild("oneg"), "method", false, GenerateStressSequenceInput.MULTIPLY, GenerateStressSequenceInput.ADD, GenerateStressSequenceInput.SET))
 				return false;
@@ -275,7 +275,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 
 		// check increment
 		if (overallFactors.getChild("increment") != null) {
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("increment"), "value", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("increment"), "value", false, null, null))
 				return false;
 			if (!XMLUtilities.checkStringValue(task, inputFile, overallFactors.getChild("increment"), "method", false, GenerateStressSequenceInput.MULTIPLY, GenerateStressSequenceInput.ADD, GenerateStressSequenceInput.SET))
 				return false;
@@ -283,7 +283,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 
 		// check delta-p
 		if (overallFactors.getChild("deltaP") != null) {
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("deltaP"), "value", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("deltaP"), "value", false, null, null))
 				return false;
 			if (!XMLUtilities.checkStringValue(task, inputFile, overallFactors.getChild("deltaP"), "method", false, GenerateStressSequenceInput.MULTIPLY, GenerateStressSequenceInput.ADD, GenerateStressSequenceInput.SET))
 				return false;
@@ -291,7 +291,7 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 
 		// check delta-t
 		if (overallFactors.getChild("deltaT") != null) {
-			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("deltaT"), "value", false))
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, overallFactors.getChild("deltaT"), "value", false, null, null))
 				return false;
 			if (!XMLUtilities.checkStringValue(task, inputFile, overallFactors.getChild("deltaT"), "method", false, GenerateStressSequenceInput.MULTIPLY, GenerateStressSequenceInput.ADD, GenerateStressSequenceInput.SET))
 				return false;

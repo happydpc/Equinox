@@ -15,10 +15,6 @@
  */
 package equinox.data.input;
 
-import java.util.ArrayList;
-
-import equinox.data.fileType.ExternalFlight;
-
 /**
  * Class for external statistics input data.
  *
@@ -37,8 +33,8 @@ public class ExternalStatisticsInput {
 	 */
 	public enum ExternalStatistic {
 
-		/** Statistic. */
-		NUM_PEAKS("Number of peaks"), FLIGHT_OCCURRENCE("Flight occurrence"), MAX_PEAK("Maximum stress"), MIN_PEAK("Minimum stress");
+	/** Statistic. */
+	NUM_PEAKS("Number of peaks"), FLIGHT_OCCURRENCE("Flight occurrence"), MAX_PEAK("Maximum stress"), MIN_PEAK("Minimum stress");
 
 		/** Name of statistic. */
 		private final String name_;
@@ -59,9 +55,6 @@ public class ExternalStatisticsInput {
 		}
 	}
 
-	/** Flights to compare. */
-	private final ArrayList<ExternalFlight> flights_ = new ArrayList<>();
-
 	/** Order and data label options. */
 	private boolean descending_ = true, showlabels_ = true;
 
@@ -70,16 +63,6 @@ public class ExternalStatisticsInput {
 
 	/** Statistic type. */
 	private ExternalStatistic statistic_ = ExternalStatistic.NUM_PEAKS;
-
-	/**
-	 * Adds flight.
-	 *
-	 * @param flight
-	 *            Flight to add.
-	 */
-	public void addFlight(ExternalFlight flight) {
-		flights_.add(flight);
-	}
 
 	/**
 	 * Sets the statistic.
@@ -119,15 +102,6 @@ public class ExternalStatisticsInput {
 	 */
 	public void setLimit(int limit) {
 		limit_ = limit;
-	}
-
-	/**
-	 * Returns the flights to plot.
-	 *
-	 * @return The flights to plot.
-	 */
-	public ArrayList<ExternalFlight> getFlights() {
-		return flights_;
 	}
 
 	/**

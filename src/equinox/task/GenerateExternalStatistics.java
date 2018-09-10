@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -27,11 +29,16 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
 import equinox.data.fileType.ExternalFlight;
 import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for generate external statistics task.
@@ -40,13 +47,22 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 7, 2016
  * @time 9:19:54 AM
  */
-public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<List<ExternalFlight>>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+
+	/** Automatic inputs. */
+	private final List<ExternalFlight> flights_;
 
 	/** Input. */
 	private final ExternalStatisticsInput input_;
 
 	/** Chart labels. */
 	private String xAxisLabel_, yAxisLabel_, title_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates generate external statistics task.
@@ -56,6 +72,40 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 	 */
 	public GenerateExternalStatistics(ExternalStatisticsInput input) {
 		input_ = input;
+		flights_ = new ArrayList<>();
+	}
+
+	/**
+	 * Adds typical flight.
+	 *
+	 * @param flight
+	 *            Typical flight to add.
+	 */
+	public void addTypicalFlight(ExternalFlight flight) {
+		flights_.add(flight);
+	}
+
+	@Override
+	public void setAutomaticInput(List<ExternalFlight> input) {
+		flights_.addAll(input);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -105,20 +155,61 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 			// get dataset
 			CategoryDataset dataset = get();
 
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			// user initiated task
+			if (automaticTasks_ == null) {
 
-			// set chart data to panel
-			panel.setPlotData(dataset, title_, null, xAxisLabel_, yAxisLabel_, false, input_.getLabelDisplay(), false);
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+				// set chart data to panel
+				panel.setPlotData(dataset, title_, null, xAxisLabel_, yAxisLabel_, false, input_.getLabelDisplay(), false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(input_.getLabelDisplay());
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(false);
+				plotAttributes.setSubTitle(null);
+				plotAttributes.setTitle(title_);
+				plotAttributes.setXAxisLabel(xAxisLabel_);
+				plotAttributes.setYAxisLabel(yAxisLabel_);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -175,9 +266,8 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 
 		// create query
 		String sql = "select name, num_peaks from ext_sth_flights where ";
-		ArrayList<ExternalFlight> flights = input_.getFlights();
-		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
+		for (int i = 0; i < flights_.size(); i++) {
+			sql += "flight_id = " + flights_.get(i).getID() + (i == flights_.size() - 1 ? "" : " or ");
 		}
 		sql += " order by num_peaks " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -223,9 +313,8 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 
 		// create query
 		String sql = "select name, validity from ext_sth_flights where ";
-		ArrayList<ExternalFlight> flights = input_.getFlights();
-		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
+		for (int i = 0; i < flights_.size(); i++) {
+			sql += "flight_id = " + flights_.get(i).getID() + (i == flights_.size() - 1 ? "" : " or ");
 		}
 		sql += " order by validity " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());
@@ -275,9 +364,8 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 
 		// create query
 		String sql = "select name, " + flightCol + " from ext_sth_flights where ";
-		ArrayList<ExternalFlight> flights = input_.getFlights();
-		for (int i = 0; i < flights.size(); i++) {
-			sql += "flight_id = " + flights.get(i).getID() + (i == flights.size() - 1 ? "" : " or ");
+		for (int i = 0; i < flights_.size(); i++) {
+			sql += "flight_id = " + flights_.get(i).getID() + (i == flights_.size() - 1 ? "" : " or ");
 		}
 		sql += " order by " + flightCol + " " + (input_.getOrder() ? "desc" : "asc");
 		statement.setMaxRows(input_.getLimit());

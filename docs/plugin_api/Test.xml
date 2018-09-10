@@ -4,104 +4,31 @@
 		<runMode>parallel</runMode>
 		<overwriteFiles>true</overwriteFiles>
 	</settings>
-	<downloadSpectrum>
-		<id>1</id>
-		<searchEntry>
-			<attributeName>NAME</attributeName>
-			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
-			<criteria>Contains</criteria>
-		</searchEntry>
-		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
-	</downloadSpectrum>
-	<addSpectrum>
-		<id>2</id>
-		<downloadId>1</downloadId>
-	</addSpectrum>
-	<addStf>
-		<id>3</id>
-		<spectrumId>2</spectrumId>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>NAME</attributeName>
-			<keyword>Fuselage_F26_MY</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_PROGRAM</attributeName>
-			<keyword>a310</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_SECTION</attributeName>
-			<keyword>sect13</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>FAT_MISSION</attributeName>
-			<keyword>61 Parabolas</keyword>
-		</searchEntry>
-	</addStf>
-	<addStf>
-		<id>16</id>
-		<spectrumId>2</spectrumId>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>NAME</attributeName>
-			<keyword>Fuselage_F26_TZ</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_PROGRAM</attributeName>
-			<keyword>a310</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_SECTION</attributeName>
-			<keyword>sect13</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>FAT_MISSION</attributeName>
-			<keyword>61 Parabolas</keyword>
-		</searchEntry>
-	</addStf>
-	<addStf>
-		<id>19</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test1.stf</stfPath>
-	</addStf>
-	<addStf>
-		<id>20</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test2.stf</stfPath>
-	</addStf>
-	<addStf>
-		<id>21</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test3.stf</stfPath>
-	</addStf>
-	<addStf>
-		<id>25</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test4.stf</stfPath>
-	</addStf>
-	<addStf>
-		<id>26</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test5.stf</stfPath>
-	</addStf>
-	<addStf>
-		<id>27</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test6.stf</stfPath>
-	</addStf>
-	<generateStressSequence>
-		<id>28</id>
-		<stfId>3</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
-	</generateStressSequence>
-	<plotTypicalFlightComparison>
-		<id>29</id>
-		<typicalFlight>
-			<stressSequenceId>28</stressSequenceId>
-			<typicalFlightName>TF_1_2s</typicalFlightName>
-		</typicalFlight>
-		<typicalFlight>
-			<stressSequenceId>28</stressSequenceId>
-			<typicalFlightName>TF_2_2s</typicalFlightName>
-		</typicalFlight>
-		<typicalFlight>
-			<stressSequenceId>28</stressSequenceId>
-			<typicalFlightName>TF_4_2s</typicalFlightName>
-		</typicalFlight>
-		<outputPath>/Users/aurora/Temporary/typicalFlightComparison.png</outputPath>
-	</plotTypicalFlightComparison>
+	<addHeadlessStressSequence>
+		<id>30</id>
+		<sigmaPath>/Users/aurora/Temporary/Fuselage_F26_MY.sigma</sigmaPath>
+	</addHeadlessStressSequence>
+	<assignMissionParametersToStressSequence>
+		<id>31</id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId>30</headlessStressSequenceId>
+		<!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter>
+			<!--Mission parameter name. This must be unique among parameter names.-->
+			<name>Param1</name>
+			<!--Mission parameter value. A real number is expected.-->
+			<value>-23.5</value>
+		</missionParameter>
+	</assignMissionParametersToStressSequence>
+	<editStressSequenceInfo>
+		<id>32</id>
+		<headlessStressSequenceId>30</headlessStressSequenceId>
+		<aircraftProgram>A310</aircraftProgram>
+		<aircraftSection>whatever</aircraftSection></editStressSequenceInfo>
+	<equivalentStressAnalysis>
+		<id>33</id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId>30</headlessStressSequenceId>
+		<!--Path to XML file containing input parameters for equivalent stress analysis.-->
+		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+	</equivalentStressAnalysis>
 </equinoxInput>

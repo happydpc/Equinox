@@ -218,6 +218,18 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 		}
 
+		// assign mission parameters to headless stress sequence
+		if (equinoxInput.getChild("assignMissionParametersToStressSequence") != null) {
+			if (!checkAssignMissionParametersToStressSequence(equinoxInput))
+				return false;
+		}
+
+		// edit stress sequence info
+		if (equinoxInput.getChild("editStressSequenceInfo") != null) {
+			if (!checkEditStressSequenceInfo(equinoxInput))
+				return false;
+		}
+
 		// save stress sequence
 		if (equinoxInput.getChild("saveStressSequence") != null) {
 			if (!checkSaveStressSequence(equinoxInput))
@@ -369,6 +381,96 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>editStressSequenceInfo</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>editStressSequenceInfo</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkEditStressSequenceInfo(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking editStressSequenceInfo elements...");
+
+		// loop over edit stress sequence info elements
+		for (Element editStressSequenceInfo : equinoxInput.getChildren("editStressSequenceInfo")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, editStressSequenceInfo))
+				return false;
+
+			// check headless stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, editStressSequenceInfo, "headlessStressSequenceId", "addHeadlessStressSequence"))
+				return false;
+
+			// check aircraft program
+			if (!XMLUtilities.checkStringValue(this, inputFile, editStressSequenceInfo, "aircraftProgram", true))
+				return false;
+
+			// check aircraft section
+			if (!XMLUtilities.checkStringValue(this, inputFile, editStressSequenceInfo, "aircraftSection", true))
+				return false;
+
+			// check fatigue mission
+			if (!XMLUtilities.checkStringValue(this, inputFile, editStressSequenceInfo, "fatigueMission", true))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>assignMissionParametersToStressSequence</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>assignMissionParametersToStressSequence</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkAssignMissionParametersToStressSequence(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking assignMissionParametersToStressSequence elements...");
+
+		// loop over assign mission parameters to headless stress sequence elements
+		for (Element assignMissionParametersToStressSequence : equinoxInput.getChildren("assignMissionParametersToStressSequence")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, assignMissionParametersToStressSequence))
+				return false;
+
+			// check headless stress sequence id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, assignMissionParametersToStressSequence, "headlessStressSequenceId", "addHeadlessStressSequence"))
+				return false;
+
+			// no mission parameter element found
+			if (assignMissionParametersToStressSequence.getChild("missionParameter") == null) {
+				addWarning("Cannot locate element 'missionParameter' under " + XMLUtilities.getFamilyTree(assignMissionParametersToStressSequence) + " in instruction set '" + inputFile.toString() + "'. At least 1 of this element is obligatory. Check failed.");
+				return false;
+			}
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToStressSequence.getChildren("missionParameter")) {
+
+				// check parameter name
+				if (!XMLUtilities.checkStringValue(this, inputFile, missionParameter, "name", false))
+					return false;
+
+				// check parameter value
+				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false, null, null))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
@@ -1261,8 +1363,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 
 				// check stress sequence id
-				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, equivalentStressAnalysis, "stressSequenceId", "generateStressSequence"))
-					return false;
+				if (equivalentStressAnalysis.getChild("stressSequenceId") != null) {
+					if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, equivalentStressAnalysis, "stressSequenceId", "generateStressSequence"))
+						return false;
+				}
+
+				// check headless stress sequence id
+				else if (equivalentStressAnalysis.getChild("headlessStressSequenceId") != null) {
+					if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, equivalentStressAnalysis, "headlessStressSequenceId", "addHeadlessStressSequence"))
+						return false;
+				}
 
 				// check XML path
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "xmlPath", false, FileType.XML))
@@ -1317,9 +1427,32 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "stressSequenceId", "generateStressSequence"))
 					return false;
 			}
+
+			// check headless stress sequence id
 			else if (plotTypicalFlight.getChild("headlessStressSequenceId") != null) {
+
+				// headless stress sequence id
 				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "headlessStressSequenceId", "addHeadlessStressSequence"))
 					return false;
+
+				// check options
+				if (plotTypicalFlight.getChild("options") != null) {
+
+					// get element
+					Element options = plotTypicalFlight.getChild("options");
+
+					// check results order
+					if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+						return false;
+
+					// check show data labels
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+						return false;
+
+					// check max flights
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, options, "maxFlights", true, 1, null))
+						return false;
+				}
 			}
 
 			// check output path
@@ -1733,7 +1866,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 
 				// check parameter value
-				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false))
+				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false, null, null))
 					return false;
 			}
 		}
@@ -1826,21 +1959,21 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 				// check 1g stresses
 				if (addStf.getChild("onegStresses") != null) {
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sx", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sx", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sy", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sxy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("onegStresses"), "sxy", false, null, null))
 						return false;
 				}
 
 				// check increment stresses
 				if (addStf.getChild("incrementStresses") != null) {
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sx", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sx", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sy", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sxy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("incrementStresses"), "sxy", false, null, null))
 						return false;
 				}
 
@@ -1848,11 +1981,11 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				if (addStf.getChild("dpStresses") != null) {
 					if (!XMLUtilities.checkStringValue(this, inputFile, addStf.getChild("dpStresses"), "dpLoadcase", false))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sx", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sx", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sy", false, null, null))
 						return false;
-					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sxy", false))
+					if (!XMLUtilities.checkDoubleValue(this, inputFile, addStf.getChild("dpStresses"), "sxy", false, null, null))
 						return false;
 				}
 
@@ -1866,11 +1999,11 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					if (dtStresses.getChild("superior") != null) {
 						if (!XMLUtilities.checkStringValue(this, inputFile, dtStresses.getChild("superior"), "loadcase", false))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sx", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sx", false, null, null))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sy", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sy", false, null, null))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sxy", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("superior"), "sxy", false, null, null))
 							return false;
 					}
 
@@ -1878,11 +2011,11 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					if (dtStresses.getChild("inferior") != null) {
 						if (!XMLUtilities.checkStringValue(this, inputFile, dtStresses.getChild("inferior"), "loadcase", false))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sx", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sx", false, null, null))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sy", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sy", false, null, null))
 							return false;
-						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sxy", false))
+						if (!XMLUtilities.checkDoubleValue(this, inputFile, dtStresses.getChild("inferior"), "sxy", false, null, null))
 							return false;
 					}
 				}
@@ -2000,7 +2133,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 					return false;
 
 				// check parameter value
-				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false))
+				if (!XMLUtilities.checkDoubleValue(this, inputFile, missionParameter, "value", false, null, null))
 					return false;
 			}
 		}

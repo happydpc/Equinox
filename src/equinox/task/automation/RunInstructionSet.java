@@ -53,6 +53,8 @@ import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
 import equinox.data.input.ExternalFlightPlotInput;
+import equinox.data.input.ExternalStatisticsInput;
+import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.data.input.FlightComparisonInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.LevelCrossingInput;
@@ -85,6 +87,7 @@ import equinox.task.DownloadSpectrum;
 import equinox.task.EquivalentStressAnalysis;
 import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
+import equinox.task.GenerateExternalStatistics;
 import equinox.task.GenerateLFsWithMissionParameters;
 import equinox.task.GenerateLifeFactors;
 import equinox.task.GenerateStressRatios;
@@ -119,11 +122,13 @@ import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
 import equinox.task.SaveStressSequenceAsSIGMA;
 import equinox.task.SaveStressSequenceAsSTH;
+import equinox.task.SaveStressSequenceInfo;
 import equinox.task.SaveStressSequencePlotToFile;
 import equinox.task.SaveTXT;
 import equinox.task.SaveTask;
 import equinox.task.SaveXYDataset;
 import equinox.task.SaveXYSeriesCollection;
+import equinox.task.SelectAllExternalFlights;
 import equinox.task.SelectExternalFlight;
 import equinox.task.SetSTFMission;
 import equinox.task.ShareGeneratedItem;
@@ -293,6 +298,16 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			generateStressSequence(equinoxInput, tasks);
 		}
 
+		// assign mission parameters to headless stress sequence
+		if (equinoxInput.getChild("assignMissionParametersToStressSequence") != null) {
+			assignMissionParametersToStressSequence(equinoxInput, tasks);
+		}
+
+		// edit stress sequence info
+		if (equinoxInput.getChild("editStressSequenceInfo") != null) {
+			editStressSequenceInfo(equinoxInput, tasks);
+		}
+
 		// save stress sequence
 		if (equinoxInput.getChild("saveStressSequence") != null) {
 			saveStressSequence(equinoxInput, tasks);
@@ -450,6 +465,106 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates edit stress sequence info tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void editStressSequenceInfo(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating edit stress sequence info tasks...");
+
+		// loop over edit stress sequence info elements
+		for (Element editStressSequenceInfo : equinoxInput.getChildren("editStressSequenceInfo")) {
+
+			// create task
+			String id = editStressSequenceInfo.getChild("id").getTextNormalize();
+			String headlessStressSequenceId = editStressSequenceInfo.getChild("headlessStressSequenceId").getTextNormalize();
+
+			// initialize info array
+			String[] info = new String[3];
+
+			// aircraft program
+			if (editStressSequenceInfo.getChild("aircraftProgram") != null) {
+				info[SaveStressSequenceInfo.PROGRAM] = editStressSequenceInfo.getChildTextNormalize("aircraftProgram");
+			}
+
+			// aircraft section
+			if (editStressSequenceInfo.getChild("aircraftSection") != null) {
+				info[SaveStressSequenceInfo.SECTION] = editStressSequenceInfo.getChildTextNormalize("aircraftSection");
+			}
+
+			// fatigue mission
+			if (editStressSequenceInfo.getChild("fatigueMission") != null) {
+				info[SaveStressSequenceInfo.MISSION] = editStressSequenceInfo.getChildTextNormalize("fatigueMission");
+			}
+
+			// create task
+			SaveStressSequenceInfo task = new SaveStressSequenceInfo(null, info);
+
+			// add to parent task
+			ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+			parentTask.addParameterizedTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates assign mission parameters to headless stress sequence tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void assignMissionParametersToStressSequence(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating assign mission parameters to headless stress sequence tasks...");
+
+		// loop over assign mission parameters to headless stress sequence elements
+		for (Element assignMissionParametersToStressSequence : equinoxInput.getChildren("assignMissionParametersToStressSequence")) {
+
+			// create task
+			String id = assignMissionParametersToStressSequence.getChild("id").getTextNormalize();
+			String headlessStressSequenceId = assignMissionParametersToStressSequence.getChild("headlessStressSequenceId").getTextNormalize();
+			ArrayList<MissionParameter> parameters = new ArrayList<>();
+
+			// loop over mission parameter elements
+			for (Element missionParameter : assignMissionParametersToStressSequence.getChildren("missionParameter")) {
+
+				// get parameter name and value
+				String name = missionParameter.getChildTextNormalize("name");
+				double value = Double.parseDouble(missionParameter.getChildTextNormalize("value"));
+
+				// create and add mission parameter
+				parameters.add(new MissionParameter(name, value));
+			}
+
+			// create task
+			AssignMissionParameters<ExternalStressSequence> assignMissionParametersTask = new AssignMissionParameters<>(null, parameters.toArray(new MissionParameter[parameters.size()]));
+
+			// add to parent task
+			ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+			parentTask.addParameterizedTask(id, assignMissionParametersTask);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(assignMissionParametersTask, true));
 		}
 	}
 
@@ -1634,19 +1749,29 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// get inputs
 			String id = plotLevelCrossing.getChild("id").getTextNormalize();
-			String equivalentStressId = plotLevelCrossing.getChild("equivalentStressId").getTextNormalize();
 			Path outputPath = Paths.get(plotLevelCrossing.getChild("outputPath").getTextNormalize());
 
-			// create task
-			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.LEVEL_CROSSING, outputPath);
+			// equivalent stress id
+			if (plotLevelCrossing.getChild("equivalentStressId") != null) {
 
-			// connect to parent task
-			ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-			parentTask.addParameterizedTask(id, task);
-			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				// create task
+				SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.LEVEL_CROSSING, outputPath);
 
-			// put task to tasks
-			tasks.put(id, new InstructedTask(task, true));
+				// connect to parent task
+				String equivalentStressId = plotLevelCrossing.getChild("equivalentStressId").getTextNormalize();
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+
+			// headless equivalent stress id
+			else if (plotLevelCrossing.getChild("headlessEquivalentStressId") != null) {
+
+				// FIXME create task
+			}
 		}
 	}
 
@@ -1683,7 +1808,6 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 				// get inputs
 				String id = equivalentStressAnalysis.getChild("id").getTextNormalize();
-				String stressSequenceId = equivalentStressAnalysis.getChild("stressSequenceId").getTextNormalize();
 				Path xmlPath = Paths.get(equivalentStressAnalysis.getChild("xmlPath").getTextNormalize());
 
 				// get input parameters
@@ -1697,10 +1821,21 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				EquivalentStressAnalysis task = new EquivalentStressAnalysis(null, input, engine);
 				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
 
-				// add to parent task
-				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
-				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-				parentTask.addParameterizedTask(id, task);
+				// stress sequence
+				if (equivalentStressAnalysis.getChild("stressSequenceId") != null) {
+					String stressSequenceId = equivalentStressAnalysis.getChildTextNormalize("stressSequenceId");
+					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+					parentTask.addParameterizedTask(id, task);
+				}
+
+				// headless stress sequence
+				else if (equivalentStressAnalysis.getChild("headlessStressSequenceId") != null) {
+					String headlessStressSequenceId = equivalentStressAnalysis.getChildTextNormalize("headlessStressSequenceId");
+					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(headlessStressSequenceId).getTask();
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+					parentTask.addParameterizedTask(id, task);
+				}
 
 				// put task to tasks
 				tasks.put(id, new InstructedTask(task, true));
@@ -1766,37 +1901,93 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				// get headless stress sequence id
 				String headlessStressSequenceId = plotTypicalFlight.getChild("headlessStressSequenceId").getTextNormalize();
 
-				// get typical flight type
-				int criteria = -1;
-				if (plotType.equals(PilotPointImageType.LONGEST_FLIGHT)) {
-					criteria = SelectExternalFlight.LONGEST_FLIGHT;
+				// plot typical flights
+				if (elementName.equals("plotTypicalFlight")) {
+
+					// get typical flight type
+					int criteria = -1;
+					if (plotType.equals(PilotPointImageType.LONGEST_FLIGHT)) {
+						criteria = SelectExternalFlight.LONGEST_FLIGHT;
+					}
+					else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE)) {
+						criteria = SelectExternalFlight.MAX_VALIDITY;
+					}
+					else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS)) {
+						criteria = SelectExternalFlight.MAX_PEAK;
+					}
+
+					// create tasks
+					SaveXYDataset saveTask = new SaveXYDataset(null, outputPath);
+					PlotExternalTypicalFlights plotTask = new PlotExternalTypicalFlights(new ExternalFlightPlotInput());
+					plotTask.addParameterizedTask(id, saveTask);
+					plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+					plotTask.setInputThreshold(1);
+					SelectExternalFlight selectTask = new SelectExternalFlight(null, criteria);
+					selectTask.addParameterizedTask(id, plotTask);
+					selectTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// connect to parent task
+					ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+					parentTask.addParameterizedTask(id, selectTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// put task to tasks
+					tasks.put(id, new InstructedTask(saveTask, true));
 				}
-				else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE)) {
-					criteria = SelectExternalFlight.MAX_VALIDITY;
+
+				// plot typical flight statistics
+				else if (elementName.equals("plotTypicalFlightStatistics")) {
+
+					// create input
+					ExternalStatisticsInput input = new ExternalStatisticsInput();
+
+					// set statistic type
+					if (plotType.equals(PilotPointImageType.NUMBER_OF_PEAKS)) {
+						input.setStatistic(ExternalStatistic.NUM_PEAKS);
+					}
+					else if (plotType.equals(PilotPointImageType.FLIGHT_OCCURRENCE)) {
+						input.setStatistic(ExternalStatistic.FLIGHT_OCCURRENCE);
+					}
+
+					// options
+					if (plotTypicalFlight.getChild("options") != null) {
+
+						// get element
+						Element options = plotTypicalFlight.getChild("options");
+
+						// data display
+						if (options.getChild("showDataLabels") != null) {
+							input.setLabelDisplay(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+						}
+
+						// max flights
+						if (options.getChild("maxFlights") != null) {
+							input.setLimit(Integer.parseInt(options.getChildTextNormalize("maxFlights")));
+						}
+
+						// results order
+						if (options.getChild("resultsOrder") != null) {
+							input.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+						}
+					}
+
+					// create tasks
+					SaveCategoryDataset saveTask = new SaveCategoryDataset(null, outputPath);
+					GenerateExternalStatistics plotTask = new GenerateExternalStatistics(input);
+					plotTask.addParameterizedTask(id, saveTask);
+					plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+					SelectAllExternalFlights selectTask = new SelectAllExternalFlights(null);
+					selectTask.addParameterizedTask(id, plotTask);
+					selectTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// connect to parent task
+					ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+					parentTask.addParameterizedTask(id, selectTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// put task to tasks
+					tasks.put(id, new InstructedTask(saveTask, true));
 				}
-				else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS)) {
-					criteria = SelectExternalFlight.MAX_PEAK;
-				}
-
-				// create tasks
-				SaveXYDataset saveTask = new SaveXYDataset(null, outputPath);
-				PlotExternalTypicalFlights plotTask = new PlotExternalTypicalFlights(new ExternalFlightPlotInput());
-				plotTask.addParameterizedTask(id, saveTask);
-				plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-				plotTask.setInputThreshold(1);
-				SelectExternalFlight selectTask = new SelectExternalFlight(null, criteria);
-				selectTask.addParameterizedTask(id, plotTask);
-				selectTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-				// connect to parent task
-				ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
-				parentTask.addParameterizedTask(id, selectTask);
-				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-				// put task to tasks
-				tasks.put(id, new InstructedTask(saveTask, true));
-
-				// FIXME test this!
 			}
 		}
 	}
