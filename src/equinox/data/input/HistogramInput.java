@@ -15,8 +15,6 @@
  */
 package equinox.data.input;
 
-import equinox.data.fileType.SpectrumItem;
-
 /**
  * Class for histogram input.
  *
@@ -35,8 +33,8 @@ public class HistogramInput {
 	 */
 	public enum HistogramDataType {
 
-		/** Histogram data type. */
-		MEAN_STRESS("Mean stress", "mean_val"), STRESS_AMPLITUDE("Stress Amplitude", "amp_val"), R_RATIO("R-ratio", "r_ratio"), MAX_STRESS("Maximum stress", "max_val"), MIN_STRESS("Minimum stress", "min_val"), STRESS_RANGE("Stress range", "range_val");
+	/** Histogram data type. */
+	MEAN_STRESS("Mean stress", "mean_val"), STRESS_AMPLITUDE("Stress amplitude", "amp_val"), R_RATIO("R-ratio", "r_ratio"), MAX_STRESS("Maximum stress", "max_val"), MIN_STRESS("Minimum stress", "min_val"), STRESS_RANGE("Stress range", "range_val");
 
 		/** Name of data type. */
 		private final String name_, dbColName_;
@@ -54,8 +52,12 @@ public class HistogramInput {
 			dbColName_ = dbColName;
 		}
 
-		@Override
-		public String toString() {
+		/**
+		 * Returns the name of histogram data type.
+		 * 
+		 * @return The name of histogram data type.
+		 */
+		public String getName() {
 			return name_;
 		}
 
@@ -77,19 +79,6 @@ public class HistogramInput {
 
 	/** Histogram data type. */
 	private HistogramDataType dataType_ = HistogramDataType.MEAN_STRESS;
-
-	/** Equivalent stress. */
-	private final SpectrumItem equivalentStress_;
-
-	/**
-	 * Creates histogram input.
-	 *
-	 * @param equivalentStress
-	 *            Equivalent stress.
-	 */
-	public HistogramInput(SpectrumItem equivalentStress) {
-		equivalentStress_ = equivalentStress;
-	}
 
 	/**
 	 * Sets number of digits after comma.
@@ -184,14 +173,5 @@ public class HistogramInput {
 	 */
 	public HistogramDataType getDataType() {
 		return dataType_;
-	}
-
-	/**
-	 * Returns equivalent stress.
-	 *
-	 * @return Equivalent stress.
-	 */
-	public SpectrumItem getEquivalentStress() {
-		return equivalentStress_;
 	}
 }

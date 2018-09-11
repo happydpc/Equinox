@@ -17,11 +17,16 @@ package equinox.task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for save spectrum info task.
@@ -30,25 +35,54 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Feb 3, 2016
  * @time 1:57:31 PM
  */
-public class SaveSpectrumInfo extends InternalEquinoxTask<Void> implements ShortRunningTask {
+public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements ShortRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Spectrum> {
 
 	/** Spectrum. */
-	private final Spectrum spectrum_;
+	private Spectrum spectrum_;
 
 	/** Info array. */
 	private final String[] info_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Spectrum>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save spectrum info task.
 	 *
 	 * @param spectrum
-	 *            Spectrum.
+	 *            Spectrum. Can be null for automatic execution.
 	 * @param info
 	 *            Info array.
 	 */
 	public SaveSpectrumInfo(Spectrum spectrum, String[] info) {
 		spectrum_ = spectrum;
 		info_ = info;
+	}
+
+	@Override
+	public void setAutomaticInput(Spectrum input) {
+		spectrum_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Spectrum> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Spectrum>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -62,7 +96,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Void> implements Short
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Spectrum call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.EDIT_SPECTRUM_INFO);
@@ -86,7 +120,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Void> implements Short
 				connection.setAutoCommit(true);
 
 				// return
-				return null;
+				return spectrum_;
 			}
 
 			// exception occurred during process
@@ -110,10 +144,48 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Void> implements Short
 		// call ancestor
 		super.succeeded();
 
-		// update spectrum info
-		spectrum_.setProgram(info_[GetSpectrumEditInfo.PROGRAM]);
-		spectrum_.setSection(info_[GetSpectrumEditInfo.SECTION]);
-		spectrum_.setMission(info_[GetSpectrumEditInfo.MISSION]);
+		try {
+
+			// get spectrum
+			Spectrum spectrum = get();
+
+			// update spectrum info
+			if (automaticTasks_ == null) {
+				spectrum.setProgram(info_[GetSpectrumEditInfo.PROGRAM]);
+				spectrum.setSection(info_[GetSpectrumEditInfo.SECTION]);
+				spectrum.setMission(info_[GetSpectrumEditInfo.MISSION]);
+			}
+
+			// manage automatic tasks
+			else {
+				parameterizedTaskOwnerSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

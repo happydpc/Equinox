@@ -381,7 +381,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		Path output = getWorkingDirectory().resolve("rainflowHistogram.png");
 
 		// create input
-		HistogramInput input = new HistogramInput(eqStress_);
+		HistogramInput input = new HistogramInput();
 		input.setDataType(HistogramDataType.MEAN_STRESS);
 		input.setLimit(10);
 		input.setLabelsVisible(true);
@@ -412,7 +412,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		renderer.setBaseToolTipGenerator(null);
 
 		// plot
-		CategoryDataset dataset = new PlotHistogramProcess(this, input, rainflowCyclesTableName).start(connection);
+		CategoryDataset dataset = new PlotHistogramProcess(this, input, rainflowCyclesTableName, eqStress_).start(connection);
 
 		// set dataset
 		plot.setDataset(dataset);

@@ -30,6 +30,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import equinox.Equinox;
 import equinox.controller.LevelCrossingViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
 import equinox.data.fileType.ExternalFatigueEquivalentStress;
 import equinox.data.fileType.ExternalLinearEquivalentStress;
 import equinox.data.fileType.ExternalPreffasEquivalentStress;
@@ -50,7 +51,7 @@ import equinox.task.automation.PostProcessingTask;
  * @date Mar 15, 2015
  * @time 4:05:33 PM
  */
-public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<XYSeriesCollection> {
+public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<Pair<XYSeriesCollection, String>> {
 
 	/** Equivalent stresses. */
 	private final List<SpectrumItem> stresses_;
@@ -59,7 +60,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	private final ExternalLevelCrossingInput input_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<XYSeriesCollection>> automaticTasks_ = null;
+	private HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, String>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -94,7 +95,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<XYSeriesCollection> task) {
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYSeriesCollection, String>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -102,7 +103,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<XYSeriesCollection>> getParameterizedTasks() {
+	public HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, String>>> getParameterizedTasks() {
 		return automaticTasks_;
 	}
 
@@ -244,6 +245,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 
 			// get dataset
 			XYSeriesCollection dataset = get();
+			String xAxisLabel = input_.isNormalize() ? "Number of Cycles (Normalized by spectrum validities)" : "Number of Cycles";
 
 			// user initiated task
 			if (automaticTasks_ == null) {
@@ -252,7 +254,6 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 				LevelCrossingViewPanel panel = (LevelCrossingViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.LEVEL_CROSSING_VIEW);
 
 				// set data
-				String xAxisLabel = input_.isNormalize() ? "Number of Cycles (Normalized by spectrum validities)" : "Number of Cycles";
 				panel.plottingCompleted(dataset, xAxisLabel, true);
 
 				// show level crossing view panel
@@ -261,7 +262,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(dataset, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, xAxisLabel), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 

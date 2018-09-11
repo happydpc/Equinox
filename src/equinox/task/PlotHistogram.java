@@ -16,6 +16,7 @@
 package equinox.task;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -24,10 +25,16 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
+import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.HistogramInput;
 import equinox.process.PlotHistogramProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for plot histogram task.
@@ -36,19 +43,54 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 6, 2016
  * @time 2:30:52 PM
  */
-public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/** Histogram input. */
 	private final HistogramInput input_;
+
+	/** Equivalent stress. */
+	private SpectrumItem equivalentStress_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates plot histogram task.
 	 *
 	 * @param input
 	 *            Input.
+	 * @param equivalentStress
+	 *            Equivalent stress. Can be null for automatic execution.
 	 */
-	public PlotHistogram(HistogramInput input) {
+	public PlotHistogram(HistogramInput input, SpectrumItem equivalentStress) {
 		input_ = input;
+		equivalentStress_ = equivalentStress;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumItem input) {
+		equivalentStress_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -75,7 +117,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 
 		// get database connection
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
-			dataset = new PlotHistogramProcess(this, input_).start(connection);
+			dataset = new PlotHistogramProcess(this, input_, equivalentStress_).start(connection);
 		}
 
 		// return dataset
@@ -93,25 +135,64 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 
 			// get dataset
 			CategoryDataset dataset = get();
-
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-
-			// setup plot labels
 			String title = "Rainflow Histogram";
 			String yAxisLabel = "Number of cycles";
-			String xAxisLabel = input_.getDataType().toString();
+			String xAxisLabel = input_.getDataType().getName();
 
-			// set chart data to panel
-			panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, false, input_.getLabelsVisible(), false);
+			// user started task
+			if (automaticTasks_ == null) {
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+
+				// set chart data to panel
+				panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, false, input_.getLabelsVisible(), false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(input_.getLabelsVisible());
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(false);
+				plotAttributes.setSubTitle(null);
+				plotAttributes.setTitle(title);
+				plotAttributes.setXAxisLabel(xAxisLabel);
+				plotAttributes.setYAxisLabel(yAxisLabel);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

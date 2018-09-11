@@ -52,11 +52,17 @@ import equinox.data.fileType.StressSequence;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
+import equinox.data.input.ExternalFlightComparisonInput;
 import equinox.data.input.ExternalFlightPlotInput;
+import equinox.data.input.ExternalLevelCrossingInput;
 import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
+import equinox.data.input.ExternalStressSequenceComparisonInput;
+import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparisonCriteria;
 import equinox.data.input.FlightComparisonInput;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.data.input.HistogramInput;
+import equinox.data.input.HistogramInput.HistogramDataType;
 import equinox.data.input.LevelCrossingInput;
 import equinox.data.input.LifeFactorComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput;
@@ -79,6 +85,8 @@ import equinox.task.AdvancedSpectrumSearch;
 import equinox.task.AssignMissionParameters;
 import equinox.task.CompareEquivalentStresses;
 import equinox.task.CompareEquivalentStressesWithMissionParameters;
+import equinox.task.CompareExternalFlights;
+import equinox.task.CompareExternalStressSequences;
 import equinox.task.CompareFlights;
 import equinox.task.CompareStressSequences;
 import equinox.task.CreateDummySTFFile;
@@ -93,13 +101,16 @@ import equinox.task.GenerateLifeFactors;
 import equinox.task.GenerateStressRatios;
 import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GenerateStressSequence;
+import equinox.task.GetExternalTypicalFlight;
 import equinox.task.GetSTFInfo2;
 import equinox.task.GetSTFInfo3;
 import equinox.task.GetSpectrumEditInfo;
 import equinox.task.GetTypicalFlight;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.PlotExternalLevelCrossing;
 import equinox.task.PlotExternalTypicalFlights;
+import equinox.task.PlotHistogram;
 import equinox.task.PlotLevelCrossing;
 import equinox.task.SavableTask;
 import equinox.task.SaveANA;
@@ -120,6 +131,7 @@ import equinox.task.SaveOutputFile;
 import equinox.task.SaveRainflow;
 import equinox.task.SaveSTF;
 import equinox.task.SaveSpectrum;
+import equinox.task.SaveSpectrumInfo;
 import equinox.task.SaveStressSequenceAsSIGMA;
 import equinox.task.SaveStressSequenceAsSTH;
 import equinox.task.SaveStressSequenceInfo;
@@ -216,6 +228,11 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		// assign mission parameters to spectrum
 		if (equinoxInput.getChild("assignMissionParametersToSpectrum") != null) {
 			assignMissionParametersToSpectrum(equinoxInput, tasks);
+		}
+
+		// edit spectrum info
+		if (equinoxInput.getChild("editSpectrumInfo") != null) {
+			editSpectrumInfo(equinoxInput, tasks);
 		}
 
 		// save spectrum
@@ -469,6 +486,48 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	}
 
 	/**
+	 * Creates edit spectrum info tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void editSpectrumInfo(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating edit spectrum info tasks...");
+
+		// loop over edit spectrum info elements
+		for (Element editSpectrumInfo : equinoxInput.getChildren("editSpectrumInfo")) {
+
+			// create task
+			String id = editSpectrumInfo.getChildTextNormalize("id");
+			String spectrumId = editSpectrumInfo.getChildTextNormalize("spectrumId");
+			String deliveryReference = editSpectrumInfo.getChildTextNormalize("deliveryReference");
+			String description = editSpectrumInfo.getChildTextNormalize("description");
+
+			// set info
+			String[] info = new String[9];
+			info[GetSpectrumEditInfo.DELIVERY_REF] = deliveryReference;
+			info[GetSpectrumEditInfo.DESCRIPTION] = description;
+
+			// create task
+			SaveSpectrumInfo task = new SaveSpectrumInfo(null, info);
+
+			// add to parent task
+			ParameterizedTaskOwner<Spectrum> parentTask = (ParameterizedTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
+			parentTask.addParameterizedTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
 	 * Creates edit stress sequence info tasks.
 	 *
 	 * @param equinoxInput
@@ -591,14 +650,34 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			Path outputPath = Paths.get(saveEquivalentStressRatios.getChildTextNormalize("outputPath"));
 			String basisMission = saveEquivalentStressRatios.getChildTextNormalize("basisMission");
 
+			// set reference name
+			String referenceIdName = null;
+			if (saveEquivalentStressRatios.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (saveEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// options
 			BooleanProperty[] options = new BooleanProperty[15];
 			for (int i = 0; i < options.length; i++) {
 				options[i] = new SimpleBooleanProperty(false);
 			}
-			options[SaveEquivalentStressRatios.STRESS_RATIO].set(true);
-			options[SaveEquivalentStressRatios.PP_NAME].set(true);
-			options[SaveEquivalentStressRatios.MISSION].set(true);
+
+			// set default options
+			if (referenceIdName.equals("equivalentStressId")) {
+				options[SaveEquivalentStressRatios.STRESS_RATIO].set(true);
+				options[SaveEquivalentStressRatios.PP_NAME].set(true);
+				options[SaveEquivalentStressRatios.MISSION].set(true);
+			}
+			else if (referenceIdName.equals("headlessEquivalentStressId")) {
+				options[SaveEquivalentStressRatios.STRESS_RATIO].set(true);
+				options[SaveEquivalentStressRatios.SEQ_NAME].set(true);
+				options[SaveEquivalentStressRatios.MISSION].set(true);
+			}
+
+			// read options
 			if (saveEquivalentStressRatios.getChild("options") != null) {
 
 				// get element
@@ -656,7 +735,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveEquivalentStressRatios task = new SaveEquivalentStressRatios(null, options, outputPath.toFile(), basisMission);
 
 			// set input threshold
-			List<Element> equivalentStressIds = saveEquivalentStressRatios.getChildren("equivalentStressId");
+			List<Element> equivalentStressIds = saveEquivalentStressRatios.getChildren(referenceIdName);
 			task.setInputThreshold(equivalentStressIds.size());
 
 			// loop over stress ids
@@ -699,14 +778,34 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			Path outputPath = Paths.get(saveLifeFactors.getChildTextNormalize("outputPath"));
 			String basisMission = saveLifeFactors.getChildTextNormalize("basisMission");
 
+			// set reference name
+			String referenceIdName = null;
+			if (saveLifeFactors.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (saveLifeFactors.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// options
 			BooleanProperty[] options = new BooleanProperty[15];
 			for (int i = 0; i < options.length; i++) {
 				options[i] = new SimpleBooleanProperty(false);
 			}
-			options[SaveLifeFactors.LIFE_FACTOR].set(true);
-			options[SaveLifeFactors.PP_NAME].set(true);
-			options[SaveLifeFactors.MISSION].set(true);
+
+			// set default options
+			if (referenceIdName.equals("equivalentStressId")) {
+				options[SaveLifeFactors.LIFE_FACTOR].set(true);
+				options[SaveLifeFactors.PP_NAME].set(true);
+				options[SaveLifeFactors.MISSION].set(true);
+			}
+			else if (referenceIdName.equals("headlessEquivalentStressId")) {
+				options[SaveLifeFactors.LIFE_FACTOR].set(true);
+				options[SaveLifeFactors.SEQ_NAME].set(true);
+				options[SaveLifeFactors.MISSION].set(true);
+			}
+
+			// read options
 			if (saveLifeFactors.getChild("options") != null) {
 
 				// get element
@@ -764,7 +863,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveLifeFactors task = new SaveLifeFactors(null, options, outputPath.toFile(), basisMission);
 
 			// set input threshold
-			List<Element> equivalentStressIds = saveLifeFactors.getChildren("equivalentStressId");
+			List<Element> equivalentStressIds = saveLifeFactors.getChildren(referenceIdName);
 			task.setInputThreshold(equivalentStressIds.size());
 
 			// loop over stress ids
@@ -806,15 +905,36 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = saveEquivalentStresses.getChildTextNormalize("id");
 			Path outputPath = Paths.get(saveEquivalentStresses.getChildTextNormalize("outputPath"));
 
+			// set reference name
+			String referenceIdName = null;
+			if (saveEquivalentStresses.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (saveEquivalentStresses.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// options
 			BooleanProperty[] options = new BooleanProperty[15];
 			for (int i = 0; i < options.length; i++) {
 				options[i] = new SimpleBooleanProperty(false);
 			}
-			options[SaveEquivalentStresses.EQUIVALENT_STRESS] = new SimpleBooleanProperty(true);
-			options[SaveEquivalentStresses.MAT_NAME] = new SimpleBooleanProperty(true);
-			options[SaveEquivalentStresses.PP_NAME] = new SimpleBooleanProperty(true);
-			options[SaveEquivalentStresses.MISSION] = new SimpleBooleanProperty(true);
+
+			// set default options
+			if (referenceIdName.equals("equivalentStressId")) {
+				options[SaveEquivalentStresses.EQUIVALENT_STRESS] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.MAT_NAME] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.PP_NAME] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.MISSION] = new SimpleBooleanProperty(true);
+			}
+			else if (referenceIdName.equals("headlessEquivalentStressId")) {
+				options[SaveEquivalentStresses.EQUIVALENT_STRESS] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.MAT_NAME] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.SEQ_NAME] = new SimpleBooleanProperty(true);
+				options[SaveEquivalentStresses.MISSION] = new SimpleBooleanProperty(true);
+			}
+
+			// read options
 			if (saveEquivalentStresses.getChild("options") != null) {
 
 				// get element
@@ -872,7 +992,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			SaveEquivalentStresses task = new SaveEquivalentStresses(null, options, outputPath.toFile());
 
 			// set input threshold
-			List<Element> equivalentStressIds = saveEquivalentStresses.getChildren("equivalentStressId");
+			List<Element> equivalentStressIds = saveEquivalentStresses.getChildren(referenceIdName);
 			task.setInputThreshold(equivalentStressIds.size());
 
 			// loop over stress ids
@@ -915,6 +1035,15 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String basisMission = plotEquivalentStressRatios.getChildTextNormalize("basisMission");
 			Path outputPath = Paths.get(plotEquivalentStressRatios.getChildTextNormalize("outputPath"));
 
+			// set reference name
+			String referenceIdName = null;
+			if (plotEquivalentStressRatios.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (plotEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// create input
 			EquivalentStressRatioComparisonInput input = new EquivalentStressRatioComparisonInput();
 			input.setBasisMission(basisMission);
@@ -939,11 +1068,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// set series naming
 			if (plotEquivalentStressRatios.getChild("seriesNaming") != null) {
 				Element seriesNaming = plotEquivalentStressRatios.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
-				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				if (referenceIdName.equals("equivalentStressId")) {
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
 				}
 				if (seriesNaming.getChild("includeElementId") != null) {
 					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
@@ -981,7 +1112,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotEquivalentStressRatios.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotEquivalentStressRatios.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1011,7 +1142,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotEquivalentStressRatios.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotEquivalentStressRatios.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1056,6 +1187,15 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String basisMission = plotLifeFactors.getChildTextNormalize("basisMission");
 			Path outputPath = Paths.get(plotLifeFactors.getChildTextNormalize("outputPath"));
 
+			// set reference name
+			String referenceIdName = null;
+			if (plotLifeFactors.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (plotLifeFactors.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// create input
 			LifeFactorComparisonInput input = new LifeFactorComparisonInput();
 			input.setBasisMission(basisMission);
@@ -1080,11 +1220,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// set series naming
 			if (plotLifeFactors.getChild("seriesNaming") != null) {
 				Element seriesNaming = plotLifeFactors.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
-				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				if (referenceIdName.equals("equivalentStressId")) {
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
 				}
 				if (seriesNaming.getChild("includeElementId") != null) {
 					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
@@ -1122,7 +1264,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotLifeFactors.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotLifeFactors.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1152,7 +1294,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotLifeFactors.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotLifeFactors.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1196,6 +1338,15 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = plotEquivalentStressComparison.getChildTextNormalize("id");
 			Path outputPath = Paths.get(plotEquivalentStressComparison.getChildTextNormalize("outputPath"));
 
+			// set reference name
+			String referenceIdName = null;
+			if (plotEquivalentStressComparison.getChild("equivalentStressId") != null) {
+				referenceIdName = "equivalentStressId";
+			}
+			else if (plotEquivalentStressComparison.getChild("headlessEquivalentStressId") != null) {
+				referenceIdName = "headlessEquivalentStressId";
+			}
+
 			// create comparison input
 			EquivalentStressComparisonInput input = new EquivalentStressComparisonInput();
 
@@ -1207,11 +1358,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// set series naming
 			if (plotEquivalentStressComparison.getChild("seriesNaming") != null) {
 				Element seriesNaming = plotEquivalentStressComparison.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
-				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+				if (referenceIdName.equals("equivalentStressId")) {
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
 				}
 				if (seriesNaming.getChild("includeElementId") != null) {
 					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
@@ -1249,7 +1402,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotEquivalentStressComparison.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotEquivalentStressComparison.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1279,7 +1432,7 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// set input threshold
-				List<Element> equivalentStressIds = plotEquivalentStressComparison.getChildren("equivalentStressId");
+				List<Element> equivalentStressIds = plotEquivalentStressComparison.getChildren(referenceIdName);
 				compareTask.setInputThreshold(equivalentStressIds.size());
 
 				// loop over stress ids
@@ -1323,89 +1476,156 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = plotTypicalFlightComparison.getChildTextNormalize("id");
 			Path outputPath = Paths.get(plotTypicalFlightComparison.getChildTextNormalize("outputPath"));
 
-			// create comparison input
-			FlightComparisonInput input = new FlightComparisonInput(null);
-			input.setShowMarkers(false);
+			// stress sequence
+			if (plotTypicalFlightComparison.getChild("typicalFlight").getChild("stressSequenceId") != null) {
 
-			// stress components
-			if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
-				Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
-				boolean[] plotComponentOptions = { true, true, true, true };
-				if (stressComponents.getChild("plotIncrements") != null) {
-					plotComponentOptions[FlightComparisonInput.INCREMENT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotIncrements").getTextNormalize());
+				// create comparison input
+				FlightComparisonInput input = new FlightComparisonInput(null);
+				input.setShowMarkers(false);
+
+				// stress components
+				if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
+					Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
+					boolean[] plotComponentOptions = { true, true, true, true };
+					if (stressComponents.getChild("plotIncrements") != null) {
+						plotComponentOptions[FlightComparisonInput.INCREMENT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotIncrements").getTextNormalize());
+					}
+					if (stressComponents.getChild("plotDp") != null) {
+						plotComponentOptions[FlightComparisonInput.DP_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDp").getTextNormalize());
+					}
+					if (stressComponents.getChild("plotDt") != null) {
+						plotComponentOptions[FlightComparisonInput.DT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDt").getTextNormalize());
+					}
+					if (stressComponents.getChild("plot1g") != null) {
+						plotComponentOptions[FlightComparisonInput.ONE_G_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plot1g").getTextNormalize());
+					}
+					input.setPlotComponentOptions(plotComponentOptions, false);
 				}
-				if (stressComponents.getChild("plotDp") != null) {
-					plotComponentOptions[FlightComparisonInput.DP_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDp").getTextNormalize());
+
+				// set series naming
+				if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
+					if (seriesNaming.getChild("includeElementId") != null) {
+						input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeTypicalFlightName") != null) {
+						input.setIncludeFlightName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeTypicalFlightName")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
 				}
-				if (stressComponents.getChild("plotDt") != null) {
-					plotComponentOptions[FlightComparisonInput.DT_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plotDt").getTextNormalize());
+
+				// create tasks
+				SaveChart saveTask = new SaveChart(null, outputPath);
+				CompareFlights compareTask = new CompareFlights(input);
+				compareTask.addParameterizedTask(id, saveTask);
+				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+				compareTask.setInputThreshold(typicalFlights.size());
+
+				// loop over typical flights
+				for (Element typicalFlight : typicalFlights) {
+
+					// get sequence id and flight name
+					String stressSequenceId = typicalFlight.getChildText("stressSequenceId");
+					String flightName = typicalFlight.getChildText("typicalFlightName");
+
+					// create get flight task
+					GetTypicalFlight getFlightTask = new GetTypicalFlight(flightName);
+					getFlightTask.addParameterizedTask(Integer.toString(compareTask.hashCode()), compareTask);
+					getFlightTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// connect to parent task
+					ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+					parentTask.addParameterizedTask(Integer.toString(getFlightTask.hashCode()), getFlightTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 				}
-				if (stressComponents.getChild("plot1g") != null) {
-					plotComponentOptions[FlightComparisonInput.ONE_G_STRESS_COMP] = Boolean.parseBoolean(stressComponents.getChild("plot1g").getTextNormalize());
-				}
-				input.setPlotComponentOptions(plotComponentOptions, false);
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 			}
 
-			// set series naming
-			if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
-				Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+			// headless stress sequence
+			else if (plotTypicalFlightComparison.getChild("typicalFlight").getChild("headlessStressSequenceId") != null) {
+
+				// create comparison input
+				ExternalFlightComparisonInput input = new ExternalFlightComparisonInput();
+				input.setShowMarkers(false);
+
+				// set series naming
+				if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeElementId") != null) {
+						input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeTypicalFlightName") != null) {
+						input.setIncludeFlightName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeTypicalFlightName")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
 				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+
+				// create tasks
+				SaveChart saveTask = new SaveChart(null, outputPath);
+				CompareExternalFlights compareTask = new CompareExternalFlights(input);
+				compareTask.addParameterizedTask(id, saveTask);
+				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+				compareTask.setInputThreshold(typicalFlights.size());
+
+				// loop over typical flights
+				for (Element typicalFlight : typicalFlights) {
+
+					// get sequence id and flight name
+					String headlessStressSequenceId = typicalFlight.getChildText("headlessStressSequenceId");
+					String flightName = typicalFlight.getChildText("typicalFlightName");
+
+					// create get flight task
+					GetExternalTypicalFlight getFlightTask = new GetExternalTypicalFlight(flightName);
+					getFlightTask.addParameterizedTask(Integer.toString(compareTask.hashCode()), compareTask);
+					getFlightTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// connect to parent task
+					ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+					parentTask.addParameterizedTask(Integer.toString(getFlightTask.hashCode()), getFlightTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 				}
-				if (seriesNaming.getChild("includeElementId") != null) {
-					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
-				}
-				if (seriesNaming.getChild("includeStressSequenceName") != null) {
-					input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
-				}
-				if (seriesNaming.getChild("includeTypicalFlightName") != null) {
-					input.setIncludeFlightName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeTypicalFlightName")));
-				}
-				if (seriesNaming.getChild("includeAircraftProgram") != null) {
-					input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
-				}
-				if (seriesNaming.getChild("includeAircraftSection") != null) {
-					input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
-				}
-				if (seriesNaming.getChild("includeFatigueMission") != null) {
-					input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
-				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 			}
-
-			// create tasks
-			SaveChart saveTask = new SaveChart(null, outputPath);
-			CompareFlights compareTask = new CompareFlights(input);
-			compareTask.addParameterizedTask(id, saveTask);
-			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-			// set input threshold
-			List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
-			compareTask.setInputThreshold(typicalFlights.size());
-
-			// loop over typical flights
-			for (Element typicalFlight : typicalFlights) {
-
-				// get sequence id and flight name
-				String stressSequenceId = typicalFlight.getChildText("stressSequenceId");
-				String flightName = typicalFlight.getChildText("typicalFlightName");
-
-				// create get flight task
-				GetTypicalFlight getFlightTask = new GetTypicalFlight(flightName);
-				getFlightTask.addParameterizedTask(Integer.toString(compareTask.hashCode()), compareTask);
-				getFlightTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-				// connect to parent task
-				ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-				parentTask.addParameterizedTask(Integer.toString(getFlightTask.hashCode()), getFlightTask);
-				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-			}
-
-			// put task to tasks
-			tasks.put(id, new InstructedTask(saveTask, true));
-			tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 		}
 	}
 
@@ -1431,66 +1651,129 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = plotLevelCrossingComparison.getChildTextNormalize("id");
 			Path outputPath = Paths.get(plotLevelCrossingComparison.getChildTextNormalize("outputPath"));
 
-			// create comparison input
-			LevelCrossingInput input = new LevelCrossingInput(true, null);
+			// equivalent stress
+			if (plotLevelCrossingComparison.getChild("equivalentStressId") != null) {
 
-			// set series naming
-			if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
-				Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+				// create comparison input
+				LevelCrossingInput input = new LevelCrossingInput(true, null);
+
+				// set series naming
+				if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						input.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
+					if (seriesNaming.getChild("includeElementId") != null) {
+						input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeMaterialName") != null) {
+						input.setIncludeMaterialName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName")));
+					}
+					if (seriesNaming.getChild("includeOmissionLevel") != null) {
+						input.setIncludeOmissionLevel(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeOmissionLevel")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
 				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					input.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+
+				// create tasks
+				SaveXYSeriesCollection saveDatasetTask = new SaveXYSeriesCollection(null, outputPath);
+				PlotLevelCrossing compareTask = new PlotLevelCrossing(input);
+				compareTask.addParameterizedTask(id, saveDatasetTask);
+				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> equivalentStressIds = plotLevelCrossingComparison.getChildren("equivalentStressId");
+				compareTask.setInputThreshold(equivalentStressIds.size());
+
+				// loop over equivalent stress ids
+				for (Element equivalentStressIdElement : equivalentStressIds) {
+
+					// get stress id
+					String equivalentStressId = equivalentStressIdElement.getTextNormalize();
+
+					// connect to parent task
+					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+					parentTask.addParameterizedTask(id, compareTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 				}
-				if (seriesNaming.getChild("includeElementId") != null) {
-					input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
-				}
-				if (seriesNaming.getChild("includeStressSequenceName") != null) {
-					input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
-				}
-				if (seriesNaming.getChild("includeMaterialName") != null) {
-					input.setIncludeMaterialName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName")));
-				}
-				if (seriesNaming.getChild("includeOmissionLevel") != null) {
-					input.setIncludeOmissionLevel(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeOmissionLevel")));
-				}
-				if (seriesNaming.getChild("includeAircraftProgram") != null) {
-					input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
-				}
-				if (seriesNaming.getChild("includeAircraftSection") != null) {
-					input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
-				}
-				if (seriesNaming.getChild("includeFatigueMission") != null) {
-					input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
-				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveDatasetTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 			}
 
-			// create tasks
-			SaveXYSeriesCollection saveDatasetTask = new SaveXYSeriesCollection(null, outputPath);
-			PlotLevelCrossing compareTask = new PlotLevelCrossing(input);
-			compareTask.addParameterizedTask(id, saveDatasetTask);
-			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			// headless equivalent stress
+			else if (plotLevelCrossingComparison.getChild("headlessEquivalentStressId") != null) {
 
-			// set input threshold
-			List<Element> equivalentStressIds = plotLevelCrossingComparison.getChildren("equivalentStressId");
-			compareTask.setInputThreshold(equivalentStressIds.size());
+				// create input
+				ExternalLevelCrossingInput input = new ExternalLevelCrossingInput(true, null);
 
-			// loop over equivalent stress ids
-			for (Element equivalentStressIdElement : equivalentStressIds) {
+				// set series naming
+				if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeElementId") != null) {
+						input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeMaterialName") != null) {
+						input.setIncludeMaterialName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName")));
+					}
+					if (seriesNaming.getChild("includeOmissionLevel") != null) {
+						input.setIncludeOmissionLevel(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeOmissionLevel")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
+				}
 
-				// get stress id
-				String equivalentStressId = equivalentStressIdElement.getTextNormalize();
+				// create tasks
+				SaveXYSeriesCollection saveDatasetTask = new SaveXYSeriesCollection(null, outputPath);
+				PlotExternalLevelCrossing plotTask = new PlotExternalLevelCrossing(input);
+				plotTask.addParameterizedTask(id, saveDatasetTask);
+				plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
-				// connect to parent task
-				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-				parentTask.addParameterizedTask(id, compareTask);
-				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				// set input threshold
+				List<Element> headlessEquivalentStressIds = plotLevelCrossingComparison.getChildren("headlessEquivalentStressId");
+				plotTask.setInputThreshold(headlessEquivalentStressIds.size());
+
+				// loop over equivalent stress ids
+				for (Element headlessEquivalentStressIdElement : headlessEquivalentStressIds) {
+
+					// get stress id
+					String headlessEquivalentStressId = headlessEquivalentStressIdElement.getTextNormalize();
+
+					// connect to parent task
+					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(headlessEquivalentStressId).getTask();
+					parentTask.addParameterizedTask(id, plotTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveDatasetTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
 			}
-
-			// put task to tasks
-			tasks.put(id, new InstructedTask(saveDatasetTask, true));
-			tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 		}
 	}
 
@@ -1516,72 +1799,141 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			String id = plotStressSequenceComparison.getChildTextNormalize("id");
 			Path outputPath = Paths.get(plotStressSequenceComparison.getChildTextNormalize("outputPath"));
 
-			// create comparison input
-			StressSequenceComparisonInput comparisonInput = new StressSequenceComparisonInput();
-			comparisonInput.setCriteria(ComparisonCriteria.valueOf(plotStressSequenceComparison.getChildTextNormalize("comparisonCriteria")));
+			// stress sequence
+			if (plotStressSequenceComparison.getChild("stressSequenceId") != null) {
 
-			// set options
-			if (plotStressSequenceComparison.getChild("options") != null) {
-				Element options = plotStressSequenceComparison.getChild("options");
-				if (options.getChild("resultsOrder") != null) {
-					comparisonInput.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+				// create comparison input
+				StressSequenceComparisonInput comparisonInput = new StressSequenceComparisonInput();
+				comparisonInput.setCriteria(ComparisonCriteria.valueOf(plotStressSequenceComparison.getChildTextNormalize("comparisonCriteria")));
+
+				// set options
+				if (plotStressSequenceComparison.getChild("options") != null) {
+					Element options = plotStressSequenceComparison.getChild("options");
+					if (options.getChild("resultsOrder") != null) {
+						comparisonInput.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+					}
+					if (options.getChild("showDataLabels") != null) {
+						comparisonInput.setLabelDisplay(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+					}
 				}
-				if (options.getChild("showDataLabels") != null) {
-					comparisonInput.setLabelDisplay(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+
+				// set series naming
+				if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeSpectrumName") != null) {
+						comparisonInput.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+					}
+					if (seriesNaming.getChild("includeStfName") != null) {
+						comparisonInput.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+					}
+					if (seriesNaming.getChild("includeElementId") != null) {
+						comparisonInput.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						comparisonInput.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						comparisonInput.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						comparisonInput.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						comparisonInput.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
 				}
+
+				// create tasks
+				SaveCategoryDataset saveDatasetTask = new SaveCategoryDataset(null, outputPath);
+				CompareStressSequences compareTask = new CompareStressSequences(comparisonInput);
+				compareTask.addParameterizedTask(id, saveDatasetTask);
+				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> stressSequenceIds = plotStressSequenceComparison.getChildren("stressSequenceId");
+				compareTask.setInputThreshold(stressSequenceIds.size());
+
+				// loop over sequence ids
+				for (Element stressSequenceIdElement : stressSequenceIds) {
+
+					// get stress sequence id
+					String stressSequenceId = stressSequenceIdElement.getTextNormalize();
+
+					// connect to parent task
+					ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+					parentTask.addParameterizedTask(id, compareTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveDatasetTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 			}
 
-			// set series naming
-			if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
-				Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
-				if (seriesNaming.getChild("includeSpectrumName") != null) {
-					comparisonInput.setIncludeSpectrumName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName")));
+			// headless stress sequence
+			else if (plotStressSequenceComparison.getChild("headlessStressSequenceId") != null) {
+
+				// create comparison input
+				ExternalStressSequenceComparisonInput comparisonInput = new ExternalStressSequenceComparisonInput();
+				comparisonInput.setCriteria(ExternalComparisonCriteria.valueOf(plotStressSequenceComparison.getChildTextNormalize("comparisonCriteria")));
+
+				// set options
+				if (plotStressSequenceComparison.getChild("options") != null) {
+					Element options = plotStressSequenceComparison.getChild("options");
+					if (options.getChild("resultsOrder") != null) {
+						comparisonInput.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+					}
+					if (options.getChild("showDataLabels") != null) {
+						comparisonInput.setLabelDisplay(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+					}
 				}
-				if (seriesNaming.getChild("includeStfName") != null) {
-					comparisonInput.setIncludeSTFName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName")));
+
+				// set series naming
+				if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeElementId") != null) {
+						comparisonInput.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						comparisonInput.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						comparisonInput.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						comparisonInput.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						comparisonInput.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
 				}
-				if (seriesNaming.getChild("includeElementId") != null) {
-					comparisonInput.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+
+				// create tasks
+				SaveCategoryDataset saveDatasetTask = new SaveCategoryDataset(null, outputPath);
+				CompareExternalStressSequences compareTask = new CompareExternalStressSequences(comparisonInput);
+				compareTask.addParameterizedTask(id, saveDatasetTask);
+				compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> headlessStressSequenceIds = plotStressSequenceComparison.getChildren("headlessStressSequenceId");
+				compareTask.setInputThreshold(headlessStressSequenceIds.size());
+
+				// loop over sequence ids
+				for (Element headlessStressSequenceIdElement : headlessStressSequenceIds) {
+
+					// get stress sequence id
+					String headlessStressSequenceId = headlessStressSequenceIdElement.getTextNormalize();
+
+					// connect to parent task
+					ParameterizedTaskOwner<ExternalStressSequence> parentTask = (ParameterizedTaskOwner<ExternalStressSequence>) tasks.get(headlessStressSequenceId).getTask();
+					parentTask.addParameterizedTask(id, compareTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 				}
-				if (seriesNaming.getChild("includeStressSequenceName") != null) {
-					comparisonInput.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
-				}
-				if (seriesNaming.getChild("includeAircraftProgram") != null) {
-					comparisonInput.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
-				}
-				if (seriesNaming.getChild("includeAircraftSection") != null) {
-					comparisonInput.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
-				}
-				if (seriesNaming.getChild("includeFatigueMission") != null) {
-					comparisonInput.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
-				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveDatasetTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 			}
-
-			// create tasks
-			SaveCategoryDataset saveDatasetTask = new SaveCategoryDataset(null, outputPath);
-			CompareStressSequences compareTask = new CompareStressSequences(comparisonInput);
-			compareTask.addParameterizedTask(id, saveDatasetTask);
-			compareTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-
-			// set input threshold
-			List<Element> stressSequenceIds = plotStressSequenceComparison.getChildren("stressSequenceId");
-			compareTask.setInputThreshold(stressSequenceIds.size());
-
-			// loop over sequence ids
-			for (Element stressSequenceIdElement : stressSequenceIds) {
-
-				// get stress sequence id
-				String stressSequenceId = stressSequenceIdElement.getTextNormalize();
-
-				// connect to parent task
-				ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-				parentTask.addParameterizedTask(id, compareTask);
-				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-			}
-
-			// put task to tasks
-			tasks.put(id, new InstructedTask(saveDatasetTask, true));
-			tasks.put("ownerOf_" + id, new InstructedTask(compareTask, true));
 		}
 	}
 
@@ -1641,8 +1993,16 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// get inputs
 			String id = saveAnalysisOutputFile.getChild("id").getTextNormalize();
-			String equivalentStressId = saveAnalysisOutputFile.getChild("equivalentStressId").getTextNormalize();
 			Path outputPath = Paths.get(saveAnalysisOutputFile.getChild("outputPath").getTextNormalize());
+
+			// get sequence id
+			String equivalentStressId = null;
+			if (saveAnalysisOutputFile.getChild("equivalentStressId") != null) {
+				equivalentStressId = saveAnalysisOutputFile.getChildTextNormalize("equivalentStressId");
+			}
+			else if (saveAnalysisOutputFile.getChild("headlessEquivalentStressId") != null) {
+				equivalentStressId = saveAnalysisOutputFile.getChildTextNormalize("headlessEquivalentStressId");
+			}
 
 			// create task
 			SaveOutputFile task = new SaveOutputFile(null, outputPath);
@@ -1676,9 +2036,17 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 		for (Element saveRainflowCycleInfo : equinoxInput.getChildren("saveRainflowCycleInfo")) {
 
 			// get inputs
-			String id = saveRainflowCycleInfo.getChild("id").getTextNormalize();
-			String equivalentStressId = saveRainflowCycleInfo.getChild("equivalentStressId").getTextNormalize();
-			Path outputPath = Paths.get(saveRainflowCycleInfo.getChild("outputPath").getTextNormalize());
+			String id = saveRainflowCycleInfo.getChildTextNormalize("id");
+			Path outputPath = Paths.get(saveRainflowCycleInfo.getChildTextNormalize("outputPath"));
+
+			// get sequence id
+			String equivalentStressId = null;
+			if (saveRainflowCycleInfo.getChild("equivalentStressId") != null) {
+				equivalentStressId = saveRainflowCycleInfo.getChildTextNormalize("equivalentStressId");
+			}
+			else if (saveRainflowCycleInfo.getChild("headlessEquivalentStressId") != null) {
+				equivalentStressId = saveRainflowCycleInfo.getChildTextNormalize("headlessEquivalentStressId");
+			}
 
 			// create task
 			SaveRainflow task = new SaveRainflow(null, outputPath.toFile());
@@ -1713,19 +2081,82 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 			// get inputs
 			String id = plotRainflowHistogram.getChild("id").getTextNormalize();
-			String equivalentStressId = plotRainflowHistogram.getChild("equivalentStressId").getTextNormalize();
 			Path outputPath = Paths.get(plotRainflowHistogram.getChild("outputPath").getTextNormalize());
 
-			// create task
-			SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.RAINFLOW_HISTOGRAM, outputPath);
+			// equivalent stress
+			if (plotRainflowHistogram.getChild("equivalentStressId") != null) {
 
-			// connect to parent task
-			ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
-			parentTask.addParameterizedTask(id, task);
-			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				// get id
+				String equivalentStressId = plotRainflowHistogram.getChildTextNormalize("equivalentStressId");
 
-			// put task to tasks
-			tasks.put(id, new InstructedTask(task, true));
+				// create task
+				SaveEquivalentStressPlotToFile task = new SaveEquivalentStressPlotToFile(null, PilotPointImageType.RAINFLOW_HISTOGRAM, outputPath);
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+
+			// headless equivalent stress
+			else if (plotRainflowHistogram.getChild("headlessEquivalentStressId") != null) {
+
+				// get id
+				String headlessEquivalentStressId = plotRainflowHistogram.getChildTextNormalize("headlessEquivalentStressId");
+
+				// create input
+				HistogramInput input = new HistogramInput();
+
+				// histogram data
+				if (plotRainflowHistogram.getChild("histogramData") != null) {
+					input.setDataType(HistogramDataType.valueOf(plotRainflowHistogram.getChildTextNormalize("histogramData")));
+				}
+
+				// options
+				if (plotRainflowHistogram.getChild("options") != null) {
+
+					// get options element
+					Element options = plotRainflowHistogram.getChild("options");
+
+					// max results
+					if (options.getChild("maxResults") != null) {
+						input.setLimit(Integer.parseInt(options.getChildTextNormalize("maxResults")));
+					}
+
+					// show data labels
+					if (options.getChild("showDataLabels") != null) {
+						input.setLabelsVisible(Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels")));
+					}
+
+					// results order
+					if (options.getChild("resultsOrder") != null) {
+						input.setOrder(options.getChildTextNormalize("resultsOrder").equals("descending"));
+					}
+
+					// decimal places
+					if (options.getChild("decimalPlaces") != null) {
+						input.setDigits(Integer.parseInt(options.getChildTextNormalize("decimalPlaces")));
+					}
+				}
+
+				// create tasks
+				SaveCategoryDataset saveTask = new SaveCategoryDataset(null, outputPath);
+				PlotHistogram plotTask = new PlotHistogram(input, null);
+				plotTask.addParameterizedTask(id, saveTask);
+				plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(headlessEquivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, plotTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
+			}
 		}
 	}
 
@@ -1770,7 +2201,60 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// headless equivalent stress id
 			else if (plotLevelCrossing.getChild("headlessEquivalentStressId") != null) {
 
-				// FIXME create task
+				// create input
+				ExternalLevelCrossingInput input = new ExternalLevelCrossingInput(true, null);
+
+				// set series naming
+				if (plotLevelCrossing.getChild("seriesNaming") != null) {
+					Element seriesNaming = plotLevelCrossing.getChild("seriesNaming");
+					if (seriesNaming.getChild("includeElementId") != null) {
+						input.setIncludeEID(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId")));
+					}
+					if (seriesNaming.getChild("includeStressSequenceName") != null) {
+						input.setIncludeSequenceName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStressSequenceName")));
+					}
+					if (seriesNaming.getChild("includeMaterialName") != null) {
+						input.setIncludeMaterialName(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName")));
+					}
+					if (seriesNaming.getChild("includeOmissionLevel") != null) {
+						input.setIncludeOmissionLevel(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeOmissionLevel")));
+					}
+					if (seriesNaming.getChild("includeAircraftProgram") != null) {
+						input.setIncludeProgram(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram")));
+					}
+					if (seriesNaming.getChild("includeAircraftSection") != null) {
+						input.setIncludeSection(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection")));
+					}
+					if (seriesNaming.getChild("includeFatigueMission") != null) {
+						input.setIncludeMission(Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission")));
+					}
+				}
+
+				// create tasks
+				SaveXYSeriesCollection saveDatasetTask = new SaveXYSeriesCollection(null, outputPath);
+				PlotExternalLevelCrossing plotTask = new PlotExternalLevelCrossing(input);
+				plotTask.addParameterizedTask(id, saveDatasetTask);
+				plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// set input threshold
+				List<Element> headlessEquivalentStressIds = plotLevelCrossing.getChildren("headlessEquivalentStressId");
+				plotTask.setInputThreshold(headlessEquivalentStressIds.size());
+
+				// loop over equivalent stress ids
+				for (Element headlessEquivalentStressIdElement : headlessEquivalentStressIds) {
+
+					// get stress id
+					String headlessEquivalentStressId = headlessEquivalentStressIdElement.getTextNormalize();
+
+					// connect to parent task
+					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(headlessEquivalentStressId).getTask();
+					parentTask.addParameterizedTask(id, plotTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				}
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(saveDatasetTask, true));
+				tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
 			}
 		}
 	}

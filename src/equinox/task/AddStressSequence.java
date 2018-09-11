@@ -29,6 +29,7 @@ import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.ParameterizedTask;
 import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableAddStressSequence;
 
 /**
@@ -38,10 +39,10 @@ import equinox.task.serializableTask.SerializableAddStressSequence;
  * @date Mar 11, 2015
  * @time 3:00:28 PM
  */
-public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, ParameterizedTaskOwner<ExternalStressSequence> {
+public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, ParameterizedTaskOwner<ExternalStressSequence>, SingleInputTask<Path> {
 
 	/** Path to input file. */
-	private final Path sequenceFile_, flsFile_;
+	private Path sequenceFile_, flsFile_;
 
 	/** Automatic tasks. */
 	private HashMap<String, ParameterizedTask<ExternalStressSequence>> automaticTasks_ = null;
@@ -53,7 +54,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	 * Creates add stress sequence task.
 	 *
 	 * @param sigmaFile
-	 *            Path to input SIGMA file.
+	 *            Path to input SIGMA file. Can be null for automatic execution.
 	 */
 	public AddStressSequence(Path sigmaFile) {
 		sequenceFile_ = sigmaFile;
@@ -71,6 +72,11 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	public AddStressSequence(Path sthFile, Path flsFile) {
 		sequenceFile_ = sthFile;
 		flsFile_ = flsFile;
+	}
+
+	@Override
+	public void setAutomaticInput(Path input) {
+		sequenceFile_ = input;
 	}
 
 	@Override

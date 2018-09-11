@@ -87,7 +87,7 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 
 	/**
 	 * Adds given stress to this task.
-	 * 
+	 *
 	 * @param stress
 	 *            Equivalent stress to add.
 	 */
@@ -260,6 +260,7 @@ public class CompareEquivalentStresses extends InternalEquinoxTask<CategoryDatas
 
 				// get mission
 				String mission = getMission(item);
+				mission = mission == null ? "Not specified" : mission;
 
 				// set name of stress
 				String name = getStressName(item);

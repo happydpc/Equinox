@@ -15,7 +15,7 @@
  */
 package equinox.data.input;
 
-import equinox.data.fileType.ExternalFlight;
+import java.util.HashMap;
 
 /**
  * Class for external flight comparison input.
@@ -26,27 +26,17 @@ import equinox.data.fileType.ExternalFlight;
  */
 public class ExternalFlightComparisonInput {
 
-	/** Flights to plot. */
-	private final ExternalFlight[] flights_;
-
 	/** Peak option. */
-	private boolean showMarkers_ = false, includeFlightName_ = true, includeSequenceName_ = false, includeEID_ = false, includeProgram_ = false,
-			includeSection_ = false, includeMission_ = false;
+	private boolean showMarkers_ = false, includeFlightName_ = true, includeSequenceName_ = false, includeEID_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/** Show/hide flights. */
-	private final boolean[] showFlights_;
+	private final HashMap<Integer, Boolean> showFlights_;
 
 	/**
 	 * Creates plot input.
-	 *
-	 * @param flights
-	 *            Flights to plot.
 	 */
-	public ExternalFlightComparisonInput(ExternalFlight[] flights) {
-		flights_ = flights;
-		showFlights_ = new boolean[flights_.length];
-		for (int i = 0; i < showFlights_.length; i++)
-			showFlights_[i] = true;
+	public ExternalFlightComparisonInput() {
+		showFlights_ = new HashMap<>();
 	}
 
 	/**
@@ -58,12 +48,7 @@ public class ExternalFlightComparisonInput {
 	 *            True for visible.
 	 */
 	public void setFlightVisible(int flightID, boolean visible) {
-		for (int i = 0; i < flights_.length; i++) {
-			if (flightID == flights_[i].getID()) {
-				showFlights_[i] = visible;
-				break;
-			}
-		}
+		showFlights_.put(flightID, visible);
 	}
 
 	/**
@@ -137,15 +122,6 @@ public class ExternalFlightComparisonInput {
 	}
 
 	/**
-	 * Returns the flights to plot.
-	 *
-	 * @return The flights to plot.
-	 */
-	public ExternalFlight[] getFlights() {
-		return flights_;
-	}
-
-	/**
 	 * Returns true if markers should be shown.
 	 *
 	 * @return True if markers should be shown.
@@ -162,11 +138,7 @@ public class ExternalFlightComparisonInput {
 	 * @return True if the flight with the given ID is visible.
 	 */
 	public boolean isFlightVisible(int flightID) {
-		for (int i = 0; i < flights_.length; i++) {
-			if (flightID == flights_[i].getID())
-				return showFlights_[i];
-		}
-		return true;
+		return showFlights_.containsKey(flightID) ? showFlights_.get(flightID) : true;
 	}
 
 	/**

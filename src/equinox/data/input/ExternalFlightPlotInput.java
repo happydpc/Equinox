@@ -24,9 +24,6 @@ package equinox.data.input;
  */
 public class ExternalFlightPlotInput {
 
-	/** Plot component option index. */
-	public static final int INCREMENT_STRESS_COMP = 0, DP_STRESS_COMP = 1, DT_STRESS_COMP = 2, ONE_G_STRESS_COMP = 3;
-
 	/** Plot component options. */
 	private boolean[] namingOptions_ = { false, false, true, false, false, false };
 

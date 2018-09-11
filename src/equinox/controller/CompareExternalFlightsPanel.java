@@ -37,7 +37,6 @@ import equinox.data.input.ExternalFlightComparisonInput;
 import equinox.task.CompareExternalFlights;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -80,13 +79,7 @@ public class CompareExternalFlightsPanel implements InternalInputSubPanel {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// set listeners
-		showMarkers_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				onShowMarkersSelected(newValue);
-			}
-		});
+		showMarkers_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowMarkersSelected(newValue));
 
 		// expand first pane
 		accordion_.setExpandedPane(accordion_.getPanes().get(0));
@@ -175,13 +168,7 @@ public class CompareExternalFlightsPanel implements InternalInputSubPanel {
 				hBox.getChildren().add(label);
 
 				// set listener to toggle switch
-				tSwitch.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-					@Override
-					public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-						onShowFlightSelected(newValue, (int) tSwitch.getUserData());
-					}
-				});
+				tSwitch.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> onShowFlightSelected(newValue, (int) tSwitch.getUserData()));
 
 				// add flights to hide/show list
 				flightsContainer_.getChildren().add(hBox);
@@ -248,10 +235,9 @@ public class CompareExternalFlightsPanel implements InternalInputSubPanel {
 
 		// get selected flights
 		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
-		ExternalFlight[] flights = selected.toArray(new ExternalFlight[selected.size()]);
 
 		// create input
-		ExternalFlightComparisonInput input = new ExternalFlightComparisonInput(flights);
+		ExternalFlightComparisonInput input = new ExternalFlightComparisonInput();
 		input.setShowMarkers(showMarkers_.isSelected());
 
 		// set naming parameters
@@ -270,8 +256,14 @@ public class CompareExternalFlightsPanel implements InternalInputSubPanel {
 			input.setFlightVisible(flightID, ts.isSelected());
 		}
 
+		// create task
+		CompareExternalFlights task = new CompareExternalFlights(input);
+
+		// add flights
+		selected.forEach(x -> task.addTypicalFlight((ExternalFlight) x));
+
 		// compare flights
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new CompareExternalFlights(input));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	@FXML

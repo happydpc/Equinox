@@ -29,6 +29,8 @@ import org.jdom2.input.SAXBuilder;
 import equinox.Equinox;
 import equinox.data.IsamiVersion;
 import equinox.data.Settings;
+import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparisonCriteria;
+import equinox.data.input.HistogramInput.HistogramDataType;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
@@ -119,6 +121,12 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 		// assign mission parameters to spectrum
 		if (equinoxInput.getChild("assignMissionParametersToSpectrum") != null) {
 			if (!checkAssignMissionParametersToSpectrum(equinoxInput))
+				return false;
+		}
+
+		// edit spectrum info
+		if (equinoxInput.getChild("editSpectrumInfo") != null) {
+			if (!checkEditSpectrumInfo(equinoxInput))
 				return false;
 		}
 
@@ -384,6 +392,44 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 	}
 
 	/**
+	 * Returns true if all <code>editSpectrumInfo</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>editSpectrumInfo</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkEditSpectrumInfo(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking editSpectrumInfo elements...");
+
+		// loop over edit spectrum info elements
+		for (Element editSpectrumInfo : equinoxInput.getChildren("editSpectrumInfo")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, editSpectrumInfo))
+				return false;
+
+			// check spectrum id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, editSpectrumInfo, "spectrumId", "addSpectrum"))
+				return false;
+
+			// check delivery reference
+			if (!XMLUtilities.checkStringValue(this, inputFile, editSpectrumInfo, "deliveryReference", false))
+				return false;
+
+			// check description
+			if (!XMLUtilities.checkStringValue(this, inputFile, editSpectrumInfo, "description", false))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>editStressSequenceInfo</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -542,8 +588,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 1))
-				return false;
+			if (saveEquivalentStressRatios.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (saveEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "headlessEquivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
 		}
 
 		// check passed
@@ -619,8 +673,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 1))
-				return false;
+			if (saveLifeFactors.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (saveLifeFactors.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "headlessEquivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
 		}
 
 		// check passed
@@ -692,8 +754,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			}
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "equivalentStressId", "equivalentStressAnalysis", 1))
-				return false;
+			if (saveEquivalentStresses.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "equivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (saveEquivalentStresses.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "headlessEquivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
 		}
 
 		// check passed
@@ -774,8 +844,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 2))
-				return false;
+			if (plotEquivalentStressRatios.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "equivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (plotEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "headlessEquivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
 		}
 
 		// check passed
@@ -856,8 +934,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 2))
-				return false;
+			if (plotLifeFactors.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "equivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (plotLifeFactors.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "headlessEquivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
 		}
 
 		// check passed
@@ -925,8 +1011,16 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 				return false;
 
 			// check equivalent stress ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
-				return false;
+			if (plotEquivalentStressComparison.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (plotEquivalentStressComparison.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "headlessEquivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
 		}
 
 		// check passed
@@ -958,65 +1052,113 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotTypicalFlightComparison, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
 
-			// check series naming
-			if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
+			// stress sequence
+			if (plotTypicalFlightComparison.getChild("typicalFlight").getChild("stressSequenceId") != null) {
 
-				// get element
-				Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+				// check series naming
+				if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
 
-				// check
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					// get element
+					Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeTypicalFlightName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+
+				// check stress components
+				if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
+
+					// get element
+					Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotIncrements", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDp", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDt", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plot1g", true))
+						return false;
+				}
+
+				// check typical flights
+				List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+				if (typicalFlights == null || typicalFlights.size() < 2) {
+					addWarning("Cannot locate element 'typicalFlight' under " + XMLUtilities.getFamilyTree(plotTypicalFlightComparison) + " in instruction set '" + inputFile.toString() + "'. Minimum 2 of this element is obligatory. Check failed.");
 					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeTypicalFlightName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
-					return false;
+				}
+
+				// loop over typical flights
+				for (Element typicalFlight : typicalFlights) {
+
+					// check typical flight name
+					if (!XMLUtilities.checkStringValue(this, inputFile, typicalFlight, "typicalFlightName", false))
+						return false;
+
+					// check stress sequence id
+					if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, typicalFlight, "stressSequenceId", "generateStressSequence"))
+						return false;
+				}
 			}
 
-			// check stress components
-			if (plotTypicalFlightComparison.getChild("stressComponents") != null) {
+			// headless stress sequence
+			else if (plotTypicalFlightComparison.getChild("typicalFlight").getChild("headlessStressSequenceId") != null) {
 
-				// get element
-				Element stressComponents = plotTypicalFlightComparison.getChild("stressComponents");
+				// check series naming
+				if (plotTypicalFlightComparison.getChild("seriesNaming") != null) {
 
-				// check
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotIncrements", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDp", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plotDt", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, stressComponents, "plot1g", true))
-					return false;
-			}
+					// get element
+					Element seriesNaming = plotTypicalFlightComparison.getChild("seriesNaming");
 
-			// check typical flights
-			List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
-			if (typicalFlights == null || typicalFlights.size() < 2) {
-				addWarning("Cannot locate element 'typicalFlight' under " + XMLUtilities.getFamilyTree(plotTypicalFlightComparison) + " in instruction set '" + inputFile.toString() + "'. Minimum 2 of this element is obligatory. Check failed.");
-				return false;
-			}
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeTypicalFlightName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
 
-			// loop over typical flights
-			for (Element typicalFlight : typicalFlights) {
-
-				// check typical flight name
-				if (!XMLUtilities.checkStringValue(this, inputFile, typicalFlight, "typicalFlightName", false))
+				// check typical flights
+				List<Element> typicalFlights = plotTypicalFlightComparison.getChildren("typicalFlight");
+				if (typicalFlights == null || typicalFlights.size() < 2) {
+					addWarning("Cannot locate element 'typicalFlight' under " + XMLUtilities.getFamilyTree(plotTypicalFlightComparison) + " in instruction set '" + inputFile.toString() + "'. Minimum 2 of this element is obligatory. Check failed.");
 					return false;
+				}
 
-				// check stress sequence id
-				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, typicalFlight, "stressSequenceId", "generateStressSequence"))
-					return false;
+				// loop over typical flights
+				for (Element typicalFlight : typicalFlights) {
+
+					// check typical flight name
+					if (!XMLUtilities.checkStringValue(this, inputFile, typicalFlight, "typicalFlightName", false))
+						return false;
+
+					// check stress sequence id
+					if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, typicalFlight, "headlessStressSequenceId", "addHeadlessStressSequence"))
+						return false;
+				}
 			}
 		}
 
@@ -1049,36 +1191,71 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLevelCrossingComparison, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
 
-			// set series naming
-			if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+			// equivalent stress
+			if (plotLevelCrossingComparison.getChild("equivalentStressId") != null) {
 
-				// get element
-				Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+				// set series naming
+				if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
 
-				// check
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					// get element
+					Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+
+				// check stress sequence ids
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLevelCrossingComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
 					return false;
 			}
 
-			// check stress sequence ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLevelCrossingComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
-				return false;
+			// headless equivalent stress
+			else if (plotLevelCrossingComparison.getChild("headlessEquivalentStressId") != null) {
+
+				// check headless equivalent stress id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossingComparison, "headlessEquivalentStressId", "equivalentStressAnalysis"))
+					return false;
+
+				// set series naming
+				if (plotLevelCrossingComparison.getChild("seriesNaming") != null) {
+
+					// get element
+					Element seriesNaming = plotLevelCrossingComparison.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+			}
 		}
 
 		// check passed
@@ -1110,51 +1287,101 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotStressSequenceComparison, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
 
-			// check comparison criteria
-			if (!XMLUtilities.checkStringValue(this, inputFile, plotStressSequenceComparison, "comparisonCriteria", false, XMLUtilities.getStringArray(ComparisonCriteria.values())))
-				return false;
+			// stress sequence
+			if (plotStressSequenceComparison.getChild("stressSequenceId") != null) {
 
-			// check options
-			if (plotStressSequenceComparison.getChild("options") != null) {
-
-				// get element
-				Element options = plotStressSequenceComparison.getChild("options");
-
-				// check results order
-				if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+				// check comparison criteria
+				if (!XMLUtilities.checkStringValue(this, inputFile, plotStressSequenceComparison, "comparisonCriteria", false, XMLUtilities.getStringArray(ComparisonCriteria.values())))
 					return false;
 
-				// check show data labels
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+				// check options
+				if (plotStressSequenceComparison.getChild("options") != null) {
+
+					// get element
+					Element options = plotStressSequenceComparison.getChild("options");
+
+					// check results order
+					if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+						return false;
+
+					// check show data labels
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+						return false;
+				}
+
+				// set series naming
+				if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+
+					// get element
+					Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+
+				// check stress sequence ids
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotStressSequenceComparison, "stressSequenceId", "generateStressSequence", 2))
 					return false;
 			}
 
-			// set series naming
-			if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+			// headless stress sequence
+			else if (plotStressSequenceComparison.getChild("headlessStressSequenceId") != null) {
 
-				// get element
-				Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+				// check comparison criteria
+				if (!XMLUtilities.checkStringValue(this, inputFile, plotStressSequenceComparison, "comparisonCriteria", false, XMLUtilities.getStringArray(ExternalComparisonCriteria.values())))
+					return false;
 
-				// check
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
-					return false;
-				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+				// check options
+				if (plotStressSequenceComparison.getChild("options") != null) {
+
+					// get element
+					Element options = plotStressSequenceComparison.getChild("options");
+
+					// check results order
+					if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+						return false;
+
+					// check show data labels
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+						return false;
+				}
+
+				// set series naming
+				if (plotStressSequenceComparison.getChild("seriesNaming") != null) {
+
+					// get element
+					Element seriesNaming = plotStressSequenceComparison.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+
+				// check stress sequence ids
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotStressSequenceComparison, "headlessStressSequenceId", "addHeadlessStressSequence", 2))
 					return false;
 			}
-
-			// check stress sequence ids
-			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotStressSequenceComparison, "stressSequenceId", "generateStressSequence", 2))
-				return false;
 		}
 
 		// check passed
@@ -1216,13 +1443,21 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveAnalysisOutputFile))
 				return false;
 
-			// check equivalent stress id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "equivalentStressId", "equivalentStressAnalysis"))
-				return false;
-
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveAnalysisOutputFile, "outputPath", false, overwriteFiles, FileType.DOSSIER, FileType.HTML))
 				return false;
+
+			// check equivalent stress id
+			if (saveAnalysisOutputFile.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "equivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (saveAnalysisOutputFile.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "headlessEquivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
 		}
 
 		// check passed
@@ -1250,13 +1485,21 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveRainflowCycleInfo))
 				return false;
 
-			// check equivalent stress id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveRainflowCycleInfo, "equivalentStressId", "equivalentStressAnalysis"))
-				return false;
-
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveRainflowCycleInfo, "outputPath", false, overwriteFiles, FileType.RFLOW))
 				return false;
+
+			// check equivalent stress id
+			if (saveRainflowCycleInfo.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveRainflowCycleInfo, "equivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (saveRainflowCycleInfo.getChild("headlessEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveRainflowCycleInfo, "headlessEquivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
 		}
 
 		// check passed
@@ -1284,13 +1527,44 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotRainflowHistogram))
 				return false;
 
-			// check equivalent stress id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotRainflowHistogram, "equivalentStressId", "equivalentStressAnalysis"))
-				return false;
-
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotRainflowHistogram, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
+
+			// check equivalent stress id
+			if (plotRainflowHistogram.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotRainflowHistogram, "equivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (plotRainflowHistogram.getChild("headlessEquivalentStressId") != null) {
+
+				// check id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotRainflowHistogram, "headlessEquivalentStressId", "equivalentStressAnalysis"))
+					return false;
+
+				// histogram data
+				if (!XMLUtilities.checkStringValue(this, inputFile, plotRainflowHistogram, "histogramData", true, XMLUtilities.getStringArray(HistogramDataType.values())))
+					return false;
+
+				// options
+				if (plotRainflowHistogram.getChild("options") != null) {
+
+					// get options element
+					Element options = plotRainflowHistogram.getChild("options");
+
+					// check
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, options, "maxResults", true, 0, null))
+						return false;
+					if (!XMLUtilities.checkStringValue(this, inputFile, options, "resultsOrder", true, "descending", "ascending"))
+						return false;
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, options, "decimalPlaces", true, 0, 5))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+						return false;
+				}
+			}
 		}
 
 		// check passed
@@ -1318,13 +1592,46 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLevelCrossing))
 				return false;
 
-			// check equivalent stress id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "equivalentStressId", "equivalentStressAnalysis"))
-				return false;
-
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLevelCrossing, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
+
+			// check equivalent stress id
+			if (plotLevelCrossing.getChild("equivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "equivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
+
+			// check headless equivalent stress id
+			else if (plotLevelCrossing.getChild("headlessEquivalentStressId") != null) {
+
+				// check headless equivalent stress id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "headlessEquivalentStressId", "equivalentStressAnalysis"))
+					return false;
+
+				// set series naming
+				if (plotLevelCrossing.getChild("seriesNaming") != null) {
+
+					// get element
+					Element seriesNaming = plotLevelCrossing.getChild("seriesNaming");
+
+					// check
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStressSequenceName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeOmissionLevel", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+						return false;
+					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+			}
 		}
 
 		// check passed
@@ -1658,7 +1965,7 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			}
 
 			// from STH file
-			else {
+			else if (addHeadlessStressSequence.getChild("sthPath") != null) {
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "sthPath", false, FileType.STH))
 					return false;
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "flsPath", false, FileType.FLS))

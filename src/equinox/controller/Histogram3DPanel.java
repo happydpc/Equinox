@@ -29,13 +29,13 @@ import equinox.data.input.HistogramInput.HistogramDataType;
 import equinox.task.Plot3DHistogram;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
 
@@ -55,7 +55,7 @@ public class Histogram3DPanel implements InternalInputSubPanel {
 	private VBox root_;
 
 	@FXML
-	private ChoiceBox<HistogramDataType> dataTypeX_, dataTypeY_;
+	private ComboBox<HistogramDataType> dataTypeX_, dataTypeY_;
 
 	@FXML
 	private ToggleSwitch xLabels_, yLabels_, zLabels_;
@@ -71,38 +71,34 @@ public class Histogram3DPanel implements InternalInputSubPanel {
 
 		// set data types
 		dataTypeX_.getItems().clear();
+		dataTypeX_.setButtonCell(new HistogramDataTypeListCell());
+		dataTypeX_.setCellFactory(p -> new HistogramDataTypeListCell());
 		dataTypeX_.setItems(FXCollections.observableArrayList(HistogramDataType.values()));
 		dataTypeX_.getSelectionModel().select(HistogramDataType.MEAN_STRESS);
 		dataTypeY_.getItems().clear();
+		dataTypeY_.setButtonCell(new HistogramDataTypeListCell());
+		dataTypeY_.setCellFactory(p -> new HistogramDataTypeListCell());
 		dataTypeY_.setItems(FXCollections.observableArrayList(HistogramDataType.values()));
 		dataTypeY_.getSelectionModel().select(HistogramDataType.STRESS_AMPLITUDE);
 
 		// add listeners
-		dataTypeX_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<HistogramDataType>() {
+		dataTypeX_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<HistogramDataType>) (observable, oldValue, newValue) -> {
 
-			@Override
-			public void changed(ObservableValue<? extends HistogramDataType> observable, HistogramDataType oldValue, HistogramDataType newValue) {
+			// null
+			if (newValue == null)
+				return;
 
-				// null
-				if (newValue == null)
-					return;
-
-				// setup components
-				onDataTypeSelected();
-			}
+			// setup components
+			onDataTypeSelected();
 		});
-		dataTypeY_.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<HistogramDataType>() {
+		dataTypeY_.getSelectionModel().selectedItemProperty().addListener((ChangeListener<HistogramDataType>) (observable, oldValue, newValue) -> {
 
-			@Override
-			public void changed(ObservableValue<? extends HistogramDataType> observable, HistogramDataType oldValue, HistogramDataType newValue) {
+			// null
+			if (newValue == null)
+				return;
 
-				// null
-				if (newValue == null)
-					return;
-
-				// setup components
-				onDataTypeSelected();
-			}
+			// setup components
+			onDataTypeSelected();
 		});
 
 		// expand first pane
@@ -227,6 +223,27 @@ public class Histogram3DPanel implements InternalInputSubPanel {
 		// exception occurred during loading
 		catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Inner class for histogram data type list cell.
+	 *
+	 * @author Murat Artim
+	 * @date 2 Sep 2018
+	 * @time 16:38:10
+	 */
+	private class HistogramDataTypeListCell extends ListCell<HistogramDataType> {
+
+		@Override
+		protected void updateItem(HistogramDataType item, boolean empty) {
+			super.updateItem(item, empty);
+			if (!empty && item != null) {
+				setText(item.getName());
+			}
+			else {
+				setText(null);
+			}
 		}
 	}
 }

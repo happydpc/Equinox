@@ -32,13 +32,14 @@ import equinox.data.input.HistogramInput.HistogramDataType;
 import equinox.task.PlotHistogram;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.layout.VBox;
@@ -59,7 +60,7 @@ public class HistogramPanel implements InternalInputSubPanel {
 	private VBox root_;
 
 	@FXML
-	private ChoiceBox<HistogramDataType> dataType_;
+	private ComboBox<HistogramDataType> dataType_;
 
 	@FXML
 	private ChoiceBox<String> order_;
@@ -92,17 +93,15 @@ public class HistogramPanel implements InternalInputSubPanel {
 
 		// set data types
 		dataType_.getItems().clear();
+		dataType_.setButtonCell(new HistogramDataTypeListCell());
+		dataType_.setCellFactory(p -> new HistogramDataTypeListCell());
 		dataType_.setItems(FXCollections.observableArrayList(HistogramDataType.values()));
 		dataType_.getSelectionModel().select(0);
 
 		// set listeners
-		dataLabels_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-				panel.setLabelsVisible(newValue);
-			}
+		dataLabels_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			panel.setLabelsVisible(newValue);
 		});
 
 		// expand first pane
@@ -183,7 +182,7 @@ public class HistogramPanel implements InternalInputSubPanel {
 		SpectrumItem eqStress = (SpectrumItem) owner_.getSelectedFiles().get(0);
 
 		// create input
-		HistogramInput input = new HistogramInput(eqStress);
+		HistogramInput input = new HistogramInput();
 
 		// set inputs
 		input.setDataType(dataType_.getSelectionModel().getSelectedItem());
@@ -193,7 +192,7 @@ public class HistogramPanel implements InternalInputSubPanel {
 		input.setDigits(digits_.getValue());
 
 		// create and start statistics task
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new PlotHistogram(input));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new PlotHistogram(input, eqStress));
 	}
 
 	/**
@@ -227,6 +226,27 @@ public class HistogramPanel implements InternalInputSubPanel {
 		// exception occurred during loading
 		catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Inner class for histogram data type list cell.
+	 *
+	 * @author Murat Artim
+	 * @date 2 Sep 2018
+	 * @time 16:38:10
+	 */
+	private class HistogramDataTypeListCell extends ListCell<HistogramDataType> {
+
+		@Override
+		protected void updateItem(HistogramDataType item, boolean empty) {
+			super.updateItem(item, empty);
+			if (!empty && item != null) {
+				setText(item.getName());
+			}
+			else {
+				setText(null);
+			}
 		}
 	}
 }

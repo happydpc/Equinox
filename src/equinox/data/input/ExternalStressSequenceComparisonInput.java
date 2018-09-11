@@ -15,10 +15,6 @@
  */
 package equinox.data.input;
 
-import java.util.ArrayList;
-
-import equinox.data.fileType.ExternalStressSequence;
-
 /**
  * Class for external stress sequence comparison input.
  *
@@ -37,9 +33,8 @@ public class ExternalStressSequenceComparisonInput {
 	 */
 	public enum ExternalComparisonCriteria {
 
-		/** Statistic. */
-		NUM_FLIGHT_TYPES("Number of flight types"), NUM_PEAKS_WITH_OCCURRENCE("Number of peaks w/ occurrences"), NUM_PEAKS_WITHOUT_OCCURRENCE(
-				"Number of peaks w/o occurrences"), VALIDITY("Number of flights"), MAX_PEAK("Maximum stress"), MIN_PEAK("Minimum stress");
+	/** Statistic. */
+	NUM_FLIGHT_TYPES("Number of flight types"), NUM_PEAKS_WITH_OCCURRENCE("Number of peaks w/ occurrences"), NUM_PEAKS_WITHOUT_OCCURRENCE("Number of peaks w/o occurrences"), VALIDITY("Number of flights"), MAX_PEAK("Maximum stress"), MIN_PEAK("Minimum stress");
 
 		/** Name of comparison criteria. */
 		private final String name_;
@@ -54,31 +49,21 @@ public class ExternalStressSequenceComparisonInput {
 			name_ = name;
 		}
 
-		@Override
-		public String toString() {
+		/**
+		 * Returns the name of comparison criteria.
+		 * 
+		 * @return The name of comparison criteria.
+		 */
+		public String getName() {
 			return name_;
 		}
 	}
 
-	/** Stress sequences to compare. */
-	private final ArrayList<ExternalStressSequence> stressSequences_ = new ArrayList<>();
-
 	/** Order and data label options. */
-	private boolean descending_ = true, showlabels_ = true, includeSequenceName_ = true, includeEID_ = false, includeProgram_ = false,
-			includeSection_ = false, includeMission_ = false;
+	private boolean descending_ = true, showlabels_ = true, includeSequenceName_ = true, includeEID_ = false, includeProgram_ = false, includeSection_ = false, includeMission_ = false;
 
 	/** Criteria type. */
 	private ExternalComparisonCriteria criteria_ = ExternalComparisonCriteria.NUM_FLIGHT_TYPES;
-
-	/**
-	 * Adds stress sequence.
-	 *
-	 * @param stressSequence
-	 *            Stress sequence to add.
-	 */
-	public void addStressSequence(ExternalStressSequence stressSequence) {
-		stressSequences_.add(stressSequence);
-	}
 
 	/**
 	 * Sets the criteria.
@@ -158,15 +143,6 @@ public class ExternalStressSequenceComparisonInput {
 	 */
 	public void setIncludeMission(boolean includeMission) {
 		includeMission_ = includeMission;
-	}
-
-	/**
-	 * Returns the stress sequences to plot.
-	 *
-	 * @return The stress sequences to plot.
-	 */
-	public ArrayList<ExternalStressSequence> getStressSequences() {
-		return stressSequences_;
 	}
 
 	/**

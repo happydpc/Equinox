@@ -31,13 +31,14 @@ import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparis
 import equinox.task.CompareExternalStressSequences;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.VBox;
@@ -58,7 +59,7 @@ public class CompareExternalStressSequencePanel implements InternalInputSubPanel
 	private VBox root_;
 
 	@FXML
-	private ChoiceBox<ExternalComparisonCriteria> criteria_;
+	private ComboBox<ExternalComparisonCriteria> criteria_;
 
 	@FXML
 	private ChoiceBox<String> order_;
@@ -80,17 +81,15 @@ public class CompareExternalStressSequencePanel implements InternalInputSubPanel
 		order_.getSelectionModel().select(0);
 
 		// set comparison criteria
+		criteria_.setButtonCell(new ComparisonCriteriaListCell());
+		criteria_.setCellFactory(p -> new ComparisonCriteriaListCell());
 		criteria_.getItems().setAll(ExternalComparisonCriteria.values());
 		criteria_.getSelectionModel().select(0);
 
 		// set listeners
-		dataLabels_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-				panel.setLabelsVisible(newValue);
-			}
+		dataLabels_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			panel.setLabelsVisible(newValue);
 		});
 
 		// expand first panel
@@ -176,13 +175,16 @@ public class CompareExternalStressSequencePanel implements InternalInputSubPanel
 		input.setIncludeSection(includeSection);
 		input.setIncludeMission(includeMission);
 
+		// create task
+		CompareExternalStressSequences task = new CompareExternalStressSequences(input);
+
 		// get selected files
 		for (TreeItem<String> item : owner_.getSelectedFiles()) {
-			input.addStressSequence((ExternalStressSequence) item);
+			task.addStressSequence((ExternalStressSequence) item);
 		}
 
 		// create and start comparison task
-		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(new CompareExternalStressSequences(input));
+		owner_.getOwner().getActiveTasksPanel().runTaskInParallel(task);
 	}
 
 	@FXML
@@ -226,6 +228,27 @@ public class CompareExternalStressSequencePanel implements InternalInputSubPanel
 		// exception occurred during loading
 		catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Inner class for histogram data type list cell.
+	 *
+	 * @author Murat Artim
+	 * @date 2 Sep 2018
+	 * @time 16:38:10
+	 */
+	private class ComparisonCriteriaListCell extends ListCell<ExternalComparisonCriteria> {
+
+		@Override
+		protected void updateItem(ExternalComparisonCriteria item, boolean empty) {
+			super.updateItem(item, empty);
+			if (!empty && item != null) {
+				setText(item.getName());
+			}
+			else {
+				setText(null);
+			}
 		}
 	}
 }

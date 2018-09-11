@@ -55,6 +55,9 @@ public class PlotHistogramProcess implements EquinoxProcess<DefaultCategoryDatas
 	/** Rainflow cycles table name. */
 	private final String rainflowCyclesTableName_;
 
+	/** Equivalent stress. */
+	private final SpectrumItem equivalentStress_;
+
 	/**
 	 * Creates plot histogram process.
 	 *
@@ -62,14 +65,18 @@ public class PlotHistogramProcess implements EquinoxProcess<DefaultCategoryDatas
 	 *            The owner task.
 	 * @param input
 	 *            Input.
+	 * @param equivalentStress
+	 *            Equivalent stress.
 	 */
-	public PlotHistogramProcess(InternalEquinoxTask<?> task, HistogramInput input) {
+	public PlotHistogramProcess(InternalEquinoxTask<?> task, HistogramInput input, SpectrumItem equivalentStress) {
 		task_ = task;
 		input_ = input;
+		equivalentStress_ = equivalentStress;
 		rainflowCyclesTableName_ = null;
 		String pattern = "0.";
-		for (int i = 0; i < input.getDigits(); i++)
+		for (int i = 0; i < input.getDigits(); i++) {
 			pattern += "0";
+		}
 		format_ = new DecimalFormat(pattern);
 	}
 
@@ -82,14 +89,18 @@ public class PlotHistogramProcess implements EquinoxProcess<DefaultCategoryDatas
 	 *            Input.
 	 * @param rainflowCyclesTableName
 	 *            Rainflow cycles table name.
+	 * @param equivalentStress
+	 *            Equivalent stress.
 	 */
-	public PlotHistogramProcess(InternalEquinoxTask<?> task, HistogramInput input, String rainflowCyclesTableName) {
+	public PlotHistogramProcess(InternalEquinoxTask<?> task, HistogramInput input, String rainflowCyclesTableName, SpectrumItem equivalentStress) {
 		task_ = task;
 		input_ = input;
+		equivalentStress_ = equivalentStress;
 		rainflowCyclesTableName_ = rainflowCyclesTableName;
 		String pattern = "0.";
-		for (int i = 0; i < input.getDigits(); i++)
+		for (int i = 0; i < input.getDigits(); i++) {
 			pattern += "0";
+		}
 		format_ = new DecimalFormat(pattern);
 	}
 
@@ -109,7 +120,7 @@ public class PlotHistogramProcess implements EquinoxProcess<DefaultCategoryDatas
 			String tableName = rainflowCyclesTableName_ == null ? getTableName() : rainflowCyclesTableName_;
 
 			// create query
-			String sql = "select " + input_.getDataType().getDBColumnName() + " as data, sum(num_cycles) as ncyc from " + tableName + " where stress_id = " + input_.getEquivalentStress().getID();
+			String sql = "select " + input_.getDataType().getDBColumnName() + " as data, sum(num_cycles) as ncyc from " + tableName + " where stress_id = " + equivalentStress_.getID();
 			sql += " group by " + input_.getDataType().getDBColumnName();
 			sql += " order by ncyc " + (input_.getOrder() ? "desc" : "asc");
 			statement.setMaxRows(input_.getLimit());
@@ -168,22 +179,25 @@ public class PlotHistogramProcess implements EquinoxProcess<DefaultCategoryDatas
 		// initialize table name
 		String tableName = null;
 
-		// get item
-		SpectrumItem item = input_.getEquivalentStress();
-
 		// set table name
-		if (item instanceof FatigueEquivalentStress)
+		if (equivalentStress_ instanceof FatigueEquivalentStress) {
 			tableName = "fatigue_rainflow_cycles";
-		else if (item instanceof PreffasEquivalentStress)
+		}
+		else if (equivalentStress_ instanceof PreffasEquivalentStress) {
 			tableName = "preffas_rainflow_cycles";
-		else if (item instanceof LinearEquivalentStress)
+		}
+		else if (equivalentStress_ instanceof LinearEquivalentStress) {
 			tableName = "linear_rainflow_cycles";
-		else if (item instanceof ExternalFatigueEquivalentStress)
+		}
+		else if (equivalentStress_ instanceof ExternalFatigueEquivalentStress) {
 			tableName = "ext_fatigue_rainflow_cycles";
-		else if (item instanceof ExternalPreffasEquivalentStress)
+		}
+		else if (equivalentStress_ instanceof ExternalPreffasEquivalentStress) {
 			tableName = "ext_preffas_rainflow_cycles";
-		else if (item instanceof ExternalLinearEquivalentStress)
+		}
+		else if (equivalentStress_ instanceof ExternalLinearEquivalentStress) {
 			tableName = "ext_linear_rainflow_cycles";
+		}
 
 		// return table name
 		return tableName;
