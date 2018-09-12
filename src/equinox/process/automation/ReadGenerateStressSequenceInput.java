@@ -27,8 +27,9 @@ import org.jdom2.input.SAXBuilder;
 import equinox.data.DTInterpolation;
 import equinox.data.StressComponent;
 import equinox.data.input.GenerateStressSequenceInput;
+import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
-import equinox.task.InternalEquinoxTask;
+import equinox.task.TemporaryFileCreatingTask;
 
 /**
  * Class for read generate stress sequence input process.
@@ -40,10 +41,10 @@ import equinox.task.InternalEquinoxTask;
 public class ReadGenerateStressSequenceInput implements EquinoxProcess<GenerateStressSequenceInput> {
 
 	/** The owner task of this process. */
-	private final InternalEquinoxTask<?> task;
+	private final TemporaryFileCreatingTask<?> task;
 
-	/** Input XML file. */
-	private final Path inputFile;
+	/** Input file. */
+	private Path inputFile;
 
 	/**
 	 * Creates read generate stress sequence input process.
@@ -51,15 +52,23 @@ public class ReadGenerateStressSequenceInput implements EquinoxProcess<GenerateS
 	 * @param task
 	 *            The owner task of this process.
 	 * @param inputFile
-	 *            Input XML file.
+	 *            Input XML/JSON file.
 	 */
-	public ReadGenerateStressSequenceInput(InternalEquinoxTask<?> task, Path inputFile) {
+	public ReadGenerateStressSequenceInput(TemporaryFileCreatingTask<?> task, Path inputFile) {
 		this.task = task;
 		this.inputFile = inputFile;
 	}
 
 	@Override
 	public GenerateStressSequenceInput start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			task.updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(task, inputFile).start(null);
+		}
 
 		// read input file
 		task.updateMessage("Reading generate stress sequence input XML file...");

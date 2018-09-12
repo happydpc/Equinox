@@ -31,8 +31,9 @@ import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.dataServer.remote.data.LinearMaterial;
 import equinox.dataServer.remote.data.Material;
 import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
-import equinox.task.InternalEquinoxTask;
+import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.XMLUtilities;
 
 /**
@@ -45,10 +46,10 @@ import equinox.utility.XMLUtilities;
 public class CheckEquivalentStressAnalysisInput implements EquinoxProcess<Boolean> {
 
 	/** The owner task of this process. */
-	private final InternalEquinoxTask<?> task;
+	private final TemporaryFileCreatingTask<?> task;
 
-	/** Input XML file. */
-	private final Path inputFile;
+	/** Input file. */
+	private Path inputFile;
 
 	/** ISAMI version. */
 	private final IsamiVersion isamiVersion;
@@ -59,11 +60,11 @@ public class CheckEquivalentStressAnalysisInput implements EquinoxProcess<Boolea
 	 * @param task
 	 *            The owner task of this process.
 	 * @param inputFile
-	 *            Input XML file.
+	 *            Input XML/JSON file.
 	 * @param isamiVersion
 	 *            ISAMI version.
 	 */
-	public CheckEquivalentStressAnalysisInput(InternalEquinoxTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
+	public CheckEquivalentStressAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
 		this.task = task;
 		this.inputFile = inputFile;
 		this.isamiVersion = isamiVersion;
@@ -71,6 +72,14 @@ public class CheckEquivalentStressAnalysisInput implements EquinoxProcess<Boolea
 
 	@Override
 	public Boolean start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			task.updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(task, inputFile).start(connection, preparedStatements);
+		}
 
 		// read input file
 		task.updateMessage("Checking equivalent stress analysis input XML file...");

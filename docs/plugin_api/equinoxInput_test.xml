@@ -48,7 +48,7 @@
 	<generateStressSequence>
 		<id>6</id>
 		<stfId>3</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
 	</generateStressSequence>
 	<saveStressSequence>
 		<id>7</id>
@@ -72,7 +72,7 @@
 	<equivalentStressAnalysis>
 		<id>10</id>
 		<stressSequenceId>6</stressSequenceId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
 	</equivalentStressAnalysis>
 	<plotLevelCrossing>
 		<id>11</id>
@@ -120,7 +120,7 @@
 	<generateStressSequence>
 		<id>17</id>
 		<stfId>16</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
 	</generateStressSequence>
 	<plotStressSequenceComparison>
 		<id>18</id>
@@ -143,7 +143,7 @@
 	<generateStressSequence>
 		<id>22</id>
 		<stfId>19</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
 	</generateStressSequence>
 	<addStf>
 		<id>20</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test2.stf</stfPath>
@@ -151,7 +151,7 @@
 	<generateStressSequence>
 		<id>23</id>
 		<stfId>20</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
 	</generateStressSequence>
 	<addStf>
 		<id>21</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test3.stf</stfPath>
@@ -164,7 +164,7 @@
 	<generateStressSequence>
 		<id>24</id>
 		<stfId>21</stfId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</inputPath>
 	</generateStressSequence>
 	<addStf>
 		<id>25</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test4.stf</stfPath>
@@ -178,17 +178,17 @@
 	<equivalentStressAnalysis>
 		<id>28</id>
 		<stressSequenceId>24</stressSequenceId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
 	</equivalentStressAnalysis>
 	<equivalentStressAnalysis>
 		<id>29</id>
 		<stressSequenceId>23</stressSequenceId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
 	</equivalentStressAnalysis>
 	<equivalentStressAnalysis>
 		<id>30</id>
 		<stressSequenceId>22</stressSequenceId>
-		<xmlPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</xmlPath>
+		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
 	</equivalentStressAnalysis>
 	<plotLevelCrossingComparison>
 		<id>31</id>

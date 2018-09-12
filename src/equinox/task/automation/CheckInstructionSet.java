@@ -38,8 +38,9 @@ import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
 import equinox.process.automation.CheckEquivalentStressAnalysisInput;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
-import equinox.task.InternalEquinoxTask;
+import equinox.process.automation.ConvertJSONtoXML;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.XMLUtilities;
 
 /**
@@ -49,16 +50,29 @@ import equinox.utility.XMLUtilities;
  * @date 18 Aug 2018
  * @time 14:56:00
  */
-public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements LongRunningTask {
+public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask {
 
 	/** Input XML file. */
-	private final Path inputFile;
+	private Path inputFile;
 
 	/** True if the instruction set should be run if it passes the check. */
 	private final boolean run;
 
 	/** True to overwrite existing files. */
 	private boolean overwriteFiles = true;
+
+	/**
+	 * Creates check instruction set task.
+	 *
+	 * @param inputFile
+	 *            Input XML file.
+	 * @param run
+	 *            True if the instruction set should be run if it passes the check.
+	 */
+	public CheckInstructionSet(Path inputFile, boolean run) {
+		this.inputFile = inputFile;
+		this.run = run;
+	}
 
 	/**
 	 * Creates check instruction set task.
@@ -85,6 +99,14 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 
 	@Override
 	protected Boolean call() throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(this, inputFile).start(null);
+		}
 
 		// read input file
 		updateMessage("Reading input XML file...");
@@ -1681,24 +1703,24 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 						return false;
 				}
 
-				// check XML path
-				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "xmlPath", false, FileType.XML))
+				// check input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "inputPath", false, FileType.XML, FileType.JSON))
 					return false;
 
-				// get XML path
-				String xmlPath = equivalentStressAnalysis.getChild("xmlPath").getTextNormalize();
+				// get input path
+				String inputPath = equivalentStressAnalysis.getChild("inputPath").getTextNormalize();
 
 				// already checked
-				if (checkedInputs.contains(xmlPath)) {
+				if (checkedInputs.contains(inputPath)) {
 					continue;
 				}
 
-				// check generate stress sequence input
-				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(xmlPath), isamiVersion).start(connection))
-					return false;
-
 				// add to checked inputs
-				checkedInputs.add(xmlPath);
+				checkedInputs.add(inputPath);
+
+				// check generate stress sequence input
+				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(inputPath), isamiVersion).start(connection))
+					return false;
 			}
 		}
 
@@ -1913,24 +1935,24 @@ public class CheckInstructionSet extends InternalEquinoxTask<Boolean> implements
 			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, generateStressSequence, "stfId", "addStf"))
 				return false;
 
-			// check XML path
-			if (!XMLUtilities.checkInputPathValue(this, inputFile, generateStressSequence, "xmlPath", false, FileType.XML))
+			// check input path
+			if (!XMLUtilities.checkInputPathValue(this, inputFile, generateStressSequence, "inputPath", false, FileType.XML, FileType.JSON))
 				return false;
 
-			// get XML path
-			String xmlPath = generateStressSequence.getChild("xmlPath").getTextNormalize();
+			// get input path
+			String inputPath = generateStressSequence.getChild("inputPath").getTextNormalize();
 
 			// already checked
-			if (checkedInputs.contains(xmlPath)) {
+			if (checkedInputs.contains(inputPath)) {
 				continue;
 			}
 
-			// check generate stress sequence input
-			if (!new CheckGenerateStressSequenceInput(this, Paths.get(xmlPath)).start(null))
-				return false;
-
 			// add to checked inputs
-			checkedInputs.add(xmlPath);
+			checkedInputs.add(inputPath);
+
+			// check generate stress sequence input
+			if (!new CheckGenerateStressSequenceInput(this, Paths.get(inputPath)).start(null))
+				return false;
 		}
 
 		// check passed

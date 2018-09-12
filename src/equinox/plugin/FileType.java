@@ -44,7 +44,8 @@ public enum FileType {
 	DMG(".dmg", new ExtensionFilter("DMG files (*.dmg)", "*.dmg")), SPEC(".spec", new ExtensionFilter("Spectrum bundles (*.spec)", "*.spec")), LOG(".log", new ExtensionFilter("Log files (*.log)", "*.log")),
 	ERREURS(".erreurs", new ExtensionFilter("SAFE erreurs files (*.erreurs)", "*.erreurs")), DOSSIER(".dossier", new ExtensionFilter("SAFE dossier files (*.dossier)", "*.dossier")),
 	OUT(".out", new ExtensionFilter("OUT files (*.out)", "*.out")), CSV(".csv", new ExtensionFilter("CSV files (*.csv)", "*.csv")), LCK(".lck", new ExtensionFilter("Loadcase keys files (*.lck)", "*.lck")),
-	MF(".MF", new ExtensionFilter("Manifest files (*.MF)", "*.MF")), XLSX(".xlsx", new ExtensionFilter("Excel workbook files (*.xlsx)", "*.xlsx")), XML(".xml", new ExtensionFilter("XML files (*.xml)", "*.xml"));
+	MF(".MF", new ExtensionFilter("Manifest files (*.MF)", "*.MF")), XLSX(".xlsx", new ExtensionFilter("Excel workbook files (*.xlsx)", "*.xlsx")), XML(".xml", new ExtensionFilter("Extensible Markup Language files (*.xml)", "*.xml")),
+	JSON(".json", new ExtensionFilter("JavaScript Object Notation files (*.json)", "*.json"));
 	// @formatter:on
 
 	/** File extension. */

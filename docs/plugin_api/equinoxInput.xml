@@ -245,8 +245,8 @@
 	<!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
-		<stfId></stfId><!--Path to XML file containing input parameters for generating stress sequence.-->
-		<xmlPath></xmlPath>
+		<stfId></stfId><!--Path to input file containing input parameters for generating stress sequence. The file name must end with either XML or JSON.-->
+		<inputPath></inputPath>
 	</generateStressSequence>
 	<!--Assigns mission parameters to headless stress sequence.-->
 	<assignMissionParametersToStressSequence>
@@ -328,16 +328,16 @@
 		<id></id>
 		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId>
-		<!--Path to XML file containing input parameters for equivalent stress analysis.-->
-		<xmlPath></xmlPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<inputPath></inputPath>
 	</equivalentStressAnalysis>
 	<!--Performs equivalent stress analysis with referenced headless stress sequence.-->
 	<equivalentStressAnalysis>
 		<id></id>
 		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
 		<headlessStressSequenceId></headlessStressSequenceId>
-		<!--Path to XML file containing input parameters for equivalent stress analysis.-->
-		<xmlPath></xmlPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<inputPath></inputPath>
 	</equivalentStressAnalysis>
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>
@@ -916,7 +916,7 @@
 	<equivalentStressAnalysis>
 		<id></id>
 		<stfId></stfId>
-		<xmlPath></xmlPath>
+		<inputPath></inputPath>
 	</equivalentStressAnalysis>
 	
 	<editPilotPointInfo></editPilotPointInfo>

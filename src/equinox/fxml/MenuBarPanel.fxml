@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
+<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
    <children>
       <MenuBar fx:id="menuBar_" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="29.0" stylesheets="@../css/MenuBar.css" StackPane.alignment="TOP_CENTER">
         <menus>
@@ -338,15 +338,31 @@
                         <KeyCodeCombination alt="UP" code="I" control="UP" meta="DOWN" shift="UP" shortcut="UP" />
                      </accelerator>
                   </MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onCheckInstructionSetClicked" text="Check Instruction Set">
                      <graphic>
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" onAction="#onVisualizeInstructionSetClicked" text="Visualize Instruction Set">
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#onSaveInstructionSetClicked" text="Save Instruction Set">
                      <graphic>
-                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.tree7" />
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
+                     </graphic>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onScheduleInstructionSetClicked" text="Schedule Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.clock-o" />
+                     </graphic>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onShareInstructionSetClicked" text="Share Instruction Set">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.mail-forward" />
+                     </graphic>
+                  </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#onGenerateExecutionPlanClicked" text="Generate Execution Plan">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.list-numbered" />
                      </graphic>
                   </MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
@@ -759,6 +775,17 @@
                   <MenuItem mnemonicParsing="false" onAction="#showTaskHistory" text="Task history">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.history" />
+                     </graphic>
+                  </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#showSavedInstructionSets" text="Saved instruction sets">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
+                     </graphic>
+                  </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#showScheduledInstructionSets" text="Scheduled instruction sets">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.clock-o" />
                      </graphic>
                   </MenuItem>
                </items>

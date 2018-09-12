@@ -634,7 +634,7 @@ public class InputPanel implements Initializable {
 	public void onRunInstructionSetClicked() {
 
 		// get file chooser
-		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
 
 		// show open dialog
 		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
@@ -654,7 +654,7 @@ public class InputPanel implements Initializable {
 	public void onCheckInstructionSetClicked() {
 
 		// get file chooser
-		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
 
 		// show open dialog
 		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
@@ -668,16 +668,6 @@ public class InputPanel implements Initializable {
 
 		// create batch analysis
 		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), false));
-	}
-
-	@FXML
-	public void onVisualizeInstructionSetClicked() {
-		// TODO
-	}
-
-	@FXML
-	public void onDownloadSampleInstructionSetClicked() {
-		// TODO
 	}
 
 	/**

@@ -75,6 +75,7 @@ import equinox.dataServer.remote.data.SpectrumInfo;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.dataServer.remote.data.SpectrumSearchInput;
 import equinox.plugin.FileType;
+import equinox.process.automation.ConvertJSONtoXML;
 import equinox.process.automation.ReadEquivalentStressAnalysisInput;
 import equinox.process.automation.ReadGenerateStressSequenceInput;
 import equinox.task.AddSTFFiles;
@@ -147,6 +148,7 @@ import equinox.task.ShareGeneratedItem;
 import equinox.task.ShareSTF;
 import equinox.task.ShareSpectrum;
 import equinox.task.ShareSpectrumFile;
+import equinox.task.TemporaryFileCreatingTask;
 import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSpectra;
 import javafx.beans.property.BooleanProperty;
@@ -161,7 +163,7 @@ import javafx.scene.image.Image;
  * @time 15:12:11
  */
 @SuppressWarnings("unchecked")
-public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, InstructedTask>> implements LongRunningTask {
+public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String, InstructedTask>> implements LongRunningTask {
 
 	/** Run mode constant. */
 	public static final String PARALLEL = "parallel", SEQUENTIAL = "sequential", SAVE = "save";
@@ -169,14 +171,14 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 	/** True if tasks should be executed in parallel mode. */
 	private String runMode = PARALLEL;
 
-	/** Input XML file. */
-	private final Path inputFile;
+	/** Input file. */
+	private Path inputFile;
 
 	/**
 	 * Creates submit instruction set task.
 	 *
 	 * @param inputFile
-	 *            Input XML file.
+	 *            Input XML/JSON file.
 	 */
 	public RunInstructionSet(Path inputFile) {
 		this.inputFile = inputFile;
@@ -194,6 +196,14 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 	@Override
 	protected HashMap<String, InstructedTask> call() throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(this, inputFile).start(null);
+		}
 
 		// create list of tasks to be executed
 		HashMap<String, InstructedTask> tasks = new HashMap<>();
@@ -2292,13 +2302,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 
 				// get inputs
 				String id = equivalentStressAnalysis.getChild("id").getTextNormalize();
-				Path xmlPath = Paths.get(equivalentStressAnalysis.getChild("xmlPath").getTextNormalize());
+				Path inputPath = Paths.get(equivalentStressAnalysis.getChild("inputPath").getTextNormalize());
 
 				// get input parameters
-				EquivalentStressInput input = inputs.get(xmlPath);
+				EquivalentStressInput input = inputs.get(inputPath);
 				if (input == null) {
-					input = new ReadEquivalentStressAnalysisInput(this, xmlPath, isamiVersion).start(connection);
-					inputs.put(xmlPath, input);
+					input = new ReadEquivalentStressAnalysisInput(this, inputPath, isamiVersion).start(connection);
+					inputs.put(inputPath, input);
 				}
 
 				// create task
@@ -2654,13 +2664,13 @@ public class RunInstructionSet extends InternalEquinoxTask<HashMap<String, Instr
 			// parse elements
 			String id = generateStressSequence.getChild("id").getTextNormalize();
 			String stfId = generateStressSequence.getChild("stfId").getTextNormalize();
-			Path xmlPath = Paths.get(generateStressSequence.getChild("xmlPath").getTextNormalize());
+			Path inputPath = Paths.get(generateStressSequence.getChild("inputPath").getTextNormalize());
 
 			// get input parameters
-			GenerateStressSequenceInput input = inputs.get(xmlPath);
+			GenerateStressSequenceInput input = inputs.get(inputPath);
 			if (input == null) {
-				input = new ReadGenerateStressSequenceInput(this, xmlPath).start(null);
-				inputs.put(xmlPath, input);
+				input = new ReadGenerateStressSequenceInput(this, inputPath).start(null);
+				inputs.put(inputPath, input);
 			}
 
 			// create task

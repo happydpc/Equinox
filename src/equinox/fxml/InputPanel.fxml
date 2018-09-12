@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
@@ -77,21 +77,9 @@
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.play3" />
                      </graphic>
                   </MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onCheckInstructionSetClicked" text="Check Instruction Set">
                      <graphic>
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
-                     </graphic>
-                  </MenuItem>
-                  <MenuItem mnemonicParsing="false" onAction="#onVisualizeInstructionSetClicked" text="Visualize Instruction Set">
-                     <graphic>
-                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.tree7" />
-                     </graphic>
-                  </MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.cloud-download" />
                      </graphic>
                   </MenuItem>
                </items>

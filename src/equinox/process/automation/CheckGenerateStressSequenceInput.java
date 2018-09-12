@@ -28,7 +28,7 @@ import equinox.data.StressComponent;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
-import equinox.task.InternalEquinoxTask;
+import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.XMLUtilities;
 
 /**
@@ -41,10 +41,10 @@ import equinox.utility.XMLUtilities;
 public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean> {
 
 	/** The owner task of this process. */
-	private final InternalEquinoxTask<?> task;
+	private final TemporaryFileCreatingTask<?> task;
 
-	/** Input XML file. */
-	private final Path inputFile;
+	/** Input file. */
+	private Path inputFile;
 
 	/**
 	 * Creates check generate stress sequence input process.
@@ -52,15 +52,23 @@ public class CheckGenerateStressSequenceInput implements EquinoxProcess<Boolean>
 	 * @param task
 	 *            The owner task of this process.
 	 * @param inputFile
-	 *            Input XML file.
+	 *            Input XML/JSON file.
 	 */
-	public CheckGenerateStressSequenceInput(InternalEquinoxTask<?> task, Path inputFile) {
+	public CheckGenerateStressSequenceInput(TemporaryFileCreatingTask<?> task, Path inputFile) {
 		this.task = task;
 		this.inputFile = inputFile;
 	}
 
 	@Override
 	public Boolean start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			task.updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(task, inputFile).start(connection, preparedStatements);
+		}
 
 		// read input file
 		task.updateMessage("Checking generate stress sequence input XML file...");

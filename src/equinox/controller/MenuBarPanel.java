@@ -298,13 +298,28 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onVisualizeInstructionSetClicked() {
-		owner_.getInputPanel().onVisualizeInstructionSetClicked();
+	private void onSaveInstructionSetClicked() {
+		// TODO on save instruction set clicked
+	}
+
+	@FXML
+	private void onScheduleInstructionSetClicked() {
+		// TODO on schedule instruction set clicked
+	}
+
+	@FXML
+	private void onShareInstructionSetClicked() {
+		// TODO on share instruction set clicked
+	}
+
+	@FXML
+	private void onGenerateExecutionPlanClicked() {
+		// TODO generate execution plan clicked
 	}
 
 	@FXML
 	private void onDownloadSampleInstructionSetClicked() {
-		owner_.getInputPanel().onDownloadSampleInstructionSetClicked();
+		// TODO on download sample instruction set clicked
 	}
 
 	@FXML
@@ -1176,6 +1191,16 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	@FXML
 	public void showTaskHistory() {
 		owner_.getTaskHistoryPanel().show(notificationImage_);
+	}
+
+	@FXML
+	public void showSavedInstructionSets() {
+		// TODO show saved instruction sets
+	}
+
+	@FXML
+	public void showScheduledInstructionSets() {
+		// TODO show scheduled instruction sets
 	}
 
 	/**

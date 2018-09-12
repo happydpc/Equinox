@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.task;
+package equinox.task.automation;
 
 import java.io.FileWriter;
 import java.nio.file.Files;
@@ -29,7 +29,7 @@ import org.json.XML;
  * @date 11 Sep 2018
  * @time 21:43:58
  */
-public class ConvertXMLToJSON {
+public class ConvertXMLtoJSON {
 	public static void main(String[] args) throws Exception {
 
 		// convertXMLToJSON("/Users/aurora/Temporary/test/equinoxInput_test.xml", "/Users/aurora/Temporary/test/equinoxInput_test.json");

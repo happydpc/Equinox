@@ -30,8 +30,9 @@ import equinox.data.input.EquivalentStressInput;
 import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.dataServer.remote.data.LinearMaterial;
 import equinox.dataServer.remote.data.PreffasMaterial;
+import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
-import equinox.task.InternalEquinoxTask;
+import equinox.task.TemporaryFileCreatingTask;
 
 /**
  * Class for read equivalent stress analysis input process.
@@ -43,10 +44,10 @@ import equinox.task.InternalEquinoxTask;
 public class ReadEquivalentStressAnalysisInput implements EquinoxProcess<EquivalentStressInput> {
 
 	/** The owner task of this process. */
-	private final InternalEquinoxTask<?> task;
+	private final TemporaryFileCreatingTask<?> task;
 
-	/** Input XML file. */
-	private final Path inputFile;
+	/** Input file. */
+	private Path inputFile;
 
 	/** ISAMI version. */
 	private final IsamiVersion isamiVersion;
@@ -57,11 +58,11 @@ public class ReadEquivalentStressAnalysisInput implements EquinoxProcess<Equival
 	 * @param task
 	 *            The owner task of this process.
 	 * @param inputFile
-	 *            Input XML file.
+	 *            Input XML/JSON file.
 	 * @param isamiVersion
 	 *            ISAMI version.
 	 */
-	public ReadEquivalentStressAnalysisInput(InternalEquinoxTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
+	public ReadEquivalentStressAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
 		this.task = task;
 		this.inputFile = inputFile;
 		this.isamiVersion = isamiVersion;
@@ -69,6 +70,14 @@ public class ReadEquivalentStressAnalysisInput implements EquinoxProcess<Equival
 
 	@Override
 	public EquivalentStressInput start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			task.updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(task, inputFile).start(null);
+		}
 
 		// read input file
 		task.updateMessage("Reading equivalent stress analysis input XML file...");
