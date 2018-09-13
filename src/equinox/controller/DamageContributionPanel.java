@@ -378,11 +378,11 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 	private void startLoadcaseContributionAnalysis(boolean runNow, Date scheduleDate) {
 
 		// create input
-		LoadcaseDamageContributionInput input = new LoadcaseDamageContributionInput();
+		LoadcaseDamageContributionInput basisInput = new LoadcaseDamageContributionInput();
 
 		// add damage contributions
 		for (DamageContribution c : damageContributions_.getItems()) {
-			input.addContribution(c);
+			basisInput.addContribution(c);
 		}
 
 		// set overall stress factors
@@ -391,7 +391,7 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 		for (int i = 0; i < values.length; i++) {
 			for (MenuItem method : methods[i].getItems()) {
 				if (((RadioMenuItem) method).isSelected()) {
-					input.setStressModifier(i, Double.parseDouble(values[i].getText()), method.getText());
+					basisInput.setStressModifier(i, Double.parseDouble(values[i].getText()), method.getText());
 					break;
 				}
 			}
@@ -399,19 +399,19 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 		// set loadcase factors
 		if (!loadcaseFactors_.getItems().isEmpty()) {
-			input.setLoadcaseFactors(loadcaseFactors_.getItems());
+			basisInput.setLoadcaseFactors(loadcaseFactors_.getItems());
 		}
 
 		// set segment factors
 		if (!segmentFactors_.getItems().isEmpty()) {
-			input.setSegmentFactors(segmentFactors_.getItems());
+			basisInput.setSegmentFactors(segmentFactors_.getItems());
 		}
 
 		// set delta-p values
 		String dpLoadcase = dpLoadcase_.getText() == null || dpLoadcase_.getText().isEmpty() ? null : dpLoadcase_.getText();
 		Double refDP = refDPVal_.getText() == null || refDPVal_.getText().isEmpty() ? null : Double.parseDouble(refDPVal_.getText());
-		input.setDPLoadcase(dpLoadcase);
-		input.setReferenceDP(refDP);
+		basisInput.setDPLoadcase(dpLoadcase);
+		basisInput.setReferenceDP(refDP);
 
 		// set delta-t values
 		String dtLoadcaseSup = dtLoadcaseSup_.getText() == null || dtLoadcaseSup_.getText().isEmpty() ? null : dtLoadcaseSup_.getText();
@@ -421,22 +421,22 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 		DTInterpolation dtInterpolation = dtInterpolation_.getSelectionModel().getSelectedItem();
 		if (!checkInputs(dtLoadcaseInf, refDTInf, dtLoadcaseSup, refDTSup, dtInterpolation))
 			return;
-		input.setDTInterpolation(dtInterpolation);
-		input.setDTLoadcaseSup(dtLoadcaseSup);
-		input.setReferenceDTSup(refDTSup);
-		input.setDTLoadcaseInf(dtLoadcaseInf);
-		input.setReferenceDTInf(refDTInf);
+		basisInput.setDTInterpolation(dtInterpolation);
+		basisInput.setDTLoadcaseSup(dtLoadcaseSup);
+		basisInput.setReferenceDTSup(refDTSup);
+		basisInput.setDTLoadcaseInf(dtLoadcaseInf);
+		basisInput.setReferenceDTInf(refDTInf);
 
 		// set stress rotation
-		input.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
+		basisInput.setStressComponent(stressComponent_.getSelectionModel().getSelectedItem());
 		double rotationAngle = stressComponent_.getSelectionModel().getSelectedItem().equals(StressComponent.ROTATED) ? Double.parseDouble(rotation_.getText()) : 0.0;
-		input.setRotationAngle(rotationAngle);
+		basisInput.setRotationAngle(rotationAngle);
 
 		// set omission parameters
-		input.setRemoveNegativeStresses(removeNegative_.isSelected());
-		input.setApplyOmission(omission_.isSelected());
+		basisInput.setRemoveNegativeStresses(removeNegative_.isSelected());
+		basisInput.setApplyOmission(omission_.isSelected());
 		double omissionLevel = !omission_.isSelected() ? 0.0 : Double.parseDouble(omissionLevel_.getText());
-		input.setOmissionLevel(omissionLevel);
+		basisInput.setOmissionLevel(omissionLevel);
 
 		// get analysis engine
 		AnalysisEngine engine = (AnalysisEngine) owner_.getOwner().getSettings().getValue(Settings.ANALYSIS_ENGINE);
@@ -450,15 +450,18 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 			// loop over materials
 			for (FatigueMaterial material : fatigueMaterials_.getItems()) {
 
+				// create input with material
+				LoadcaseDamageContributionInput input = new LoadcaseDamageContributionInput(basisInput, material);
+
 				// STF file
 				if (item instanceof STFFile) {
 
 					// run now
 					if (runNow) {
-						tm.runTaskInParallel(new LoadcaseDamageContributionAnalysis((STFFile) item, input, material, engine));
+						tm.runTaskInParallel(new LoadcaseDamageContributionAnalysis((STFFile) item, input, engine));
 					}
 					else {
-						tm.runTaskInParallel(new SaveTask(new LoadcaseDamageContributionAnalysis((STFFile) item, input, material, engine), scheduleDate));
+						tm.runTaskInParallel(new SaveTask(new LoadcaseDamageContributionAnalysis((STFFile) item, input, engine), scheduleDate));
 					}
 				}
 
@@ -467,10 +470,10 @@ public class DamageContributionPanel implements InternalInputSubPanel, DeltaPInf
 
 					// run now
 					if (runNow) {
-						tm.runTaskSequentially(new BucketDamageContributionAnalysis((STFFileBucket) item, input, material, engine));
+						tm.runTaskSequentially(new BucketDamageContributionAnalysis((STFFileBucket) item, input, engine));
 					}
 					else {
-						tm.runTaskInParallel(new SaveTask(new BucketDamageContributionAnalysis((STFFileBucket) item, input, material, engine), scheduleDate));
+						tm.runTaskInParallel(new SaveTask(new BucketDamageContributionAnalysis((STFFileBucket) item, input, engine), scheduleDate));
 					}
 				}
 			}

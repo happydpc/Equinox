@@ -111,6 +111,7 @@ import equinox.task.GetSpectrumEditInfo;
 import equinox.task.GetTypicalFlight;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.LoadcaseDamageContributionAnalysis;
 import equinox.task.PlotExternalLevelCrossing;
 import equinox.task.PlotExternalTypicalFlights;
 import equinox.task.PlotHistogram;
@@ -2295,6 +2296,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// get analysis engine settings
 		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
 		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
 
 		// input mapping
 		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
@@ -2322,11 +2324,42 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				// get loadcase damage contribution analysis input parameters
 				LoadcaseDamageContributionInput loadcaseDamageContributionAnalysisInput = loadcaseDamageContributionAnalysisInputs.get(loadcaseDamageContributionAnalysisInputPath);
 				if (loadcaseDamageContributionAnalysisInput == null) {
-					loadcaseDamageContributionAnalysisInput = new ReadLoadcaseDamageContributionAnalysisInput(this, loadcaseDamageContributionAnalysisInputPath).start(null);
+
+					// read input
+					loadcaseDamageContributionAnalysisInput = new ReadLoadcaseDamageContributionAnalysisInput(this, loadcaseDamageContributionAnalysisInputPath, isamiVersion).start(connection);
+
+					// set generate stress sequence inputs
+					loadcaseDamageContributionAnalysisInput.setDPLoadcase(generateStressSequenceInput.getDPLoadcase());
+					loadcaseDamageContributionAnalysisInput.setDTInterpolation(generateStressSequenceInput.getDTInterpolation());
+					loadcaseDamageContributionAnalysisInput.setDTLoadcaseInf(generateStressSequenceInput.getDTLoadcaseInf());
+					loadcaseDamageContributionAnalysisInput.setDTLoadcaseSup(generateStressSequenceInput.getDTLoadcaseSup());
+					loadcaseDamageContributionAnalysisInput.setLoadcaseFactors(generateStressSequenceInput.getLoadcaseFactors());
+					loadcaseDamageContributionAnalysisInput.setReferenceDP(generateStressSequenceInput.getReferenceDP());
+					loadcaseDamageContributionAnalysisInput.setReferenceDTInf(generateStressSequenceInput.getReferenceDTInf());
+					loadcaseDamageContributionAnalysisInput.setReferenceDTSup(generateStressSequenceInput.getReferenceDTSup());
+					loadcaseDamageContributionAnalysisInput.setRotationAngle(generateStressSequenceInput.getRotationAngle());
+					loadcaseDamageContributionAnalysisInput.setSegmentFactors(generateStressSequenceInput.getSegmentFactors());
+					loadcaseDamageContributionAnalysisInput.setStressComponent(generateStressSequenceInput.getStressComponent());
+					loadcaseDamageContributionAnalysisInput.setStressModifier(GenerateStressSequenceInput.ONEG, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.ONEG), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.ONEG));
+					loadcaseDamageContributionAnalysisInput.setStressModifier(GenerateStressSequenceInput.DELTAP, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAP), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAP));
+					loadcaseDamageContributionAnalysisInput.setStressModifier(GenerateStressSequenceInput.DELTAT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAT));
+					loadcaseDamageContributionAnalysisInput.setStressModifier(GenerateStressSequenceInput.INCREMENT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.INCREMENT),
+							generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.INCREMENT));
+
+					// add to input mapping
 					loadcaseDamageContributionAnalysisInputs.put(loadcaseDamageContributionAnalysisInputPath, loadcaseDamageContributionAnalysisInput);
 				}
 
-				// FIXME
+				// create task
+				LoadcaseDamageContributionAnalysis task = new LoadcaseDamageContributionAnalysis(null, loadcaseDamageContributionAnalysisInput, engine);
+
+				// add to parent task
+				ParameterizedTaskOwner<STFFile> parentTask = (ParameterizedTaskOwner<STFFile>) tasks.get(stfId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put generate stress sequence task to tasks
+				tasks.put(id, new InstructedTask(task, true));
 			}
 		}
 	}

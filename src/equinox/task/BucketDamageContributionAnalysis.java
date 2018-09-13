@@ -27,7 +27,6 @@ import equinox.data.ProgramArguments.ArgumentType;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
 import equinox.data.input.LoadcaseDamageContributionInput;
-import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.serializableTask.SerializableBucketDamageContributionAnalysis;
@@ -47,9 +46,6 @@ public class BucketDamageContributionAnalysis extends InternalEquinoxTask<Void> 
 	/** Input. */
 	private final LoadcaseDamageContributionInput input_;
 
-	/** Material. */
-	private final FatigueMaterial material_;
-
 	/** Analysis engine. */
 	private final AnalysisEngine analysisEngine_;
 
@@ -63,15 +59,12 @@ public class BucketDamageContributionAnalysis extends InternalEquinoxTask<Void> 
 	 *            STF file bucket.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public BucketDamageContributionAnalysis(STFFileBucket bucket, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public BucketDamageContributionAnalysis(STFFileBucket bucket, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		bucket_ = bucket;
 		input_ = input;
-		material_ = material;
 		analysisEngine_ = analysisEngine;
 	}
 
@@ -87,7 +80,7 @@ public class BucketDamageContributionAnalysis extends InternalEquinoxTask<Void> 
 
 	@Override
 	public SerializableTask getSerializableTask() {
-		return new SerializableBucketDamageContributionAnalysis(bucket_, input_, material_, analysisEngine_);
+		return new SerializableBucketDamageContributionAnalysis(bucket_, input_, analysisEngine_);
 	}
 
 	@Override
@@ -176,7 +169,7 @@ public class BucketDamageContributionAnalysis extends InternalEquinoxTask<Void> 
 				if (results == null) {
 					results = new ArrayList<>();
 				}
-				results.add(taskPanel_.getOwner().runTaskSilently(new LoadcaseDamageContributionAnalysis(stfID, stressTableID, stfName, spectrum, input_, material_, analysisEngine_), false));
+				results.add(taskPanel_.getOwner().runTaskSilently(new LoadcaseDamageContributionAnalysis(stfID, stressTableID, stfName, spectrum, input_, analysisEngine_), false));
 
 				// update maximum file ID
 				if (stfID >= maxFileID) {

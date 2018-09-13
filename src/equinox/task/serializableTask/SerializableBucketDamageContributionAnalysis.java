@@ -19,7 +19,6 @@ import equinox.data.AnalysisEngine;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LoadcaseDamageContributionInput;
-import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.BucketDamageContributionAnalysis;
 import equinox.task.SerializableTask;
 import javafx.scene.control.TreeItem;
@@ -42,9 +41,6 @@ public class SerializableBucketDamageContributionAnalysis implements Serializabl
 	/** Serializable STF file bucket. */
 	private final SerializableSpectrumItem bucket_;
 
-	/** Material. */
-	private final FatigueMaterial material_;
-
 	/** Analysis engine. */
 	private final AnalysisEngine analysisEngine_;
 
@@ -55,15 +51,12 @@ public class SerializableBucketDamageContributionAnalysis implements Serializabl
 	 *            STF file bucket.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public SerializableBucketDamageContributionAnalysis(STFFileBucket bucket, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public SerializableBucketDamageContributionAnalysis(STFFileBucket bucket, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		bucket_ = new SerializableSpectrumItem(bucket);
 		input_ = input;
-		material_ = material;
 		analysisEngine_ = analysisEngine;
 	}
 
@@ -79,6 +72,6 @@ public class SerializableBucketDamageContributionAnalysis implements Serializabl
 			return null;
 
 		// create and return task
-		return new BucketDamageContributionAnalysis((STFFileBucket) result[0], input_, material_, analysisEngine_);
+		return new BucketDamageContributionAnalysis((STFFileBucket) result[0], input_, analysisEngine_);
 	}
 }

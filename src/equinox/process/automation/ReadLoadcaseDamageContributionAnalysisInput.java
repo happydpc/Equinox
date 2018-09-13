@@ -18,14 +18,25 @@ package equinox.process.automation;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+
+import equinox.data.DamageContribution;
+import equinox.data.IsamiVersion;
 import equinox.data.input.LoadcaseDamageContributionInput;
+import equinox.dataServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
 import equinox.task.TemporaryFileCreatingTask;
 
 /**
  * Class for read loadcase damage contribution analysis input process.
- * 
+ *
  * @author Murat Artim
  * @date 13 Sep 2018
  * @time 14:06:24
@@ -38,6 +49,9 @@ public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProce
 	/** Input file. */
 	private Path inputFile;
 
+	/** ISAMI version. */
+	private final IsamiVersion isamiVersion;
+
 	/**
 	 * Creates read generate stress sequence input process.
 	 *
@@ -45,15 +59,216 @@ public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProce
 	 *            The owner task of this process.
 	 * @param inputFile
 	 *            Input XML/JSON file.
+	 * @param isamiVersion
+	 *            ISAMI version.
 	 */
-	public ReadLoadcaseDamageContributionAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile) {
+	public ReadLoadcaseDamageContributionAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
 		this.task = task;
 		this.inputFile = inputFile;
+		this.isamiVersion = isamiVersion;
 	}
 
 	@Override
 	public LoadcaseDamageContributionInput start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
-		// FIXME
-		return null;
+
+		// input file is JSON
+		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
+
+			// convert to XML file
+			task.updateMessage("Converting input JSON file to XML file...");
+			inputFile = new ConvertJSONtoXML(task, inputFile, null).start(null);
+			task.setFileAsPermanent(inputFile);
+		}
+
+		// read input file
+		task.updateMessage("Reading loadcase damage contribution analysis input XML file...");
+
+		// create input
+		LoadcaseDamageContributionInput input = new LoadcaseDamageContributionInput();
+
+		// get root input element
+		SAXBuilder saxBuilder = new SAXBuilder();
+		Document document = saxBuilder.build(inputFile.toUri().toString());
+		Element loadcaseDamageContributionAnalysisInput = document.getRootElement();
+
+		// material
+		material(loadcaseDamageContributionAnalysisInput, input, connection);
+
+		// omission
+		omission(loadcaseDamageContributionAnalysisInput, input);
+
+		// contributions
+		contributions(loadcaseDamageContributionAnalysisInput, input);
+
+		// return input
+		return input;
+	}
+
+	/**
+	 * Gets contribution inputs.
+	 *
+	 * @param loadcaseDamageContributionAnalysisInput
+	 *            Root input element.
+	 * @param input
+	 *            Analysis input.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void contributions(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input) throws Exception {
+
+		// update info
+		task.updateMessage("Reading loadcase contributions...");
+
+		// get contributions element
+		Element loadcaseContributions = loadcaseDamageContributionAnalysisInput.getChild("loadcaseContributions");
+
+		// steady contributions
+		for (Element steadyContribution : loadcaseContributions.getChildren("steadyContribution")) {
+
+			// get contribution name
+			String contributionName = steadyContribution.getTextNormalize();
+
+			// add contribution type
+			for (ContributionType type : ContributionType.values()) {
+				if (type.getName().equals(contributionName)) {
+					input.addContribution(new DamageContribution(contributionName, null, type));
+					break;
+				}
+			}
+		}
+
+		// increment contributions
+		for (Element incrementContributionGroup : loadcaseContributions.getChildren("incrementContributionGroup")) {
+
+			// get name and loadcase number
+			String name = incrementContributionGroup.getChildTextNormalize("groupName");
+			String loadcaseNumber = incrementContributionGroup.getChildTextNormalize("loadcaseNumber");
+
+		}
+	}
+
+	/**
+	 * Gets omission inputs.
+	 *
+	 * @param loadcaseDamageContributionAnalysisInput
+	 *            Root input element.
+	 * @param input
+	 *            Analysis input.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void omission(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input) throws Exception {
+
+		// update info
+		task.updateMessage("Reading omission...");
+
+		// initialize default values
+		boolean removeNegativeStresses = false;
+		boolean applyOmission = true;
+		double omissionLevel = 0.0;
+
+		// omission inputs given
+		if (loadcaseDamageContributionAnalysisInput.getChild("omission") != null) {
+
+			// get omission element
+			Element omission = loadcaseDamageContributionAnalysisInput.getChild("omission");
+
+			// remove negative stress
+			if (omission.getChild("removeNegativeStress") != null) {
+				removeNegativeStresses = Boolean.parseBoolean(omission.getChildTextNormalize("removeNegativeStress"));
+			}
+
+			// omission level
+			if (omission.getChild("omissionLevel") != null) {
+				applyOmission = true;
+				omissionLevel = Double.parseDouble(omission.getChildTextNormalize("omissionLevel"));
+			}
+		}
+
+		// set to all inputs
+		input.setRemoveNegativeStresses(removeNegativeStresses);
+		input.setApplyOmission(applyOmission);
+		input.setOmissionLevel(omissionLevel);
+	}
+
+	/**
+	 * Gets material inputs.
+	 *
+	 * @param loadcaseDamageContributionAnalysisInput
+	 *            Root input element.
+	 * @param input
+	 *            Analysis input.
+	 * @param connection
+	 *            Database connection.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void material(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input, Connection connection) throws Exception {
+
+		// update info
+		task.updateMessage("Reading material...");
+
+		// get material element
+		Element materialElement = loadcaseDamageContributionAnalysisInput.getChild("material");
+
+		// get inputs
+		String name = materialElement.getChildTextNormalize("name");
+		String specification = materialElement.getChildTextNormalize("specification");
+		String orientation = materialElement.getChildTextNormalize("orientation");
+		String configuration = materialElement.getChildTextNormalize("configuration");
+
+		// create statement
+		try (Statement statement = connection.createStatement()) {
+			input.setMaterial(getFatigueMaterial(name, specification, orientation, configuration, statement));
+		}
+	}
+
+	/**
+	 * Retrieves fatigue material from database.
+	 *
+	 * @param name
+	 *            Material name.
+	 * @param specification
+	 *            Material specification.
+	 * @param orientation
+	 *            Material orientation.
+	 * @param configuration
+	 *            Material configuration.
+	 * @param statement
+	 *            Database statement to get material.
+	 * @return Fatigue material.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private FatigueMaterial getFatigueMaterial(String name, String specification, String orientation, String configuration, Statement statement) throws Exception {
+
+		// initialize material
+		FatigueMaterial material = null;
+
+		// execute statement
+		String sql = "select * from fatigue_materials where ";
+		sql += "name = '" + name + "' and ";
+		sql += "specification = '" + specification + "' and ";
+		sql += "orientation = '" + orientation + "' and ";
+		sql += "configuration = '" + configuration + "' and ";
+		sql += "isami_version = '" + isamiVersion.getIsamiVersion() + "'";
+		try (ResultSet resultSet = statement.executeQuery(sql)) {
+			if (resultSet.next()) {
+				material = new FatigueMaterial(resultSet.getInt("id"));
+				material.setName(resultSet.getString("name"));
+				material.setSpecification(resultSet.getString("specification"));
+				material.setLibraryVersion(resultSet.getString("library_version"));
+				material.setFamily(resultSet.getString("family"));
+				material.setOrientation(resultSet.getString("orientation"));
+				material.setConfiguration(resultSet.getString("configuration"));
+				material.setP(resultSet.getDouble("par_p"));
+				material.setQ(resultSet.getDouble("par_q"));
+				material.setM(resultSet.getDouble("par_m"));
+				material.setIsamiVersion(resultSet.getString("isami_version"));
+			}
+		}
+
+		// return material
+		return material;
 	}
 }

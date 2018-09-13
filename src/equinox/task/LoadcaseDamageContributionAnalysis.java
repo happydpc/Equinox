@@ -55,7 +55,6 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.dataServer.remote.data.ContributionType;
-import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.plugin.FileType;
 import equinox.process.ESAProcess;
 import equinox.process.InbuiltDCA;
@@ -94,9 +93,6 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 	/** Input. */
 	private final LoadcaseDamageContributionInput input_;
-
-	/** Material. */
-	private final FatigueMaterial material_;
 
 	/** Analysis engine. */
 	private final AnalysisEngine analysisEngine_;
@@ -138,15 +134,12 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 	 *            The owner STF file. Can be null for automatic execution.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public LoadcaseDamageContributionAnalysis(STFFile stfFile, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public LoadcaseDamageContributionAnalysis(STFFile stfFile, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		stfFile_ = stfFile;
 		input_ = input;
-		material_ = material;
 		stfID_ = null;
 		stressTableID_ = null;
 		stfName_ = null;
@@ -167,18 +160,15 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 	 *            The owner spectrum.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public LoadcaseDamageContributionAnalysis(int stfID, int stressTableID, String stfName, Spectrum spectrum, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public LoadcaseDamageContributionAnalysis(int stfID, int stressTableID, String stfName, Spectrum spectrum, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		stfID_ = stfID;
 		stressTableID_ = stressTableID;
 		stfName_ = stfName;
 		spectrum_ = spectrum;
 		input_ = input;
-		material_ = material;
 		stfFile_ = null;
 		analysisEngine_ = analysisEngine;
 	}
@@ -219,8 +209,8 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 	@Override
 	public SerializableTask getSerializableTask() {
 		if (stfFile_ != null)
-			return new SerializableLoadcaseDamageContributionAnalysis(stfFile_, input_, material_, analysisEngine_);
-		return new SerializableLoadcaseDamageContributionAnalysis(stfID_, stressTableID_, stfName_, spectrum_, input_, material_, analysisEngine_);
+			return new SerializableLoadcaseDamageContributionAnalysis(stfFile_, input_, analysisEngine_);
+		return new SerializableLoadcaseDamageContributionAnalysis(stfID_, stressTableID_, stfName_, spectrum_, input_, analysisEngine_);
 	}
 
 	@Override
@@ -438,7 +428,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 		// save material name to STF files table
 		int stfID = stfFile_ == null ? stfID_ : stfFile_.getID();
-		String sql = "update stf_files set fatigue_material = '" + material_.toString() + "' where file_id = " + stfID;
+		String sql = "update stf_files set fatigue_material = '" + input_.getMaterial().toString() + "' where file_id = " + stfID;
 		try (Statement statement = connection.createStatement()) {
 			statement.executeUpdate(sql);
 		}
@@ -513,45 +503,45 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			update.setDouble(19, input_.isApplyOmission() ? input_.getOmissionLevel() : -1.0); // omission level
 
 			// material
-			update.setString(20, material_.getName());
-			if (material_.getSpecification() == null || material_.getSpecification().isEmpty()) {
+			update.setString(20, input_.getMaterial().getName());
+			if (input_.getMaterial().getSpecification() == null || input_.getMaterial().getSpecification().isEmpty()) {
 				update.setNull(21, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(21, material_.getSpecification());
+				update.setString(21, input_.getMaterial().getSpecification());
 			}
-			if (material_.getLibraryVersion() == null || material_.getLibraryVersion().isEmpty()) {
+			if (input_.getMaterial().getLibraryVersion() == null || input_.getMaterial().getLibraryVersion().isEmpty()) {
 				update.setNull(22, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(22, material_.getLibraryVersion());
+				update.setString(22, input_.getMaterial().getLibraryVersion());
 			}
-			if (material_.getFamily() == null || material_.getFamily().isEmpty()) {
+			if (input_.getMaterial().getFamily() == null || input_.getMaterial().getFamily().isEmpty()) {
 				update.setNull(23, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(23, material_.getFamily());
+				update.setString(23, input_.getMaterial().getFamily());
 			}
-			if (material_.getOrientation() == null || material_.getOrientation().isEmpty()) {
+			if (input_.getMaterial().getOrientation() == null || input_.getMaterial().getOrientation().isEmpty()) {
 				update.setNull(24, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(24, material_.getOrientation());
+				update.setString(24, input_.getMaterial().getOrientation());
 			}
-			if (material_.getConfiguration() == null || material_.getConfiguration().isEmpty()) {
+			if (input_.getMaterial().getConfiguration() == null || input_.getMaterial().getConfiguration().isEmpty()) {
 				update.setNull(25, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(25, material_.getConfiguration());
+				update.setString(25, input_.getMaterial().getConfiguration());
 			}
-			update.setDouble(26, material_.getP());
-			update.setDouble(27, material_.getQ());
-			update.setDouble(28, material_.getM());
-			if (material_.getIsamiVersion() == null || material_.getIsamiVersion().isEmpty()) {
+			update.setDouble(26, input_.getMaterial().getP());
+			update.setDouble(27, input_.getMaterial().getQ());
+			update.setDouble(28, input_.getMaterial().getM());
+			if (input_.getMaterial().getIsamiVersion() == null || input_.getMaterial().getIsamiVersion().isEmpty()) {
 				update.setNull(29, java.sql.Types.VARCHAR);
 			}
 			else {
-				update.setString(29, material_.getIsamiVersion());
+				update.setString(29, input_.getMaterial().getIsamiVersion());
 			}
 
 			// execute update
@@ -560,7 +550,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			// create damage contributions
 			try (ResultSet resultSet = update.getGeneratedKeys()) {
 				while (resultSet.next()) {
-					contributions = new LoadcaseDamageContributions(contributionName, resultSet.getBigDecimal(1).intValue(), material_.toString());
+					contributions = new LoadcaseDamageContributions(contributionName, resultSet.getBigDecimal(1).intValue(), input_.getMaterial().toString());
 				}
 			}
 		}
@@ -753,7 +743,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 		// ISAMI engine
 		if (analysisEngine_.equals(AnalysisEngine.ISAMI)) {
-			damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), material_, validity, maxPeaks_ > EquivalentStressAnalysis.MAX_PEAKS, input_.isApplyOmission(), input_.getOmissionLevel());
+			damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), input_.getMaterial(), validity, maxPeaks_ > EquivalentStressAnalysis.MAX_PEAKS, input_.isApplyOmission(), input_.getOmissionLevel());
 		}
 
 		// SAFE engine
@@ -762,7 +752,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 			// maximum allowed number of peaks exceeded
 			if (maxPeaks_ > EquivalentStressAnalysis.MAX_PEAKS) {
 				addWarning("Maximum number of allowed peaks per typical flight (100000) is exceeded. Executing extended inbuilt analysis engine.");
-				damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), material_, validity, true, input_.isApplyOmission(), input_.getOmissionLevel());
+				damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), input_.getMaterial(), validity, true, input_.isApplyOmission(), input_.getOmissionLevel());
 			}
 
 			// number of peaks within limits
@@ -770,13 +760,13 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 				// connected to server (SAFE engine)
 				if (taskPanel_.getOwner().getOwner().getAnalysisServerManager().isConnected()) {
-					damageAnalysis_ = new SafeDCA(this, sthFiles, flsFile, input_.getContributions(), material_, input_.isApplyOmission(), input_.getOmissionLevel());
+					damageAnalysis_ = new SafeDCA(this, sthFiles, flsFile, input_.getContributions(), input_.getMaterial(), input_.isApplyOmission(), input_.getOmissionLevel());
 				}
 
 				// not connected (inbuilt engine)
 				else if (isFallback) {
 					addWarning("Cannot connect to analysis server. Falling back to inbuilt analysis engine.");
-					damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), material_, validity, false, input_.isApplyOmission(), input_.getOmissionLevel());
+					damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), input_.getMaterial(), validity, false, input_.isApplyOmission(), input_.getOmissionLevel());
 				}
 
 				// fallback not selected
@@ -787,7 +777,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 		// inbuilt engine
 		else {
-			damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), material_, validity, maxPeaks_ > EquivalentStressAnalysis.MAX_PEAKS, input_.isApplyOmission(), input_.getOmissionLevel());
+			damageAnalysis_ = new InbuiltDCA(this, sthFiles, flsFile, input_.getContributions(), input_.getMaterial(), validity, maxPeaks_ > EquivalentStressAnalysis.MAX_PEAKS, input_.isApplyOmission(), input_.getOmissionLevel());
 		}
 
 		// run and return results of process

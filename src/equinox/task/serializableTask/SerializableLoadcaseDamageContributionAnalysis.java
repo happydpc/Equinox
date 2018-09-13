@@ -20,7 +20,6 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.LoadcaseDamageContributionInput;
-import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.task.LoadcaseDamageContributionAnalysis;
 import equinox.task.SerializableTask;
 import javafx.scene.control.TreeItem;
@@ -49,9 +48,6 @@ public class SerializableLoadcaseDamageContributionAnalysis implements Serializa
 	/** STF file name. */
 	private final String stfName_;
 
-	/** Material. */
-	private final FatigueMaterial material_;
-
 	/** Analysis engine. */
 	private final AnalysisEngine analysisEngine_;
 
@@ -62,15 +58,12 @@ public class SerializableLoadcaseDamageContributionAnalysis implements Serializa
 	 *            The owner STF file.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public SerializableLoadcaseDamageContributionAnalysis(STFFile stfFile, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public SerializableLoadcaseDamageContributionAnalysis(STFFile stfFile, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		stfFile_ = new SerializableSpectrumItem(stfFile);
 		input_ = input;
-		material_ = material;
 		stfID_ = null;
 		stressTableID_ = null;
 		stfName_ = null;
@@ -91,18 +84,15 @@ public class SerializableLoadcaseDamageContributionAnalysis implements Serializa
 	 *            The owner spectrum.
 	 * @param input
 	 *            Analysis input.
-	 * @param material
-	 *            Material.
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public SerializableLoadcaseDamageContributionAnalysis(int stfID, int stressTableID, String stfName, Spectrum spectrum, LoadcaseDamageContributionInput input, FatigueMaterial material, AnalysisEngine analysisEngine) {
+	public SerializableLoadcaseDamageContributionAnalysis(int stfID, int stressTableID, String stfName, Spectrum spectrum, LoadcaseDamageContributionInput input, AnalysisEngine analysisEngine) {
 		stfID_ = stfID;
 		stressTableID_ = stressTableID;
 		stfName_ = stfName;
 		spectrum_ = new SerializableSpectrumItem(spectrum);
 		input_ = input;
-		material_ = material;
 		stfFile_ = null;
 		analysisEngine_ = analysisEngine;
 	}
@@ -122,7 +112,7 @@ public class SerializableLoadcaseDamageContributionAnalysis implements Serializa
 				return null;
 
 			// create and return task
-			return new LoadcaseDamageContributionAnalysis((STFFile) result[0], input_, material_, analysisEngine_);
+			return new LoadcaseDamageContributionAnalysis((STFFile) result[0], input_, analysisEngine_);
 		}
 
 		// get spectrum
@@ -134,6 +124,6 @@ public class SerializableLoadcaseDamageContributionAnalysis implements Serializa
 			return null;
 
 		// create and return task
-		return new LoadcaseDamageContributionAnalysis(stfID_, stressTableID_, stfName_, (Spectrum) result[0], input_, material_, analysisEngine_);
+		return new LoadcaseDamageContributionAnalysis(stfID_, stressTableID_, stfName_, (Spectrum) result[0], input_, analysisEngine_);
 	}
 }

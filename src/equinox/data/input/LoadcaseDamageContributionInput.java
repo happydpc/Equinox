@@ -24,6 +24,7 @@ import equinox.data.LoadcaseFactor;
 import equinox.data.SegmentFactor;
 import equinox.data.StressComponent;
 import equinox.dataServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import javafx.collections.ObservableList;
 
 /**
@@ -74,11 +75,55 @@ public class LoadcaseDamageContributionInput implements Serializable {
 	/** List of damage contributions. */
 	private final ArrayList<DamageContribution> contributions_;
 
+	/** Material. */
+	private FatigueMaterial material_;
+
 	/**
 	 * Creates loadcase damage contribution analysis input.
 	 */
 	public LoadcaseDamageContributionInput() {
 		contributions_ = new ArrayList<>();
+	}
+
+	/**
+	 * Creates loadcase damage contribution input from given input and material.
+	 *
+	 * @param input
+	 *            Input to copy from.
+	 * @param material
+	 *            Material to set.
+	 */
+	public LoadcaseDamageContributionInput(LoadcaseDamageContributionInput input, FatigueMaterial material) {
+		contributions_ = new ArrayList<>();
+		setMaterial(material);
+		setApplyOmission(input.isApplyOmission());
+		setDPLoadcase(input.getDPLoadcase());
+		setDTInterpolation(input.getDTInterpolation());
+		setDTLoadcaseInf(input.getDTLoadcaseInf());
+		setDTLoadcaseSup(input.getDTLoadcaseSup());
+		setLoadcaseFactors(input.getLoadcaseFactors());
+		setOmissionLevel(input.getOmissionLevel());
+		setReferenceDP(input.getReferenceDP());
+		setReferenceDTInf(input.getReferenceDTInf());
+		setReferenceDTSup(input.getReferenceDTSup());
+		setRemoveNegativeStresses(input.isRemoveNegativeStresses());
+		setRotationAngle(input.getRotationAngle());
+		setSegmentFactors(input.getSegmentFactors());
+		setStressComponent(input.getStressComponent());
+		for (int index = 0; index < modificationValues_.length; index++) {
+			setStressModifier(index, input.getStressModificationValue(index), input.getStressModificationMethod(index));
+		}
+		input.getContributions().forEach(x -> this.addContribution(x));
+	}
+
+	/**
+	 * Sets material.
+	 *
+	 * @param material
+	 *            Material to set.
+	 */
+	public void setMaterial(FatigueMaterial material) {
+		material_ = material;
 	}
 
 	/**
@@ -232,12 +277,42 @@ public class LoadcaseDamageContributionInput implements Serializable {
 	}
 
 	/**
+	 * Sets loadcase factors.
+	 *
+	 * @param loadcaseFactors
+	 *            Loadcase factors.
+	 */
+	public void setLoadcaseFactors(ArrayList<LoadcaseFactor> loadcaseFactors) {
+		if (loadcaseFactors == null)
+			return;
+		loadcaseFactors_ = new ArrayList<>();
+		for (LoadcaseFactor factor : loadcaseFactors) {
+			loadcaseFactors_.add(factor);
+		}
+	}
+
+	/**
 	 * Sets segment factors.
 	 *
 	 * @param segmentFactors
 	 *            Segment factors.
 	 */
 	public void setSegmentFactors(ObservableList<SegmentFactor> segmentFactors) {
+		if (segmentFactors == null)
+			return;
+		segmentFactors_ = new ArrayList<>();
+		for (SegmentFactor factor : segmentFactors) {
+			segmentFactors_.add(factor);
+		}
+	}
+
+	/**
+	 * Sets segment factors.
+	 *
+	 * @param segmentFactors
+	 *            Segment factors.
+	 */
+	public void setSegmentFactors(ArrayList<SegmentFactor> segmentFactors) {
 		if (segmentFactors == null)
 			return;
 		segmentFactors_ = new ArrayList<>();
@@ -423,5 +498,14 @@ public class LoadcaseDamageContributionInput implements Serializable {
 	 */
 	public double getRotationAngle() {
 		return angle_;
+	}
+
+	/**
+	 * Returns material.
+	 *
+	 * @return Material.
+	 */
+	public FatigueMaterial getMaterial() {
+		return material_;
 	}
 }
