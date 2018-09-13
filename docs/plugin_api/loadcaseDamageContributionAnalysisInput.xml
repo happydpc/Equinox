@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--Root input element. This element is obligatory.-->
-<equivalentStressAnalysisInput>
+<loadcaseDamageContributionAnalysisInput>
 	
 	<!--Material information. This element and all its children are obligatory.-->
 	<material>
-		<!--Analysis type. This can be one of 'fatigue', 'preffas', or 'linear'.-->
-		<analysisType></analysisType>
 		<!--Material name. Eg. 2024_T351_Plate-->
 		<name></name>
 		<!--Material specification. Eg. AIMS03-02-004-->
@@ -25,12 +23,17 @@
 		<stressRange></stressRange>
 	</omission>
 	
-	<!--Stress modifier. Note that this element is optional and will be used only if the equivalent stress instruction refers to 'headlessStressSequenceId'.-->
-	<stressModifier>
-		<!--Modification value. A real value is expected.-->
-		<value></value>
-		<!--Stress modification method. Can be one of 'Multiply', 'Add' or 'Set'.-->
-		<method></method>
-	</stressModifier>
+	<!--Specify which loadcase contributions to be computed.-->
+	<loadcaseContributions>
+		<!--Multiple-unique steady contributions can be given. This can be one of '1G', 'Delta-P', 'Delta-T' or 'Ground-Air-Ground'.-->
+		<steadyContribution></steadyContribution>
+		<!--Multiple increment contribution groups with unique names can be given.-->
+		<incrementContributionGroup>
+			<!--The name of incremental damage contribution group. Note the name must be unique among all contribution groups.-->
+			<groupName></groupName>
+			<!--Multiple distinct loadcaseNumber elements can be given.-->
+			<loadcaseNumber></loadcaseNumber>
+		</incrementContributionGroup>
+	</loadcaseContributions>
 
-</equivalentStressAnalysisInput>
+</loadcaseDamageContributionAnalysisInput>

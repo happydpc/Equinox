@@ -78,7 +78,8 @@ public class CheckEquivalentStressAnalysisInput implements EquinoxProcess<Boolea
 
 			// convert to XML file
 			task.updateMessage("Converting input JSON file to XML file...");
-			inputFile = new ConvertJSONtoXML(task, inputFile).start(connection, preparedStatements);
+			inputFile = new ConvertJSONtoXML(task, inputFile, null).start(connection, preparedStatements);
+			task.setFileAsPermanent(inputFile);
 		}
 
 		// read input file

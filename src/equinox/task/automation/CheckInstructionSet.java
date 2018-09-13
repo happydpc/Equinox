@@ -74,19 +74,6 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		this.run = run;
 	}
 
-	/**
-	 * Creates check instruction set task.
-	 *
-	 * @param inputFile
-	 *            Input XML file.
-	 * @param run
-	 *            True if the instruction set should be run if it passes the check.
-	 */
-	public CheckInstructionSet(Path inputFile, boolean run) {
-		this.inputFile = inputFile;
-		this.run = run;
-	}
-
 	@Override
 	public String getTaskTitle() {
 		return "Check instruction set";
@@ -105,7 +92,8 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 
 			// convert to XML file
 			updateMessage("Converting input JSON file to XML file...");
-			inputFile = new ConvertJSONtoXML(this, inputFile).start(null);
+			inputFile = new ConvertJSONtoXML(this, inputFile, null).start(null);
+			setFileAsPermanent(inputFile);
 		}
 
 		// read input file
@@ -1703,23 +1691,49 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 						return false;
 				}
 
-				// check input path
-				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "inputPath", false, FileType.XML, FileType.JSON))
+				// check STF file id
+				else if (equivalentStressAnalysis.getChild("stfId") != null) {
+
+					// check STF file id
+					if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, equivalentStressAnalysis, "stfId", "addStf"))
+						return false;
+
+					// check generate stress sequence input path
+					if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "generateStressSequenceInputPath", false, FileType.XML, FileType.JSON))
+						return false;
+
+					// get generate stress sequence input path
+					String generateStressSequenceInputPath = equivalentStressAnalysis.getChild("generateStressSequenceInputPath").getTextNormalize();
+
+					// not checked
+					if (!checkedInputs.contains(generateStressSequenceInputPath)) {
+
+						// add to checked inputs
+						checkedInputs.add(generateStressSequenceInputPath);
+
+						// check generate stress sequence input
+						if (!new CheckGenerateStressSequenceInput(this, Paths.get(generateStressSequenceInputPath)).start(null))
+							return false;
+					}
+				}
+
+				// check equivalent stress analysis input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, equivalentStressAnalysis, "equivalentStressAnalysisInputPath", false, FileType.XML, FileType.JSON))
 					return false;
 
-				// get input path
-				String inputPath = equivalentStressAnalysis.getChild("inputPath").getTextNormalize();
+				// get equivalent stress analysis input path
+				String equivalentStressAnalysisInputPath = equivalentStressAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize();
 
 				// already checked
-				if (checkedInputs.contains(inputPath)) {
+				if (checkedInputs.contains(equivalentStressAnalysisInputPath)) {
 					continue;
 				}
 
 				// add to checked inputs
-				checkedInputs.add(inputPath);
+				checkedInputs.add(equivalentStressAnalysisInputPath);
 
-				// check generate stress sequence input
-				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(inputPath), isamiVersion).start(connection))
+				// check equivalent stress analysis input
+				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(equivalentStressAnalysisInputPath), isamiVersion).start(connection))
 					return false;
 			}
 		}

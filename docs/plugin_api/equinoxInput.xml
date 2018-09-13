@@ -245,7 +245,8 @@
 	<!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
-		<stfId></stfId><!--Path to input file containing input parameters for generating stress sequence. The file name must end with either XML or JSON.-->
+		<stfId></stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. The file name must end with either XML or JSON.-->
 		<inputPath></inputPath>
 	</generateStressSequence>
 	<!--Assigns mission parameters to headless stress sequence.-->
@@ -323,22 +324,46 @@
 			<resultsOrder></resultsOrder><!--Label visibility. This can be either 'true' or 'false'.-->
 			<showDataLabels></showDataLabels></options>
 	</plotTypicalFlightStatistics>
+	
 	<!--Performs equivalent stress analysis with referenced stress sequence.-->
 	<equivalentStressAnalysis>
 		<id></id>
 		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId>
 		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
-		<inputPath></inputPath>
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
+	
 	<!--Performs equivalent stress analysis with referenced headless stress sequence.-->
 	<equivalentStressAnalysis>
 		<id></id>
 		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
 		<headlessStressSequenceId></headlessStressSequenceId>
 		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
-		<inputPath></inputPath>
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
+	
+	<!--Performs equivalent stress analysis with referenced STF file.-->
+	<equivalentStressAnalysis>
+		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath></generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
+	</equivalentStressAnalysis>
+	
+	<!--Performs loadcase damage contribution analysis with referenced STF file.-->
+	<loadcaseDamageContributionAnalysis>
+		<id></id><!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath></generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
+		<loadcaseDamageContributionAnalysisInputPath></loadcaseDamageContributionAnalysisInputPath>
+	</loadcaseDamageContributionAnalysis>
+	
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>
 		<id></id>
@@ -347,6 +372,7 @@
 		<!--Path to save level crossing plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotLevelCrossing>
+	
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>
 		<id></id>

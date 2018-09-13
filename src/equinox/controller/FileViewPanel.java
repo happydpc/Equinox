@@ -90,6 +90,7 @@ import equinox.task.GetRfortInfo;
 import equinox.task.GetSTFInfo1;
 import equinox.task.GetSpectrumInfo;
 import equinox.task.GetStressSequenceInfo;
+import equinox.task.automation.CheckInstructionSet;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -418,7 +419,7 @@ public class FileViewPanel implements InternalInputSubPanel {
 
 				// accepted type
 				if (fileType.equals(FileType.ANA) || fileType.equals(FileType.GZ) || fileType.equals(FileType.ZIP) || fileType.equals(FileType.CVT) || fileType.equals(FileType.FLS) || fileType.equals(FileType.XLS) || fileType.equals(FileType.TXT) || fileType.equals(FileType.STH)
-						|| fileType.equals(FileType.SIGMA) || fileType.equals(FileType.F07) || fileType.equals(FileType.F06) || fileType.equals(FileType.GRP) || fileType.equals(FileType.SPEC)) {
+						|| fileType.equals(FileType.SIGMA) || fileType.equals(FileType.F07) || fileType.equals(FileType.F06) || fileType.equals(FileType.GRP) || fileType.equals(FileType.SPEC) || fileType.equals(FileType.XML) || fileType.equals(FileType.JSON)) {
 					event.acceptTransferModes(TransferMode.ANY);
 					break;
 				}
@@ -443,7 +444,7 @@ public class FileViewPanel implements InternalInputSubPanel {
 			List<File> files = db.getFiles();
 
 			// loop over files
-			boolean addSTH = false, addSIGMA = false, addACModel = false, addSpectrum = false, addSpec = false;
+			boolean addSTH = false, addSIGMA = false, addACModel = false, addSpectrum = false, addSpec = false, runXml = false, runJson = false;
 			for (File file : files) {
 
 				// get file type
@@ -476,6 +477,18 @@ public class FileViewPanel implements InternalInputSubPanel {
 				// SPEC file
 				else if (fileType.equals(FileType.SPEC)) {
 					addSpec = true;
+					break;
+				}
+
+				// XML file
+				else if (fileType.equals(FileType.XML)) {
+					runXml = true;
+					break;
+				}
+
+				// JSON file
+				else if (fileType.equals(FileType.JSON)) {
+					runJson = true;
 					break;
 				}
 			}
@@ -550,6 +563,25 @@ public class FileViewPanel implements InternalInputSubPanel {
 				// process files
 				AddAircraftModelPanel panel = (AddAircraftModelPanel) owner_.getSubPanel(InputPanel.ADD_AC_MODEL_PANEL);
 				success = panel.processFiles(files);
+			}
+
+			// run XML or JSON
+			else if (runXml || runJson) {
+
+				// get progress panel
+				ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
+
+				// loop over files
+				for (File file : files) {
+
+					// get file type
+					FileType fileType = FileType.getFileType(file);
+
+					// check & run instruction set
+					if (fileType.equals(FileType.XML) || fileType.equals(FileType.JSON)) {
+						tm.runTaskInParallel(new CheckInstructionSet(file.toPath(), true));
+					}
+				}
 			}
 		}
 

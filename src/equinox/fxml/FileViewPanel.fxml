@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.FileViewPanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" prefWidth="-1.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.FileViewPanel">
   <!-- TODO Add Nodes -->
   <children>
     <StackPane id="StackPane" maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
@@ -68,7 +68,7 @@
       <children>
         <ListView fx:id="fileList_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" prefWidth="-1.0" visible="false" StackPane.alignment="CENTER" />
         <TreeView fx:id="fileTree_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="-1.0" prefWidth="-1.0" showRoot="false" stylesheets="@../css/TreeView.css" StackPane.alignment="CENTER" />
-            <ImageView fx:id="noFileLabel_" fitHeight="370.0" fitWidth="240.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER">
+            <ImageView fx:id="noFileLabel_" fitHeight="470.0" fitWidth="240.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER">
                <image>
                   <Image url="@../image/noFileLabel2.png" />
                </image>

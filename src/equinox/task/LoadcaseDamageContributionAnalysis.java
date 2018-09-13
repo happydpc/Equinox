@@ -62,6 +62,9 @@ import equinox.process.InbuiltDCA;
 import equinox.process.SafeDCA;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableLoadcaseDamageContributionAnalysis;
 import equinox.utility.Utility;
 
@@ -72,13 +75,13 @@ import equinox.utility.Utility;
  * @date Apr 2, 2015
  * @time 4:25:54 PM
  */
-public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTask<LoadcaseDamageContributions> implements LongRunningTask, SavableTask {
+public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTask<LoadcaseDamageContributions> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<LoadcaseDamageContributions> {
 
 	/** Result index. */
 	public static final int CONTRIBUTION_INDEX = 0, DAMAGE = 1;
 
 	/** The owner STF file. */
-	private final STFFile stfFile_;
+	private STFFile stfFile_;
 
 	/** STF file ID. */
 	private final Integer stfID_, stressTableID_;
@@ -122,11 +125,17 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 	/** GAG events. */
 	private ArrayList<GAGEvent> gagEvents_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<LoadcaseDamageContributions>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates loadcase damage contribution analysis task.
 	 *
 	 * @param stfFile
-	 *            The owner STF file.
+	 *            The owner STF file. Can be null for automatic execution.
 	 * @param input
 	 *            Analysis input.
 	 * @param material
@@ -175,14 +184,36 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 	}
 
 	@Override
+	public void setAutomaticInput(STFFile input) {
+		stfFile_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<LoadcaseDamageContributions> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<LoadcaseDamageContributions>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
 	public boolean canBeCancelled() {
 		return true;
 	}
 
 	@Override
 	public String getTaskTitle() {
-		String name = stfFile_ == null ? stfName_ : stfFile_.getName();
-		return "Loadcase damage contribution analysis for '" + name + "'";
+		return "Loadcase damage contribution analysis";
 	}
 
 	@Override
@@ -292,6 +323,9 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 
 				// plot and save contributions
 				taskPanel_.getOwner().runTaskInParallel(new SaveLoadcaseDamageContributionPlot(contributions));
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(contributions, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -311,6 +345,9 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		if (damageAnalysis_ != null) {
 			damageAnalysis_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -323,6 +360,9 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 		if (damageAnalysis_ != null) {
 			damageAnalysis_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

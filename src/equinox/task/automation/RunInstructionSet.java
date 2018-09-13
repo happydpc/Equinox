@@ -65,6 +65,7 @@ import equinox.data.input.HistogramInput;
 import equinox.data.input.HistogramInput.HistogramDataType;
 import equinox.data.input.LevelCrossingInput;
 import equinox.data.input.LifeFactorComparisonInput;
+import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
@@ -78,6 +79,7 @@ import equinox.plugin.FileType;
 import equinox.process.automation.ConvertJSONtoXML;
 import equinox.process.automation.ReadEquivalentStressAnalysisInput;
 import equinox.process.automation.ReadGenerateStressSequenceInput;
+import equinox.process.automation.ReadLoadcaseDamageContributionAnalysisInput;
 import equinox.task.AddSTFFiles;
 import equinox.task.AddSpectrum;
 import equinox.task.AddStressSequence;
@@ -202,7 +204,8 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// convert to XML file
 			updateMessage("Converting input JSON file to XML file...");
-			inputFile = new ConvertJSONtoXML(this, inputFile).start(null);
+			inputFile = new ConvertJSONtoXML(this, inputFile, null).start(null);
+			setFileAsPermanent(inputFile);
 		}
 
 		// create list of tasks to be executed
@@ -363,6 +366,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// equivalent stress analysis
 		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
 			equivalentStressAnalysis(equinoxInput, tasks);
+		}
+
+		// loadcase damage contribution analysis
+		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
+			loadcaseDamageContributionAnalysis(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -2270,6 +2278,60 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	}
 
 	/**
+	 * Creates loadcase damage contribution analysis tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void loadcaseDamageContributionAnalysis(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating loadcase damage contribution analysis tasks...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+
+		// input mapping
+		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
+		HashMap<Path, LoadcaseDamageContributionInput> loadcaseDamageContributionAnalysisInputs = new HashMap<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over damage contribution analysis elements
+			for (Element damageContributionAnalysis : equinoxInput.getChildren("damageContributionAnalysis")) {
+
+				// get inputs
+				String id = damageContributionAnalysis.getChildTextNormalize("id");
+				String stfId = damageContributionAnalysis.getChildTextNormalize("stfId");
+				Path generateStressSequenceInputPath = Paths.get(damageContributionAnalysis.getChildTextNormalize("generateStressSequenceInputPath"));
+				Path loadcaseDamageContributionAnalysisInputPath = Paths.get(damageContributionAnalysis.getChildTextNormalize("loadcaseDamageContributionAnalysisInputPath"));
+
+				// get generate stress sequence input parameters
+				GenerateStressSequenceInput generateStressSequenceInput = generateStressSequenceInputs.get(generateStressSequenceInputPath);
+				if (generateStressSequenceInput == null) {
+					generateStressSequenceInput = new ReadGenerateStressSequenceInput(this, generateStressSequenceInputPath).start(null);
+					generateStressSequenceInputs.put(generateStressSequenceInputPath, generateStressSequenceInput);
+				}
+
+				// get loadcase damage contribution analysis input parameters
+				LoadcaseDamageContributionInput loadcaseDamageContributionAnalysisInput = loadcaseDamageContributionAnalysisInputs.get(loadcaseDamageContributionAnalysisInputPath);
+				if (loadcaseDamageContributionAnalysisInput == null) {
+					loadcaseDamageContributionAnalysisInput = new ReadLoadcaseDamageContributionAnalysisInput(this, loadcaseDamageContributionAnalysisInputPath).start(null);
+					loadcaseDamageContributionAnalysisInputs.put(loadcaseDamageContributionAnalysisInputPath, loadcaseDamageContributionAnalysisInput);
+				}
+
+				// FIXME
+			}
+		}
+	}
+
+	/**
 	 * Creates equivalent stress analysis tasks.
 	 *
 	 * @param equinoxInput
@@ -2292,7 +2354,8 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		boolean applyCompression = (boolean) settings.getValue(Settings.APPLY_COMPRESSION);
 
 		// input mapping
-		HashMap<Path, EquivalentStressInput> inputs = new HashMap<>();
+		HashMap<Path, EquivalentStressInput> equivalentStressAnalysisInputs = new HashMap<>();
+		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
 
 		// get connection to database
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
@@ -2302,25 +2365,25 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 				// get inputs
 				String id = equivalentStressAnalysis.getChild("id").getTextNormalize();
-				Path inputPath = Paths.get(equivalentStressAnalysis.getChild("inputPath").getTextNormalize());
+				Path equivalentStressAnalysisInputPath = Paths.get(equivalentStressAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize());
 
 				// get input parameters
-				EquivalentStressInput input = inputs.get(inputPath);
-				if (input == null) {
-					input = new ReadEquivalentStressAnalysisInput(this, inputPath, isamiVersion).start(connection);
-					inputs.put(inputPath, input);
+				EquivalentStressInput equivalentStressAnalysisInput = equivalentStressAnalysisInputs.get(equivalentStressAnalysisInputPath);
+				if (equivalentStressAnalysisInput == null) {
+					equivalentStressAnalysisInput = new ReadEquivalentStressAnalysisInput(this, equivalentStressAnalysisInputPath, isamiVersion).start(connection);
+					equivalentStressAnalysisInputs.put(equivalentStressAnalysisInputPath, equivalentStressAnalysisInput);
 				}
 
 				// create task
-				EquivalentStressAnalysis task = new EquivalentStressAnalysis(null, input, engine);
-				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
+				EquivalentStressAnalysis equivalentStressAnalysisTask = new EquivalentStressAnalysis(null, equivalentStressAnalysisInput, engine);
+				equivalentStressAnalysisTask.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
 
 				// stress sequence
 				if (equivalentStressAnalysis.getChild("stressSequenceId") != null) {
 					String stressSequenceId = equivalentStressAnalysis.getChildTextNormalize("stressSequenceId");
 					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(stressSequenceId).getTask();
 					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-					parentTask.addParameterizedTask(id, task);
+					parentTask.addParameterizedTask(Integer.toString(equivalentStressAnalysisTask.hashCode()), equivalentStressAnalysisTask);
 				}
 
 				// headless stress sequence
@@ -2328,11 +2391,39 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 					String headlessStressSequenceId = equivalentStressAnalysis.getChildTextNormalize("headlessStressSequenceId");
 					ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(headlessStressSequenceId).getTask();
 					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
-					parentTask.addParameterizedTask(id, task);
+					parentTask.addParameterizedTask(Integer.toString(equivalentStressAnalysisTask.hashCode()), equivalentStressAnalysisTask);
 				}
 
-				// put task to tasks
-				tasks.put(id, new InstructedTask(task, true));
+				// STF file
+				else if (equivalentStressAnalysis.getChild("stfId") != null) {
+
+					// parse elements
+					String stfId = equivalentStressAnalysis.getChildTextNormalize("stfId");
+					Path generateStressSequenceInputPath = Paths.get(equivalentStressAnalysis.getChildTextNormalize("generateStressSequenceInputPath"));
+
+					// get input parameters
+					GenerateStressSequenceInput generateStressSequenceInput = generateStressSequenceInputs.get(generateStressSequenceInputPath);
+					if (generateStressSequenceInput == null) {
+						generateStressSequenceInput = new ReadGenerateStressSequenceInput(this, generateStressSequenceInputPath).start(null);
+						generateStressSequenceInputs.put(generateStressSequenceInputPath, generateStressSequenceInput);
+					}
+
+					// create task
+					GenerateStressSequence generateStressSequenceTask = new GenerateStressSequence(null, generateStressSequenceInput);
+					generateStressSequenceTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+					generateStressSequenceTask.addParameterizedTask(Integer.toString(equivalentStressAnalysisTask.hashCode()), equivalentStressAnalysisTask);
+
+					// add to parent task
+					ParameterizedTaskOwner<STFFile> parentTask = (ParameterizedTaskOwner<STFFile>) tasks.get(stfId).getTask();
+					parentTask.addParameterizedTask(id, generateStressSequenceTask);
+					parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+					// put generate stress sequence task to tasks
+					tasks.put("ownerOf_" + id, new InstructedTask(generateStressSequenceTask, true));
+				}
+
+				// put equivalent stress analysis task to tasks
+				tasks.put(id, new InstructedTask(equivalentStressAnalysisTask, true));
 			}
 		}
 	}

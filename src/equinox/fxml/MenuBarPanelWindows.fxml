@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
+<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
    <children>
       <MenuBar fx:id="menuBar_" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="29.0" stylesheets="@../css/MenuBar.css" StackPane.alignment="TOP_CENTER">
         <menus>
@@ -344,11 +344,6 @@
                      </graphic>
                   </MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onSaveInstructionSetClicked" text="Save Instruction Set">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
-                     </graphic>
-                  </MenuItem>
                   <MenuItem mnemonicParsing="false" onAction="#onScheduleInstructionSetClicked" text="Schedule Instruction Set">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.clock-o" />
@@ -365,6 +360,24 @@
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.list-numbered" />
                      </graphic>
                   </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <Menu mnemonicParsing="false" text="Convert Instruction Set...">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onConvertToJsonClicked" text="To JSON File">
+                           <graphic>
+                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.code" />
+                           </graphic>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#onConvertToXmlClicked" text="To XML File">
+                           <graphic>
+                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.embed2" />
+                           </graphic>
+                        </MenuItem>
+                     </items>
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.language" />
+                     </graphic>
+                  </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
                      <graphic>
@@ -779,17 +792,6 @@
                   <MenuItem mnemonicParsing="false" onAction="#showTaskHistory" text="Task history">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.history" />
-                     </graphic>
-                  </MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#showSavedInstructionSets" text="Saved instruction sets">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
-                     </graphic>
-                  </MenuItem>
-                  <MenuItem mnemonicParsing="false" onAction="#showScheduledInstructionSets" text="Scheduled instruction sets">
-                     <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.clock-o" />
                      </graphic>
                   </MenuItem>
                </items>

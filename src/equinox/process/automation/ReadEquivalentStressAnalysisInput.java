@@ -76,7 +76,8 @@ public class ReadEquivalentStressAnalysisInput implements EquinoxProcess<Equival
 
 			// convert to XML file
 			task.updateMessage("Converting input JSON file to XML file...");
-			inputFile = new ConvertJSONtoXML(task, inputFile).start(null);
+			inputFile = new ConvertJSONtoXML(task, inputFile, null).start(null);
+			task.setFileAsPermanent(inputFile);
 		}
 
 		// read input file

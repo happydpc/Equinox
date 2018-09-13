@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<equinoxInput version="" title="" description="" author="" date="" time="">
+<equinoxInput>
 	<settings>
 		<runMode>parallel</runMode>
 		<overwriteFiles>true</overwriteFiles>
@@ -72,7 +72,7 @@
 	<equivalentStressAnalysis>
 		<id>10</id>
 		<stressSequenceId>6</stressSequenceId>
-		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
+		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
 	<plotLevelCrossing>
 		<id>11</id>
@@ -178,17 +178,17 @@
 	<equivalentStressAnalysis>
 		<id>28</id>
 		<stressSequenceId>24</stressSequenceId>
-		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
+		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
 	<equivalentStressAnalysis>
 		<id>29</id>
 		<stressSequenceId>23</stressSequenceId>
-		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
+		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
 	<equivalentStressAnalysis>
 		<id>30</id>
 		<stressSequenceId>22</stressSequenceId>
-		<inputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</inputPath>
+		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
 	<plotLevelCrossingComparison>
 		<id>31</id>

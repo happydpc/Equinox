@@ -61,6 +61,8 @@ import equinox.task.UploadMaterials;
 import equinox.task.UploadMultiplicationTables;
 import equinox.task.UploadSampleInputs;
 import equinox.task.UploadSpectra;
+import equinox.task.automation.ConvertJSONFiletoXMLFile;
+import equinox.task.automation.ConvertXMLFiletoJSONFile;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -298,11 +300,6 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onSaveInstructionSetClicked() {
-		// TODO on save instruction set clicked
-	}
-
-	@FXML
 	private void onScheduleInstructionSetClicked() {
 		// TODO on schedule instruction set clicked
 	}
@@ -314,7 +311,49 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private void onGenerateExecutionPlanClicked() {
-		// TODO generate execution plan clicked
+		// TODO on generate execution plan clicked
+	}
+
+	@FXML
+	private void onConvertToJsonClicked() {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// run task
+		Path outputJsonFile = file.toPath().resolveSibling(FileType.getNameWithoutExtension(file.toPath()) + ".json");
+		owner_.getActiveTasksPanel().runTaskInParallel(new ConvertXMLFiletoJSONFile(file.toPath(), outputJsonFile));
+	}
+
+	@FXML
+	private void onConvertToXmlClicked() {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// run task
+		Path outputXmlFile = file.toPath().resolveSibling(FileType.getNameWithoutExtension(file.toPath()) + ".xml");
+		owner_.getActiveTasksPanel().runTaskInParallel(new ConvertJSONFiletoXMLFile(file.toPath(), outputXmlFile));
 	}
 
 	@FXML
@@ -1191,16 +1230,6 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	@FXML
 	public void showTaskHistory() {
 		owner_.getTaskHistoryPanel().show(notificationImage_);
-	}
-
-	@FXML
-	public void showSavedInstructionSets() {
-		// TODO show saved instruction sets
-	}
-
-	@FXML
-	public void showScheduledInstructionSets() {
-		// TODO show scheduled instruction sets
 	}
 
 	/**

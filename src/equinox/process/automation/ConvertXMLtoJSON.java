@@ -29,60 +29,63 @@ import equinox.process.EquinoxProcess;
 import equinox.task.TemporaryFileCreatingTask;
 
 /**
- * Class for convert JSON file to XML file process.
+ * Class for convert XML to JSON file process.
  *
  * @author Murat Artim
  * @date 12 Sep 2018
- * @time 10:08:05
+ * @time 23:08:04
  */
-public class ConvertJSONtoXML implements EquinoxProcess<Path> {
+public class ConvertXMLtoJSON implements EquinoxProcess<Path> {
+
+	/** Indent factor. */
+	private static final int PRETTY_PRINT_INDENT_FACTOR = 4;
 
 	/** The owner task of this process. */
 	private final TemporaryFileCreatingTask<?> task;
 
 	/** Input and output files. */
-	private Path inputJsonFile, outputXmlFile;
+	private Path inputXmlFile, outputJsonFile;
 
 	/**
 	 * Creates convert JSON file to XML file process.
 	 *
 	 * @param task
 	 *            The owner task of this process.
-	 * @param inputJsonFile
-	 *            Input JSON file.
-	 * @param outputXmlFile
-	 *            Output XML file. Can be null to output to a temporary file.
+	 * @param inputXmlFile
+	 *            Input XML file.
+	 * @param outputJsonFile
+	 *            Output JSON file. Can be null to output to a temporary file.
 	 */
-	public ConvertJSONtoXML(TemporaryFileCreatingTask<?> task, Path inputJsonFile, Path outputXmlFile) {
+	public ConvertXMLtoJSON(TemporaryFileCreatingTask<?> task, Path inputXmlFile, Path outputJsonFile) {
 		this.task = task;
-		this.inputJsonFile = inputJsonFile;
-		this.outputXmlFile = outputXmlFile;
+		this.inputXmlFile = inputXmlFile;
+		this.outputJsonFile = outputJsonFile;
 	}
 
 	@Override
 	public Path start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
 
-		// create path to output XML file
-		if (outputXmlFile == null) {
-			outputXmlFile = task.getWorkingDirectory().resolve(FileType.getNameWithoutExtension(inputJsonFile) + ".xml");
+		// create path to output JSON file
+		if (outputJsonFile == null) {
+			outputJsonFile = task.getWorkingDirectory().resolve(FileType.getNameWithoutExtension(inputXmlFile) + ".json");
 		}
 
 		// read input file and create JSON object
-		task.updateMessage("Reading input JSON file...");
-		String jsonString = new String(Files.readAllBytes(inputJsonFile));
-		JSONObject jsonObject = new JSONObject(jsonString);
+		task.updateMessage("Reading input XML file...");
+		String xmlString = new String(Files.readAllBytes(inputXmlFile));
+		JSONObject jsonObject = XML.toJSONObject(xmlString);
 
 		// task cancelled
 		if (task.isCancelled())
 			return null;
 
-		// write JSON object to XML file
-		task.updateMessage("Writing to XML file...");
-		try (FileWriter fileWriter = new FileWriter(outputXmlFile.toFile())) {
-			fileWriter.write(XML.toString(jsonObject));
+		// write JSON object to JSON file
+		task.updateMessage("Writing to JSON file...");
+		try (FileWriter fileWriter = new FileWriter(outputJsonFile.toFile())) {
+			fileWriter.write(jsonObject.toString(PRETTY_PRINT_INDENT_FACTOR));
 		}
 
-		// return output XML file
-		return outputXmlFile;
+		// return output JSON file
+		return outputJsonFile;
 	}
 }

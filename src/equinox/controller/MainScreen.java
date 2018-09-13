@@ -119,9 +119,6 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	/** Task history panel. */
 	private TaskHistoryPanel taskHistoryPanel_;
 
-	/** Saved instruction sets panel. */
-	private SavedInstructionSetsPanel savedInstructionSetsPanel_;
-
 	/** File chooser. */
 	private FileChooser fileChooser_;
 
@@ -172,7 +169,6 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 		savedTasksPanel_ = SavedTasksPanel.load(this);
 		scheduledTasksPanel_ = ScheduledTasksPanel.load(this);
 		taskHistoryPanel_ = TaskHistoryPanel.load(this);
-		savedInstructionSetsPanel_ = SavedInstructionSetsPanel.load(this);
 
 		// create server managers
 		analysisServerManager_ = new AnalysisServerManager(this);
@@ -382,15 +378,6 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 */
 	public TaskHistoryPanel getTaskHistoryPanel() {
 		return taskHistoryPanel_;
-	}
-
-	/**
-	 * Returns saved instruction sets panel.
-	 *
-	 * @return Saved instruction sets panel.
-	 */
-	public SavedInstructionSetsPanel getSavedInstructionSetsPanel() {
-		return savedInstructionSetsPanel_;
 	}
 
 	/**
