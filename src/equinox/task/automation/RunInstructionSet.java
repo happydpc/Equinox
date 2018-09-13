@@ -2305,8 +2305,8 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// get connection to database
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
-			// loop over damage contribution analysis elements
-			for (Element damageContributionAnalysis : equinoxInput.getChildren("damageContributionAnalysis")) {
+			// loop over loadcase damage contribution analysis elements
+			for (Element damageContributionAnalysis : equinoxInput.getChildren("loadcaseDamageContributionAnalysis")) {
 
 				// get inputs
 				String id = damageContributionAnalysis.getChildTextNormalize("id");

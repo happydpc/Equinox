@@ -658,6 +658,71 @@ public class XMLUtilities {
 	}
 
 	/**
+	 * Returns true if given element has a valid <code>String</code> value.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param parentElement
+	 *            Parent of the element to check.
+	 * @param elementName
+	 *            Name of the element to check.
+	 * @param minElements
+	 *            Minimum number of elements.
+	 * @param isDistinct
+	 *            True if the element should have distinct values among same elements.
+	 * @param validValues
+	 *            List of valid values. Can be skipped for checking only against empty values.
+	 * @return True if given element has a valid <code>String</code> value.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkStringValues(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, int minElements, boolean isDistinct, String... validValues) throws Exception {
+
+		// get elements
+		List<Element> elements = parentElement.getChildren(elementName);
+
+		// less than minimum required number of elements
+		if (elements.size() < minElements) {
+			task.addWarning("Minimum " + minElements + " elements are required for element " + XMLUtilities.getFamilyTree(parentElement) + "." + elementName + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// loop over source elements
+		ArrayList<String> values = new ArrayList<>();
+		for (Element element : elements) {
+
+			// get value of element
+			String value = element.getTextNormalize();
+
+			// already contained and should be distinct
+			if (isDistinct && values.contains(value)) {
+				task.addWarning("Value '" + value + "' appears more than once for element " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+				return false;
+			}
+
+			// empty value
+			if (value.isEmpty()) {
+				task.addWarning("Empty value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+				return false;
+			}
+
+			// invalid value
+			if (validValues != null && validValues.length != 0 && !Arrays.asList(validValues).contains(value)) {
+				task.addWarning("Invalid value supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Valid values are: " + Arrays.toString(validValues) + ". Check failed.");
+				return false;
+			}
+
+			// ad to values
+			values.add(value);
+		}
+
+		// valid value
+		return true;
+	}
+
+	/**
 	 * Returns true if given element has a valid <code>boolean</code> value.
 	 *
 	 * @param task

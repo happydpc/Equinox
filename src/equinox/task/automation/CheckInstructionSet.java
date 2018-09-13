@@ -38,6 +38,7 @@ import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.plugin.FileType;
 import equinox.process.automation.CheckEquivalentStressAnalysisInput;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
+import equinox.process.automation.CheckLoadcaseDamageContributionAnalysisInput;
 import equinox.process.automation.ConvertJSONtoXML;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.TemporaryFileCreatingTask;
@@ -281,6 +282,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		// equivalent stress analysis
 		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
 			if (!checkEquivalentStressAnalysis(equinoxInput))
+				return false;
+		}
+
+		// loadcase damage contribution analysis
+		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
+			if (!checkLoadcaseDamageContributionAnalysis(equinoxInput))
 				return false;
 		}
 
@@ -1639,6 +1646,83 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
 						return false;
 					if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+						return false;
+				}
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>loadcaseDamageContributionAnalysis</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>loadcaseDamageContributionAnalysis</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkLoadcaseDamageContributionAnalysis(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking loadcaseDamageContributionAnalysis elements...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// create list of checked inputs
+		ArrayList<String> checkedInputs = new ArrayList<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over loadcase damage contribution analysis elements
+			for (Element damageContributionAnalysis : equinoxInput.getChildren("loadcaseDamageContributionAnalysis")) {
+
+				// no id
+				if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, damageContributionAnalysis))
+					return false;
+
+				// check STF file id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, damageContributionAnalysis, "stfId", "addStf"))
+					return false;
+
+				// check generate stress sequence input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, damageContributionAnalysis, "generateStressSequenceInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get generate stress sequence input path
+				String generateStressSequenceInputPath = damageContributionAnalysis.getChildTextNormalize("generateStressSequenceInputPath");
+
+				// not checked
+				if (!checkedInputs.contains(generateStressSequenceInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(generateStressSequenceInputPath);
+
+					// check generate stress sequence input
+					if (!new CheckGenerateStressSequenceInput(this, Paths.get(generateStressSequenceInputPath)).start(null))
+						return false;
+				}
+
+				// check damage contribution analysis input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, damageContributionAnalysis, "loadcaseDamageContributionAnalysisInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get damage contribution analysis input path
+				String loadcaseDamageContributionAnalysisInputPath = damageContributionAnalysis.getChildTextNormalize("loadcaseDamageContributionAnalysisInputPath");
+
+				// not checked
+				if (!checkedInputs.contains(loadcaseDamageContributionAnalysisInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(loadcaseDamageContributionAnalysisInputPath);
+
+					// check generate stress sequence input
+					if (!new CheckLoadcaseDamageContributionAnalysisInput(this, Paths.get(loadcaseDamageContributionAnalysisInputPath), isamiVersion).start(connection))
 						return false;
 				}
 			}

@@ -47,4 +47,12 @@
 		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
 		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
+	<loadcaseDamageContributionAnalysis>
+		<id>11</id><!--The stfId refers to 'addStf' instruction.-->
+		<stfId>3</stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
+		<loadcaseDamageContributionAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/loadcaseDamageContributionAnalysisInput_test.xml</loadcaseDamageContributionAnalysisInputPath>
+	</loadcaseDamageContributionAnalysis>
 </equinoxInput>

@@ -26,25 +26,23 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
-import equinox.data.DamageContribution;
 import equinox.data.IsamiVersion;
-import equinox.data.LoadcaseFactor;
-import equinox.data.input.GenerateStressSequenceInput;
-import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.dataServer.remote.data.ContributionType;
 import equinox.dataServer.remote.data.FatigueMaterial;
+import equinox.dataServer.remote.data.Material;
 import equinox.plugin.FileType;
 import equinox.process.EquinoxProcess;
 import equinox.task.TemporaryFileCreatingTask;
+import equinox.utility.XMLUtilities;
 
 /**
- * Class for read loadcase damage contribution analysis input process.
+ * Class for check loadcase damage contribution analysis input process.
  *
  * @author Murat Artim
  * @date 13 Sep 2018
- * @time 14:06:24
+ * @time 23:18:25
  */
-public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProcess<LoadcaseDamageContributionInput> {
+public class CheckLoadcaseDamageContributionAnalysisInput implements EquinoxProcess<Boolean> {
 
 	/** The owner task of this process. */
 	private final TemporaryFileCreatingTask<?> task;
@@ -56,7 +54,7 @@ public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProce
 	private final IsamiVersion isamiVersion;
 
 	/**
-	 * Creates read generate stress sequence input process.
+	 * Creates check loadcase damage contribution analysis input process.
 	 *
 	 * @param task
 	 *            The owner task of this process.
@@ -65,167 +63,181 @@ public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProce
 	 * @param isamiVersion
 	 *            ISAMI version.
 	 */
-	public ReadLoadcaseDamageContributionAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
+	public CheckLoadcaseDamageContributionAnalysisInput(TemporaryFileCreatingTask<?> task, Path inputFile, IsamiVersion isamiVersion) {
 		this.task = task;
 		this.inputFile = inputFile;
 		this.isamiVersion = isamiVersion;
 	}
 
 	@Override
-	public LoadcaseDamageContributionInput start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
+	public Boolean start(Connection connection, PreparedStatement... preparedStatements) throws Exception {
 
 		// input file is JSON
 		if (FileType.getFileType(inputFile.toFile()).equals(FileType.JSON)) {
 
 			// convert to XML file
 			task.updateMessage("Converting input JSON file to XML file...");
-			inputFile = new ConvertJSONtoXML(task, inputFile, null).start(null);
+			inputFile = new ConvertJSONtoXML(task, inputFile, null).start(connection, preparedStatements);
 			task.setFileAsPermanent(inputFile);
 		}
 
 		// read input file
-		task.updateMessage("Reading loadcase damage contribution analysis input XML file...");
-
-		// create input
-		LoadcaseDamageContributionInput input = new LoadcaseDamageContributionInput();
+		task.updateMessage("Checking loadcase damage contribution analysis input XML file...");
 
 		// get root input element
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document = saxBuilder.build(inputFile.toUri().toString());
 		Element loadcaseDamageContributionAnalysisInput = document.getRootElement();
 
+		// cannot find root input element
+		if (loadcaseDamageContributionAnalysisInput == null) {
+			task.addWarning("Cannot locate root input element 'loadcaseDamageContributionAnalysisInput' in loadcase damage contribution analysis input XML file '" + inputFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
+
 		// material
-		material(loadcaseDamageContributionAnalysisInput, input, connection);
+		if (!checkMaterial(loadcaseDamageContributionAnalysisInput, connection))
+			return false;
 
 		// omission
-		omission(loadcaseDamageContributionAnalysisInput, input);
+		if (!checkOmission(loadcaseDamageContributionAnalysisInput))
+			return false;
 
 		// contributions
-		contributions(loadcaseDamageContributionAnalysisInput, input);
+		if (!checkContributions(loadcaseDamageContributionAnalysisInput))
+			return false;
 
-		// return input
-		return input;
+		// check passed
+		return true;
 	}
 
 	/**
-	 * Gets contribution inputs.
+	 * Returns true if <code>loadcaseContributions</code> element passes checks.
 	 *
 	 * @param loadcaseDamageContributionAnalysisInput
 	 *            Root input element.
-	 * @param input
-	 *            Analysis input.
+	 * @return True if <code>loadcaseContributions</code> element passes checks.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void contributions(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input) throws Exception {
+	private boolean checkContributions(Element loadcaseDamageContributionAnalysisInput) throws Exception {
 
 		// update info
-		task.updateMessage("Reading loadcase contributions...");
+		task.updateMessage("Checking loadcase damage contributions...");
+
+		// no loadcaseContributions element found
+		if (loadcaseDamageContributionAnalysisInput.getChild("loadcaseContributions") == null) {
+			task.addWarning("Cannot locate element 'loadcaseContributions' under " + XMLUtilities.getFamilyTree(loadcaseDamageContributionAnalysisInput) + " in instruction set '" + inputFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
 
 		// get contributions element
 		Element loadcaseContributions = loadcaseDamageContributionAnalysisInput.getChild("loadcaseContributions");
 
-		// loop over steady contributions
-		for (Element steadyContribution : loadcaseContributions.getChildren("steadyContribution")) {
-
-			// get contribution name
-			String contributionName = steadyContribution.getTextNormalize();
-
-			// add steady contribution
-			for (ContributionType type : ContributionType.values()) {
-				if (type.getName().equals(contributionName)) {
-					input.addContribution(new DamageContribution(contributionName, null, type));
-					break;
-				}
-			}
-		}
+		// check steady contributions
+		if (!XMLUtilities.checkStringValues(task, inputFile, loadcaseContributions, "steadyContribution", 0, true, XMLUtilities.getStringArray(ContributionType.values())))
+			return false;
 
 		// loop over increment contributions
+		ArrayList<String> groupNames = new ArrayList<>();
 		for (Element incrementContributionGroup : loadcaseContributions.getChildren("incrementContributionGroup")) {
 
-			// get group name
-			String groupName = incrementContributionGroup.getChildTextNormalize("groupName");
-			ArrayList<LoadcaseFactor> loadcaseFactors = new ArrayList<>();
+			// check group name
+			if (!XMLUtilities.checkStringValue(task, inputFile, incrementContributionGroup, "groupName", false))
+				return false;
 
-			// loop over loadcase numbers
-			for (Element loadcaseNumber : incrementContributionGroup.getChildren("loadcaseNumber")) {
-				LoadcaseFactor lf = new LoadcaseFactor();
-				lf.setIsOneg(false);
-				lf.setLoadcaseNumber(loadcaseNumber.getTextNormalize());
-				lf.setEventName(null);
-				lf.setComments(null);
-				lf.setModifier(GenerateStressSequenceInput.MULTIPLY, 0.0);
-				loadcaseFactors.add(lf);
+			// group name not distinct
+			String groupName = incrementContributionGroup.getChildTextNormalize("groupName");
+			if (groupNames.contains(groupName)) {
+				task.addWarning("Increment damage contribution group name '" + groupName + "' appears more than once for element " + XMLUtilities.getFamilyTree(loadcaseContributions) + " in instruction set '" + inputFile.toString() + "'. Check failed.");
+				return false;
 			}
 
-			// add increment contribution
-			input.addContribution(new DamageContribution(groupName, loadcaseFactors, ContributionType.INCREMENT));
+			// check loadcase numbers
+			if (!XMLUtilities.checkStringValues(task, inputFile, incrementContributionGroup, "loadcaseNumber", 1, true))
+				return false;
+
+			// add to group names
+			groupNames.add(groupName);
 		}
+
+		// check passed
+		return true;
 	}
 
 	/**
-	 * Gets omission inputs.
+	 * Returns true if <code>omission</code> element passes checks.
 	 *
 	 * @param loadcaseDamageContributionAnalysisInput
 	 *            Root input element.
-	 * @param input
-	 *            Analysis input.
+	 * @return True if <code>omission</code> element passes checks.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void omission(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input) throws Exception {
+	private boolean checkOmission(Element loadcaseDamageContributionAnalysisInput) throws Exception {
 
 		// update info
-		task.updateMessage("Reading omission...");
+		task.updateMessage("Checking omission...");
 
-		// initialize default values
-		boolean removeNegativeStresses = false;
-		boolean applyOmission = true;
-		double omissionLevel = 0.0;
-
-		// omission inputs given
+		// omission element exists
 		if (loadcaseDamageContributionAnalysisInput.getChild("omission") != null) {
 
 			// get omission element
 			Element omission = loadcaseDamageContributionAnalysisInput.getChild("omission");
 
-			// remove negative stress
-			if (omission.getChild("removeNegativeStress") != null) {
-				removeNegativeStresses = Boolean.parseBoolean(omission.getChildTextNormalize("removeNegativeStress"));
-			}
+			// remove negative stresses
+			if (!XMLUtilities.checkBooleanValue(task, inputFile, omission, "removeNegativeStresses", true))
+				return false;
 
-			// omission level
-			if (omission.getChild("omissionLevel") != null) {
-				applyOmission = true;
-				omissionLevel = Double.parseDouble(omission.getChildTextNormalize("omissionLevel"));
-			}
+			// stress range
+			if (!XMLUtilities.checkDoubleValue(task, inputFile, omission, "stressRange", true, 0.0, null))
+				return false;
 		}
 
-		// set to all inputs
-		input.setRemoveNegativeStresses(removeNegativeStresses);
-		input.setApplyOmission(applyOmission);
-		input.setOmissionLevel(omissionLevel);
+		// check passed
+		return true;
 	}
 
 	/**
-	 * Gets material inputs.
+	 * Returns true if <code>material</code> element passes checks.
 	 *
 	 * @param loadcaseDamageContributionAnalysisInput
 	 *            Root input element.
-	 * @param input
-	 *            Analysis input.
 	 * @param connection
 	 *            Database connection.
+	 * @return True if <code>material</code> element passes checks.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void material(Element loadcaseDamageContributionAnalysisInput, LoadcaseDamageContributionInput input, Connection connection) throws Exception {
+	private boolean checkMaterial(Element loadcaseDamageContributionAnalysisInput, Connection connection) throws Exception {
 
 		// update info
-		task.updateMessage("Reading material...");
+		task.updateMessage("Checking material...");
 
-		// get material element
+		// no material element found
+		if (loadcaseDamageContributionAnalysisInput.getChild("material") == null) {
+			task.addWarning("Cannot locate element 'material' under " + XMLUtilities.getFamilyTree(loadcaseDamageContributionAnalysisInput) + " in instruction set '" + inputFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
+
+		// get parent
 		Element materialElement = loadcaseDamageContributionAnalysisInput.getChild("material");
+
+		// name
+		if (!XMLUtilities.checkStringValue(task, inputFile, materialElement, "name", false))
+			return false;
+
+		// specification
+		if (!XMLUtilities.checkStringValue(task, inputFile, materialElement, "specification", false))
+			return false;
+
+		// orientation
+		if (!XMLUtilities.checkStringValue(task, inputFile, materialElement, "orientation", false))
+			return false;
+
+		// configuration
+		if (!XMLUtilities.checkStringValue(task, inputFile, materialElement, "configuration", false))
+			return false;
 
 		// get inputs
 		String name = materialElement.getChildTextNormalize("name");
@@ -233,10 +245,22 @@ public class ReadLoadcaseDamageContributionAnalysisInput implements EquinoxProce
 		String orientation = materialElement.getChildTextNormalize("orientation");
 		String configuration = materialElement.getChildTextNormalize("configuration");
 
+		// initialize material
+		Material material = null;
+
 		// create statement
 		try (Statement statement = connection.createStatement()) {
-			input.setMaterial(getFatigueMaterial(name, specification, orientation, configuration, statement));
+			material = getFatigueMaterial(name, specification, orientation, configuration, statement);
 		}
+
+		// no material found
+		if (material == null) {
+			task.addWarning("Cannot find material with given parameters in database for element " + XMLUtilities.getFamilyTree(materialElement) + " in instruction set '" + inputFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
