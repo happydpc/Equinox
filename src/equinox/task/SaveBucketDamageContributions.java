@@ -19,7 +19,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFileBucket;
@@ -48,10 +48,10 @@ import jxl.write.WriteException;
 public class SaveBucketDamageContributions extends InternalEquinoxTask<Void> implements LongRunningTask, SavableTask {
 
 	/** STF file buckets. */
-	private final ArrayList<STFFileBucket> buckets_;
+	private final List<STFFileBucket> buckets_;
 
 	/** Damage contribution names. */
-	private final ArrayList<String> contributionNames_;
+	private final List<String> contributionNames_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -71,7 +71,7 @@ public class SaveBucketDamageContributions extends InternalEquinoxTask<Void> imp
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveBucketDamageContributions(ArrayList<STFFileBucket> buckets, ArrayList<String> contributionNames, boolean[] options, File output) {
+	public SaveBucketDamageContributions(List<STFFileBucket> buckets, List<String> contributionNames, boolean[] options, File output) {
 		buckets_ = buckets;
 		contributionNames_ = contributionNames;
 		options_ = options;

@@ -20,27 +20,43 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
+import equinox.data.Pair;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
- * Class for get contribution names task.
+ * Class for get contribution names task.1
  *
  * @author Murat Artim
  * @date Apr 15, 2015
  * @time 9:15:11 PM
  */
-public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>> implements ShortRunningTask {
+public class GetContributionNames extends InternalEquinoxTask<List<String>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<List<SpectrumItem>, List<String>>> {
 
 	/** Requesting object. */
 	private final DamageContributionRequester panel_;
 
 	/** Spectrum items. This can be either damage contributions or STF file buckets. */
-	private final ArrayList<SpectrumItem> items_;
+	private List<SpectrumItem> items_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates get contribution names task.
@@ -48,11 +64,44 @@ public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>>
 	 * @param panel
 	 *            Requesting object. This can be null.
 	 * @param items
-	 *            Spectrum items. This can be either damage contributions or STF file buckets.
+	 *            Spectrum items. This can be either damage contributions or STF file buckets. This can be null for automatic execution.
 	 */
-	public GetContributionNames(DamageContributionRequester panel, ArrayList<SpectrumItem> items) {
+	public GetContributionNames(DamageContributionRequester panel, List<SpectrumItem> items) {
 		panel_ = panel;
-		items_ = items;
+		items_ = items == null ? Collections.synchronizedList(new ArrayList<>()) : items;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -66,7 +115,7 @@ public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>>
 	}
 
 	@Override
-	protected ArrayList<String> call() throws Exception {
+	protected List<String> call() throws Exception {
 
 		// update progress info
 		updateTitle("Retrieving damage contribution names...");
@@ -87,8 +136,20 @@ public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>>
 
 		// set file info
 		try {
-			if (panel_ != null) {
-				panel_.setContributions(get());
+
+			// get output
+			List<String> contributionNames = get();
+
+			// user started task
+			if (automaticTasks_ == null) {
+				if (panel_ != null) {
+					panel_.setContributions(contributionNames);
+				}
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(new Pair<>(items_, contributionNames), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -96,6 +157,26 @@ public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>>
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -247,6 +328,6 @@ public class GetContributionNames extends InternalEquinoxTask<ArrayList<String>>
 		 * @param contributions
 		 *            Contributions to be set.
 		 */
-		void setContributions(ArrayList<String> contributions);
+		void setContributions(List<String> contributions);
 	}
 }

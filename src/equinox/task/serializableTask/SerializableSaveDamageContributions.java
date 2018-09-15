@@ -17,8 +17,8 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
-import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.SaveDamageContributions;
 import equinox.task.SerializableTask;
@@ -37,10 +37,10 @@ public class SerializableSaveDamageContributions implements SerializableTask {
 	private static final long serialVersionUID = 1L;
 
 	/** Damage contributions. */
-	private final ArrayList<SerializableSpectrumItem> contributions_;
+	private final List<SerializableSpectrumItem> contributions_;
 
 	/** Damage contribution names. */
-	private final ArrayList<String> contributionNames_;
+	private final List<String> contributionNames_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -60,7 +60,7 @@ public class SerializableSaveDamageContributions implements SerializableTask {
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveDamageContributions(ArrayList<LoadcaseDamageContributions> contributions, ArrayList<String> contributionNames, boolean[] options, File output) {
+	public SerializableSaveDamageContributions(List<SpectrumItem> contributions, List<String> contributionNames, boolean[] options, File output) {
 		contributions_ = new ArrayList<>();
 		for (SpectrumItem item : contributions) {
 			contributions_.add(new SerializableSpectrumItem(item));
@@ -74,7 +74,7 @@ public class SerializableSaveDamageContributions implements SerializableTask {
 	public SaveDamageContributions getTask(TreeItem<String> fileTreeRoot) {
 
 		// get contributions
-		ArrayList<LoadcaseDamageContributions> contributions = new ArrayList<>();
+		List<SpectrumItem> contributions = new ArrayList<>();
 		for (SerializableSpectrumItem item : contributions_) {
 
 			// get contribution
@@ -86,7 +86,7 @@ public class SerializableSaveDamageContributions implements SerializableTask {
 				return null;
 
 			// add to contributions
-			contributions.add((LoadcaseDamageContributions) result[0]);
+			contributions.add(result[0]);
 		}
 
 		// create and return task

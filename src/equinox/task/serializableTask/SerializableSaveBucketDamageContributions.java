@@ -17,6 +17,7 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
@@ -37,10 +38,10 @@ public class SerializableSaveBucketDamageContributions implements SerializableTa
 	private static final long serialVersionUID = 1L;
 
 	/** STF file buckets. */
-	private final ArrayList<SerializableSpectrumItem> buckets_;
+	private final List<SerializableSpectrumItem> buckets_;
 
 	/** Damage contribution names. */
-	private final ArrayList<String> contributionNames_;
+	private final List<String> contributionNames_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -60,7 +61,7 @@ public class SerializableSaveBucketDamageContributions implements SerializableTa
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveBucketDamageContributions(ArrayList<STFFileBucket> buckets, ArrayList<String> contributionNames, boolean[] options, File output) {
+	public SerializableSaveBucketDamageContributions(List<STFFileBucket> buckets, List<String> contributionNames, boolean[] options, File output) {
 		buckets_ = new ArrayList<>();
 		for (SpectrumItem item : buckets) {
 			buckets_.add(new SerializableSpectrumItem(item));
@@ -74,7 +75,7 @@ public class SerializableSaveBucketDamageContributions implements SerializableTa
 	public SaveBucketDamageContributions getTask(TreeItem<String> fileTreeRoot) {
 
 		// get buckets
-		ArrayList<STFFileBucket> buckets = new ArrayList<>();
+		List<STFFileBucket> buckets = new ArrayList<>();
 		for (SerializableSpectrumItem item : buckets_) {
 
 			// get bucket

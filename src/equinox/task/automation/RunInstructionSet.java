@@ -45,6 +45,7 @@ import equinox.data.MissionParameter;
 import equinox.data.Pair;
 import equinox.data.Settings;
 import equinox.data.fileType.ExternalStressSequence;
+import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
@@ -96,6 +97,7 @@ import equinox.task.CreateDummySTFFile;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
 import equinox.task.EquivalentStressAnalysis;
+import equinox.task.ExportContributions;
 import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
 import equinox.task.GenerateExternalStatistics;
@@ -104,6 +106,7 @@ import equinox.task.GenerateLifeFactors;
 import equinox.task.GenerateStressRatios;
 import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GenerateStressSequence;
+import equinox.task.GetContributionNames;
 import equinox.task.GetExternalTypicalFlight;
 import equinox.task.GetSTFInfo2;
 import equinox.task.GetSTFInfo3;
@@ -122,6 +125,7 @@ import equinox.task.SaveCVT;
 import equinox.task.SaveCategoryDataset;
 import equinox.task.SaveChart;
 import equinox.task.SaveConversionTable;
+import equinox.task.SaveDamageContributions;
 import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveEquivalentStressRatios;
 import equinox.task.SaveEquivalentStresses;
@@ -129,6 +133,7 @@ import equinox.task.SaveExternalStressSequenceAsSIGMA;
 import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
 import equinox.task.SaveLifeFactors;
+import equinox.task.SaveLoadcaseDamageContributionPlot;
 import equinox.task.SaveMissionParameterPlot;
 import equinox.task.SaveMissionProfile;
 import equinox.task.SaveOutputFile;
@@ -372,6 +377,21 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// loadcase damage contribution analysis
 		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
 			loadcaseDamageContributionAnalysis(equinoxInput, tasks);
+		}
+
+		// plot loadcase damage contribution
+		if (equinoxInput.getChild("plotLoadcaseDamageContribution") != null) {
+			plotLoadcaseDamageContribution(equinoxInput, tasks);
+		}
+
+		// save loadcase damage contributions
+		if (equinoxInput.getChild("saveLoadcaseDamageContributions") != null) {
+			saveLoadcaseDamageContributions(equinoxInput, tasks);
+		}
+
+		// export loadcase damage contributions
+		if (equinoxInput.getChild("exportLoadcaseDamageContributions") != null) {
+			exportLoadcaseDamageContributions(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -899,6 +919,176 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates export loadcase damage contributions tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void exportLoadcaseDamageContributions(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating export loadcase damage contributions tasks...");
+
+		// loop over export loadcase damage contributions elements
+		for (Element exportLoadcaseDamageContributions : equinoxInput.getChildren("exportLoadcaseDamageContributions")) {
+
+			// get id and output path
+			String id = exportLoadcaseDamageContributions.getChildTextNormalize("id");
+			Path outputPath = Paths.get(exportLoadcaseDamageContributions.getChildTextNormalize("outputPath"));
+
+			// create task
+			ExportContributions task = new ExportContributions(outputPath.toFile(), null);
+
+			// set input threshold
+			List<Element> loadcaseDamageContributionIds = exportLoadcaseDamageContributions.getChildren("loadcaseDamageContributionId");
+			task.setInputThreshold(loadcaseDamageContributionIds.size());
+
+			// loop over loadcase damage contribution ids
+			for (Element loadcaseDamageContributionIdElement : loadcaseDamageContributionIds) {
+
+				// get loadcase damage contribution id
+				String loadcaseDamageContributionId = loadcaseDamageContributionIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(loadcaseDamageContributionId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save loadcase damage contributions tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveLoadcaseDamageContributions(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save loadcase damage contributions tasks...");
+
+		// loop over save loadcase damage contributions elements
+		for (Element saveLoadcaseDamageContributions : equinoxInput.getChildren("saveLoadcaseDamageContributions")) {
+
+			// get id and output path
+			String id = saveLoadcaseDamageContributions.getChildTextNormalize("id");
+			Path outputPath = Paths.get(saveLoadcaseDamageContributions.getChildTextNormalize("outputPath"));
+
+			// create default options
+			boolean[] options = new boolean[17];
+			for (int i = 0; i < options.length; i++) {
+				options[i] = false;
+			}
+			options[SaveDamageContributions.PERCENT] = true;
+			options[SaveDamageContributions.INC] = true;
+			options[SaveDamageContributions.ONEG] = true;
+			options[SaveDamageContributions.PP_NAME] = true;
+			options[SaveDamageContributions.SPEC_NAME] = true;
+			options[SaveDamageContributions.PROGRAM] = true;
+			options[SaveDamageContributions.SECTION] = true;
+			options[SaveDamageContributions.MISSION] = true;
+
+			// read options
+			if (saveLoadcaseDamageContributions.getChild("options") != null) {
+
+				// get element
+				Element optionsElement = saveLoadcaseDamageContributions.getChild("options");
+
+				// set options
+				if (optionsElement.getChild("percentContributions") != null) {
+					options[SaveDamageContributions.PERCENT] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("percentContributions"));
+				}
+				if (optionsElement.getChild("totalEquivalentStresses") != null) {
+					options[SaveDamageContributions.FULL] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("totalEquivalentStresses"));
+				}
+				if (optionsElement.getChild("incrementContributions") != null) {
+					options[SaveDamageContributions.INC] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("incrementContributions"));
+				}
+				if (optionsElement.getChild("onegContributions") != null) {
+					options[SaveDamageContributions.ONEG] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("onegContributions"));
+				}
+				if (optionsElement.getChild("gagContributions") != null) {
+					options[SaveDamageContributions.GAG] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("gagContributions"));
+				}
+				if (optionsElement.getChild("deltaPContributions") != null) {
+					options[SaveDamageContributions.DP] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("deltaPContributions"));
+				}
+				if (optionsElement.getChild("deltaTContributions") != null) {
+					options[SaveDamageContributions.DT] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("deltaTContributions"));
+				}
+				if (optionsElement.getChild("materialName") != null) {
+					options[SaveDamageContributions.MAT_NAME] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialName"));
+				}
+				if (optionsElement.getChild("materialSlope") != null) {
+					options[SaveDamageContributions.FAT_P] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialSlope"));
+				}
+				if (optionsElement.getChild("materialConstant") != null) {
+					options[SaveDamageContributions.FAT_Q] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialConstant"));
+				}
+				if (optionsElement.getChild("pilotPointName") != null) {
+					options[SaveDamageContributions.PP_NAME] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("pilotPointName"));
+				}
+				if (optionsElement.getChild("elementId") != null) {
+					options[SaveDamageContributions.EID] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("elementId"));
+				}
+				if (optionsElement.getChild("spectrumName") != null) {
+					options[SaveDamageContributions.SPEC_NAME] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("spectrumName"));
+				}
+				if (optionsElement.getChild("aircraftProgram") != null) {
+					options[SaveDamageContributions.PROGRAM] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftProgram"));
+				}
+				if (optionsElement.getChild("aircraftSection") != null) {
+					options[SaveDamageContributions.SECTION] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftSection"));
+				}
+				if (optionsElement.getChild("fatigueMission") != null) {
+					options[SaveDamageContributions.MISSION] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("fatigueMission"));
+				}
+				if (optionsElement.getChild("omissionLevel") != null) {
+					options[SaveDamageContributions.OMISSION] = Boolean.parseBoolean(optionsElement.getChildTextNormalize("omissionLevel"));
+				}
+			}
+
+			// create tasks
+			GetContributionNames getNamesTask = new GetContributionNames(null, null);
+			SaveDamageContributions saveTask = new SaveDamageContributions(null, null, options, outputPath.toFile());
+			getNamesTask.addParameterizedTask(id, saveTask);
+			getNamesTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> loadcaseDamageContributionIds = saveLoadcaseDamageContributions.getChildren("loadcaseDamageContributionId");
+			getNamesTask.setInputThreshold(loadcaseDamageContributionIds.size());
+
+			// loop over loadcase damage contribution ids
+			for (Element loadcaseDamageContributionIdElement : loadcaseDamageContributionIds) {
+
+				// get loadcase damage contribution id
+				String loadcaseDamageContributionId = loadcaseDamageContributionIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(loadcaseDamageContributionId).getTask();
+				parentTask.addParameterizedTask(id, getNamesTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put("ownerOf_" + id, new InstructedTask(getNamesTask, true));
+			tasks.put(id, new InstructedTask(saveTask, true));
 		}
 	}
 
@@ -2275,6 +2465,42 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				tasks.put(id, new InstructedTask(saveDatasetTask, true));
 				tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
 			}
+		}
+	}
+
+	/**
+	 * Creates plot loadcase damage contribution tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotLoadcaseDamageContribution(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot loadcase damage contribution tasks...");
+
+		// loop over plot loadcase damage contribution elements
+		for (Element plotLoadcaseDamageContribution : equinoxInput.getChildren("plotLoadcaseDamageContribution")) {
+
+			// get inputs
+			String id = plotLoadcaseDamageContribution.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotLoadcaseDamageContribution.getChildTextNormalize("outputPath"));
+
+			// create task
+			SaveLoadcaseDamageContributionPlot task = new SaveLoadcaseDamageContributionPlot(null, false, outputPath);
+
+			// connect to parent task
+			String loadcaseDamageContributionId = plotLoadcaseDamageContribution.getChildTextNormalize("loadcaseDamageContributionId");
+			ParameterizedTaskOwner<LoadcaseDamageContributions> parentTask = (ParameterizedTaskOwner<LoadcaseDamageContributions>) tasks.get(loadcaseDamageContributionId).getTask();
+			parentTask.addParameterizedTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
 		}
 	}
 

@@ -312,7 +312,7 @@ public class LoadcaseDamageContributionAnalysis extends TemporaryFileCreatingTas
 				stfFile_.getChildren().add(0, contributions);
 
 				// plot and save contributions
-				taskPanel_.getOwner().runTaskInParallel(new SaveLoadcaseDamageContributionPlot(contributions));
+				taskPanel_.getOwner().runTaskInParallel(new SaveLoadcaseDamageContributionPlot(contributions, true, null));
 
 				// manage automatic tasks
 				parameterizedTaskOwnerSucceeded(contributions, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);

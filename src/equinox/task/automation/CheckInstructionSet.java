@@ -291,6 +291,24 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// plot loadcase damage contribution
+		if (equinoxInput.getChild("plotLoadcaseDamageContribution") != null) {
+			if (!checkPlotLoadcaseDamageContribution(equinoxInput))
+				return false;
+		}
+
+		// save loadcase damage contributions
+		if (equinoxInput.getChild("saveLoadcaseDamageContributions") != null) {
+			if (!checkSaveLoadcaseDamageContributions(equinoxInput))
+				return false;
+		}
+
+		// export loadcase damage contributions
+		if (equinoxInput.getChild("exportLoadcaseDamageContributions") != null) {
+			if (!checkExportLoadcaseDamageContributions(equinoxInput))
+				return false;
+		}
+
 		// plot level crossing
 		if (equinoxInput.getChild("plotLevelCrossing") != null) {
 			if (!checkPlotLevelCrossing(equinoxInput))
@@ -1649,6 +1667,151 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 						return false;
 				}
 			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>exportLoadcaseDamageContributions</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>exportLoadcaseDamageContributions</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkExportLoadcaseDamageContributions(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking exportLoadcaseDamageContributions elements...");
+
+		// loop over export loadcase damage contribution elements
+		for (Element exportLoadcaseDamageContributions : equinoxInput.getChildren("exportLoadcaseDamageContributions")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, exportLoadcaseDamageContributions))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, exportLoadcaseDamageContributions, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check loadcase damage contribution ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, exportLoadcaseDamageContributions, "loadcaseDamageContributionId", "loadcaseDamageContributionAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>saveLoadcaseDamageContributions</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveLoadcaseDamageContributions</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveLoadcaseDamageContributions(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveLoadcaseDamageContributions elements...");
+
+		// loop over save loadcase damage contribution elements
+		for (Element saveLoadcaseDamageContributions : equinoxInput.getChildren("saveLoadcaseDamageContributions")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveLoadcaseDamageContributions))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveLoadcaseDamageContributions, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveLoadcaseDamageContributions.getChild("options") != null) {
+
+				// get element
+				Element options = saveLoadcaseDamageContributions.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "percentContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "totalEquivalentStresses", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "incrementContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "onegContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "gagContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "deltaPContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "deltaTContributions", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialSlope", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialConstant", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+
+			// check loadcase damage contribution ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLoadcaseDamageContributions, "loadcaseDamageContributionId", "loadcaseDamageContributionAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotLoadcaseDamageContribution</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotLoadcaseDamageContribution</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotLoadcaseDamageContribution(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotLoadcaseDamageContribution elements...");
+
+		// loop over plot loadcase damage contribution elements
+		for (Element plotLoadcaseDamageContribution : equinoxInput.getChildren("plotLoadcaseDamageContribution")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLoadcaseDamageContribution))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLoadcaseDamageContribution, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check loadcase damage contribution id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLoadcaseDamageContribution, "loadcaseDamageContributionId", "loadcaseDamageContributionAnalysis"))
+				return false;
 		}
 
 		// check passed

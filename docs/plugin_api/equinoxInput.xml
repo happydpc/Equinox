@@ -364,6 +364,54 @@
 		<loadcaseDamageContributionAnalysisInputPath></loadcaseDamageContributionAnalysisInputPath>
 	</loadcaseDamageContributionAnalysis>
 	
+	<!--Plots loadcase damage contributions to given output file.-->
+	<plotLoadcaseDamageContribution>
+		<id></id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction.-->
+		<loadcaseDamageContributionId></loadcaseDamageContributionId>
+		<!--Path to save loadcase damage contribution plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotLoadcaseDamageContribution>
+
+	<!--Saves referenced loadcase damage contributions to given output XLS file.-->
+	<saveLoadcaseDamageContributions>
+		<id></id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
+		<loadcaseDamageContributionId></loadcaseDamageContributionId>
+		<!--Path to save equivalent stresses. File name must end with .xls.-->
+		<outputPath></outputPath>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To save percent damage contribution values. This can be either 'true' or 'false'.-->
+			<percentContributions></percentContributions>
+			<totalEquivalentStresses></totalEquivalentStresses>
+			<incrementContributions></incrementContributions>
+			<onegContributions></onegContributions>
+			<gagContributions></gagContributions>
+			<deltaPContributions></deltaPContributions>
+			<deltaTContributions></deltaTContributions>
+			<materialName></materialName>
+			<materialSlope></materialSlope>
+			<materialConstant></materialConstant>
+			<pilotPointName></pilotPointName>
+			<elementId></elementId>
+			<spectrumName></spectrumName>
+			<aircraftProgram></aircraftProgram>
+			<aircraftSection></aircraftSection>
+			<fatigueMission></fatigueMission>
+			<omissionLevel></omissionLevel>
+		</options>
+	</saveLoadcaseDamageContributions>
+	
+	<!--Exports refernced loadcase damage contributions to given output file.-->
+	<exportLoadcaseDamageContributions>
+		<id></id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
+		<loadcaseDamageContributionId></loadcaseDamageContributionId>
+		<!--Path to where the loadcase damage contributions will be exported. File name must end with .xls.-->
+		<outputPath></outputPath>
+	</exportLoadcaseDamageContributions>
+
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>
 		<id></id>

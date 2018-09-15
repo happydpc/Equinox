@@ -16,17 +16,24 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import equinox.Equinox;
-import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.serverUtilities.Permission;
 import equinox.task.GetContributionNames.DamageContributionRequester;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for export damage contributions task.
@@ -36,19 +43,28 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @time 22:10:53
  *
  */
-public class ExportContributions extends InternalEquinoxTask<Void> implements LongRunningTask, DamageContributionRequester {
+public class ExportContributions extends InternalEquinoxTask<Path> implements LongRunningTask, DamageContributionRequester, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** Output file. */
 	private final File output_;
 
 	/** Spectrum items. This can be either damage contributions or STF file buckets. */
-	private final ArrayList<SpectrumItem> items_;
+	private final List<SpectrumItem> items_;
 
 	/** Get contribution names completion indicator. */
 	private final AtomicBoolean getNamesCompleted_;
 
 	/** Contribution names. */
-	private final AtomicReference<ArrayList<String>> contributionNames_;
+	private final AtomicReference<List<String>> contributionNames_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates export damage contributions task.
@@ -56,13 +72,46 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 	 * @param output
 	 *            Output file path.
 	 * @param items
-	 *            Spectrum items. This can be either damage contributions or STF file buckets.
+	 *            Spectrum items. This can be either damage contributions or STF file buckets. This can be null for automatic execution.
 	 */
-	public ExportContributions(File output, ArrayList<SpectrumItem> items) {
+	public ExportContributions(File output, List<SpectrumItem> items) {
 		output_ = output;
-		items_ = items;
+		items_ = items == null ? Collections.synchronizedList(new ArrayList<>()) : items;
 		getNamesCompleted_ = new AtomicBoolean();
 		contributionNames_ = new AtomicReference<>(null);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
 	}
 
 	@Override
@@ -76,13 +125,13 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 	}
 
 	@Override
-	public void setContributions(ArrayList<String> contributions) {
+	public void setContributions(List<String> contributions) {
 		contributionNames_.set(contributions);
 		getNamesCompleted_.set(true);
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.EXPORT_DAMAGE_CONTRIBUTIONS);
@@ -95,7 +144,7 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 		waitForTask();
 
 		// get names
-		ArrayList<String> names = contributionNames_.get();
+		List<String> names = contributionNames_.get();
 
 		// couldn't get contribution names
 		if (names == null || names.isEmpty())
@@ -150,9 +199,9 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 		else {
 
 			// cast to loadcase damage contributions
-			ArrayList<LoadcaseDamageContributions> contributions = new ArrayList<>();
+			ArrayList<SpectrumItem> contributions = new ArrayList<>();
 			for (SpectrumItem item : items_) {
-				contributions.add((LoadcaseDamageContributions) item);
+				contributions.add(item);
 			}
 
 			// create save task
@@ -166,7 +215,53 @@ public class ExportContributions extends InternalEquinoxTask<Void> implements Lo
 		Equinox.SUBTASK_THREADPOOL.submit(task).get();
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// set file info
+		try {
+
+			// get output
+			Path outputFile = get();
+
+			// manage automatic task
+			parameterizedTaskOwnerSucceeded(outputFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

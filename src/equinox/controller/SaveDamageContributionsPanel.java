@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
@@ -79,7 +80,7 @@ public class SaveDamageContributionsPanel implements InternalInputSubPanel, Dama
 	private InputPanel owner_;
 
 	/** Contribution names. */
-	private ArrayList<String> contributionNames_;
+	private List<String> contributionNames_;
 
 	/** Options. */
 	private BooleanProperty[] options_;
@@ -188,7 +189,7 @@ public class SaveDamageContributionsPanel implements InternalInputSubPanel, Dama
 	}
 
 	@Override
-	public void setContributions(ArrayList<String> contributions) {
+	public void setContributions(List<String> contributions) {
 
 		// set contribution names
 		contributionNames_ = contributions;
@@ -345,7 +346,7 @@ public class SaveDamageContributionsPanel implements InternalInputSubPanel, Dama
 		else {
 
 			// get selected damage contributions
-			ArrayList<LoadcaseDamageContributions> contributions = new ArrayList<>();
+			ArrayList<SpectrumItem> contributions = new ArrayList<>();
 			for (TreeItem<String> item : selected) {
 				contributions.add((LoadcaseDamageContributions) item);
 			}
@@ -541,7 +542,7 @@ public class SaveDamageContributionsPanel implements InternalInputSubPanel, Dama
 		else {
 
 			// get selected damage contributions
-			ArrayList<LoadcaseDamageContributions> contributions = new ArrayList<>();
+			ArrayList<SpectrumItem> contributions = new ArrayList<>();
 			for (TreeItem<String> item : selected) {
 				contributions.add((LoadcaseDamageContributions) item);
 			}

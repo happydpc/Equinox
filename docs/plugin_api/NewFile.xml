@@ -55,4 +55,26 @@
 		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
 		<loadcaseDamageContributionAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/loadcaseDamageContributionAnalysisInput_test.xml</loadcaseDamageContributionAnalysisInputPath>
 	</loadcaseDamageContributionAnalysis>
+	<plotLoadcaseDamageContribution>
+		<id>12</id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction.-->
+		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
+		<!--Path to save loadcase damage contribution plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/loadcaseDamageContributions.png</outputPath>
+	</plotLoadcaseDamageContribution>
+	<saveLoadcaseDamageContributions>
+		<id>13</id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
+		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
+		<!--Path to save equivalent stresses. File name must end with .xls.-->
+		<outputPath>/Users/aurora/Temporary/loadcaseDamageContributions.xls</outputPath>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+	</saveLoadcaseDamageContributions>
+	<exportLoadcaseDamageContributions>
+		<id>14</id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
+		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
+		<!--Path to where the loadcase damage contributions will be exported. File name must end with .zip.-->
+		<outputPath>/Users/aurora/Temporary/Export_DamageContributions.xls</outputPath>
+	</exportLoadcaseDamageContributions>
 </equinoxInput>

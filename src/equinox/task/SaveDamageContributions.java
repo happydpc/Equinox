@@ -16,15 +16,23 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
+import equinox.data.Pair;
 import equinox.data.fileType.LoadcaseDamageContributions;
+import equinox.data.fileType.SpectrumItem;
 import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableSaveDamageContributions;
 import jxl.CellType;
 import jxl.Workbook;
@@ -45,16 +53,16 @@ import jxl.write.WriteException;
  * @date Sep 3, 2015
  * @time 2:21:37 PM
  */
-public class SaveDamageContributions extends InternalEquinoxTask<Void> implements LongRunningTask, SavableTask {
+public class SaveDamageContributions extends InternalEquinoxTask<Path> implements LongRunningTask, SavableTask, SingleInputTask<Pair<List<SpectrumItem>, List<String>>>, ParameterizedTaskOwner<Path> {
 
 	/** Option index. */
 	public static final int PERCENT = 0, FULL = 1, INC = 2, ONEG = 3, GAG = 4, DP = 5, DT = 6, MAT_NAME = 7, FAT_P = 8, FAT_Q = 9, PP_NAME = 10, EID = 11, SPEC_NAME = 12, PROGRAM = 13, SECTION = 14, MISSION = 15, OMISSION = 16;
 
 	/** Damage contributions. */
-	private final ArrayList<LoadcaseDamageContributions> contributions_;
+	private List<SpectrumItem> contributions_;
 
 	/** Damage contribution names. */
-	private final ArrayList<String> contributionNames_;
+	private List<String> contributionNames_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -62,23 +70,53 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 	/** Output file. */
 	private final File output_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates save damage contributions task.
 	 *
 	 * @param contributions
-	 *            Damage contributions.
+	 *            Damage contributions. Can be null for automatic execution.
 	 * @param contributionNames
-	 *            Damage contribution names.
+	 *            Damage contribution names. Can be null for automatic execution.
 	 * @param options
 	 *            Options.
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveDamageContributions(ArrayList<LoadcaseDamageContributions> contributions, ArrayList<String> contributionNames, boolean[] options, File output) {
+	public SaveDamageContributions(List<SpectrumItem> contributions, List<String> contributionNames, boolean[] options, File output) {
 		contributions_ = contributions;
 		contributionNames_ = contributionNames;
 		options_ = options;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(Pair<List<SpectrumItem>, List<String>> input) {
+		contributions_ = input.getElement1();
+		contributionNames_ = input.getElement2();
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -97,7 +135,7 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// update progress info
 		updateTitle("Saving damage contributions to '" + output_.getName() + "'");
@@ -133,7 +171,7 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 						for (int i = 0; i < contributions_.size(); i++) {
 
 							// get contribution
-							LoadcaseDamageContributions contribution = contributions_.get(i);
+							LoadcaseDamageContributions contribution = (LoadcaseDamageContributions) contributions_.get(i);
 
 							// update info
 							updateMessage("Writing damage contribution " + contribution.getName() + "...");
@@ -164,7 +202,60 @@ public class SaveDamageContributions extends InternalEquinoxTask<Void> implement
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output file
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

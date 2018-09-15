@@ -18,6 +18,7 @@ package equinox.controller;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.controlsfx.control.PopOver;
@@ -121,7 +122,7 @@ public class CompareDamageContributionsPanel implements InternalInputSubPanel, D
 	}
 
 	@Override
-	public void setContributions(ArrayList<String> contributions) {
+	public void setContributions(List<String> contributions) {
 
 		// reset incremental contributions list
 		contributionList_.getSelectionModel().clearSelection();
