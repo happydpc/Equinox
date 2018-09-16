@@ -18,6 +18,10 @@ package equinox.task;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -26,11 +30,16 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.CompareDamageContributionsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
 import equinox.data.fileType.LoadcaseDamageContributions;
+import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.CompareDamageContributionsInput;
 import equinox.dataServer.remote.data.ContributionType;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for plot damage comparison task.
@@ -39,13 +48,25 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 16, 2015
  * @time 12:25:45 PM
  */
-public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, ContributionType>> {
+
+	/** Damage contributions. */
+	private final List<SpectrumItem> contributions_;
 
 	/** Input. */
 	private final CompareDamageContributionsInput input_;
 
 	/** Contribution type. */
 	private final ContributionType contributionType_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, ContributionType>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates plot damage comparison task.
@@ -58,6 +79,50 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 	public PlotDamageComparison(CompareDamageContributionsInput input, ContributionType contributionType) {
 		input_ = input;
 		contributionType_ = contributionType;
+		contributions_ = Collections.synchronizedList(new ArrayList<>());
+	}
+
+	/**
+	 * Adds given loadcase damage contribution to this task.
+	 *
+	 * @param contribution
+	 *            Loadcase damage contribution to add.
+	 */
+	public void addContribution(LoadcaseDamageContributions contribution) {
+		contributions_.add(contribution);
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, contributions_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, contributions_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, ContributionType>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, ContributionType>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -91,7 +156,10 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 				try (PreparedStatement getDamage = connection.prepareStatement(sql)) {
 
 					// loop over contributions
-					for (LoadcaseDamageContributions contribution : input_.getContributions()) {
+					for (SpectrumItem item : contributions_) {
+
+						// cast
+						LoadcaseDamageContributions contribution = (LoadcaseDamageContributions) item;
 
 						// get series name
 						String seriesName = getSeriesName(contribution, dataset);
@@ -152,20 +220,52 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 		// set chart data
 		try {
 
-			// get level crossing view panel
-			CompareDamageContributionsViewPanel panel = (CompareDamageContributionsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.COMPARE_DAMAGE_CONTRIBUTIONS_VIEW);
+			// get dataset
+			CategoryDataset dataset = get();
 
-			// set data
-			panel.setPlotData(get(), contributionType_);
+			// user initiated task
+			if (automaticTasks_ == null) {
 
-			// show damage contributions view panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.COMPARE_DAMAGE_CONTRIBUTIONS_VIEW);
+				// get level crossing view panel
+				CompareDamageContributionsViewPanel panel = (CompareDamageContributionsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.COMPARE_DAMAGE_CONTRIBUTIONS_VIEW);
+
+				// set data
+				panel.setPlotData(dataset, contributionType_);
+
+				// show damage contributions view panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.COMPARE_DAMAGE_CONTRIBUTIONS_VIEW);
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, contributionType_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

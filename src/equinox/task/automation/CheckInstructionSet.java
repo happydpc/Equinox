@@ -309,6 +309,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// plot loadcase damage contribution comparison
+		if (equinoxInput.getChild("plotLoadcaseDamageContributionComparison") != null) {
+			if (!checkPlotLoadcaseDamageContributionComparison(equinoxInput))
+				return false;
+		}
+
 		// plot level crossing
 		if (equinoxInput.getChild("plotLevelCrossing") != null) {
 			if (!checkPlotLevelCrossing(equinoxInput))
@@ -1667,6 +1673,67 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 						return false;
 				}
 			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotLoadcaseDamageContributionComparison</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotLoadcaseDamageContributionComparison</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotLoadcaseDamageContributionComparison(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotLoadcaseDamageContributionComparison elements...");
+
+		// loop over plot loadcase damage contribution comparison elements
+		for (Element plotLoadcaseDamageContributionComparison : equinoxInput.getChildren("plotLoadcaseDamageContributionComparison")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotLoadcaseDamageContributionComparison))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotLoadcaseDamageContributionComparison, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check loadcase damage contribution ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLoadcaseDamageContributionComparison, "loadcaseDamageContributionId", "loadcaseDamageContributionAnalysis", 2))
+				return false;
+
+			// check series naming
+			if (plotLoadcaseDamageContributionComparison.getChild("seriesNaming") != null) {
+
+				// get element
+				Element seriesNaming = plotLoadcaseDamageContributionComparison.getChild("seriesNaming");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeSpectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeStfName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeElementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeMaterialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeAircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, seriesNaming, "includeFatigueMission", true))
+					return false;
+			}
+
+			// check contribution name
+			if (!XMLUtilities.checkStringValue(this, inputFile, plotLoadcaseDamageContributionComparison, "contributionName", false))
+				return false;
 		}
 
 		// check passed

@@ -378,7 +378,7 @@
 		<id></id>
 		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
 		<loadcaseDamageContributionId></loadcaseDamageContributionId>
-		<!--Path to save equivalent stresses. File name must end with .xls.-->
+		<!--Path to save loadcase damage contributions. File name must end with .xls.-->
 		<outputPath></outputPath>
 		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
 		<options>
@@ -411,7 +411,29 @@
 		<!--Path to where the loadcase damage contributions will be exported. File name must end with .xls.-->
 		<outputPath></outputPath>
 	</exportLoadcaseDamageContributions>
-
+	
+	<!-- Plots loadcase damage contribution comparison to given output file. -->
+	<plotLoadcaseDamageContributionComparison>
+		<id></id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Minimum 2 loadcaseDamageContributionIds are expected.-->
+		<loadcaseDamageContributionId></loadcaseDamageContributionId>
+		<!--Path to save loadcase damage contribution comparison plot. File name must end with .png.-->
+		<outputPath></outputPath>
+		<!-- Name of contribution to be compared. This can be one of '1G', 'Delta-P', 'Delta-T', 'Ground-Air-Ground' or an increment contribution group name. -->
+		<contributionName></contributionName>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming>
+			<!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeMaterialName></includeMaterialName>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+	</plotLoadcaseDamageContributionComparison>
+	
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>
 		<id></id>

@@ -15,9 +15,7 @@
  */
 package equinox.data.input;
 
-import java.util.ArrayList;
-
-import equinox.data.fileType.LoadcaseDamageContributions;
+import java.util.List;
 
 /**
  * Class for compare damage contributions input.
@@ -31,11 +29,8 @@ public class CompareDamageContributionsInput {
 	/** Naming option index. */
 	public static final int SPECTRUM_NAME = 0, STF_NAME = 1, EID = 2, MATERIAL_NAME = 3, PROGRAM = 4, SECTION = 5, MISSION = 6;
 
-	/** Damage contributions. */
-	private final ArrayList<LoadcaseDamageContributions> contributions_;
-
 	/** Contribution names. */
-	private final ArrayList<String> contributionNames_;
+	private final List<String> contributionNames_;
 
 	/** Naming options. */
 	private final boolean[] namingOptions_;
@@ -43,27 +38,14 @@ public class CompareDamageContributionsInput {
 	/**
 	 * Creates compare damage contributions input.
 	 *
-	 * @param contributions
-	 *            Damage contributions.
 	 * @param contributionNames
 	 *            Contribution names.
 	 * @param namingOptions
 	 *            Naming options.
 	 */
-	public CompareDamageContributionsInput(ArrayList<LoadcaseDamageContributions> contributions, ArrayList<String> contributionNames,
-			boolean[] namingOptions) {
-		contributions_ = contributions;
+	public CompareDamageContributionsInput(List<String> contributionNames, boolean[] namingOptions) {
 		contributionNames_ = contributionNames;
 		namingOptions_ = namingOptions;
-	}
-
-	/**
-	 * Returns contributions to be compared.
-	 *
-	 * @return Contributions to be compared.
-	 */
-	public ArrayList<LoadcaseDamageContributions> getContributions() {
-		return contributions_;
 	}
 
 	/**
@@ -71,7 +53,7 @@ public class CompareDamageContributionsInput {
 	 *
 	 * @return Contribution names.
 	 */
-	public ArrayList<String> getContributionNames() {
+	public List<String> getContributionNames() {
 		return contributionNames_;
 	}
 

@@ -50,6 +50,7 @@ import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
+import equinox.data.input.CompareDamageContributionsInput;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
@@ -69,6 +70,7 @@ import equinox.data.input.LifeFactorComparisonInput;
 import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
+import equinox.dataServer.remote.data.ContributionType;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.PilotPointSearchInput;
@@ -115,6 +117,7 @@ import equinox.task.GetTypicalFlight;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.LoadcaseDamageContributionAnalysis;
+import equinox.task.PlotDamageComparison;
 import equinox.task.PlotExternalLevelCrossing;
 import equinox.task.PlotExternalTypicalFlights;
 import equinox.task.PlotHistogram;
@@ -133,6 +136,7 @@ import equinox.task.SaveExternalStressSequenceAsSIGMA;
 import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
 import equinox.task.SaveLifeFactors;
+import equinox.task.SaveLoadcaseDamageContributionComparisonPlot;
 import equinox.task.SaveLoadcaseDamageContributionPlot;
 import equinox.task.SaveMissionParameterPlot;
 import equinox.task.SaveMissionProfile;
@@ -392,6 +396,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// export loadcase damage contributions
 		if (equinoxInput.getChild("exportLoadcaseDamageContributions") != null) {
 			exportLoadcaseDamageContributions(equinoxInput, tasks);
+		}
+
+		// plot loadcase damage contribution comparison
+		if (equinoxInput.getChild("plotLoadcaseDamageContributionComparison") != null) {
+			plotLoadcaseDamageContributionComparison(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -919,6 +928,100 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates plot loadcase damage contribution comparison tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotLoadcaseDamageContributionComparison(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot loadcase damage contribution comparison tasks...");
+
+		// loop over plot loadcase damage contribution comparison elements
+		for (Element plotLoadcaseDamageContributionComparison : equinoxInput.getChildren("plotLoadcaseDamageContributionComparison")) {
+
+			// get id and output path
+			String id = plotLoadcaseDamageContributionComparison.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotLoadcaseDamageContributionComparison.getChildTextNormalize("outputPath"));
+			String contributionName = plotLoadcaseDamageContributionComparison.getChildTextNormalize("contributionName");
+
+			// get series naming
+			boolean[] namingOptions = new boolean[7];
+			for (int i = 0; i < namingOptions.length; i++) {
+				namingOptions[i] = false;
+			}
+			namingOptions[CompareDamageContributionsInput.STF_NAME] = true;
+			if (plotLoadcaseDamageContributionComparison.getChild("seriesNaming") != null) {
+				Element seriesNaming = plotLoadcaseDamageContributionComparison.getChild("seriesNaming");
+				if (seriesNaming.getChild("includeSpectrumName") != null) {
+					namingOptions[CompareDamageContributionsInput.SPECTRUM_NAME] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeSpectrumName"));
+				}
+				if (seriesNaming.getChild("includeStfName") != null) {
+					namingOptions[CompareDamageContributionsInput.STF_NAME] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeStfName"));
+				}
+				if (seriesNaming.getChild("includeElementId") != null) {
+					namingOptions[CompareDamageContributionsInput.EID] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeElementId"));
+				}
+				if (seriesNaming.getChild("includeMaterialName") != null) {
+					namingOptions[CompareDamageContributionsInput.MATERIAL_NAME] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeMaterialName"));
+				}
+				if (seriesNaming.getChild("includeAircraftProgram") != null) {
+					namingOptions[CompareDamageContributionsInput.PROGRAM] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftProgram"));
+				}
+				if (seriesNaming.getChild("includeAircraftSection") != null) {
+					namingOptions[CompareDamageContributionsInput.SECTION] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeAircraftSection"));
+				}
+				if (seriesNaming.getChild("includeFatigueMission") != null) {
+					namingOptions[CompareDamageContributionsInput.MISSION] = Boolean.parseBoolean(seriesNaming.getChildTextNormalize("includeFatigueMission"));
+				}
+			}
+
+			// get contribution type
+			ContributionType contributionType = ContributionType.INCREMENT;
+			for (ContributionType type : ContributionType.values()) {
+				if (type.getName().equals(contributionName)) {
+					contributionType = type;
+					break;
+				}
+			}
+
+			// create input
+			CompareDamageContributionsInput input = new CompareDamageContributionsInput(Arrays.asList(contributionName), namingOptions);
+
+			// create tasks
+			PlotDamageComparison plotTask = new PlotDamageComparison(input, contributionType);
+			SaveLoadcaseDamageContributionComparisonPlot saveTask = new SaveLoadcaseDamageContributionComparisonPlot(null, null, outputPath);
+			plotTask.addParameterizedTask(id, saveTask);
+			plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> loadcaseDamageContributionIds = plotLoadcaseDamageContributionComparison.getChildren("loadcaseDamageContributionId");
+			plotTask.setInputThreshold(loadcaseDamageContributionIds.size());
+
+			// loop over loadcase damage contribution ids
+			for (Element loadcaseDamageContributionIdElement : loadcaseDamageContributionIds) {
+
+				// get loadcase damage contribution id
+				String loadcaseDamageContributionId = loadcaseDamageContributionIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(loadcaseDamageContributionId).getTask();
+				parentTask.addParameterizedTask(id, plotTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
+			tasks.put(id, new InstructedTask(saveTask, true));
 		}
 	}
 

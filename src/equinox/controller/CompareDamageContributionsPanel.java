@@ -281,19 +281,21 @@ public class CompareDamageContributionsPanel implements InternalInputSubPanel, D
 			return;
 		}
 
+		// create input
+		CompareDamageContributionsInput input = new CompareDamageContributionsInput(contributionNames, namingOptions);
+
+		// create task
+		PlotDamageComparison task = new PlotDamageComparison(input, contributionType);
+
 		// get selected contributions
 		ObservableList<TreeItem<String>> selected = owner_.getSelectedFiles();
-		ArrayList<LoadcaseDamageContributions> contributions = new ArrayList<>();
 		for (TreeItem<String> item : selected) {
-			contributions.add((LoadcaseDamageContributions) item);
+			task.addContribution((LoadcaseDamageContributions) item);
 		}
-
-		// create input
-		CompareDamageContributionsInput input = new CompareDamageContributionsInput(contributions, contributionNames, namingOptions);
 
 		// plot
 		ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
-		tm.runTaskInParallel(new PlotDamageComparison(input, contributionType));
+		tm.runTaskInParallel(task);
 	}
 
 	@FXML

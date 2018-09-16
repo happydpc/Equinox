@@ -77,4 +77,23 @@
 		<!--Path to where the loadcase damage contributions will be exported. File name must end with .zip.-->
 		<outputPath>/Users/aurora/Temporary/Export_DamageContributions.xls</outputPath>
 	</exportLoadcaseDamageContributions>
+	<loadcaseDamageContributionAnalysis>
+		<id>15</id><!--The stfId refers to 'addStf' instruction.-->
+		<stfId>3</stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
+		<loadcaseDamageContributionAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/loadcaseDamageContributionAnalysisInput_test.xml</loadcaseDamageContributionAnalysisInputPath>
+	</loadcaseDamageContributionAnalysis>
+	<plotLoadcaseDamageContributionComparison>
+		<id>16</id>
+		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Minimum 2 loadcaseDamageContributionIds are expected.-->
+		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
+		<loadcaseDamageContributionId>15</loadcaseDamageContributionId>
+		<!--Path to save loadcase damage contribution comparison plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/Compare_DamageContributions.png</outputPath>
+		<!-- Name of contribution to be compared. This can be one of '1G', 'Delta-P', 'Delta-T', 'Ground-Air-Ground' or an increment contribution group name. -->
+		<contributionName>1G</contributionName>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+	</plotLoadcaseDamageContributionComparison>
 </equinoxInput>
