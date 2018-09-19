@@ -16,14 +16,22 @@
 package equinox.task;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
+import equinox.data.Triple;
 import equinox.data.fileType.FlightDamageContributions;
+import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableSaveFlightDamageContributions;
 import javafx.beans.property.BooleanProperty;
 import jxl.CellType;
@@ -45,16 +53,16 @@ import jxl.write.WriteException;
  * @date 21 Oct 2016
  * @time 17:03:47
  */
-public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> implements LongRunningTask, SavableTask {
+public class SaveFlightDamageContributions extends InternalEquinoxTask<Path> implements LongRunningTask, SavableTask, SingleInputTask<Triple<List<SpectrumItem>, List<String>, List<String>>>, ParameterizedTaskOwner<Path> {
 
 	/** Option index. */
 	public static final int MAT_NAME = 0, FAT_P = 1, FAT_Q = 2, PP_NAME = 3, EID = 4, SPEC_NAME = 5, PROGRAM = 6, SECTION = 7, MISSION = 8, OMISSION = 9;
 
 	/** Damage contributions. */
-	private final ArrayList<FlightDamageContributions> contributions_;
+	private List<SpectrumItem> contributions_;
 
 	/** Contribution names. */
-	private final ArrayList<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
+	private List<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
 
 	/** Options. */
 	private final BooleanProperty[] options_;
@@ -62,26 +70,57 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	/** Output file. */
 	private final File output_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates save typical flight damage contributions task.
 	 *
 	 * @param contributions
-	 *            Damage contributions.
+	 *            Damage contributions. Can be null for automatic execution.
 	 * @param tfNamesWithOccurrences
-	 *            Typical flight names with flight occurrences.
+	 *            Typical flight names with flight occurrences. Can be null for automatic execution.
 	 * @param tfNamesWithoutOccurrences
-	 *            Typical flight names without flight occurrences.
+	 *            Typical flight names without flight occurrences. Can be null for automatic execution.
 	 * @param options
 	 *            Options.
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveFlightDamageContributions(ArrayList<FlightDamageContributions> contributions, ArrayList<String> tfNamesWithOccurrences, ArrayList<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
+	public SaveFlightDamageContributions(List<SpectrumItem> contributions, List<String> tfNamesWithOccurrences, List<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
 		contributions_ = contributions;
 		tfNamesWithOccurrences_ = tfNamesWithOccurrences;
 		tfNamesWithoutOccurrences_ = tfNamesWithoutOccurrences;
 		options_ = options;
 		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(Triple<List<SpectrumItem>, List<String>, List<String>> input) {
+		contributions_ = input.getElement1();
+		tfNamesWithOccurrences_ = input.getElement2();
+		tfNamesWithoutOccurrences_ = input.getElement3();
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -100,7 +139,7 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// update progress info
 		updateTitle("Saving damage contributions to '" + output_.getName() + "'");
@@ -142,7 +181,7 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 							for (int i = 0; i < contributions_.size(); i++) {
 
 								// get contribution
-								FlightDamageContributions contribution = contributions_.get(i);
+								SpectrumItem contribution = contributions_.get(i);
 
 								// update info
 								updateMessage("Writing flight damage contribution " + contribution.getName() + "...");
@@ -178,7 +217,60 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 		}
 
 		// return
-		return null;
+		return output_.toPath();
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output file
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -188,7 +280,7 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	 *            Worksheet.
 	 * @param tfNames
 	 *            Typical flight names.
-	 * @param contribution
+	 * @param item
 	 *            Typical flight damage contribution.
 	 * @param overallInfo
 	 *            Overall contribution info.
@@ -199,10 +291,13 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void writeData(WritableSheet sheet, ArrayList<String> tfNames, FlightDamageContributions contribution, ResultSet overallInfo, PreparedStatement getInfo, int row) throws Exception {
+	private void writeData(WritableSheet sheet, List<String> tfNames, SpectrumItem item, ResultSet overallInfo, PreparedStatement getInfo, int row) throws Exception {
 
 		// initialize column index
 		int column = 0;
+
+		// cast to flight damage contribution
+		FlightDamageContributions contribution = (FlightDamageContributions) item;
 
 		// program
 		if (options_[PROGRAM].get()) {
@@ -304,7 +399,7 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void writeHeaders(WritableSheet sheet, ArrayList<String> tfNames) throws Exception {
+	private void writeHeaders(WritableSheet sheet, List<String> tfNames) throws Exception {
 
 		// initialize column index
 		int column = 0;
@@ -429,7 +524,7 @@ public class SaveFlightDamageContributions extends InternalEquinoxTask<Void> imp
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

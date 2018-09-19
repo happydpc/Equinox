@@ -315,6 +315,24 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// typical flight damage contribution analysis
+		if (equinoxInput.getChild("typicalFlightDamageContributionAnalysis") != null) {
+			if (!checkTypicalFlightDamageContributionAnalysis(equinoxInput))
+				return false;
+		}
+
+		// plot typical flight damage contribution
+		if (equinoxInput.getChild("plotTypicalFlightDamageContribution") != null) {
+			if (!checkPlotTypicalFlightDamageContribution(equinoxInput))
+				return false;
+		}
+
+		// save typical flight damage contributions
+		if (equinoxInput.getChild("saveTypicalFlightDamageContributions") != null) {
+			if (!checkSaveTypicalFlightDamageContributions(equinoxInput))
+				return false;
+		}
+
 		// plot level crossing
 		if (equinoxInput.getChild("plotLevelCrossing") != null) {
 			if (!checkPlotLevelCrossing(equinoxInput))
@@ -1775,6 +1793,69 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 	}
 
 	/**
+	 * Returns true if all <code>saveTypicalFlightDamageContributions</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveTypicalFlightDamageContributions</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveTypicalFlightDamageContributions(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveTypicalFlightDamageContributions elements...");
+
+		// loop over save typical flight damage contribution elements
+		for (Element saveTypicalFlightDamageContributions : equinoxInput.getChildren("saveTypicalFlightDamageContributions")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveTypicalFlightDamageContributions))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveTypicalFlightDamageContributions, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveTypicalFlightDamageContributions.getChild("options") != null) {
+
+				// get element
+				Element options = saveTypicalFlightDamageContributions.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialSlope", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialConstant", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+
+			// check typical flight damage contribution ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveTypicalFlightDamageContributions, "typicalFlightDamageContributionId", "typicalFlightDamageContributionAnalysis", 1))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>saveLoadcaseDamageContributions</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -1852,6 +1933,40 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 	}
 
 	/**
+	 * Returns true if all <code>plotTypicalFlightDamageContribution</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotTypicalFlightDamageContribution</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotTypicalFlightDamageContribution(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotTypicalFlightDamageContribution elements...");
+
+		// loop over plot typical flight damage contribution elements
+		for (Element plotTypicalFlightDamageContribution : equinoxInput.getChildren("plotTypicalFlightDamageContribution")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotTypicalFlightDamageContribution))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotTypicalFlightDamageContribution, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check typical flight damage contribution id
+			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlightDamageContribution, "typicalFlightDamageContributionId", "typicalFlightDamageContributionAnalysis"))
+				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
 	 * Returns true if all <code>plotLoadcaseDamageContribution</code> elements pass checks.
 	 *
 	 * @param equinoxInput
@@ -1879,6 +1994,84 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check loadcase damage contribution id
 			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLoadcaseDamageContribution, "loadcaseDamageContributionId", "loadcaseDamageContributionAnalysis"))
 				return false;
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>typicalFlightDamageContributionAnalysis</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>typicalFlightDamageContributionAnalysis</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkTypicalFlightDamageContributionAnalysis(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking typicalFlightDamageContributionAnalysis elements...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// create list of checked inputs
+		ArrayList<String> checkedInputs = new ArrayList<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over typical flight damage contribution analysis elements
+			for (Element typicalFlightDamageContributionAnalysis : equinoxInput.getChildren("typicalFlightDamageContributionAnalysis")) {
+
+				// no id
+				if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, typicalFlightDamageContributionAnalysis))
+					return false;
+
+				// check STF file id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, typicalFlightDamageContributionAnalysis, "stfId", "addStf"))
+					return false;
+
+				// check generate stress sequence input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, typicalFlightDamageContributionAnalysis, "generateStressSequenceInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get generate stress sequence input path
+				String generateStressSequenceInputPath = typicalFlightDamageContributionAnalysis.getChildTextNormalize("generateStressSequenceInputPath");
+
+				// not checked
+				if (!checkedInputs.contains(generateStressSequenceInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(generateStressSequenceInputPath);
+
+					// check generate stress sequence input
+					if (!new CheckGenerateStressSequenceInput(this, Paths.get(generateStressSequenceInputPath)).start(null))
+						return false;
+				}
+
+				// check equivalent stress analysis input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, typicalFlightDamageContributionAnalysis, "equivalentStressAnalysisInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get equivalent stress analysis input path
+				String equivalentStressAnalysisInputPath = typicalFlightDamageContributionAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize();
+
+				// already checked
+				if (checkedInputs.contains(equivalentStressAnalysisInputPath)) {
+					continue;
+				}
+
+				// add to checked inputs
+				checkedInputs.add(equivalentStressAnalysisInputPath);
+
+				// check equivalent stress analysis input
+				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(equivalentStressAnalysisInputPath), isamiVersion).start(connection))
+					return false;
+			}
 		}
 
 		// check passed

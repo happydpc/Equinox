@@ -15,7 +15,7 @@
  */
 package equinox.task.serializableTask;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.data.AnalysisEngine;
 import equinox.data.IsamiSubVersion;
@@ -45,7 +45,7 @@ public class SerializableFastGenerateStressSequence implements SerializableTask 
 	private final FastEquivalentStressInput input_;
 
 	/** Materials. */
-	private final ArrayList<Material> materials_;
+	private final List<Material> materials_;
 
 	/** Serializable STF file. */
 	private final SerializableSpectrumItem stfFile_, spectrum_;
@@ -85,7 +85,7 @@ public class SerializableFastGenerateStressSequence implements SerializableTask 
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public SerializableFastGenerateStressSequence(STFFile stfFile, FastEquivalentStressInput input, ArrayList<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
+	public SerializableFastGenerateStressSequence(STFFile stfFile, FastEquivalentStressInput input, List<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
 		stfFile_ = new SerializableSpectrumItem(stfFile);
 		input_ = input;
 		materials_ = materials;
@@ -117,7 +117,7 @@ public class SerializableFastGenerateStressSequence implements SerializableTask 
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public SerializableFastGenerateStressSequence(int stfID, int stressTableID, String stfName, Spectrum spectrum, FastEquivalentStressInput input, ArrayList<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
+	public SerializableFastGenerateStressSequence(int stfID, int stressTableID, String stfName, Spectrum spectrum, FastEquivalentStressInput input, List<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
 		stfID_ = stfID;
 		stressTableID_ = stressTableID;
 		stfName_ = stfName;

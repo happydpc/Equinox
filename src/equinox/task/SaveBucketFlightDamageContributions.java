@@ -19,7 +19,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFileBucket;
@@ -48,13 +48,13 @@ import jxl.write.WriteException;
 public class SaveBucketFlightDamageContributions extends InternalEquinoxTask<Void> implements LongRunningTask, SavableTask {
 
 	/** STF file buckets. */
-	private final ArrayList<STFFileBucket> buckets_;
+	private final List<STFFileBucket> buckets_;
 
 	/** Options. */
 	private final BooleanProperty[] options_;
 
 	/** Contribution names. */
-	private final ArrayList<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
+	private final List<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
 
 	/** Output file. */
 	private final File output_;
@@ -73,7 +73,7 @@ public class SaveBucketFlightDamageContributions extends InternalEquinoxTask<Voi
 	 * @param output
 	 *            Output file.
 	 */
-	public SaveBucketFlightDamageContributions(ArrayList<STFFileBucket> buckets, ArrayList<String> tfNamesWithOccurrences, ArrayList<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
+	public SaveBucketFlightDamageContributions(List<STFFileBucket> buckets, List<String> tfNamesWithOccurrences, List<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
 		buckets_ = buckets;
 		tfNamesWithOccurrences_ = tfNamesWithOccurrences;
 		tfNamesWithoutOccurrences_ = tfNamesWithoutOccurrences;
@@ -247,7 +247,7 @@ public class SaveBucketFlightDamageContributions extends InternalEquinoxTask<Voi
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void writeData(WritableSheet sheet, ArrayList<String> tfNames, STFFileBucket bucket, String stfFileName, String eid, ResultSet overallInfo, PreparedStatement getInfo, int row) throws Exception {
+	private void writeData(WritableSheet sheet, List<String> tfNames, STFFileBucket bucket, String stfFileName, String eid, ResultSet overallInfo, PreparedStatement getInfo, int row) throws Exception {
 
 		// initialize column index
 		int column = 0;
@@ -350,7 +350,7 @@ public class SaveBucketFlightDamageContributions extends InternalEquinoxTask<Voi
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private void writeHeaders(WritableSheet sheet, ArrayList<String> tfNames) throws Exception {
+	private void writeHeaders(WritableSheet sheet, List<String> tfNames) throws Exception {
 
 		// initialize column index
 		int column = 0;
@@ -475,7 +475,7 @@ public class SaveBucketFlightDamageContributions extends InternalEquinoxTask<Voi
 	private static WritableCellFormat getDataFormat(int rowIndex, CellType ct) throws WriteException {
 		WritableCellFormat cellFormat = ct == CellType.NUMBER ? new WritableCellFormat(NumberFormats.FLOAT) : new WritableCellFormat();
 		cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
-		cellFormat.setBackground((rowIndex % 2) == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
+		cellFormat.setBackground(rowIndex % 2 == 0 ? Colour.WHITE : Colour.VERY_LIGHT_YELLOW);
 		return cellFormat;
 	}
 }

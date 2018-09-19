@@ -41,59 +41,27 @@
 			<keyword>61 Parabolas</keyword>
 		</searchEntry>
 	</addStf>
-	<equivalentStressAnalysis>
-		<id>10</id>
+	<typicalFlightDamageContributionAnalysis>
+		<id>17</id>
+		<!--The stfId refers to 'addStf' instruction.-->
 		<stfId>3</stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
 		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
 		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
-	</equivalentStressAnalysis>
-	<loadcaseDamageContributionAnalysis>
-		<id>11</id><!--The stfId refers to 'addStf' instruction.-->
-		<stfId>3</stfId>
-		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
-		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
-		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
-		<loadcaseDamageContributionAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/loadcaseDamageContributionAnalysisInput_test.xml</loadcaseDamageContributionAnalysisInputPath>
-	</loadcaseDamageContributionAnalysis>
-	<plotLoadcaseDamageContribution>
-		<id>12</id>
-		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction.-->
-		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
-		<!--Path to save loadcase damage contribution plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/loadcaseDamageContributions.png</outputPath>
-	</plotLoadcaseDamageContribution>
-	<saveLoadcaseDamageContributions>
-		<id>13</id>
-		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
-		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
-		<!--Path to save equivalent stresses. File name must end with .xls.-->
-		<outputPath>/Users/aurora/Temporary/loadcaseDamageContributions.xls</outputPath>
-		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
-	</saveLoadcaseDamageContributions>
-	<exportLoadcaseDamageContributions>
-		<id>14</id>
-		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
-		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
-		<!--Path to where the loadcase damage contributions will be exported. File name must end with .zip.-->
-		<outputPath>/Users/aurora/Temporary/Export_DamageContributions.xls</outputPath>
-	</exportLoadcaseDamageContributions>
-	<loadcaseDamageContributionAnalysis>
-		<id>15</id><!--The stfId refers to 'addStf' instruction.-->
-		<stfId>3</stfId>
-		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
-		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
-		<!--Path to input file containing input parameters for loadcase damage contribution analysis. File name must end with either XML or JSON.-->
-		<loadcaseDamageContributionAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/loadcaseDamageContributionAnalysisInput_test.xml</loadcaseDamageContributionAnalysisInputPath>
-	</loadcaseDamageContributionAnalysis>
-	<plotLoadcaseDamageContributionComparison>
-		<id>16</id>
-		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Minimum 2 loadcaseDamageContributionIds are expected.-->
-		<loadcaseDamageContributionId>11</loadcaseDamageContributionId>
-		<loadcaseDamageContributionId>15</loadcaseDamageContributionId>
-		<!--Path to save loadcase damage contribution comparison plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/Compare_DamageContributions.png</outputPath>
-		<!-- Name of contribution to be compared. This can be one of '1G', 'Delta-P', 'Delta-T', 'Ground-Air-Ground' or an increment contribution group name. -->
-		<contributionName>1G</contributionName>
-		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
-	</plotLoadcaseDamageContributionComparison>
+	</typicalFlightDamageContributionAnalysis>
+	<plotTypicalFlightDamageContribution>
+		<id>18</id>
+		<!--The typicalFlightDamageContributionId refers to 'typicalFlightDamageContributionAnalysis' instruction.-->
+		<typicalFlightDamageContributionId>17</typicalFlightDamageContributionId>
+		<!--Path to save typical flight damage contribution plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/TF_DamageContributions.png</outputPath>
+	</plotTypicalFlightDamageContribution>
+	<saveTypicalFlightDamageContributions>
+		<id>19</id>
+		<!--The typicalFlightDamageContributionId refers to 'typicalFlightDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
+		<typicalFlightDamageContributionId>17</typicalFlightDamageContributionId>
+		<!--Path to save typical flight damage contributions. File name must end with .xls.-->
+		<outputPath>/Users/aurora/Temporary/TF_DamageContributions.xls</outputPath>
+	</saveTypicalFlightDamageContributions>
 </equinoxInput>

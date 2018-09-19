@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -44,6 +46,10 @@ import equinox.data.ui.PieLabelGenerator;
 import equinox.plugin.FileType;
 import equinox.process.PlotFlightDamageContributionsProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.PostProcessingTask;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for save typical flight damage contribution plot task.
@@ -52,19 +58,60 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date 1 Nov 2016
  * @time 18:36:43
  */
-public class SaveFlightDamageContributionPlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveFlightDamageContributionPlot extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, PostProcessingTask, SingleInputTask<FlightDamageContributions>, ParameterizedTaskOwner<Path> {
 
 	/** Damage contributions item. */
-	private final FlightDamageContributions contributions_;
+	private FlightDamageContributions contributions_;
+
+	/** Output file. */
+	private Path outputFile_;
+
+	/** True to save the plot to only database. */
+	private boolean saveToDatabase_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates save typical flight damage contribution plot task.
 	 *
 	 * @param contributions
-	 *            Damage contribution.
+	 *            Damage contribution. Can be null for automatic execution.
+	 * @param saveToDatabase
+	 *            True to save the plot to only database.
+	 * @param outputFile
+	 *            Output file. Can be null if saving to database.
 	 */
-	public SaveFlightDamageContributionPlot(FlightDamageContributions contributions) {
+	public SaveFlightDamageContributionPlot(FlightDamageContributions contributions, boolean saveToDatabase, Path outputFile) {
 		contributions_ = contributions;
+		outputFile_ = outputFile;
+		saveToDatabase_ = saveToDatabase;
+	}
+
+	@Override
+	public void setAutomaticInput(FlightDamageContributions input) {
+		contributions_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -74,11 +121,11 @@ public class SaveFlightDamageContributionPlot extends TemporaryFileCreatingTask<
 
 	@Override
 	public String getTaskTitle() {
-		return "Save typical flight damage contributions plot for '" + contributions_.getName() + "'";
+		return "Save typical flight damage contributions plot";
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// update info
 		updateMessage("Saving typical flight damage contributions plot...");
@@ -87,14 +134,69 @@ public class SaveFlightDamageContributionPlot extends TemporaryFileCreatingTask<
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
 			// plot
-			Path file = plot(connection);
+			outputFile_ = plot(connection);
 
 			// save plot
-			savePlot(connection, file);
+			if (saveToDatabase_) {
+				savePlot(connection, outputFile_);
+			}
 		}
 
 		// return
-		return null;
+		return outputFile_;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output file
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -112,7 +214,7 @@ public class SaveFlightDamageContributionPlot extends TemporaryFileCreatingTask<
 		updateMessage("Plotting typical flight damage contributions...");
 
 		// create path to output image
-		Path output = getWorkingDirectory().resolve("damageContributions.png");
+		Path output = outputFile_ == null ? getWorkingDirectory().resolve("damageContributions.png") : outputFile_;
 
 		// set shadow theme
 		ChartFactory.setChartTheme(new StandardChartTheme("JFree/Shadow", true));

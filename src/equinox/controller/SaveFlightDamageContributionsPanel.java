@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
@@ -84,7 +85,7 @@ public class SaveFlightDamageContributionsPanel implements InternalInputSubPanel
 	private boolean isSave_ = true;
 
 	/** Contribution names. */
-	private ArrayList<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
+	private List<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
 
 	@FXML
 	private VBox root_;
@@ -158,8 +159,7 @@ public class SaveFlightDamageContributionsPanel implements InternalInputSubPanel
 
 		// get contribution list
 		ActiveTasksPanel tm = owner_.getOwner().getActiveTasksPanel();
-		tm.runTaskInParallel(new GetFlightContributionNames(this, contributions, true));
-		tm.runTaskInParallel(new GetFlightContributionNames(this, contributions, false));
+		tm.runTaskInParallel(new GetFlightContributionNames(this, contributions));
 	}
 
 	@Override
@@ -200,13 +200,9 @@ public class SaveFlightDamageContributionsPanel implements InternalInputSubPanel
 	}
 
 	@Override
-	public void setFlightContributions(ArrayList<String> contributions, boolean withOccurrences) {
-		if (withOccurrences) {
-			tfNamesWithOccurrences_ = contributions;
-		}
-		else {
-			tfNamesWithoutOccurrences_ = contributions;
-		}
+	public void setFlightContributions(List<String> withOccurrences, List<String> withoutOccurrences) {
+		tfNamesWithOccurrences_ = withOccurrences;
+		tfNamesWithoutOccurrences_ = withoutOccurrences;
 	}
 
 	@FXML
@@ -310,7 +306,7 @@ public class SaveFlightDamageContributionsPanel implements InternalInputSubPanel
 		else {
 
 			// get selected damage contributions
-			ArrayList<FlightDamageContributions> contributions = new ArrayList<>();
+			ArrayList<SpectrumItem> contributions = new ArrayList<>();
 			for (TreeItem<String> item : selected) {
 				contributions.add((FlightDamageContributions) item);
 			}
@@ -417,7 +413,7 @@ public class SaveFlightDamageContributionsPanel implements InternalInputSubPanel
 		else {
 
 			// get selected damage contributions
-			ArrayList<FlightDamageContributions> contributions = new ArrayList<>();
+			ArrayList<SpectrumItem> contributions = new ArrayList<>();
 			for (TreeItem<String> item : selected) {
 				contributions.add((FlightDamageContributions) item);
 			}

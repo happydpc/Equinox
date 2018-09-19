@@ -17,6 +17,7 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.controlsfx.control.ToggleSwitch;
 
@@ -40,7 +41,7 @@ public class SerializableSaveBucketFlightDamageContributions implements Serializ
 	private static final long serialVersionUID = 1L;
 
 	/** STF file buckets. */
-	private final ArrayList<SerializableSpectrumItem> buckets_;
+	private final List<SerializableSpectrumItem> buckets_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -49,7 +50,7 @@ public class SerializableSaveBucketFlightDamageContributions implements Serializ
 	private final String[] optionNames_;
 
 	/** Contribution names. */
-	private final ArrayList<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
+	private final List<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
 
 	/** Output file. */
 	private final File output_;
@@ -68,10 +69,11 @@ public class SerializableSaveBucketFlightDamageContributions implements Serializ
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveBucketFlightDamageContributions(ArrayList<STFFileBucket> buckets, ArrayList<String> tfNamesWithOccurrences, ArrayList<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
+	public SerializableSaveBucketFlightDamageContributions(List<STFFileBucket> buckets, List<String> tfNamesWithOccurrences, List<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
 		buckets_ = new ArrayList<>();
-		for (SpectrumItem item : buckets)
+		for (SpectrumItem item : buckets) {
 			buckets_.add(new SerializableSpectrumItem(item));
+		}
 		tfNamesWithOccurrences_ = tfNamesWithOccurrences;
 		tfNamesWithoutOccurrences_ = tfNamesWithoutOccurrences;
 		options_ = new boolean[options.length];

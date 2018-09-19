@@ -20,12 +20,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
+import equinox.data.Triple;
 import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.utility.AlphanumComparator;
 
 /**
@@ -35,31 +41,67 @@ import equinox.utility.AlphanumComparator;
  * @date 27 Oct 2016
  * @time 13:59:40
  */
-public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<String>> implements ShortRunningTask {
+public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<SpectrumItem>, List<String>, List<String>>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Triple<List<SpectrumItem>, List<String>, List<String>>> {
 
 	/** Requesting panel. */
 	private final FlightDamageContributionRequestingPanel panel_;
 
-	/** Spectrum items. This can be either flight damage contributions or STF file buckets. */
-	private final ArrayList<SpectrumItem> items_;
+	/** Spectrum items. This can be either damage contributions or STF file buckets. */
+	private List<SpectrumItem> items_;
 
-	/** True if flight occurrences should be considered. */
-	private final boolean withOccurrences_;
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates get contribution names task.
 	 *
 	 * @param panel
-	 *            Requesting panel.
+	 *            Requesting panel. This can be null for automatic execution.
 	 * @param items
-	 *            Spectrum items. This can be either flight damage contributions or STF file buckets.
-	 * @param withOccurrences
-	 *            True if flight occurrences should be considered.
+	 *            Spectrum items. This can be either flight damage contributions or STF file buckets. This can be null for automatic execution.
 	 */
-	public GetFlightContributionNames(FlightDamageContributionRequestingPanel panel, ArrayList<SpectrumItem> items, boolean withOccurrences) {
+	public GetFlightContributionNames(FlightDamageContributionRequestingPanel panel, List<SpectrumItem> items) {
 		panel_ = panel;
-		items_ = items;
-		withOccurrences_ = withOccurrences;
+		items_ = items == null ? Collections.synchronizedList(new ArrayList<>()) : items;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -73,17 +115,29 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 	}
 
 	@Override
-	protected ArrayList<String> call() throws Exception {
+	protected Triple<List<SpectrumItem>, List<String>, List<String>> call() throws Exception {
 
 		// update progress info
 		updateTitle("Retrieving flight damage contribution names...");
 
+		// create output
+		Triple<List<SpectrumItem>, List<String>, List<String>> output = new Triple<>();
+		output.setElement1(items_);
+
 		// STF file buckets
-		if (items_.get(0) instanceof STFFileBucket)
-			return getFromBuckets();
+		if (items_.get(0) instanceof STFFileBucket) {
+			output.setElement2(getFromBuckets(true));
+			output.setElement3(getFromBuckets(false));
+		}
 
 		// contributions
-		return getFromContributions();
+		else {
+			output.setElement2(getFromContributions(true));
+			output.setElement3(getFromContributions(false));
+		}
+
+		// return output
+		return output;
 	}
 
 	@Override
@@ -94,7 +148,19 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 
 		// set file info
 		try {
-			panel_.setFlightContributions(get(), withOccurrences_);
+
+			// get output
+			Triple<List<SpectrumItem>, List<String>, List<String>> output = get();
+
+			// user initiated task
+			if (automaticTasks_ == null) {
+				panel_.setFlightContributions(output.getElement2(), output.getElement3());
+			}
+
+			// automatic task
+			else {
+				parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
@@ -103,14 +169,36 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 		}
 	}
 
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
 	/**
 	 * Gets contribution names from input damage contributions.
 	 *
+	 * @param withOccurrences
+	 *            True if contributions with occurrences shall be returned.
 	 * @return Contribution names.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private ArrayList<String> getFromContributions() throws Exception {
+	private List<String> getFromContributions(boolean withOccurrences) throws Exception {
 
 		// create lists
 		ArrayList<String> names = new ArrayList<>(), names1 = new ArrayList<>(), toBeRemoved = new ArrayList<>();
@@ -119,7 +207,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
 
 			// prepare statement
-			String tableName = withOccurrences_ ? "flight_dam_contribution_with_occurrences" : "flight_dam_contribution_without_occurrences";
+			String tableName = withOccurrences ? "flight_dam_contribution_with_occurrences" : "flight_dam_contribution_without_occurrences";
 			String sql = "select flight_name from " + tableName + " where id = ? order by flight_name";
 			try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
@@ -167,11 +255,13 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 	/**
 	 * Gets contribution names from input STF file buckets.
 	 *
+	 * @param withOccurrences
+	 *            True if contributions with occurrences shall be returned.
 	 * @return Contribution names.
 	 * @throws Exception
 	 *             If exception occurs during process.
 	 */
-	private ArrayList<String> getFromBuckets() throws Exception {
+	private List<String> getFromBuckets(boolean withOccurrences) throws Exception {
 
 		// create lists
 		boolean firstNamesSet = false;
@@ -189,7 +279,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 				try (PreparedStatement getContributionIDs = connection.prepareStatement(sql)) {
 
 					// prepare statement to get contribution names
-					String tableName = withOccurrences_ ? "flight_dam_contribution_with_occurrences" : "flight_dam_contribution_without_occurrences";
+					String tableName = withOccurrences ? "flight_dam_contribution_with_occurrences" : "flight_dam_contribution_without_occurrences";
 					sql = "select flight_name from " + tableName + " where id = ? order by flight_name";
 					try (PreparedStatement getContributionNames = connection.prepareStatement(sql)) {
 
@@ -275,11 +365,11 @@ public class GetFlightContributionNames extends InternalEquinoxTask<ArrayList<St
 		/**
 		 * Sets contributions to this panel.
 		 *
-		 * @param contributions
-		 *            Contributions to be set.
 		 * @param withOccurrences
-		 *            True if flight occurrences should be considered.
+		 *            Contributions with flight occurrences to be set.
+		 * @param withoutOccurrences
+		 *            Contributions with flight occurrences to be set.
 		 */
-		void setFlightContributions(ArrayList<String> contributions, boolean withOccurrences);
+		void setFlightContributions(List<String> withOccurrences, List<String> withoutOccurrences);
 	}
 }

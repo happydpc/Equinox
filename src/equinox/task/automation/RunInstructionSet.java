@@ -45,6 +45,7 @@ import equinox.data.MissionParameter;
 import equinox.data.Pair;
 import equinox.data.Settings;
 import equinox.data.fileType.ExternalStressSequence;
+import equinox.data.fileType.FlightDamageContributions;
 import equinox.data.fileType.LoadcaseDamageContributions;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
@@ -61,6 +62,7 @@ import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.data.input.ExternalStressSequenceComparisonInput;
 import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparisonCriteria;
+import equinox.data.input.FastEquivalentStressInput;
 import equinox.data.input.FlightComparisonInput;
 import equinox.data.input.GenerateStressSequenceInput;
 import equinox.data.input.HistogramInput;
@@ -102,6 +104,7 @@ import equinox.task.EquivalentStressAnalysis;
 import equinox.task.ExportContributions;
 import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
+import equinox.task.FastGenerateStressSequence;
 import equinox.task.GenerateExternalStatistics;
 import equinox.task.GenerateLFsWithMissionParameters;
 import equinox.task.GenerateLifeFactors;
@@ -110,6 +113,7 @@ import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GenerateStressSequence;
 import equinox.task.GetContributionNames;
 import equinox.task.GetExternalTypicalFlight;
+import equinox.task.GetFlightContributionNames;
 import equinox.task.GetSTFInfo2;
 import equinox.task.GetSTFInfo3;
 import equinox.task.GetSpectrumEditInfo;
@@ -135,6 +139,8 @@ import equinox.task.SaveEquivalentStresses;
 import equinox.task.SaveExternalStressSequenceAsSIGMA;
 import equinox.task.SaveExternalStressSequenceAsSTH;
 import equinox.task.SaveFLS;
+import equinox.task.SaveFlightDamageContributionPlot;
+import equinox.task.SaveFlightDamageContributions;
 import equinox.task.SaveLifeFactors;
 import equinox.task.SaveLoadcaseDamageContributionComparisonPlot;
 import equinox.task.SaveLoadcaseDamageContributionPlot;
@@ -401,6 +407,21 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// plot loadcase damage contribution comparison
 		if (equinoxInput.getChild("plotLoadcaseDamageContributionComparison") != null) {
 			plotLoadcaseDamageContributionComparison(equinoxInput, tasks);
+		}
+
+		// typical flight damage contribution analysis
+		if (equinoxInput.getChild("typicalFlightDamageContributionAnalysis") != null) {
+			typicalFlightDamageContributionAnalysis(equinoxInput, tasks);
+		}
+
+		// plot typical flight damage contribution
+		if (equinoxInput.getChild("plotTypicalFlightDamageContribution") != null) {
+			plotTypicalFlightDamageContribution(equinoxInput, tasks);
+		}
+
+		// save typical flight damage contributions
+		if (equinoxInput.getChild("saveTypicalFlightDamageContributions") != null) {
+			saveTypicalFlightDamageContributions(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -1068,6 +1089,103 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save typical flight damage contributions tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveTypicalFlightDamageContributions(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save typical flight damage contributions tasks...");
+
+		// loop over save typical flight damage contributions elements
+		for (Element saveTypicalFlightDamageContributions : equinoxInput.getChildren("saveTypicalFlightDamageContributions")) {
+
+			// get id and output path
+			String id = saveTypicalFlightDamageContributions.getChildTextNormalize("id");
+			Path outputPath = Paths.get(saveTypicalFlightDamageContributions.getChildTextNormalize("outputPath"));
+
+			// create default options
+			BooleanProperty[] options = new BooleanProperty[10];
+			for (int i = 0; i < options.length; i++) {
+				options[i] = new SimpleBooleanProperty(false);
+			}
+			options[SaveFlightDamageContributions.PP_NAME].set(true);
+			options[SaveFlightDamageContributions.MISSION].set(true);
+
+			// read options
+			if (saveTypicalFlightDamageContributions.getChild("options") != null) {
+
+				// get element
+				Element optionsElement = saveTypicalFlightDamageContributions.getChild("options");
+
+				// set options
+				if (optionsElement.getChild("materialName") != null) {
+					options[SaveFlightDamageContributions.MAT_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialName")));
+				}
+				if (optionsElement.getChild("materialSlope") != null) {
+					options[SaveFlightDamageContributions.FAT_P].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialSlope")));
+				}
+				if (optionsElement.getChild("materialConstant") != null) {
+					options[SaveFlightDamageContributions.FAT_Q].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialConstant")));
+				}
+				if (optionsElement.getChild("pilotPointName") != null) {
+					options[SaveFlightDamageContributions.PP_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("pilotPointName")));
+				}
+				if (optionsElement.getChild("elementId") != null) {
+					options[SaveFlightDamageContributions.EID].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("elementId")));
+				}
+				if (optionsElement.getChild("spectrumName") != null) {
+					options[SaveFlightDamageContributions.SPEC_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("spectrumName")));
+				}
+				if (optionsElement.getChild("aircraftProgram") != null) {
+					options[SaveFlightDamageContributions.PROGRAM].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftProgram")));
+				}
+				if (optionsElement.getChild("aircraftSection") != null) {
+					options[SaveFlightDamageContributions.SECTION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftSection")));
+				}
+				if (optionsElement.getChild("fatigueMission") != null) {
+					options[SaveFlightDamageContributions.MISSION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("fatigueMission")));
+				}
+				if (optionsElement.getChild("omissionLevel") != null) {
+					options[SaveFlightDamageContributions.OMISSION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("omissionLevel")));
+				}
+			}
+
+			// create tasks
+			GetFlightContributionNames getNamesTask = new GetFlightContributionNames(null, null);
+			SaveFlightDamageContributions saveTask = new SaveFlightDamageContributions(null, null, null, options, outputPath.toFile());
+			getNamesTask.addParameterizedTask(id, saveTask);
+			getNamesTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> typicalFlightDamageContributionIds = saveTypicalFlightDamageContributions.getChildren("typicalFlightDamageContributionId");
+			getNamesTask.setInputThreshold(typicalFlightDamageContributionIds.size());
+
+			// loop over typical flight damage contribution ids
+			for (Element typicalFlightDamageContributionIdElement : typicalFlightDamageContributionIds) {
+
+				// get typical flight damage contribution id
+				String typicalFlightDamageContributionId = typicalFlightDamageContributionIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(typicalFlightDamageContributionId).getTask();
+				parentTask.addParameterizedTask(id, getNamesTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put("ownerOf_" + id, new InstructedTask(getNamesTask, true));
+			tasks.put(id, new InstructedTask(saveTask, true));
 		}
 	}
 
@@ -2572,6 +2690,42 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	}
 
 	/**
+	 * Creates plot typical flight damage contribution tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotTypicalFlightDamageContribution(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating plot typical flight damage contribution tasks...");
+
+		// loop over plot typical flight damage contribution elements
+		for (Element plotTypicalFlightDamageContribution : equinoxInput.getChildren("plotTypicalFlightDamageContribution")) {
+
+			// get inputs
+			String id = plotTypicalFlightDamageContribution.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotTypicalFlightDamageContribution.getChildTextNormalize("outputPath"));
+
+			// create task
+			SaveFlightDamageContributionPlot task = new SaveFlightDamageContributionPlot(null, false, outputPath);
+
+			// connect to parent task
+			String typicalFlightDamageContributionId = plotTypicalFlightDamageContribution.getChildTextNormalize("typicalFlightDamageContributionId");
+			ParameterizedTaskOwner<FlightDamageContributions> parentTask = (ParameterizedTaskOwner<FlightDamageContributions>) tasks.get(typicalFlightDamageContributionId).getTask();
+			parentTask.addParameterizedTask(id, task);
+			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
 	 * Creates plot loadcase damage contribution tasks.
 	 *
 	 * @param equinoxInput
@@ -2604,6 +2758,95 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates typical flight damage contribution analysis tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void typicalFlightDamageContributionAnalysis(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating typical flight damage contribution analysis tasks...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+		IsamiSubVersion isamiSubVersion = (IsamiSubVersion) settings.getValue(Settings.ISAMI_SUB_VERSION);
+		boolean applyCompression = (boolean) settings.getValue(Settings.APPLY_COMPRESSION);
+
+		// input mapping
+		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
+		HashMap<Path, EquivalentStressInput> equivalentStressAnalysisInputs = new HashMap<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over typical flight damage contribution analysis elements
+			for (Element typicalFlightDamageContributionAnalysis : equinoxInput.getChildren("typicalFlightDamageContributionAnalysis")) {
+
+				// get inputs
+				String id = typicalFlightDamageContributionAnalysis.getChildTextNormalize("id");
+				String stfId = typicalFlightDamageContributionAnalysis.getChildTextNormalize("stfId");
+				Path generateStressSequenceInputPath = Paths.get(typicalFlightDamageContributionAnalysis.getChildTextNormalize("generateStressSequenceInputPath"));
+				Path equivalentStressAnalysisInputPath = Paths.get(typicalFlightDamageContributionAnalysis.getChildTextNormalize("equivalentStressAnalysisInputPath"));
+
+				// get generate stress sequence input parameters
+				GenerateStressSequenceInput generateStressSequenceInput = generateStressSequenceInputs.get(generateStressSequenceInputPath);
+				if (generateStressSequenceInput == null) {
+					generateStressSequenceInput = new ReadGenerateStressSequenceInput(this, generateStressSequenceInputPath).start(null);
+					generateStressSequenceInputs.put(generateStressSequenceInputPath, generateStressSequenceInput);
+				}
+
+				// get equivalent stress input parameters
+				EquivalentStressInput equivalentStressAnalysisInput = equivalentStressAnalysisInputs.get(equivalentStressAnalysisInputPath);
+				if (equivalentStressAnalysisInput == null) {
+					equivalentStressAnalysisInput = new ReadEquivalentStressAnalysisInput(this, equivalentStressAnalysisInputPath, isamiVersion).start(connection);
+					equivalentStressAnalysisInputs.put(equivalentStressAnalysisInputPath, equivalentStressAnalysisInput);
+				}
+
+				// create fast equivalent stress input
+				FastEquivalentStressInput input = new FastEquivalentStressInput();
+				input.setApplyOmission(equivalentStressAnalysisInput.applyOmission());
+				input.setDPLoadcase(generateStressSequenceInput.getDPLoadcase());
+				input.setDTInterpolation(generateStressSequenceInput.getDTInterpolation());
+				input.setDTLoadcaseInf(generateStressSequenceInput.getDTLoadcaseInf());
+				input.setDTLoadcaseSup(generateStressSequenceInput.getDTLoadcaseSup());
+				input.setLoadcaseFactors(generateStressSequenceInput.getLoadcaseFactors());
+				input.setOmissionLevel(equivalentStressAnalysisInput.getOmissionLevel());
+				input.setReferenceDP(generateStressSequenceInput.getReferenceDP());
+				input.setReferenceDTInf(generateStressSequenceInput.getReferenceDTInf());
+				input.setReferenceDTSup(generateStressSequenceInput.getReferenceDTSup());
+				input.setRemoveNegativeStresses(equivalentStressAnalysisInput.removeNegativeStresses());
+				input.setRotationAngle(generateStressSequenceInput.getRotationAngle());
+				input.setSegmentFactors(generateStressSequenceInput.getSegmentFactors());
+				input.setStressComponent(generateStressSequenceInput.getStressComponent());
+				input.setStressModifier(GenerateStressSequenceInput.ONEG, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.ONEG), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.ONEG));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAP, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAP), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAP));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAT));
+				input.setStressModifier(GenerateStressSequenceInput.INCREMENT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.INCREMENT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.INCREMENT));
+
+				// create task
+				FastGenerateStressSequence task = new FastGenerateStressSequence(null, input, Arrays.asList(equivalentStressAnalysisInput.getMaterial()), true, engine);
+				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
+				task.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// add to parent task
+				ParameterizedTaskOwner<STFFile> parentTask = (ParameterizedTaskOwner<STFFile>) tasks.get(stfId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put generate stress sequence task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
 		}
 	}
 

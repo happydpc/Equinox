@@ -17,10 +17,10 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.controlsfx.control.ToggleSwitch;
 
-import equinox.data.fileType.FlightDamageContributions;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.SaveFlightDamageContributions;
 import equinox.task.SerializableTask;
@@ -40,7 +40,7 @@ public class SerializableSaveFlightDamageContributions implements SerializableTa
 	private static final long serialVersionUID = 1L;
 
 	/** Damage contributions. */
-	private final ArrayList<SerializableSpectrumItem> contributions_;
+	private final List<SerializableSpectrumItem> contributions_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -49,7 +49,7 @@ public class SerializableSaveFlightDamageContributions implements SerializableTa
 	private final String[] optionNames_;
 
 	/** Contribution names. */
-	private final ArrayList<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
+	private final List<String> tfNamesWithOccurrences_, tfNamesWithoutOccurrences_;
 
 	/** Output file. */
 	private final File output_;
@@ -68,10 +68,11 @@ public class SerializableSaveFlightDamageContributions implements SerializableTa
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveFlightDamageContributions(ArrayList<FlightDamageContributions> contributions, ArrayList<String> tfNamesWithOccurrences, ArrayList<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
+	public SerializableSaveFlightDamageContributions(List<SpectrumItem> contributions, List<String> tfNamesWithOccurrences, List<String> tfNamesWithoutOccurrences, BooleanProperty[] options, File output) {
 		contributions_ = new ArrayList<>();
-		for (SpectrumItem item : contributions)
+		for (SpectrumItem item : contributions) {
 			contributions_.add(new SerializableSpectrumItem(item));
+		}
 		tfNamesWithOccurrences_ = tfNamesWithOccurrences;
 		tfNamesWithoutOccurrences_ = tfNamesWithoutOccurrences;
 		options_ = new boolean[options.length];
@@ -87,7 +88,7 @@ public class SerializableSaveFlightDamageContributions implements SerializableTa
 	public SaveFlightDamageContributions getTask(TreeItem<String> fileTreeRoot) {
 
 		// get contributions
-		ArrayList<FlightDamageContributions> contributions = new ArrayList<>();
+		ArrayList<SpectrumItem> contributions = new ArrayList<>();
 		for (SerializableSpectrumItem item : contributions_) {
 
 			// get contribution
@@ -99,7 +100,7 @@ public class SerializableSaveFlightDamageContributions implements SerializableTa
 				return null;
 
 			// add to contributions
-			contributions.add((FlightDamageContributions) result[0]);
+			contributions.add(result[0]);
 		}
 
 		// get options

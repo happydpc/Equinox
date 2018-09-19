@@ -26,6 +26,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
@@ -36,6 +40,7 @@ import equinox.data.IsamiVersion;
 import equinox.data.Settings;
 import equinox.data.fileType.STFFile;
 import equinox.data.fileType.Spectrum;
+import equinox.data.fileType.SpectrumItem;
 import equinox.data.input.FastEquivalentStressInput;
 import equinox.dataServer.remote.data.Material;
 import equinox.plugin.FileType;
@@ -45,6 +50,8 @@ import equinox.process.FastGenerateSth;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableFastGenerateStressSequence;
 import equinox.utility.Utility;
@@ -56,7 +63,7 @@ import equinox.utility.Utility;
  * @date Jun 14, 2016
  * @time 9:21:27 PM
  */
-public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, SingleInputTask<STFFile> {
+public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<SpectrumItem> {
 
 	/** The owner STF file. */
 	private STFFile stfFile_;
@@ -74,7 +81,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	private final FastEquivalentStressInput input_;
 
 	/** Materials. */
-	private final ArrayList<Material> materials_;
+	private final List<Material> materials_;
 
 	/** True if typical flight damage contribution analysis is requested. */
 	private final boolean isFlightDamageContributionAnalysis_;
@@ -94,6 +101,12 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	/** True compression should be applied in propagation analysis. */
 	private boolean applyCompression_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<SpectrumItem>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates fast generate stress sequence task.
 	 *
@@ -108,7 +121,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public FastGenerateStressSequence(STFFile stfFile, FastEquivalentStressInput input, ArrayList<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
+	public FastGenerateStressSequence(STFFile stfFile, FastEquivalentStressInput input, List<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
 		stfFile_ = stfFile;
 		input_ = input;
 		materials_ = materials;
@@ -140,7 +153,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	 * @param analysisEngine
 	 *            Analysis engine.
 	 */
-	public FastGenerateStressSequence(int stfID, int stressTableID, String stfName, Spectrum spectrum, FastEquivalentStressInput input, ArrayList<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
+	public FastGenerateStressSequence(int stfID, int stressTableID, String stfName, Spectrum spectrum, FastEquivalentStressInput input, List<Material> materials, boolean isFlightDamageContributionAnalysis, AnalysisEngine analysisEngine) {
 		stfID_ = stfID;
 		stressTableID_ = stressTableID;
 		stfName_ = stfName;
@@ -176,9 +189,26 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	}
 
 	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumItem> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<SpectrumItem>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
+	@Override
 	public String getTaskTitle() {
-		String name = stfFile_ == null ? stfName_ : stfFile_.getName();
-		return "Generate stress sequence for '" + name + "'";
+		return "Generate stress sequence";
 	}
 
 	@Override
@@ -261,7 +291,24 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 			ActiveTasksPanel tm = taskPanel_.getOwner();
 			ArrayList<FastEquivalentStressAnalysis> tasks = get();
 			for (FastEquivalentStressAnalysis task : tasks) {
-				tm.runTaskInParallel(task);
+
+				// add automatic tasks
+				if (automaticTasks_ != null) {
+					Iterator<Entry<String, ParameterizedTask<SpectrumItem>>> iterator = automaticTasks_.entrySet().iterator();
+					while (iterator.hasNext()) {
+						Entry<String, ParameterizedTask<SpectrumItem>> entry = iterator.next();
+						task.addParameterizedTask(entry.getKey(), entry.getValue());
+						task.setAutomaticTaskExecutionMode(executeAutomaticTasksInParallel_);
+					}
+				}
+
+				// run task
+				if (executeAutomaticTasksInParallel_) {
+					tm.runTaskInParallel(task);
+				}
+				else {
+					tm.runTaskSequentially(task);
+				}
 			}
 		}
 
@@ -281,6 +328,9 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -293,6 +343,9 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		if (omission_ != null && omission_.isAlive()) {
 			omission_.destroyForcibly();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,6 +58,8 @@ import equinox.process.SafeFastESA;
 import equinox.process.SafeFlightDCA;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for fast equivalent stress analysis task.
@@ -65,7 +68,7 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date Jun 15, 2016
  * @time 3:27:36 PM
  */
-public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask {
+public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, ParameterizedTaskOwner<SpectrumItem> {
 
 	/** Maximum number of typical flights to store damage contributions. */
 	private static final int MAX_TYPICAL_FLIGHT_DAMAGE_CONTRIBUTIONS = 5;
@@ -111,6 +114,12 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 
 	/** Equivalent stress analysis process. */
 	private ESAProcess<?> analysisProcess_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<SpectrumItem>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates fast equivalent stress analysis task.
@@ -216,6 +225,24 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		return this;
 	}
 
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumItem> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<SpectrumItem>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
 	/**
 	 * Sets stress sequence file. This can be either SIGMA or STH file.
 	 *
@@ -302,7 +329,12 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 
 			// plot and save contributions
 			if (item instanceof FlightDamageContributions) {
-				taskPanel_.getOwner().runTaskInParallel(new SaveFlightDamageContributionPlot((FlightDamageContributions) item));
+				taskPanel_.getOwner().runTaskSequentially(new SaveFlightDamageContributionPlot((FlightDamageContributions) item, true, null));
+			}
+
+			// manage automatic tasks
+			if (automaticTasks_ != null) {
+				parameterizedTaskOwnerSucceeded(item, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -322,6 +354,9 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		if (analysisProcess_ != null) {
 			analysisProcess_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -334,6 +369,9 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		if (analysisProcess_ != null) {
 			analysisProcess_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
