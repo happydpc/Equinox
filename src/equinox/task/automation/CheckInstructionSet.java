@@ -333,6 +333,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// damage angle analysis
+		if (equinoxInput.getChild("damageAngleAnalysis") != null) {
+			if (!checkDamageAngleAnalysis(equinoxInput))
+				return false;
+		}
+
 		// plot level crossing
 		if (equinoxInput.getChild("plotLevelCrossing") != null) {
 			if (!checkPlotLevelCrossing(equinoxInput))
@@ -2148,6 +2154,98 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					if (!new CheckLoadcaseDamageContributionAnalysisInput(this, Paths.get(loadcaseDamageContributionAnalysisInputPath), isamiVersion).start(connection))
 						return false;
 				}
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>damageAngleAnalysis</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>damageAngleAnalysis</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkDamageAngleAnalysis(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking damageAngleAnalysis elements...");
+
+		// get ISAMI version
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// create list of checked inputs
+		ArrayList<String> checkedInputs = new ArrayList<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over damage angle analysis elements
+			for (Element damageAngleAnalysis : equinoxInput.getChildren("damageAngleAnalysis")) {
+
+				// no id
+				if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, damageAngleAnalysis))
+					return false;
+
+				// check STF file id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, damageAngleAnalysis, "stfId", "addStf"))
+					return false;
+
+				// check generate stress sequence input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, damageAngleAnalysis, "generateStressSequenceInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get generate stress sequence input path
+				String generateStressSequenceInputPath = damageAngleAnalysis.getChild("generateStressSequenceInputPath").getTextNormalize();
+
+				// not checked
+				if (!checkedInputs.contains(generateStressSequenceInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(generateStressSequenceInputPath);
+
+					// check generate stress sequence input
+					if (!new CheckGenerateStressSequenceInput(this, Paths.get(generateStressSequenceInputPath)).start(null))
+						return false;
+				}
+
+				// check equivalent stress analysis input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, damageAngleAnalysis, "equivalentStressAnalysisInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get equivalent stress analysis input path
+				String equivalentStressAnalysisInputPath = damageAngleAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize();
+
+				// not checked
+				if (!checkedInputs.contains(equivalentStressAnalysisInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(equivalentStressAnalysisInputPath);
+
+					// check equivalent stress analysis input
+					if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(equivalentStressAnalysisInputPath), isamiVersion).start(connection))
+						return false;
+				}
+
+				// check iteration settings
+				if (damageAngleAnalysis.getChild("iterationSettings") != null) {
+					Element iterationSettings = damageAngleAnalysis.getChild("iterationSettings");
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, iterationSettings, "startAngle", false, 0, 180))
+						return false;
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, iterationSettings, "endAngle", false, 0, 180))
+						return false;
+					if (!XMLUtilities.checkIntegerValue(this, inputFile, iterationSettings, "incrementAngle", false, 0, 180))
+						return false;
+				}
+
+				// check generate maxdam data
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, damageAngleAnalysis, "generateMaxdamData", true))
+					return false;
 			}
 		}
 

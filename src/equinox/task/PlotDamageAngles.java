@@ -16,6 +16,11 @@
 package equinox.task;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.jfree.data.category.CategoryDataset;
@@ -24,9 +29,14 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import equinox.Equinox;
 import equinox.controller.StatisticsViewPanel;
 import equinox.controller.ViewPanel;
+import equinox.data.Pair;
+import equinox.data.StatisticsPlotAttributes;
 import equinox.data.fileType.DamageAngle;
 import equinox.process.PlotDamageAnglesProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.MultipleInputTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
 
 /**
  * Class for plot damage angles task.
@@ -35,7 +45,7 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Apr 7, 2016
  * @time 9:31:32 AM
  */
-public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask {
+public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<DamageAngle>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/**
 	 * Enumeration for results ordering.
@@ -46,8 +56,8 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	 */
 	public enum ResultOrdering {
 
-		/** Ordering. */
-		ANGLE("Order by angles"), DESCENDING("Order by descending eq. stresses"), ASCENDING("Order by ascending eq. stresses");
+	/** Ordering. */
+	ANGLE("Order by angles"), DESCENDING("Order by descending eq. stresses"), ASCENDING("Order by ascending eq. stresses");
 
 		/** Name of ordering. */
 		private final String name_;
@@ -72,25 +82,67 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	private final boolean showlabels_;
 
 	/** Damage angles. */
-	private final DamageAngle[] damageAngles_;
+	private final List<DamageAngle> damageAngles_;
 
 	/** Results ordering. */
 	private final ResultOrdering order_;
+
+	/** Input threshold. Once the threshold is reached, this task will be executed. */
+	private volatile int inputThreshold_ = 0;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates plot damage angles task.
 	 *
 	 * @param damageAngles
-	 *            Damage angles.
+	 *            Damage angles. Can be null for automatic execution.
 	 * @param order
 	 *            Results ordering.
 	 * @param showlabels
 	 *            True to show labels.
 	 */
 	public PlotDamageAngles(DamageAngle[] damageAngles, ResultOrdering order, boolean showlabels) {
-		damageAngles_ = damageAngles;
+		damageAngles_ = damageAngles == null ? Collections.synchronizedList(new ArrayList<>()) : Arrays.asList(damageAngles);
 		order_ = order;
 		showlabels_ = showlabels;
+	}
+
+	@Override
+	synchronized public void setInputThreshold(int inputThreshold) {
+		inputThreshold_ = inputThreshold;
+	}
+
+	@Override
+	synchronized public void addAutomaticInput(ParameterizedTaskOwner<DamageAngle> task, DamageAngle input, boolean executeInParallel) {
+		automaticInputAdded(task, input, executeInParallel, damageAngles_, inputThreshold_);
+	}
+
+	@Override
+	synchronized public void inputFailed(ParameterizedTaskOwner<DamageAngle> task, boolean executeInParallel) {
+		inputThreshold_ = automaticInputFailed(task, executeInParallel, damageAngles_, inputThreshold_);
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -132,25 +184,65 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 
 			// get dataset
 			CategoryDataset dataset = get();
-
-			// get column plot panel
-			StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-
-			// setup plot labels
 			String title = "Damage Angles";
 			String xAxisLabel = "Angle (in degrees)";
 			String yAxisLabel = "Fatigue Equivalent Stress";
+			boolean legendVisible = damageAngles_.size() > 1;
 
-			// set chart data to panel
-			panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, damageAngles_.length > 1, showlabels_, false);
+			// user initiated task
+			if (automaticTasks_ == null) {
 
-			// show column chart plot panel
-			taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+				// get column plot panel
+				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+
+				// set chart data to panel
+				panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, legendVisible, showlabels_, false);
+
+				// show column chart plot panel
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
+			}
+
+			// automatic task
+			else {
+
+				// create plot attributes
+				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
+				plotAttributes.setLabelsVisible(showlabels_);
+				plotAttributes.setLayered(false);
+				plotAttributes.setLegendVisible(legendVisible);
+				plotAttributes.setSubTitle(null);
+				plotAttributes.setTitle(title);
+				plotAttributes.setXAxisLabel(xAxisLabel);
+				plotAttributes.setYAxisLabel(yAxisLabel);
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

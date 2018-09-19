@@ -19,49 +19,50 @@
 	</addSpectrum>
 	<addStf>
 		<id>3</id>
+		<!--The spectrumId refers to 'addSpectrum' instruction.-->
 		<spectrumId>2</spectrumId>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>NAME</attributeName>
-			<keyword>Fuselage_F26_MY</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_PROGRAM</attributeName>
-			<keyword>a310</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>AC_SECTION</attributeName>
-			<keyword>sect13</keyword>
-		</searchEntry>
-		<searchEntry>
-			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
-			<attributeName>FAT_MISSION</attributeName>
-			<keyword>61 Parabolas</keyword>
-		</searchEntry>
+		<!--STF file name.-->
+		<stfName>test.stf</stfName>
+		<!--STF stress state. This can be either '1d' or '2d'.-->
+		<stressState>2d</stressState>
+		<!--1g stresses. This element is optional, if not set, 1g stresses will be set to 0.-->
+		<onegStresses>
+			<sx>10</sx>
+			<sy>10</sy>
+			<sxy>10</sxy>
+		</onegStresses>
+		<!--Increment stresses. This element is optional, if not set, increment stresses will be set to 0.-->
+		<incrementStresses>
+			<sx>10</sx>
+			<sy>10</sy>
+			<sxy>10</sxy>
+		</incrementStresses>
+		<!--Delta-p stresses. This element is optional, if not set, delta-p stresses will be set to 0.-->
+		<dpStresses>
+			<dpLoadcase>2001</dpLoadcase>
+			<sx>10</sx>
+			<sy>10</sy>
+			<sxy>10</sxy>
+		</dpStresses>
 	</addStf>
-	<typicalFlightDamageContributionAnalysis>
-		<id>17</id>
+	<damageAngleAnalysis>
+		<id>4</id>
 		<!--The stfId refers to 'addStf' instruction.-->
 		<stfId>3</stfId>
+		<!--Iteration settings. This element is optional, if not supplied, 0,180, 10 will be considered as start, end and increment angles, respectively.-->
+		<iterationSettings>
+			<!--Start angle in degrees.-->
+			<startAngle>0</startAngle>
+			<!--End angle in degrees.-->
+			<endAngle>30</endAngle>
+			<!--Increment angle in degrees.-->
+			<incrementAngle>120</incrementAngle>
+		</iterationSettings>
 		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
 		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
-		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON. Note that the 'equivalentStressAnalysisInput.material.analysisType' parameter must be 'fatigue'.-->
 		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
-	</typicalFlightDamageContributionAnalysis>
-	<plotTypicalFlightDamageContribution>
-		<id>18</id>
-		<!--The typicalFlightDamageContributionId refers to 'typicalFlightDamageContributionAnalysis' instruction.-->
-		<typicalFlightDamageContributionId>17</typicalFlightDamageContributionId>
-		<!--Path to save typical flight damage contribution plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/TF_DamageContributions.png</outputPath>
-	</plotTypicalFlightDamageContribution>
-	<saveTypicalFlightDamageContributions>
-		<id>19</id>
-		<!--The typicalFlightDamageContributionId refers to 'typicalFlightDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
-		<typicalFlightDamageContributionId>17</typicalFlightDamageContributionId>
-		<!--Path to save typical flight damage contributions. File name must end with .xls.-->
-		<outputPath>/Users/aurora/Temporary/TF_DamageContributions.xls</outputPath>
-	</saveTypicalFlightDamageContributions>
+		<!--To keep the generated stress sequence for the maximum damaging equivalent stress. This can be 'true' or 'false' (default). This element is optional, if not given, default value will be considered.-->
+		<generateMaxdamData>false</generateMaxdamData>
+	</damageAngleAnalysis>
 </equinoxInput>

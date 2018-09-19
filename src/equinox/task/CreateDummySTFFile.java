@@ -231,7 +231,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 				Object[] tableInfo = createStressTable(connection);
 
 				// prepare statement for inserting STF files
-				String sql = "insert into stf_files(cdf_id, stress_table_id, name, is_2d, description, element_type, frame_rib_position, stringer_position, data_source, generation_source, delivery_ref_num, issue) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				String sql = "insert into stf_files(cdf_id, stress_table_id, name, is_2d, description, element_type, frame_rib_position, stringer_position, data_source, generation_source, delivery_ref_num, issue, eid, fatigue_material, preffas_material, linear_material) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 				try (PreparedStatement insertFile = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
 					// prepare statement for inserting stresses

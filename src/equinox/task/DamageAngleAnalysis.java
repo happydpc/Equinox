@@ -59,6 +59,9 @@ import equinox.process.InbuiltDAA;
 import equinox.process.SafeDAA;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableDamageAngleAnalysis;
 import equinox.utility.Utility;
 
@@ -69,13 +72,13 @@ import equinox.utility.Utility;
  * @date Aug 6, 2014
  * @time 4:30:36 PM
  */
-public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> implements LongRunningTask, SavableTask {
+public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<DamageAngle> {
 
 	/** Result index. */
 	public static final int ANGLE_INDEX = 0, ANGLE = 1, STRESS = 2;
 
 	/** The owner STF file. */
-	private final STFFile stfFile_;
+	private STFFile stfFile_;
 
 	/** STF file ID. */
 	private final Integer stfID_, stressTableID_;
@@ -128,11 +131,17 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 	/** Equivalent stress analysis process. */
 	private ESAProcess<Double[][]> equivalentStressAnalysis_;
 
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<DamageAngle>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates damage angle analysis task.
 	 *
 	 * @param stfFile
-	 *            The owner STF file.
+	 *            The owner STF file. Can be null for automatic execution.
 	 * @param input
 	 *            Analysis input.
 	 * @param material
@@ -180,6 +189,29 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		analysisEngine_ = analysisEngine;
 	}
 
+	@Override
+	public void setAutomaticInput(STFFile input) {
+		stfFile_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<DamageAngle> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<DamageAngle>> getParameterizedTasks() {
+		return automaticTasks_;
+	}
+
 	/**
 	 * Sets ISAMI engine inputs.
 	 *
@@ -200,8 +232,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 
 	@Override
 	public String getTaskTitle() {
-		String name = stfFile_ == null ? stfName_ : stfFile_.getName();
-		return "Damage angle analysis for '" + name + "'";
+		return "Damage angle analysis";
 	}
 
 	@Override
@@ -332,7 +363,10 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				stfFile_.getChildren().add(0, angle);
 
 				// plot and save damage angles
-				taskPanel_.getOwner().runTaskInParallel(new SaveDamageAnglePlot(angle));
+				taskPanel_.getOwner().runTaskSequentially(new SaveDamageAnglePlot(angle));
+
+				// manage automatic tasks
+				parameterizedTaskOwnerSucceeded(angle, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -357,6 +391,9 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		if (equivalentStressAnalysis_ != null) {
 			equivalentStressAnalysis_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -369,6 +406,9 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		if (equivalentStressAnalysis_ != null) {
 			equivalentStressAnalysis_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

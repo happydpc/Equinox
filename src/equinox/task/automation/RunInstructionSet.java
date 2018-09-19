@@ -52,6 +52,7 @@ import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
 import equinox.data.input.CompareDamageContributionsInput;
+import equinox.data.input.DamageAngleInput;
 import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.data.input.EquivalentStressInput;
 import equinox.data.input.EquivalentStressRatioComparisonInput;
@@ -73,6 +74,7 @@ import equinox.data.input.LoadcaseDamageContributionInput;
 import equinox.data.input.StressSequenceComparisonInput;
 import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.ContributionType;
+import equinox.dataServer.remote.data.FatigueMaterial;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.PilotPointSearchInput;
@@ -98,6 +100,7 @@ import equinox.task.CompareExternalStressSequences;
 import equinox.task.CompareFlights;
 import equinox.task.CompareStressSequences;
 import equinox.task.CreateDummySTFFile;
+import equinox.task.DamageAngleAnalysis;
 import equinox.task.DownloadPilotPoint;
 import equinox.task.DownloadSpectrum;
 import equinox.task.EquivalentStressAnalysis;
@@ -422,6 +425,16 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// save typical flight damage contributions
 		if (equinoxInput.getChild("saveTypicalFlightDamageContributions") != null) {
 			saveTypicalFlightDamageContributions(equinoxInput, tasks);
+		}
+
+		// damage angle analysis
+		if (equinoxInput.getChild("damageAngleAnalysis") != null) {
+			damageAngleAnalysis(equinoxInput, tasks);
+		}
+
+		// plot damage angles
+		if (equinoxInput.getChild("plotDamageAngles") != null) {
+			plotDamageAngles(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -2208,6 +2221,21 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	}
 
 	/**
+	 * Creates plot damage angles tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void plotDamageAngles(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+		// FIXME Auto-generated method stub
+
+	}
+
+	/**
 	 * Creates plot stress sequence comparison tasks.
 	 *
 	 * @param equinoxInput
@@ -2931,6 +2959,106 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
 				// put generate stress sequence task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+		}
+	}
+
+	/**
+	 * Creates damage angle analysis tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void damageAngleAnalysis(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating damage angle analysis tasks...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// input mapping
+		HashMap<Path, EquivalentStressInput> equivalentStressAnalysisInputs = new HashMap<>();
+		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over damage angle analysis elements
+			for (Element damageAngleAnalysis : equinoxInput.getChildren("damageAngleAnalysis")) {
+
+				// get inputs
+				String id = damageAngleAnalysis.getChild("id").getTextNormalize();
+				String stfId = damageAngleAnalysis.getChildTextNormalize("stfId");
+				Path equivalentStressAnalysisInputPath = Paths.get(damageAngleAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize());
+				Path generateStressSequenceInputPath = Paths.get(damageAngleAnalysis.getChildTextNormalize("generateStressSequenceInputPath"));
+
+				// get equivalent stress analysis input
+				EquivalentStressInput equivalentStressAnalysisInput = equivalentStressAnalysisInputs.get(equivalentStressAnalysisInputPath);
+				if (equivalentStressAnalysisInput == null) {
+					equivalentStressAnalysisInput = new ReadEquivalentStressAnalysisInput(this, equivalentStressAnalysisInputPath, isamiVersion).start(connection);
+					equivalentStressAnalysisInputs.put(equivalentStressAnalysisInputPath, equivalentStressAnalysisInput);
+				}
+
+				// get generate stress sequence input
+				GenerateStressSequenceInput generateStressSequenceInput = generateStressSequenceInputs.get(generateStressSequenceInputPath);
+				if (generateStressSequenceInput == null) {
+					generateStressSequenceInput = new ReadGenerateStressSequenceInput(this, generateStressSequenceInputPath).start(null);
+					generateStressSequenceInputs.put(generateStressSequenceInputPath, generateStressSequenceInput);
+				}
+
+				// get iteration settings
+				int startAngle = 0, endAngle = 180, incrementAngle = 10;
+				if (damageAngleAnalysis.getChild("iterationSettings") != null) {
+					Element iterationSettings = damageAngleAnalysis.getChild("iterationSettings");
+					startAngle = Integer.parseInt(iterationSettings.getChildTextNormalize("startAngle"));
+					endAngle = Integer.parseInt(iterationSettings.getChildTextNormalize("endAngle"));
+					incrementAngle = Integer.parseInt(iterationSettings.getChildTextNormalize("incrementAngle"));
+				}
+
+				// generate maxdam data
+				boolean generateMaxdamData = false;
+				if (damageAngleAnalysis.getChild("generateMaxdamData") != null) {
+					generateMaxdamData = Boolean.parseBoolean(damageAngleAnalysis.getChildTextNormalize("generateMaxdamData"));
+				}
+
+				// create input
+				DamageAngleInput input = new DamageAngleInput();
+				input.setIterationAngles(startAngle, endAngle, incrementAngle);
+				input.setGenerateMaxdamData(generateMaxdamData);
+				input.setApplyOmission(equivalentStressAnalysisInput.applyOmission());
+				input.setDPLoadcase(generateStressSequenceInput.getDPLoadcase());
+				input.setDTInterpolation(generateStressSequenceInput.getDTInterpolation());
+				input.setDTLoadcaseInf(generateStressSequenceInput.getDTLoadcaseInf());
+				input.setDTLoadcaseSup(generateStressSequenceInput.getDTLoadcaseSup());
+				input.setLoadcaseFactors(generateStressSequenceInput.getLoadcaseFactors());
+				input.setOmissionLevel(equivalentStressAnalysisInput.getOmissionLevel());
+				input.setReferenceDP(generateStressSequenceInput.getReferenceDP());
+				input.setReferenceDTInf(generateStressSequenceInput.getReferenceDTInf());
+				input.setReferenceDTSup(generateStressSequenceInput.getReferenceDTSup());
+				input.setRemoveNegativeStresses(equivalentStressAnalysisInput.removeNegativeStresses());
+				input.setSegmentFactors(generateStressSequenceInput.getSegmentFactors());
+				input.setStressModifier(GenerateStressSequenceInput.ONEG, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.ONEG), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.ONEG));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAP, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAP), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAP));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAT));
+				input.setStressModifier(GenerateStressSequenceInput.INCREMENT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.INCREMENT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.INCREMENT));
+
+				// create task
+				DamageAngleAnalysis task = new DamageAngleAnalysis(null, input, (FatigueMaterial) equivalentStressAnalysisInput.getMaterial(), engine);
+
+				// add to parent task
+				ParameterizedTaskOwner<STFFile> parentTask = (ParameterizedTaskOwner<STFFile>) tasks.get(stfId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put equivalent stress analysis task to tasks
 				tasks.put(id, new InstructedTask(task, true));
 			}
 		}

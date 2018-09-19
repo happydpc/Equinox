@@ -151,10 +151,12 @@
 	
 	<!--Adds STF file to referenced spectrum.-->
 	<addStf>
-		<id></id><spectrumId></spectrumId><stfPath></stfPath>
+		<id></id><!--The spectrumId refers to 'addSpectrum' instruction.-->
+		<spectrumId></spectrumId><!--Path to STF file to add to workspace.-->
+		<stfPath></stfPath>
 	</addStf><!--Searches pilot point in central database matching with given search entries, and if found, adds it to referenced spectrum. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 	<addStf>
-		<id></id>
+		<id></id><!--The spectrumId refers to 'addSpectrum' instruction.-->
 		<spectrumId></spectrumId><!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
@@ -163,34 +165,54 @@
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
-	</addStf><!--Creates a dummy stf and adds it to referenced spectrum.-->
-	<addStf><id></id><spectrumId></spectrumId><!--STF file name.-->
-		<stfName></stfName><!--STF stress state. This can be either '1d' or '2d'.-->
-		<stressState></stressState><!--1g stresses. This element is optional, if not set, 1g stresses will be set to 0.-->
+	</addStf>
+	
+	<!--Creates a dummy stf and adds it to referenced spectrum.-->
+	<addStf>
+		<id></id>
+		<!--The spectrumId refers to 'addSpectrum' instruction.-->
+		<spectrumId></spectrumId>
+		<!--STF file name.-->
+		<stfName></stfName>
+		<!--STF stress state. This can be either '1d' or '2d'.-->
+		<stressState></stressState>
+		<!--1g stresses. This element is optional, if not set, 1g stresses will be set to 0.-->
 		<onegStresses>
 			<sx></sx>
 			<sy></sy>
-			<sxy></sxy></onegStresses><!--Increment stresses. This element is optional, if not set, increment stresses will be set to 0.-->
+			<sxy></sxy>
+		</onegStresses>
+		<!--Increment stresses. This element is optional, if not set, increment stresses will be set to 0.-->
 		<incrementStresses>
 			<sx></sx>
 			<sy></sy>
-			<sxy></sxy></incrementStresses><!--Delta-p stresses. This element is optional, if not set, delta-p stresses will be set to 0.-->
+			<sxy></sxy>
+		</incrementStresses>
+		<!--Delta-p stresses. This element is optional, if not set, delta-p stresses will be set to 0.-->
 		<dpStresses>
 			<dpLoadcase></dpLoadcase>
 			<sx></sx>
 			<sy></sy>
-			<sxy></sxy></dpStresses><!--Delta-t stresses. This element is optional, if not set, delta-t stresses will be set to 0.-->
+			<sxy></sxy>
+		</dpStresses>
+		<!--Delta-t stresses. This element is optional, if not set, delta-t stresses will be set to 0.-->
 		<dtStresses>
 			<superior>
 				<loadcase></loadcase>
 				<sx></sx>
 				<sy></sy>
-				<sxy></sxy></superior>
+				<sxy></sxy>
+			</superior>
 			<inferior>
 				<loadcase></loadcase>
 				<sx></sx>
 				<sy></sy>
-				<sxy></sxy></inferior></dtStresses></addStf><!--Overrides fatigue mission inherited from the parent spectrum with the given mission.-->
+				<sxy></sxy>
+			</inferior>
+		</dtStresses>
+	</addStf>
+	
+	<!--Overrides fatigue mission inherited from the parent spectrum with the given mission.-->
 	<overrideFatigueMission>
 		<id></id>
 		<stfId></stfId>
@@ -404,7 +426,7 @@
 		</options>
 	</saveLoadcaseDamageContributions>
 	
-	<!--Exports refernced loadcase damage contributions to given output file.-->
+	<!--Exports referenced loadcase damage contributions to given output file.-->
 	<exportLoadcaseDamageContributions>
 		<id></id>
 		<!--The loadcaseDamageContributionId refers to 'loadcaseDamageContributionAnalysis' instruction. Multiple loadcaseDamageContributionIds can be referenced.-->
@@ -477,6 +499,35 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveTypicalFlightDamageContributions>
+	
+	<!--Performs damage angle analysis with referenced STF file.-->
+	<damageAngleAnalysis>
+		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Iteration settings. This element is optional, if not supplied, 0,180, 10 will be considered as start, end and increment angles, respectively.-->
+		<iterationSettings>
+			<!--Start angle in degrees.-->
+			<startAngle></startAngle>
+			<!--End angle in degrees.-->
+			<endAngle></endAngle>
+			<!--Increment angle in degrees.-->
+			<incrementAngle></incrementAngle>
+		</iterationSettings>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath></generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON. Note that the 'equivalentStressAnalysisInput.material.analysisType' parameter must be 'fatigue'.-->
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
+		<!--To keep the generated stress sequence for the maximum damaging equivalent stress. This can be 'true' or 'false' (default). This element is optional, if not given, default value will be considered.-->
+		<generateMaxdamData></generateMaxdamData>
+	</damageAngleAnalysis><!--Plots damage angles of referenced damage angles.-->
+	<plotDamageAngles>
+		<id></id><!--The damageAngleId refers to damageAngleAnalysis instruction. Multiple damageAngleIds can be given.-->
+		<damageAngleId></damageAngleId><!--Path to save damage angle plot. File name must end with .png.-->
+		<outputPath></outputPath><!--Plot options. This element and all its children are optional, if not given, default values will be set.-->
+		<options><!--Plotting data order. This can be one of 'ANGLE', 'DESCENDING' or 'ASCENDING'.-->
+			<orderBy></orderBy><!--To show data labels on the plot. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels></options></plotDamageAngles>
 
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>

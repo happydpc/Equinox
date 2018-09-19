@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -43,6 +44,7 @@ import equinox.data.fileType.DamageAngle;
 import equinox.process.PlotDamageAnglesProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.PlotDamageAngles.ResultOrdering;
+import equinox.task.automation.PostProcessingTask;
 
 /**
  * Class for save damage angle plot task.
@@ -51,7 +53,7 @@ import equinox.task.PlotDamageAngles.ResultOrdering;
  * @date 26 Jul 2016
  * @time 10:34:25
  */
-public class SaveDamageAnglePlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask {
+public class SaveDamageAnglePlot extends TemporaryFileCreatingTask<Void> implements ShortRunningTask, PostProcessingTask {
 
 	/** Damage angle. */
 	private final DamageAngle damageAngle_;
@@ -140,7 +142,7 @@ public class SaveDamageAnglePlot extends TemporaryFileCreatingTask<Void> impleme
 		renderer.setBaseToolTipGenerator(null);
 
 		// set dataset
-		CategoryDataset dataset = new PlotDamageAnglesProcess(this, new DamageAngle[] { damageAngle_ }, ResultOrdering.ANGLE).start(connection);
+		CategoryDataset dataset = new PlotDamageAnglesProcess(this, Arrays.asList(damageAngle_), ResultOrdering.ANGLE).start(connection);
 		plot.setDataset(dataset);
 
 		// set label visibility

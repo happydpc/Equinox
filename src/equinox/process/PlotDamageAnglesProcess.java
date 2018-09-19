@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 
@@ -40,7 +41,7 @@ public class PlotDamageAnglesProcess implements EquinoxProcess<DefaultCategoryDa
 	private final InternalEquinoxTask<?> task_;
 
 	/** Damage angles. */
-	private final DamageAngle[] damageAngles_;
+	private final List<DamageAngle> damageAngles_;
 
 	/** Decimal format. */
 	private final DecimalFormat format_ = new DecimalFormat("0");
@@ -58,7 +59,7 @@ public class PlotDamageAnglesProcess implements EquinoxProcess<DefaultCategoryDa
 	 * @param order
 	 *            Results ordering.
 	 */
-	public PlotDamageAnglesProcess(InternalEquinoxTask<?> task, DamageAngle[] damageAngles, ResultOrdering order) {
+	public PlotDamageAnglesProcess(InternalEquinoxTask<?> task, List<DamageAngle> damageAngles, ResultOrdering order) {
 		task_ = task;
 		damageAngles_ = damageAngles;
 		order_ = order;
@@ -75,12 +76,15 @@ public class PlotDamageAnglesProcess implements EquinoxProcess<DefaultCategoryDa
 
 		// create query
 		String sql = "select stress, (to_degrees(angle)) as damageAngle from damage_angles where angle_id = ?";
-		if (order_.equals(ResultOrdering.DESCENDING))
+		if (order_.equals(ResultOrdering.DESCENDING)) {
 			sql += " order by stress desc";
-		else if (order_.equals(ResultOrdering.ASCENDING))
+		}
+		else if (order_.equals(ResultOrdering.ASCENDING)) {
 			sql += " order by stress asc";
-		else if (order_.equals(ResultOrdering.ANGLE))
+		}
+		else if (order_.equals(ResultOrdering.ANGLE)) {
 			sql += " order by damageAngle asc";
+		}
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
 			// loop over damage angles
