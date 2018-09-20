@@ -50,4 +50,50 @@
 		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
 		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</fastEquivalentStressAnalysis>
+	<plotMissionProfile>
+		<id>5</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Path to save mission profile plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/missionProfile.png</outputPath>
+	</plotMissionProfile>
+	<plotLevelCrossing>
+		<id>6</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Path to save level crossing plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/levelCrossing.png</outputPath>
+	</plotLevelCrossing>
+	<plotRainflowHistogram>
+		<id>7</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Path to save rainflow histogram plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/histogram.png</outputPath>
+	</plotRainflowHistogram>
+	<plotTypicalFlight>
+		<id>8</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence' or 'Flight With Highest Total Stress'.-->
+		<plotType>Longest Typical Flight</plotType>
+		<!--Path to save typical flight plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/longest.png</outputPath>
+	</plotTypicalFlight>
+	<plotTypicalFlightStatistics>
+		<id>9</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
+		<plotType>Typical Flight Occurrences</plotType>
+		<!--Path to save typical flight statistics plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/occurrences.png</outputPath>
+	</plotTypicalFlightStatistics>
+	<saveAnalysisOutputFile>
+		<id>10</id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId>4</fastEquivalentStressId>
+		<!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
+		<outputPath>/Users/aurora/Temporary/output.html</outputPath>
+	</saveAnalysisOutputFile>
 </equinoxInput>

@@ -110,9 +110,15 @@ import equinox.task.ExportSTF;
 import equinox.task.ExportSpectrum;
 import equinox.task.FastGenerateStressSequence;
 import equinox.task.GenerateExternalStatistics;
+import equinox.task.GenerateFlightOccurrencePlot;
+import equinox.task.GenerateHOFlightPlot;
+import equinox.task.GenerateHSFlightPlot;
 import equinox.task.GenerateLFsWithMissionParameters;
+import equinox.task.GenerateLevelCrossingsPlot;
 import equinox.task.GenerateLifeFactors;
+import equinox.task.GenerateLongestFlightPlot;
 import equinox.task.GenerateMissionProfilePlot;
+import equinox.task.GenerateNumPeaksPlot;
 import equinox.task.GenerateStressRatios;
 import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GenerateStressSequence;
@@ -2623,6 +2629,9 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			if (saveAnalysisOutputFile.getChild("equivalentStressId") != null) {
 				equivalentStressId = saveAnalysisOutputFile.getChildTextNormalize("equivalentStressId");
 			}
+			else if (saveAnalysisOutputFile.getChild("fastEquivalentStressId") != null) {
+				equivalentStressId = saveAnalysisOutputFile.getChildTextNormalize("fastEquivalentStressId");
+			}
 			else if (saveAnalysisOutputFile.getChild("headlessEquivalentStressId") != null) {
 				equivalentStressId = saveAnalysisOutputFile.getChildTextNormalize("headlessEquivalentStressId");
 			}
@@ -2724,6 +2733,24 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				tasks.put(id, new InstructedTask(task, true));
 			}
 
+			// fast equivalent stress
+			else if (plotRainflowHistogram.getChild("fastEquivalentStressId") != null) {
+
+				// get fast equivalent stress id
+				String fastEquivalentStressId = plotRainflowHistogram.getChild("fastEquivalentStressId").getTextNormalize();
+
+				// create task
+				GenerateLevelCrossingsPlot task = new GenerateLevelCrossingsPlot(null, false, false, outputPath);
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(fastEquivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+
 			// headless equivalent stress
 			else if (plotRainflowHistogram.getChild("headlessEquivalentStressId") != null) {
 
@@ -2814,6 +2841,24 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				// connect to parent task
 				String equivalentStressId = plotLevelCrossing.getChild("equivalentStressId").getTextNormalize();
 				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(equivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+
+			// fast equivalent stress id
+			else if (plotLevelCrossing.getChild("fastEquivalentStressId") != null) {
+
+				// get fast equivalent stress id
+				String fastEquivalentStressId = plotLevelCrossing.getChild("fastEquivalentStressId").getTextNormalize();
+
+				// create task
+				GenerateLevelCrossingsPlot task = new GenerateLevelCrossingsPlot(null, false, true, outputPath);
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(fastEquivalentStressId).getTask();
 				parentTask.addParameterizedTask(id, task);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 
@@ -3465,6 +3510,39 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 				// put task to tasks
 				tasks.put(id, new InstructedTask(task, true));
+			}
+
+			// fast equivalent stress
+			else if (plotTypicalFlight.getChild("fastEquivalentStressId") != null) {
+
+				// get fast equivalent stress id
+				String fastEquivalentStressId = plotTypicalFlight.getChild("fastEquivalentStressId").getTextNormalize();
+
+				// create task
+				ParameterizedTask<SpectrumItem> task = null;
+				if (plotType.equals(PilotPointImageType.LONGEST_FLIGHT)) {
+					task = new GenerateLongestFlightPlot(null, false, outputPath);
+				}
+				else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_HIGHEST_OCCURRENCE)) {
+					task = new GenerateHOFlightPlot(null, false, outputPath);
+				}
+				else if (plotType.equals(PilotPointImageType.FLIGHT_WITH_MAX_TOTAL_STRESS)) {
+					task = new GenerateHSFlightPlot(null, false, outputPath);
+				}
+				else if (plotType.equals(PilotPointImageType.NUMBER_OF_PEAKS)) {
+					task = new GenerateNumPeaksPlot(null, false, outputPath);
+				}
+				else if (plotType.equals(PilotPointImageType.FLIGHT_OCCURRENCE)) {
+					task = new GenerateFlightOccurrencePlot(null, false, outputPath);
+				}
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(fastEquivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask((InternalEquinoxTask<?>) task, true));
 			}
 
 			// headless stress sequence

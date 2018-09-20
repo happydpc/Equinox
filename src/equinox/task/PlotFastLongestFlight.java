@@ -127,7 +127,7 @@ public class PlotFastLongestFlight extends InternalEquinoxTask<Image> implements
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateLongestFlightPlot(eqStress_, true));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateLongestFlightPlot(eqStress_, true, null));
 						},
 
 						event -> np.hide());

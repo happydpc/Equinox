@@ -127,7 +127,7 @@ public class PlotFastHistogram extends InternalEquinoxTask<Image> implements Sho
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, false));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, false, null));
 						},
 
 						event -> np.hide());

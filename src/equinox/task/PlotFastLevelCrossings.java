@@ -127,7 +127,7 @@ public class PlotFastLevelCrossings extends InternalEquinoxTask<Image> implement
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, true));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateLevelCrossingsPlot(eqStress_, true, true, null));
 						},
 
 						event -> np.hide());

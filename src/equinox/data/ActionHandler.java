@@ -901,7 +901,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastLevelCrossing")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateLevelCrossingsPlot((SpectrumItem) item, false, false));
+				tm.runTaskSequentially(new GenerateLevelCrossingsPlot((SpectrumItem) item, false, false, null));
 			}
 		}
 
@@ -916,7 +916,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastLongestFlight")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateLongestFlightPlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateLongestFlightPlot((SpectrumItem) item, false, null));
 			}
 		}
 
@@ -932,7 +932,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastHOFlight")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateHOFlightPlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateHOFlightPlot((SpectrumItem) item, false, null));
 			}
 		}
 
@@ -948,7 +948,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastHSFlight")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateHSFlightPlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateHSFlightPlot((SpectrumItem) item, false, null));
 			}
 		}
 
@@ -963,7 +963,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastNumPeaks")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateNumPeaksPlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateNumPeaksPlot((SpectrumItem) item, false, null));
 			}
 		}
 
@@ -978,7 +978,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastOccurrences")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateFlightOccurrencePlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateFlightOccurrencePlot((SpectrumItem) item, false, null));
 			}
 		}
 
@@ -993,7 +993,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastHistogram")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateLevelCrossingsPlot((SpectrumItem) item, false, false));
+				tm.runTaskSequentially(new GenerateLevelCrossingsPlot((SpectrumItem) item, false, false, null));
 			}
 		}
 	}

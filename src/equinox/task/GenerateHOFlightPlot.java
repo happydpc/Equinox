@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -60,6 +61,9 @@ import equinox.plugin.FileType;
 import equinox.process.PlotFlightProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.utility.CrosshairListenerXYPlot;
 import equinox.utility.Utility;
 
@@ -70,25 +74,60 @@ import equinox.utility.Utility;
  * @date Jul 9, 2016
  * @time 4:07:25 PM
  */
-public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** Equivalent stress. */
-	private final SpectrumItem eqStress_;
+	private SpectrumItem eqStress_;
 
 	/** True to plot after generation. */
 	private final boolean plot_;
+
+	/** Path to output file. */
+	private final Path output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates generate highest occurring typical flight plot task.
 	 *
 	 * @param eqStress
-	 *            Equivalent stress.
+	 *            Equivalent stress. Can be null for automatic execution.
 	 * @param plot
 	 *            True to plot after generation.
+	 * @param output
+	 *            Path to output file. Can be null if plot should not be saved to output file.
 	 */
-	public GenerateHOFlightPlot(SpectrumItem eqStress, boolean plot) {
+	public GenerateHOFlightPlot(SpectrumItem eqStress, boolean plot, Path output) {
 		eqStress_ = eqStress;
 		plot_ = plot;
+		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumItem input) {
+		eqStress_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -102,7 +141,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Void> implem
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.PLOT_TYPICAL_FLIGHT);
@@ -206,7 +245,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Void> implem
 		}
 
 		// return
-		return null;
+		return output_;
 	}
 
 	@Override
@@ -219,6 +258,44 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Void> implem
 		if (plot_) {
 			taskPanel_.getOwner().runTaskInParallel(new PlotFastHOFlight(eqStress_));
 		}
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -299,7 +376,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Void> implem
 		updateMessage("Plotting typical flight...");
 
 		// create path to output image
-		Path output = getWorkingDirectory().resolve("highestOccurringTypicalFlight.png");
+		Path output = output_ == null ? getWorkingDirectory().resolve("highestOccurringTypicalFlight.png") : output_;
 
 		// create chart
 		String title = info.getFlightName();

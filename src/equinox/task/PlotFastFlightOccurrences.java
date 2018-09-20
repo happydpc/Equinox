@@ -127,7 +127,7 @@ public class PlotFastFlightOccurrences extends InternalEquinoxTask<Image> implem
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateFlightOccurrencePlot(eqStress_, true));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateFlightOccurrencePlot(eqStress_, true, null));
 						},
 
 						event -> np.hide());

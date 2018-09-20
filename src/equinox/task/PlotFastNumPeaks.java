@@ -127,7 +127,7 @@ public class PlotFastNumPeaks extends InternalEquinoxTask<Image> implements Shor
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateNumPeaksPlot(eqStress_, true));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateNumPeaksPlot(eqStress_, true, null));
 						},
 
 						event -> np.hide());

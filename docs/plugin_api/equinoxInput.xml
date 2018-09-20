@@ -344,11 +344,22 @@
 		<stressSequenceId></stressSequenceId><!--Path to save mission profile info. File name must end with .xls.-->
 		<outputPath></outputPath></saveMissionProfileInfo>
 	
-	<!--Plots selected type of typical flight to given output file.-->
+	<!--Plots selected type of typical flight from referenced stress sequence to given output file.-->
 	<plotTypicalFlight>
 		<id></id>
 		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId>
+		<!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence' or 'Flight With Highest Total Stress'.-->
+		<plotType></plotType>
+		<!--Path to save typical flight plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotTypicalFlight>
+	
+	<!--Plots selected type of typical flight from referenced fast equivalent stress to given output file.-->
+	<plotTypicalFlight>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
 		<!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence' or 'Flight With Highest Total Stress'.-->
 		<plotType></plotType>
 		<!--Path to save typical flight plot. File name must end with .png.-->
@@ -366,11 +377,22 @@
 		<outputPath></outputPath>
 	</plotTypicalFlight>
 	
-	<!--Plots selected type of typical flight statistics to given output file.-->
+	<!--Plots selected type of typical flight statistics from referenced stress sequence to given output file.-->
 	<plotTypicalFlightStatistics>
 		<id></id>
 		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId>
+		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
+		<plotType></plotType>
+		<!--Path to save typical flight statistics plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotTypicalFlightStatistics>
+	
+	<!--Plots selected type of typical flight statistics from referenced fast equivalent stress to given output file.-->
+	<plotTypicalFlightStatistics>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
 		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
 		<plotType></plotType>
 		<!--Path to save typical flight statistics plot. File name must end with .png.-->
@@ -608,11 +630,20 @@
 		</options>
 	</saveDamageAngles>
 
-	<!--Plots level crossing to given output file.-->
+	<!--Plots level crossing from referenced equivalent stress to given output file.-->
 	<plotLevelCrossing>
 		<id></id>
 		<!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
 		<equivalentStressId></equivalentStressId>
+		<!--Path to save level crossing plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotLevelCrossing>
+	
+	<!--Plots level crossing from referenced fast equivalent stress to given output file.-->
+	<plotLevelCrossing>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
 		<!--Path to save level crossing plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotLevelCrossing>
@@ -623,7 +654,8 @@
 		<!--The headlessEquivalentStressId refers to 'equivalentStressAnalysis' instruction which refers to headlessStressSequenceId.-->
 		<headlessEquivalentStressId></headlessEquivalentStressId>
 		<!--Path to save level crossing plot. File name must end with .png.-->
-		<outputPath></outputPath><!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<outputPath></outputPath>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
 		<seriesNaming>
 			<!--Include stress sequence name to plot series names. This can be either 'true' or 'false'.-->
 			<includeStressSequenceName></includeStressSequenceName>
@@ -635,7 +667,8 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotLevelCrossing>
-	<!--Plots rainflow histogram to given output file.-->
+	
+	<!--Plots rainflow histogram from referenced equivalent stress to given output file.-->
 	<plotRainflowHistogram>
 		<id></id>
 		<!--The equivalentStressId refers to 'equivalentStressAnalysis' instruction.-->
@@ -643,14 +676,26 @@
 		<!--Path to save rainflow histogram plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotRainflowHistogram>
+	
+	<!--Plots rainflow histogram from referenced fast equivalent stress to given output file.-->
+	<plotRainflowHistogram>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save rainflow histogram plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotRainflowHistogram>
+	
 	<!--Plots rainflow histogram to given output file.-->
 	<plotRainflowHistogram>
 		<id></id>
 		<!--The headlessEquivalentStressId refers to 'equivalentStressAnalysis' instruction with headless stress sequence as its input.-->
 		<headlessEquivalentStressId></headlessEquivalentStressId>
 		<!--Path to save rainflow histogram plot. File name must end with .png.-->
-		<outputPath></outputPath><!--Histogram data to be plotted against number of cycles. This element is optional, if not given, 'MEAN_STRESS' will be plotted. This can be one of the following: 'MEAN_STRESS', 'STRESS_AMPLITUDE', 'R_RATIO', 'MAX_STRESS', 'MIN_STRESS' or 'STRESS_RANGE'.-->
-		<histogramData></histogramData><!--Plot options. This element and all its children are optional, if not given, default values will be set.-->
+		<outputPath></outputPath>
+		<!--Histogram data to be plotted against number of cycles. This element is optional, if not given, 'MEAN_STRESS' will be plotted. This can be one of the following: 'MEAN_STRESS', 'STRESS_AMPLITUDE', 'R_RATIO', 'MAX_STRESS', 'MIN_STRESS' or 'STRESS_RANGE'.-->
+		<histogramData></histogramData>
+		<!--Plot options. This element and all its children are optional, if not given, default values will be set.-->
 		<options>
 			<!--Maximum number of results to be plotted. Positive integer is expected.-->
 			<maxResults></maxResults>
@@ -661,6 +706,7 @@
 			<!--Label visibility. This can be either 'true' or 'false'.-->
 			<showDataLabels></showDataLabels></options>
 	</plotRainflowHistogram>
+	
 	<!--Saves rainflow cycle information to given output file.-->
 	<saveRainflowCycleInfo>
 		<id></id>
@@ -669,6 +715,7 @@
 		<!--Path to save rainflow cycle info. File name must end with .rflow.-->
 		<outputPath></outputPath>
 	</saveRainflowCycleInfo>
+	
 	<!--Saves rainflow cycle information to given output file.-->
 	<saveRainflowCycleInfo>
 		<id></id>
@@ -677,6 +724,7 @@
 		<!--Path to save rainflow cycle info. File name must end with .rflow.-->
 		<outputPath></outputPath>
 	</saveRainflowCycleInfo>
+	
 	<!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
 	<saveAnalysisOutputFile>
 		<id></id>
@@ -685,6 +733,16 @@
 		<!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
 		<outputPath></outputPath>
 	</saveAnalysisOutputFile>
+	
+	<!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
+	<saveAnalysisOutputFile>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
+		<outputPath></outputPath>
+	</saveAnalysisOutputFile>
+	
 	<!--Saves analysis output file (eg. HTML or DOSSIER depending on the engine used) to given output file.-->
 	<saveAnalysisOutputFile>
 		<id></id>
@@ -693,11 +751,16 @@
 		<!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
 		<outputPath></outputPath>
 	</saveAnalysisOutputFile>
+	
 	<!--Shares referenced file with given recipent.-->
 	<shareFile>
-		<id></id><!--The fileId references to all instruction sets beginning with 'save', 'export' or 'plot'.-->
-		<fileId></fileId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
-		<recipient></recipient></shareFile>
+		<id></id>
+		<!--The fileId references to all instruction sets beginning with 'save', 'export' or 'plot'.-->
+		<fileId></fileId>
+		<!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient>
+	</shareFile>
+	
 	<!--Plots stress sequence comparison to given output file.-->
 	<plotStressSequenceComparison>
 		<id></id>
@@ -726,6 +789,7 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotStressSequenceComparison>
+	
 	<!--Plots stress sequence comparison to given output file.-->
 	<plotStressSequenceComparison>
 		<id></id>

@@ -22,6 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -46,6 +48,9 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 
 /**
  * Class for generate number of peaks statistics plot task.
@@ -54,25 +59,60 @@ import equinox.task.InternalEquinoxTask.LongRunningTask;
  * @date 21 Jul 2016
  * @time 11:37:47
  */
-public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** Equivalent stress. */
-	private final SpectrumItem eqStress_;
+	private SpectrumItem eqStress_;
 
 	/** True to plot after generation. */
 	private final boolean plot_;
+
+	/** Path to output file. */
+	private final Path output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/**
 	 * Creates generate number of peaks statistics plot task.
 	 *
 	 * @param eqStress
-	 *            Equivalent stress.
+	 *            Equivalent stress. Can be null for automatic execution.
 	 * @param plot
 	 *            True to plot after generation.
+	 * @param output
+	 *            Path to output file. Can be null if plot should not be saved to output file.
 	 */
-	public GenerateNumPeaksPlot(SpectrumItem eqStress, boolean plot) {
+	public GenerateNumPeaksPlot(SpectrumItem eqStress, boolean plot, Path output) {
 		eqStress_ = eqStress;
 		plot_ = plot;
+		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumItem input) {
+		eqStress_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -86,7 +126,7 @@ public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Void> implem
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.PLOT_TYPICAL_FLIGHT_STATISTICS);
@@ -147,7 +187,7 @@ public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Void> implem
 		}
 
 		// return
-		return null;
+		return output_;
 	}
 
 	@Override
@@ -160,6 +200,44 @@ public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Void> implem
 		if (plot_) {
 			taskPanel_.getOwner().runTaskInParallel(new PlotFastNumPeaks(eqStress_));
 		}
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -177,7 +255,7 @@ public class GenerateNumPeaksPlot extends TemporaryFileCreatingTask<Void> implem
 		updateMessage("Plotting typical flight number of peaks...");
 
 		// create path to output image
-		Path output = getWorkingDirectory().resolve("typicalFlightNumPeaks.png");
+		Path output = output_ == null ? getWorkingDirectory().resolve("typicalFlightNumPeaks.png") : output_;
 
 		// get STF file
 		STFFile stfFile = (STFFile) eqStress_.getParentItem();

@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -85,6 +86,9 @@ import equinox.process.Rainflow;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.automation.ParameterizedTask;
+import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
 /**
@@ -94,10 +98,10 @@ import equinox.utility.Utility;
  * @date Jul 6, 2016
  * @time 3:05:32 PM
  */
-public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> implements LongRunningTask {
+public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
 
 	/** Equivalent stress. */
-	private final SpectrumItem eqStress_;
+	private SpectrumItem eqStress_;
 
 	/** Decimal format. */
 	private final DecimalFormat format_ = new DecimalFormat("0.00");
@@ -120,20 +124,55 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 	/** True to plot the level crossings after the process is completed. */
 	private final boolean plot_, plotLevelCrossings_;
 
+	/** Path to output file. */
+	private final Path output_;
+
+	/** Automatic tasks. */
+	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+
+	/** Automatic task execution mode. */
+	private boolean executeAutomaticTasksInParallel_ = true;
+
 	/**
 	 * Creates generate level crossings plot task.
 	 *
 	 * @param eqStress
-	 *            Equivalent stress.
+	 *            Equivalent stress. Can be null for automatic execution.
 	 * @param plot
 	 *            True to plot after generation.
 	 * @param plotLevelCrossings
 	 *            True to plot the level crossings after the process is completed. False to plot rainflow histogram.
+	 * @param output
+	 *            Path to output file. Can be null if plot should not be saved to output file.
 	 */
-	public GenerateLevelCrossingsPlot(SpectrumItem eqStress, boolean plot, boolean plotLevelCrossings) {
+	public GenerateLevelCrossingsPlot(SpectrumItem eqStress, boolean plot, boolean plotLevelCrossings, Path output) {
 		eqStress_ = eqStress;
 		plot_ = plot;
 		plotLevelCrossings_ = plotLevelCrossings;
+		output_ = output;
+	}
+
+	@Override
+	public void setAutomaticInput(SpectrumItem input) {
+		eqStress_ = input;
+	}
+
+	@Override
+	public void setAutomaticTaskExecutionMode(boolean isParallel) {
+		executeAutomaticTasksInParallel_ = isParallel;
+	}
+
+	@Override
+	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+		if (automaticTasks_ == null) {
+			automaticTasks_ = new HashMap<>();
+		}
+		automaticTasks_.put(taskID, task);
+	}
+
+	@Override
+	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+		return automaticTasks_;
 	}
 
 	@Override
@@ -147,7 +186,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected Path call() throws Exception {
 
 		// check permission
 		checkPermission(Permission.PLOT_LEVEL_CROSSINGS);
@@ -195,7 +234,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		}
 
 		// return
-		return null;
+		return output_;
 	}
 
 	@Override
@@ -207,6 +246,24 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		// plot
 		if (plot_) {
 			taskPanel_.getOwner().runTaskInParallel(plotLevelCrossings_ ? new PlotFastLevelCrossings(eqStress_) : new PlotFastHistogram(eqStress_));
+		}
+
+		// no automatic task
+		if (automaticTasks_ == null)
+			return;
+
+		try {
+
+			// get output
+			Path output = get();
+
+			// manage automatic tasks
+			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+		}
+
+		// exception occurred
+		catch (InterruptedException | ExecutionException e) {
+			handleResultRetrievalException(e);
 		}
 	}
 
@@ -223,6 +280,9 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		if (rainflow_ != null) {
 			rainflow_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -238,6 +298,9 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 		if (rainflow_ != null) {
 			rainflow_.cancel();
 		}
+
+		// manage automatic tasks
+		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
@@ -379,6 +442,9 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 
 		// create path to output image
 		Path output = getWorkingDirectory().resolve("rainflowHistogram.png");
+		if (output_ != null && !plotLevelCrossings_) {
+			output = output_;
+		}
 
 		// create input
 		HistogramInput input = new HistogramInput();
@@ -517,6 +583,9 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Void> 
 
 		// create path to output image
 		Path output = getWorkingDirectory().resolve("levelCrossings.png");
+		if (output_ != null && plotLevelCrossings_) {
+			output = output_;
+		}
 
 		// create input
 		LevelCrossingInput input = new LevelCrossingInput(true, null);

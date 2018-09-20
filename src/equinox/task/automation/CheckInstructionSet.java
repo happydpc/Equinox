@@ -256,6 +256,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// fast equivalent stress analysis
+		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
+			if (!checkFastEquivalentStressAnalysis(equinoxInput))
+				return false;
+		}
+
 		// plot mission profile
 		if (equinoxInput.getChild("plotMissionProfile") != null) {
 			if (!checkPlotMissionProfile(equinoxInput))
@@ -283,12 +289,6 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		// equivalent stress analysis
 		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
 			if (!checkEquivalentStressAnalysis(equinoxInput))
-				return false;
-		}
-
-		// fast equivalent stress analysis
-		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
-			if (!checkFastEquivalentStressAnalysis(equinoxInput))
 				return false;
 		}
 
@@ -1645,6 +1645,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress id
+			else if (saveAnalysisOutputFile.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "fastEquivalentStressId", "fastEquivalentStressAnalysis"))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (saveAnalysisOutputFile.getChild("headlessEquivalentStressId") != null) {
 				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, saveAnalysisOutputFile, "headlessEquivalentStressId", "equivalentStressAnalysis"))
@@ -1729,6 +1735,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress id
+			else if (plotRainflowHistogram.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotRainflowHistogram, "fastEquivalentStressId", "fastEquivalentStressAnalysis"))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (plotRainflowHistogram.getChild("headlessEquivalentStressId") != null) {
 
@@ -1791,6 +1803,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check equivalent stress id
 			if (plotLevelCrossing.getChild("equivalentStressId") != null) {
 				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "equivalentStressId", "equivalentStressAnalysis"))
+					return false;
+			}
+
+			// check fast equivalent stress id
+			else if (plotLevelCrossing.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotLevelCrossing, "fastEquivalentStressId", "fastEquivalentStressAnalysis"))
 					return false;
 			}
 
@@ -2581,6 +2599,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress id
+			else if (plotTypicalFlight.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotTypicalFlight, "fastEquivalentStressId", "fastEquivalentStressAnalysis"))
+					return false;
+			}
+
 			// check headless stress sequence id
 			else if (plotTypicalFlight.getChild("headlessStressSequenceId") != null) {
 
@@ -2676,13 +2700,21 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotMissionProfile))
 				return false;
 
-			// check stress sequence id
-			if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotMissionProfile, "stressSequenceId", "generateStressSequence"))
-				return false;
-
 			// check output path
 			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotMissionProfile, "outputPath", false, overwriteFiles, FileType.PNG))
 				return false;
+
+			// check stress sequence id
+			if (plotMissionProfile.getChild("stressSequenceId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotMissionProfile, "stressSequenceId", "generateStressSequence"))
+					return false;
+			}
+
+			// check fast equivalent stress id
+			else if (plotMissionProfile.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, plotMissionProfile, "fastEquivalentStressId", "fastEquivalentStressAnalysis"))
+					return false;
+			}
 		}
 
 		// check passed
