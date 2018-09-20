@@ -886,7 +886,7 @@ public class ActionHandler implements EventHandler<ActionEvent> {
 		else if (id.equals("generateFastMissionProfile")) {
 			ActiveTasksPanel tm = owner_.getActiveTasksPanel();
 			for (TreeItem<String> item : getSelectedItems()) {
-				tm.runTaskSequentially(new GenerateMissionProfilePlot((SpectrumItem) item, false));
+				tm.runTaskSequentially(new GenerateMissionProfilePlot((SpectrumItem) item, false, null));
 			}
 		}
 

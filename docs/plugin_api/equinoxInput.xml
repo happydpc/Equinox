@@ -288,20 +288,62 @@
 		<headlessStressSequenceId></headlessStressSequenceId><!--Aircraft program. This element is optional.-->
 		<aircraftProgram></aircraftProgram><!--Aircraft section. This element is optional.-->
 		<aircraftSection></aircraftSection><!--Fatigue mission. This element is optional.-->
-		<fatigueMission></fatigueMission></editStressSequenceInfo>
-	<!--Saves stress sequence to given output path.--><saveStressSequence>
-		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
-		<outputPath></outputPath></saveStressSequence><!--Saves headless stress sequence to given output path.--><saveStressSequence>
-		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
-		<headlessStressSequenceId></headlessStressSequenceId><!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
-		<outputPath></outputPath></saveStressSequence><!--Plots mission profile to given output file.-->
-	<plotMissionProfile><id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Path to save mission profile plot. File name must end with .png.--><outputPath></outputPath></plotMissionProfile><!--Generates and saves mission profile information file. This file contains all stepping data.-->
+		<fatigueMission></fatigueMission>
+	</editStressSequenceInfo>
+	
+	<!--Saves stress sequence to given output path.-->
+	<saveStressSequence>
+		<id></id>
+		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId>
+		<!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
+		<outputPath></outputPath>
+	</saveStressSequence>
+		
+	<!--Saves headless stress sequence to given output path.-->
+	<saveStressSequence>
+		<id></id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId>
+		<!--Path to save stress sequence. To save as sigma file, append .sigma to file name. To save as sth, append .sth to file name.-->
+		<outputPath></outputPath>
+	</saveStressSequence>
+	
+	<!--Performs fast equivalent stress analysis with referenced STF file.-->
+	<fastEquivalentStressAnalysis>
+		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath></generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
+	</fastEquivalentStressAnalysis>
+	
+	<!--Plots mission profile from referenced stress sequence to given output file.-->
+	<plotMissionProfile>
+		<id></id>
+		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId>
+		<!--Path to save mission profile plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotMissionProfile>
+	
+	<!--Plots mission profile from referenced fast equivalent stress to given output file.-->
+	<plotMissionProfile>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save mission profile plot. File name must end with .png.-->
+		<outputPath></outputPath>
+	</plotMissionProfile>
+
+	<!--Generates and saves mission profile information file. This file contains all stepping data.-->
 	<saveMissionProfileInfo>
 		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId></stressSequenceId><!--Path to save mission profile info. File name must end with .xls.-->
 		<outputPath></outputPath></saveMissionProfileInfo>
+	
 	<!--Plots selected type of typical flight to given output file.-->
 	<plotTypicalFlight>
 		<id></id>
@@ -312,6 +354,7 @@
 		<!--Path to save typical flight plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotTypicalFlight>
+	
 	<!--Plots selected type of typical flight to given output file.-->
 	<plotTypicalFlight>
 		<id></id>
@@ -322,6 +365,7 @@
 		<!--Path to save typical flight plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotTypicalFlight>
+	
 	<!--Plots selected type of typical flight statistics to given output file.-->
 	<plotTypicalFlightStatistics>
 		<id></id>
@@ -332,6 +376,7 @@
 		<!--Path to save typical flight statistics plot. File name must end with .png.-->
 		<outputPath></outputPath>
 	</plotTypicalFlightStatistics>
+	
 	<!--Plots selected type of typical flight statistics to given output file.-->
 	<plotTypicalFlightStatistics>
 		<id></id>
@@ -375,17 +420,6 @@
 		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
 		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
-	
-	<!--Performs fast equivalent stress analysis with referenced STF file.-->
-	<fastEquivalentStressAnalysis>
-		<id></id>
-		<!--The stfId refers to 'addStf' instruction.-->
-		<stfId></stfId>
-		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
-		<generateStressSequenceInputPath></generateStressSequenceInputPath>
-		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
-		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
-	</fastEquivalentStressAnalysis>
 
 	<!--Performs loadcase damage contribution analysis with referenced STF file.-->
 	<loadcaseDamageContributionAnalysis>

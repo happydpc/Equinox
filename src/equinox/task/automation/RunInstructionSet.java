@@ -112,6 +112,7 @@ import equinox.task.FastGenerateStressSequence;
 import equinox.task.GenerateExternalStatistics;
 import equinox.task.GenerateLFsWithMissionParameters;
 import equinox.task.GenerateLifeFactors;
+import equinox.task.GenerateMissionProfilePlot;
 import equinox.task.GenerateStressRatios;
 import equinox.task.GenerateStressRatiosWithMissionParameters;
 import equinox.task.GenerateStressSequence;
@@ -366,6 +367,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			saveStressSequence(equinoxInput, tasks);
 		}
 
+		// fast equivalent stress analysis
+		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
+			fastEquivalentStressAnalysis(equinoxInput, tasks);
+		}
+
 		// plot mission profile
 		if (equinoxInput.getChild("plotMissionProfile") != null) {
 			plotMissionProfile(equinoxInput, tasks);
@@ -389,11 +395,6 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// equivalent stress analysis
 		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
 			equivalentStressAnalysis(equinoxInput, tasks);
-		}
-
-		// fast equivalent stress analysis
-		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
-			fastEquivalentStressAnalysis(equinoxInput, tasks);
 		}
 
 		// loadcase damage contribution analysis
@@ -3619,19 +3620,43 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// get inputs
 			String id = plotMissionProfile.getChild("id").getTextNormalize();
-			String stressSequenceId = plotMissionProfile.getChild("stressSequenceId").getTextNormalize();
 			Path outputPath = Paths.get(plotMissionProfile.getChild("outputPath").getTextNormalize());
 
-			// create task
-			SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, PilotPointImageType.MISSION_PROFILE, outputPath);
+			// from stress sequence
+			if (plotMissionProfile.getChild("stressSequenceId") != null) {
 
-			// connect to parent task
-			ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
-			parentTask.addParameterizedTask(id, task);
-			parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+				// get stress sequence id
+				String stressSequenceId = plotMissionProfile.getChild("stressSequenceId").getTextNormalize();
 
-			// put task to tasks
-			tasks.put(id, new InstructedTask(task, true));
+				// create task
+				SaveStressSequencePlotToFile task = new SaveStressSequencePlotToFile(null, PilotPointImageType.MISSION_PROFILE, outputPath);
+
+				// connect to parent task
+				ParameterizedTaskOwner<StressSequence> parentTask = (ParameterizedTaskOwner<StressSequence>) tasks.get(stressSequenceId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
+
+			// from fast equivalent stress
+			else if (plotMissionProfile.getChild("fastEquivalentStressId") != null) {
+
+				// get fast equivalent stress id
+				String fastEquivalentStressId = plotMissionProfile.getChild("fastEquivalentStressId").getTextNormalize();
+
+				// create task
+				GenerateMissionProfilePlot task = new GenerateMissionProfilePlot(null, false, outputPath);
+
+				// connect to parent task
+				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(fastEquivalentStressId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
 		}
 	}
 

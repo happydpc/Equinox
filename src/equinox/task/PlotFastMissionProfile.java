@@ -127,7 +127,7 @@ public class PlotFastMissionProfile extends InternalEquinoxTask<Image> implement
 
 						event -> {
 							np.hide();
-							taskPanel_.getOwner().runTaskInParallel(new GenerateMissionProfilePlot(eqStress_, true));
+							taskPanel_.getOwner().runTaskInParallel(new GenerateMissionProfilePlot(eqStress_, true, null));
 						},
 
 						event -> np.hide());
