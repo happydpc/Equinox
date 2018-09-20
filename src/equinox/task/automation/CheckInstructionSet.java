@@ -40,6 +40,7 @@ import equinox.process.automation.CheckEquivalentStressAnalysisInput;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
 import equinox.process.automation.CheckLoadcaseDamageContributionAnalysisInput;
 import equinox.process.automation.ConvertJSONtoXML;
+import equinox.task.CompareDamageAngleLifeFactors.ResultOrdering;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.TemporaryFileCreatingTask;
 import equinox.utility.XMLUtilities;
@@ -285,6 +286,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
+		// fast equivalent stress analysis
+		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
+			if (!checkFastEquivalentStressAnalysis(equinoxInput))
+				return false;
+		}
+
 		// loadcase damage contribution analysis
 		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
 			if (!checkLoadcaseDamageContributionAnalysis(equinoxInput))
@@ -336,6 +343,18 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		// damage angle analysis
 		if (equinoxInput.getChild("damageAngleAnalysis") != null) {
 			if (!checkDamageAngleAnalysis(equinoxInput))
+				return false;
+		}
+
+		// plot damage angles
+		if (equinoxInput.getChild("plotDamageAngles") != null) {
+			if (!checkPlotDamageAngles(equinoxInput))
+				return false;
+		}
+
+		// save damage angles
+		if (equinoxInput.getChild("saveDamageAngles") != null) {
+			if (!checkSaveDamageAngles(equinoxInput))
 				return false;
 		}
 
@@ -454,6 +473,114 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>saveDamageAngles</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>saveDamageAngles</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSaveDamageAngles(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking saveDamageAngles elements...");
+
+		// loop over save damage angles elements
+		for (Element saveDamageAngles : equinoxInput.getChildren("saveDamageAngles")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, saveDamageAngles))
+				return false;
+
+			// check damage angle ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveDamageAngles, "damageAngleId", "damageAngleAnalysis", 1))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, saveDamageAngles, "outputPath", false, overwriteFiles, FileType.XLS))
+				return false;
+
+			// check options
+			if (saveDamageAngles.getChild("options") != null) {
+
+				// get element
+				Element options = saveDamageAngles.getChild("options");
+
+				// check
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "maxDamageAngle", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "maxEquivalentStress", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "materialData", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "pilotPointName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "elementId", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "spectrumName", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftProgram", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "aircraftSection", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "fatigueMission", true))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "omissionLevel", true))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>plotDamageAngles</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>plotDamageAngles</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkPlotDamageAngles(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking plotDamageAngles elements...");
+
+		// loop over plot damage angles elements
+		for (Element plotDamageAngles : equinoxInput.getChildren("plotDamageAngles")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, plotDamageAngles))
+				return false;
+
+			// check damage angle ids
+			if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotDamageAngles, "damageAngleId", "damageAngleAnalysis", 1))
+				return false;
+
+			// check output path
+			if (!XMLUtilities.checkOutputPathValue(this, inputFile, plotDamageAngles, "outputPath", false, overwriteFiles, FileType.PNG))
+				return false;
+
+			// check options
+			if (plotDamageAngles.getChild("options") != null) {
+				Element options = plotDamageAngles.getChild("options");
+				if (!XMLUtilities.checkStringValue(this, inputFile, options, "orderBy", true, XMLUtilities.getStringArray(ResultOrdering.values())))
+					return false;
+				if (!XMLUtilities.checkBooleanValue(this, inputFile, options, "showDataLabels", true))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
@@ -2245,6 +2372,84 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 
 				// check generate maxdam data
 				if (!XMLUtilities.checkBooleanValue(this, inputFile, damageAngleAnalysis, "generateMaxdamData", true))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
+	}
+
+	/**
+	 * Returns true if all <code>fastEquivalentStressAnalysis</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>fastEquivalentStressAnalysis</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkFastEquivalentStressAnalysis(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking fastEquivalentStressAnalysis elements...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+
+		// create list of checked inputs
+		ArrayList<String> checkedInputs = new ArrayList<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over fast equivalent stress analysis elements
+			for (Element fastEquivalentStressAnalysis : equinoxInput.getChildren("fastEquivalentStressAnalysis")) {
+
+				// no id
+				if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, fastEquivalentStressAnalysis))
+					return false;
+
+				// check STF file id
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, fastEquivalentStressAnalysis, "stfId", "addStf"))
+					return false;
+
+				// check generate stress sequence input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, fastEquivalentStressAnalysis, "generateStressSequenceInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get generate stress sequence input path
+				String generateStressSequenceInputPath = fastEquivalentStressAnalysis.getChild("generateStressSequenceInputPath").getTextNormalize();
+
+				// not checked
+				if (!checkedInputs.contains(generateStressSequenceInputPath)) {
+
+					// add to checked inputs
+					checkedInputs.add(generateStressSequenceInputPath);
+
+					// check generate stress sequence input
+					if (!new CheckGenerateStressSequenceInput(this, Paths.get(generateStressSequenceInputPath)).start(null))
+						return false;
+				}
+
+				// check equivalent stress analysis input path
+				if (!XMLUtilities.checkInputPathValue(this, inputFile, fastEquivalentStressAnalysis, "equivalentStressAnalysisInputPath", false, FileType.XML, FileType.JSON))
+					return false;
+
+				// get equivalent stress analysis input path
+				String equivalentStressAnalysisInputPath = fastEquivalentStressAnalysis.getChild("equivalentStressAnalysisInputPath").getTextNormalize();
+
+				// already checked
+				if (checkedInputs.contains(equivalentStressAnalysisInputPath)) {
+					continue;
+				}
+
+				// add to checked inputs
+				checkedInputs.add(equivalentStressAnalysisInputPath);
+
+				// check equivalent stress analysis input
+				if (!new CheckEquivalentStressAnalysisInput(this, Paths.get(equivalentStressAnalysisInputPath), isamiVersion).start(connection))
 					return false;
 			}
 		}

@@ -376,6 +376,17 @@
 		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
 	</equivalentStressAnalysis>
 	
+	<!--Performs fast equivalent stress analysis with referenced STF file.-->
+	<fastEquivalentStressAnalysis>
+		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath></generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
+	</fastEquivalentStressAnalysis>
+
 	<!--Performs loadcase damage contribution analysis with referenced STF file.-->
 	<loadcaseDamageContributionAnalysis>
 		<id></id>
@@ -520,14 +531,48 @@
 		<equivalentStressAnalysisInputPath></equivalentStressAnalysisInputPath>
 		<!--To keep the generated stress sequence for the maximum damaging equivalent stress. This can be 'true' or 'false' (default). This element is optional, if not given, default value will be considered.-->
 		<generateMaxdamData></generateMaxdamData>
-	</damageAngleAnalysis><!--Plots damage angles of referenced damage angles.-->
+	</damageAngleAnalysis>
+	
+	<!--Plots damage angles of referenced damage angles.-->
 	<plotDamageAngles>
-		<id></id><!--The damageAngleId refers to damageAngleAnalysis instruction. Multiple damageAngleIds can be given.-->
-		<damageAngleId></damageAngleId><!--Path to save damage angle plot. File name must end with .png.-->
-		<outputPath></outputPath><!--Plot options. This element and all its children are optional, if not given, default values will be set.-->
-		<options><!--Plotting data order. This can be one of 'ANGLE', 'DESCENDING' or 'ASCENDING'.-->
-			<orderBy></orderBy><!--To show data labels on the plot. This can be either 'true' or 'false'.-->
-			<showDataLabels></showDataLabels></options></plotDamageAngles>
+		<id></id>
+		<!--The damageAngleId refers to damageAngleAnalysis instruction. Multiple damageAngleIds can be given.-->
+		<damageAngleId></damageAngleId>
+		<!--Path to save damage angle plot. File name must end with .png.-->
+		<outputPath></outputPath>
+		<!--Plot options. This element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--Plotting data order. This can be one of 'ANGLE', 'DESCENDING' or 'ASCENDING'.-->
+			<orderBy></orderBy>
+			<!--To show data labels on the plot. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels>
+		</options>
+	</plotDamageAngles>
+	
+	<!--Saves referenced damage angles to given output XLS file.-->
+	<saveDamageAngles>
+		<id></id>
+		<!--The damageAngleId refers to damageAngleAnalysis instruction. Multiple damageAngleIds can be given.-->
+		<damageAngleId></damageAngleId>
+		<!--Path to save damage angles. File name must end with .xls.-->
+		<outputPath></outputPath>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To save maximum damage angle. This can be either 'true' or 'false'.-->
+			<maxDamageAngle></maxDamageAngle>
+			<maxEquivalentStress></maxEquivalentStress>
+			<materialName></materialName>
+			<materialSlope></materialSlope>
+			<materialConstant></materialConstant>
+			<pilotPointName></pilotPointName>
+			<elementId></elementId>
+			<spectrumName></spectrumName>
+			<aircraftProgram></aircraftProgram>
+			<aircraftSection></aircraftSection>
+			<fatigueMission></fatigueMission>
+			<omissionLevel></omissionLevel>
+		</options>
+	</saveDamageAngles>
 
 	<!--Plots level crossing to given output file.-->
 	<plotLevelCrossing>

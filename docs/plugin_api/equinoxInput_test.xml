@@ -27,7 +27,8 @@
 			<attributeName>FAT_MISSION</attributeName>
 			<keyword>61 Parabolas</keyword>
 		</searchEntry>
-	</addStf><downloadSpectrum>
+	</addStf>
+	<downloadSpectrum>
 		<id>1</id>
 		<searchEntry>
 			<attributeName>NAME</attributeName>

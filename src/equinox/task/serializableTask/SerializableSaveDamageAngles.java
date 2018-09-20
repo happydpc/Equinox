@@ -17,6 +17,7 @@ package equinox.task.serializableTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.controlsfx.control.ToggleSwitch;
 
@@ -40,7 +41,7 @@ public class SerializableSaveDamageAngles implements SerializableTask {
 	private static final long serialVersionUID = 1L;
 
 	/** Damage angles. */
-	private final ArrayList<SerializableSpectrumItem> angles_;
+	private final List<SerializableSpectrumItem> angles_;
 
 	/** Options. */
 	private final boolean[] options_;
@@ -61,10 +62,11 @@ public class SerializableSaveDamageAngles implements SerializableTask {
 	 * @param output
 	 *            Output file.
 	 */
-	public SerializableSaveDamageAngles(ArrayList<DamageAngle> angles, BooleanProperty[] options, File output) {
+	public SerializableSaveDamageAngles(List<DamageAngle> angles, BooleanProperty[] options, File output) {
 		angles_ = new ArrayList<>();
-		for (SpectrumItem item : angles)
+		for (SpectrumItem item : angles) {
 			angles_.add(new SerializableSpectrumItem(item));
+		}
 		options_ = new boolean[options.length];
 		optionNames_ = new String[options.length];
 		for (int i = 0; i < options.length; i++) {
@@ -78,7 +80,7 @@ public class SerializableSaveDamageAngles implements SerializableTask {
 	public SaveDamageAngles getTask(TreeItem<String> fileTreeRoot) {
 
 		// get angles
-		ArrayList<DamageAngle> angles = new ArrayList<>();
+		List<DamageAngle> angles = new ArrayList<>();
 		for (SerializableSpectrumItem item : angles_) {
 
 			// get angle

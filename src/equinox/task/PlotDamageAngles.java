@@ -72,14 +72,18 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 			name_ = name;
 		}
 
-		@Override
-		public String toString() {
+		/**
+		 * Returns the name of ordering.
+		 * 
+		 * @return Name of ordering.
+		 */
+		public String getName() {
 			return name_;
 		}
 	}
 
 	/** Order and data label options. */
-	private final boolean showlabels_;
+	private final boolean showLabels_;
 
 	/** Damage angles. */
 	private final List<DamageAngle> damageAngles_;
@@ -103,13 +107,13 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	 *            Damage angles. Can be null for automatic execution.
 	 * @param order
 	 *            Results ordering.
-	 * @param showlabels
+	 * @param showLabels
 	 *            True to show labels.
 	 */
-	public PlotDamageAngles(DamageAngle[] damageAngles, ResultOrdering order, boolean showlabels) {
+	public PlotDamageAngles(DamageAngle[] damageAngles, ResultOrdering order, boolean showLabels) {
 		damageAngles_ = damageAngles == null ? Collections.synchronizedList(new ArrayList<>()) : Arrays.asList(damageAngles);
 		order_ = order;
-		showlabels_ = showlabels;
+		showLabels_ = showLabels;
 	}
 
 	@Override
@@ -196,7 +200,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 				StatisticsViewPanel panel = (StatisticsViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
 
 				// set chart data to panel
-				panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, legendVisible, showlabels_, false);
+				panel.setPlotData(dataset, title, null, xAxisLabel, yAxisLabel, legendVisible, showLabels_, false);
 
 				// show column chart plot panel
 				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.STATS_VIEW);
@@ -207,7 +211,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 
 				// create plot attributes
 				StatisticsPlotAttributes plotAttributes = new StatisticsPlotAttributes();
-				plotAttributes.setLabelsVisible(showlabels_);
+				plotAttributes.setLabelsVisible(showLabels_);
 				plotAttributes.setLayered(false);
 				plotAttributes.setLegendVisible(legendVisible);
 				plotAttributes.setSubTitle(null);

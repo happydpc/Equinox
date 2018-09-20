@@ -30,13 +30,12 @@ import equinox.task.PlotDamageAngles;
 import equinox.task.PlotDamageAngles.ResultOrdering;
 import equinox.utility.Utility;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.VBox;
 
@@ -56,7 +55,7 @@ public class PlotDamageAnglePanel implements InternalInputSubPanel {
 	private VBox root_;
 
 	@FXML
-	private ChoiceBox<ResultOrdering> order_;
+	private ComboBox<ResultOrdering> order_;
 
 	@FXML
 	private ToggleSwitch dataLabels_;
@@ -65,17 +64,15 @@ public class PlotDamageAnglePanel implements InternalInputSubPanel {
 	public void initialize(URL location, ResourceBundle resources) {
 
 		// set results order
-		order_.setItems(FXCollections.observableArrayList(ResultOrdering.values()));
+		order_.setButtonCell(new ResultOrderingListCell());
+		order_.setCellFactory(p -> new ResultOrderingListCell());
+		order_.getItems().setAll(ResultOrdering.values());
 		order_.getSelectionModel().select(0);
 
 		// set listeners
-		dataLabels_.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
-				panel.setLabelsVisible(newValue);
-			}
+		dataLabels_.selectedProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+			StatisticsViewPanel panel = (StatisticsViewPanel) owner_.getOwner().getViewPanel().getSubPanel(ViewPanel.STATS_VIEW);
+			panel.setLabelsVisible(newValue);
 		});
 	}
 
@@ -192,6 +189,27 @@ public class PlotDamageAnglePanel implements InternalInputSubPanel {
 		// exception occurred during loading
 		catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Inner class for comparison criteria list cell.
+	 *
+	 * @author Murat Artim
+	 * @date 2 Sep 2018
+	 * @time 16:38:10
+	 */
+	private class ResultOrderingListCell extends ListCell<ResultOrdering> {
+
+		@Override
+		protected void updateItem(ResultOrdering item, boolean empty) {
+			super.updateItem(item, empty);
+			if (!empty && item != null) {
+				setText(item.getName());
+			}
+			else {
+				setText(null);
+			}
 		}
 	}
 }

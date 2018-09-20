@@ -44,6 +44,7 @@ import equinox.data.IsamiVersion;
 import equinox.data.MissionParameter;
 import equinox.data.Pair;
 import equinox.data.Settings;
+import equinox.data.fileType.DamageAngle;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.data.fileType.FlightDamageContributions;
 import equinox.data.fileType.LoadcaseDamageContributions;
@@ -124,6 +125,8 @@ import equinox.task.GetTypicalFlight;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.LoadcaseDamageContributionAnalysis;
+import equinox.task.PlotDamageAngles;
+import equinox.task.PlotDamageAngles.ResultOrdering;
 import equinox.task.PlotDamageComparison;
 import equinox.task.PlotExternalLevelCrossing;
 import equinox.task.PlotExternalTypicalFlights;
@@ -135,6 +138,7 @@ import equinox.task.SaveCVT;
 import equinox.task.SaveCategoryDataset;
 import equinox.task.SaveChart;
 import equinox.task.SaveConversionTable;
+import equinox.task.SaveDamageAngles;
 import equinox.task.SaveDamageContributions;
 import equinox.task.SaveEquivalentStressPlotToFile;
 import equinox.task.SaveEquivalentStressRatios;
@@ -387,6 +391,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			equivalentStressAnalysis(equinoxInput, tasks);
 		}
 
+		// fast equivalent stress analysis
+		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
+			fastEquivalentStressAnalysis(equinoxInput, tasks);
+		}
+
 		// loadcase damage contribution analysis
 		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
 			loadcaseDamageContributionAnalysis(equinoxInput, tasks);
@@ -435,6 +444,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// plot damage angles
 		if (equinoxInput.getChild("plotDamageAngles") != null) {
 			plotDamageAngles(equinoxInput, tasks);
+		}
+
+		// save damage angles
+		if (equinoxInput.getChild("saveDamageAngles") != null) {
+			saveDamageAngles(equinoxInput, tasks);
 		}
 
 		// plot level crossing
@@ -1096,6 +1110,108 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 				// connect to parent task
 				ParameterizedTaskOwner<SpectrumItem> parentTask = (ParameterizedTaskOwner<SpectrumItem>) tasks.get(loadcaseDamageContributionId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates save damage angles tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void saveDamageAngles(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating save damage angles tasks...");
+
+		// loop over save damage angles elements
+		for (Element saveDamageAngles : equinoxInput.getChildren("saveDamageAngles")) {
+
+			// get id and output path
+			String id = saveDamageAngles.getChildTextNormalize("id");
+			Path outputPath = Paths.get(saveDamageAngles.getChildTextNormalize("outputPath"));
+
+			// create default options
+			BooleanProperty[] options = new BooleanProperty[12];
+			for (int i = 0; i < options.length; i++) {
+				options[i] = new SimpleBooleanProperty(false);
+			}
+			options[SaveDamageAngles.DAM_ANGLE].set(true);
+			options[SaveDamageAngles.FAT_STRESS].set(true);
+			options[SaveDamageAngles.MAT_NAME].set(true);
+			options[SaveDamageAngles.PP_NAME].set(true);
+			options[SaveDamageAngles.MISSION].set(true);
+
+			// read options
+			if (saveDamageAngles.getChild("options") != null) {
+
+				// get element
+				Element optionsElement = saveDamageAngles.getChild("options");
+
+				// set options
+				if (optionsElement.getChild("maxDamageAngle") != null) {
+					options[SaveDamageAngles.DAM_ANGLE].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("maxDamageAngle")));
+				}
+				if (optionsElement.getChild("maxEquivalentStress") != null) {
+					options[SaveDamageAngles.FAT_STRESS].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("maxEquivalentStress")));
+				}
+				if (optionsElement.getChild("materialName") != null) {
+					options[SaveDamageAngles.MAT_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialName")));
+				}
+				if (optionsElement.getChild("materialSlope") != null) {
+					options[SaveDamageAngles.FAT_P].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialSlope")));
+				}
+				if (optionsElement.getChild("materialConstant") != null) {
+					options[SaveDamageAngles.FAT_Q].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("materialConstant")));
+				}
+				if (optionsElement.getChild("pilotPointName") != null) {
+					options[SaveDamageAngles.PP_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("pilotPointName")));
+				}
+				if (optionsElement.getChild("elementId") != null) {
+					options[SaveDamageAngles.EID].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("elementId")));
+				}
+				if (optionsElement.getChild("spectrumName") != null) {
+					options[SaveDamageAngles.SPEC_NAME].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("spectrumName")));
+				}
+				if (optionsElement.getChild("aircraftProgram") != null) {
+					options[SaveDamageAngles.PROGRAM].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftProgram")));
+				}
+				if (optionsElement.getChild("aircraftSection") != null) {
+					options[SaveDamageAngles.SECTION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("aircraftSection")));
+				}
+				if (optionsElement.getChild("fatigueMission") != null) {
+					options[SaveDamageAngles.MISSION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("fatigueMission")));
+				}
+				if (optionsElement.getChild("omissionLevel") != null) {
+					options[SaveDamageAngles.OMISSION].set(Boolean.parseBoolean(optionsElement.getChildTextNormalize("omissionLevel")));
+				}
+			}
+
+			// create task
+			SaveDamageAngles task = new SaveDamageAngles(null, options, outputPath.toFile());
+
+			// set input threshold
+			List<Element> damageAngleIds = saveDamageAngles.getChildren("damageAngleId");
+			task.setInputThreshold(damageAngleIds.size());
+
+			// loop over damage angle ids
+			for (Element damageAngleIdElement : damageAngleIds) {
+
+				// get damage angle id
+				String damageAngleId = damageAngleIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<DamageAngle> parentTask = (ParameterizedTaskOwner<DamageAngle>) tasks.get(damageAngleId).getTask();
 				parentTask.addParameterizedTask(id, task);
 				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
 			}
@@ -2231,8 +2347,56 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	 *             If exception occurs during process.
 	 */
 	private void plotDamageAngles(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
-		// FIXME Auto-generated method stub
 
+		// update info
+		updateMessage("Creating plot damage angles tasks...");
+
+		// loop over plot damage angles elements
+		for (Element plotDamageAngles : equinoxInput.getChildren("plotDamageAngles")) {
+
+			// get id and output path
+			String id = plotDamageAngles.getChildTextNormalize("id");
+			Path outputPath = Paths.get(plotDamageAngles.getChildTextNormalize("outputPath"));
+
+			// get options
+			ResultOrdering orderBy = ResultOrdering.ANGLE;
+			boolean showLabels = true;
+			if (plotDamageAngles.getChild("options") != null) {
+				Element options = plotDamageAngles.getChild("options");
+				if (options.getChild("orderBy") != null) {
+					orderBy = ResultOrdering.valueOf(options.getChildTextNormalize("orderBy"));
+				}
+				if (options.getChild("showDataLabels") != null) {
+					showLabels = Boolean.parseBoolean(options.getChildTextNormalize("showDataLabels"));
+				}
+			}
+
+			// create tasks
+			SaveCategoryDataset saveDatasetTask = new SaveCategoryDataset(null, outputPath);
+			PlotDamageAngles plotTask = new PlotDamageAngles(null, orderBy, showLabels);
+			plotTask.addParameterizedTask(id, saveDatasetTask);
+			plotTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+			// set input threshold
+			List<Element> damageAngleIds = plotDamageAngles.getChildren("damageAngleId");
+			plotTask.setInputThreshold(damageAngleIds.size());
+
+			// loop over damage angle ids
+			for (Element damageAngleIdElement : damageAngleIds) {
+
+				// get damage angle id
+				String damageAngleId = damageAngleIdElement.getTextNormalize();
+
+				// connect to parent task
+				ParameterizedTaskOwner<DamageAngle> parentTask = (ParameterizedTaskOwner<DamageAngle>) tasks.get(damageAngleId).getTask();
+				parentTask.addParameterizedTask(id, plotTask);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+			}
+
+			// put task to tasks
+			tasks.put(id, new InstructedTask(saveDatasetTask, true));
+			tasks.put("ownerOf_" + id, new InstructedTask(plotTask, true));
+		}
 	}
 
 	/**
@@ -2786,6 +2950,95 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 			// put task to tasks
 			tasks.put(id, new InstructedTask(task, true));
+		}
+	}
+
+	/**
+	 * Creates fast equivalent stress analysis tasks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @param tasks
+	 *            List to store tasks to be executed.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void fastEquivalentStressAnalysis(Element equinoxInput, HashMap<String, InstructedTask> tasks) throws Exception {
+
+		// update info
+		updateMessage("Creating typical flight damage contribution analysis tasks...");
+
+		// get analysis engine settings
+		Settings settings = taskPanel_.getOwner().getOwner().getSettings();
+		AnalysisEngine engine = (AnalysisEngine) settings.getValue(Settings.ANALYSIS_ENGINE);
+		IsamiVersion isamiVersion = (IsamiVersion) settings.getValue(Settings.ISAMI_VERSION);
+		IsamiSubVersion isamiSubVersion = (IsamiSubVersion) settings.getValue(Settings.ISAMI_SUB_VERSION);
+		boolean applyCompression = (boolean) settings.getValue(Settings.APPLY_COMPRESSION);
+
+		// input mapping
+		HashMap<Path, GenerateStressSequenceInput> generateStressSequenceInputs = new HashMap<>();
+		HashMap<Path, EquivalentStressInput> equivalentStressAnalysisInputs = new HashMap<>();
+
+		// get connection to database
+		try (Connection connection = Equinox.DBC_POOL.getConnection()) {
+
+			// loop over fast equivalent stress analysis elements
+			for (Element fastEquivalentStressAnalysis : equinoxInput.getChildren("fastEquivalentStressAnalysis")) {
+
+				// get inputs
+				String id = fastEquivalentStressAnalysis.getChildTextNormalize("id");
+				String stfId = fastEquivalentStressAnalysis.getChildTextNormalize("stfId");
+				Path generateStressSequenceInputPath = Paths.get(fastEquivalentStressAnalysis.getChildTextNormalize("generateStressSequenceInputPath"));
+				Path equivalentStressAnalysisInputPath = Paths.get(fastEquivalentStressAnalysis.getChildTextNormalize("equivalentStressAnalysisInputPath"));
+
+				// get generate stress sequence input parameters
+				GenerateStressSequenceInput generateStressSequenceInput = generateStressSequenceInputs.get(generateStressSequenceInputPath);
+				if (generateStressSequenceInput == null) {
+					generateStressSequenceInput = new ReadGenerateStressSequenceInput(this, generateStressSequenceInputPath).start(null);
+					generateStressSequenceInputs.put(generateStressSequenceInputPath, generateStressSequenceInput);
+				}
+
+				// get equivalent stress input parameters
+				EquivalentStressInput equivalentStressAnalysisInput = equivalentStressAnalysisInputs.get(equivalentStressAnalysisInputPath);
+				if (equivalentStressAnalysisInput == null) {
+					equivalentStressAnalysisInput = new ReadEquivalentStressAnalysisInput(this, equivalentStressAnalysisInputPath, isamiVersion).start(connection);
+					equivalentStressAnalysisInputs.put(equivalentStressAnalysisInputPath, equivalentStressAnalysisInput);
+				}
+
+				// create fast equivalent stress input
+				FastEquivalentStressInput input = new FastEquivalentStressInput();
+				input.setApplyOmission(equivalentStressAnalysisInput.applyOmission());
+				input.setDPLoadcase(generateStressSequenceInput.getDPLoadcase());
+				input.setDTInterpolation(generateStressSequenceInput.getDTInterpolation());
+				input.setDTLoadcaseInf(generateStressSequenceInput.getDTLoadcaseInf());
+				input.setDTLoadcaseSup(generateStressSequenceInput.getDTLoadcaseSup());
+				input.setLoadcaseFactors(generateStressSequenceInput.getLoadcaseFactors());
+				input.setOmissionLevel(equivalentStressAnalysisInput.getOmissionLevel());
+				input.setReferenceDP(generateStressSequenceInput.getReferenceDP());
+				input.setReferenceDTInf(generateStressSequenceInput.getReferenceDTInf());
+				input.setReferenceDTSup(generateStressSequenceInput.getReferenceDTSup());
+				input.setRemoveNegativeStresses(equivalentStressAnalysisInput.removeNegativeStresses());
+				input.setRotationAngle(generateStressSequenceInput.getRotationAngle());
+				input.setSegmentFactors(generateStressSequenceInput.getSegmentFactors());
+				input.setStressComponent(generateStressSequenceInput.getStressComponent());
+				input.setStressModifier(GenerateStressSequenceInput.ONEG, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.ONEG), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.ONEG));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAP, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAP), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAP));
+				input.setStressModifier(GenerateStressSequenceInput.DELTAT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.DELTAT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.DELTAT));
+				input.setStressModifier(GenerateStressSequenceInput.INCREMENT, generateStressSequenceInput.getStressModificationValue(GenerateStressSequenceInput.INCREMENT), generateStressSequenceInput.getStressModificationMethod(GenerateStressSequenceInput.INCREMENT));
+
+				// create task
+				FastGenerateStressSequence task = new FastGenerateStressSequence(null, input, Arrays.asList(equivalentStressAnalysisInput.getMaterial()), false, engine);
+				task.setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
+				task.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// add to parent task
+				ParameterizedTaskOwner<STFFile> parentTask = (ParameterizedTaskOwner<STFFile>) tasks.get(stfId).getTask();
+				parentTask.addParameterizedTask(id, task);
+				parentTask.setAutomaticTaskExecutionMode(runMode.equals(PARALLEL));
+
+				// put generate stress sequence task to tasks
+				tasks.put(id, new InstructedTask(task, true));
+			}
 		}
 	}
 
