@@ -33,8 +33,8 @@ import equinox.process.CompareFlightsProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for compare flights task.
@@ -43,7 +43,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Sep 16, 2014
  * @time 11:47:59 AM
  */
-public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements ShortRunningTask, MultipleInputTask<Flight>, ParameterizedTaskOwner<JFreeChart> {
+public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements ShortRunningTask, MultipleInputTask<Flight>, AutomaticTaskOwner<JFreeChart> {
 
 	/** Automatic inputs. */
 	private final List<Flight> flights_;
@@ -55,7 +55,7 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<JFreeChart>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<JFreeChart>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -87,7 +87,7 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<JFreeChart> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<JFreeChart> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -95,7 +95,7 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<JFreeChart>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<JFreeChart>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -105,12 +105,12 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<Flight> task, Flight input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<Flight> task, Flight input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, flights_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<Flight> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<Flight> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, flights_, inputThreshold_);
 	}
 
@@ -172,7 +172,7 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(chart, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(chart, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -189,7 +189,7 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -199,6 +199,6 @@ public class CompareFlights extends InternalEquinoxTask<JFreeChart> implements S
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

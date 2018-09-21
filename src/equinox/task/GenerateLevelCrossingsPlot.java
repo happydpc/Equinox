@@ -86,8 +86,8 @@ import equinox.process.Rainflow;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
@@ -98,7 +98,7 @@ import equinox.utility.Utility;
  * @date Jul 6, 2016
  * @time 3:05:32 PM
  */
-public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
+public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** Equivalent stress. */
 	private SpectrumItem eqStress_;
@@ -128,7 +128,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 	private final Path output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -163,7 +163,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -171,7 +171,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -258,7 +258,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 			Path output = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -282,7 +282,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -300,7 +300,7 @@ public class GenerateLevelCrossingsPlot extends TemporaryFileCreatingTask<Path> 
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

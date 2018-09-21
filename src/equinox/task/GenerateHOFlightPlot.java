@@ -61,8 +61,8 @@ import equinox.plugin.FileType;
 import equinox.process.PlotFlightProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.CrosshairListenerXYPlot;
 import equinox.utility.Utility;
@@ -74,7 +74,7 @@ import equinox.utility.Utility;
  * @date Jul 9, 2016
  * @time 4:07:25 PM
  */
-public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
+public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** Equivalent stress. */
 	private SpectrumItem eqStress_;
@@ -86,7 +86,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 	private final Path output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -118,7 +118,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -126,7 +126,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -269,7 +269,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 			Path output = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -285,7 +285,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -295,7 +295,7 @@ public class GenerateHOFlightPlot extends TemporaryFileCreatingTask<Path> implem
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

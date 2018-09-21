@@ -38,8 +38,8 @@ import equinox.dataServer.remote.data.ContributionType;
 import equinox.plugin.FileType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for plot damage comparison task.
@@ -48,7 +48,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Apr 16, 2015
  * @time 12:25:45 PM
  */
-public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, ContributionType>> {
+public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, AutomaticTaskOwner<Pair<CategoryDataset, ContributionType>> {
 
 	/** Damage contributions. */
 	private final List<SpectrumItem> contributions_;
@@ -63,7 +63,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, ContributionType>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<CategoryDataset, ContributionType>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -98,12 +98,12 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, contributions_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, contributions_, inputThreshold_);
 	}
 
@@ -113,7 +113,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, ContributionType>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<CategoryDataset, ContributionType>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -121,7 +121,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, ContributionType>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<CategoryDataset, ContributionType>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -238,7 +238,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, contributionType_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, contributionType_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -255,7 +255,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -265,7 +265,7 @@ public class PlotDamageComparison extends InternalEquinoxTask<CategoryDataset> i
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

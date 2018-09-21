@@ -436,7 +436,11 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return false;
 		}
 
-		// TODO check next instructions
+		// send text message
+		if (equinoxInput.getChild("sendTextMessage") != null) {
+			if (!checkSendTextMessage(equinoxInput))
+				return false;
+		}
 
 		// share file
 		if (equinoxInput.getChild("shareFile") != null) {
@@ -473,6 +477,46 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
 		}
+	}
+
+	/**
+	 * Returns true if all <code>sendTextMessage</code> elements pass checks.
+	 *
+	 * @param equinoxInput
+	 *            Root input element.
+	 * @return True if all <code>sendTextMessage</code> elements pass checks.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private boolean checkSendTextMessage(Element equinoxInput) throws Exception {
+
+		// read input file
+		updateMessage("Checking sendTextMessage elements...");
+
+		// loop over send text message elements
+		for (Element sendTextMessage : equinoxInput.getChildren("sendTextMessage")) {
+
+			// no id
+			if (!XMLUtilities.checkElementId(this, inputFile, equinoxInput, sendTextMessage))
+				return false;
+
+			// check message
+			if (!XMLUtilities.checkStringValue(this, inputFile, sendTextMessage, "message", false))
+				return false;
+
+			// check recipient
+			if (!XMLUtilities.checkRecipient(this, inputFile, sendTextMessage, "recipient", false))
+				return false;
+
+			// check previous instruction id
+			if (sendTextMessage.getChild("previousInstructionId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, sendTextMessage, "previousInstructionId", null))
+					return false;
+			}
+		}
+
+		// check passed
+		return true;
 	}
 
 	/**
@@ -785,6 +829,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress ids
+			else if (saveEquivalentStressRatios.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 1))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (saveEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStressRatios, "headlessEquivalentStressId", "equivalentStressAnalysis", 1))
@@ -870,6 +920,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress ids
+			else if (saveLifeFactors.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 1))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (saveLifeFactors.getChild("headlessEquivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveLifeFactors, "headlessEquivalentStressId", "equivalentStressAnalysis", 1))
@@ -948,6 +1004,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check equivalent stress ids
 			if (saveEquivalentStresses.getChild("equivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "equivalentStressId", "equivalentStressAnalysis", 1))
+					return false;
+			}
+
+			// check fast equivalent stress ids
+			else if (saveEquivalentStresses.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, saveEquivalentStresses, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 1))
 					return false;
 			}
 
@@ -1041,6 +1103,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress ids
+			else if (plotEquivalentStressRatios.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 2))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (plotEquivalentStressRatios.getChild("headlessEquivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressRatios, "headlessEquivalentStressId", "equivalentStressAnalysis", 2))
@@ -1131,6 +1199,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 					return false;
 			}
 
+			// check fast equivalent stress ids
+			else if (plotLifeFactors.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 2))
+					return false;
+			}
+
 			// check headless equivalent stress id
 			else if (plotLifeFactors.getChild("headlessEquivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotLifeFactors, "headlessEquivalentStressId", "equivalentStressAnalysis", 2))
@@ -1205,6 +1279,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check equivalent stress ids
 			if (plotEquivalentStressComparison.getChild("equivalentStressId") != null) {
 				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "equivalentStressId", "equivalentStressAnalysis", 2))
+					return false;
+			}
+
+			// check fast equivalent stress ids
+			else if (plotEquivalentStressComparison.getChild("fastEquivalentStressId") != null) {
+				if (!XMLUtilities.checkDependencies(this, inputFile, equinoxInput, plotEquivalentStressComparison, "fastEquivalentStressId", "fastEquivalentStressAnalysis", 2))
 					return false;
 			}
 
@@ -2849,6 +2929,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, addHeadlessStressSequence, "flsPath", false, FileType.FLS))
 					return false;
 			}
+
+			// check previous instruction id
+			if (addHeadlessStressSequence.getChild("previousInstructionId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, addHeadlessStressSequence, "previousInstructionId", null))
+					return false;
+			}
 		}
 
 		// check passed
@@ -3239,6 +3325,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check search entries
 			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadStf, XMLUtilities.getStringArray(PilotPointInfoType.values())))
 				return false;
+
+			// check previous instruction id
+			if (downloadStf.getChild("previousInstructionId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, downloadStf, "previousInstructionId", null))
+					return false;
+			}
 		}
 
 		// check passed
@@ -3273,6 +3365,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			// check search entries
 			if (!XMLUtilities.checkSearchEntries(this, inputFile, downloadSpectrum, XMLUtilities.getStringArray(SpectrumInfoType.values())))
 				return false;
+
+			// check previous instruction id
+			if (downloadSpectrum.getChild("previousInstructionId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, downloadSpectrum, "previousInstructionId", null))
+					return false;
+			}
 		}
 
 		// check passed
@@ -3587,6 +3685,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				if (!XMLUtilities.checkInputPathValue(this, inputFile, addSpectrum, "txtPath", true, FileType.TXT))
 					return false;
 				if (!XMLUtilities.checkStringValue(this, inputFile, addSpectrum, "convSheet", false))
+					return false;
+			}
+
+			// check previous instruction id
+			if (addSpectrum.getChild("previousInstructionId") != null) {
+				if (!XMLUtilities.checkDependency(this, inputFile, equinoxInput, addSpectrum, "previousInstructionId", null))
 					return false;
 			}
 		}

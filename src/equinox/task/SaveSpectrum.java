@@ -34,8 +34,8 @@ import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
@@ -46,7 +46,7 @@ import equinox.utility.Utility;
  * @date Apr 29, 2014
  * @time 10:32:51 AM
  */
-public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Path> {
+public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, AutomaticTaskOwner<Path> {
 
 	/** File item to save. */
 	private Spectrum spectrum_ = null;
@@ -55,7 +55,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 	private final File output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -79,7 +79,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -87,7 +87,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -181,7 +181,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -197,7 +197,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -207,7 +207,7 @@ public class SaveSpectrum extends TemporaryFileCreatingTask<Path> implements Lon
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

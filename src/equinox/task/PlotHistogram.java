@@ -32,8 +32,8 @@ import equinox.data.input.HistogramInput;
 import equinox.process.PlotHistogramProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -43,7 +43,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Apr 6, 2016
  * @time 2:30:52 PM
  */
-public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/** Histogram input. */
 	private final HistogramInput input_;
@@ -52,7 +52,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 	private SpectrumItem equivalentStress_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -81,7 +81,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -89,7 +89,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -166,7 +166,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 				plotAttributes.setYAxisLabel(yAxisLabel);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -183,7 +183,7 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -193,6 +193,6 @@ public class PlotHistogram extends InternalEquinoxTask<CategoryDataset> implemen
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

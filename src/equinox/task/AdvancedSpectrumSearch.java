@@ -34,8 +34,8 @@ import equinox.dataServer.remote.message.DatabaseQueryPermissionDenied;
 import equinox.network.DataServerManager;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.exception.PermissionDeniedException;
 import equinox.utility.exception.ServerDatabaseQueryFailedException;
 
@@ -46,7 +46,7 @@ import equinox.utility.exception.ServerDatabaseQueryFailedException;
  * @date May 2, 2014
  * @time 6:49:24 PM
  */
-public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, ParameterizedTaskOwner<SpectrumInfo> {
+public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<DownloadInfo>> implements ShortRunningTask, DatabaseQueryListenerTask, AutomaticTaskOwner<SpectrumInfo> {
 
 	/** Serial ID. */
 	private static final long serialVersionUID = 1L;
@@ -61,7 +61,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 	private final AtomicReference<DataMessage> serverMessageRef;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<SpectrumInfo>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumInfo>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -99,7 +99,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumInfo> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumInfo> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -107,7 +107,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<SpectrumInfo>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<SpectrumInfo>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -216,7 +216,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 				SpectrumInfo firstResult = (SpectrumInfo) results.get(0);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(firstResult, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(firstResult, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -233,7 +233,7 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -243,6 +243,6 @@ public class AdvancedSpectrumSearch extends InternalEquinoxTask<ArrayList<Downlo
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

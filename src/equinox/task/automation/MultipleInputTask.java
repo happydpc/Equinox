@@ -29,7 +29,7 @@ import equinox.task.InternalEquinoxTask;
  * @param <V>
  *            Input class.
  */
-public interface MultipleInputTask<V> extends ParameterizedTask<V> {
+public interface MultipleInputTask<V> extends AutomaticTask<V> {
 
 	/**
 	 * Sets input threshold. Once the threshold is reached, this task will execute itself.
@@ -49,7 +49,7 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	 * @param executeInParallel
 	 *            True to execute this task in parallel mode (if the above mentioned condition is met).
 	 */
-	void addAutomaticInput(ParameterizedTaskOwner<V> task, V input, boolean executeInParallel);
+	void addAutomaticInput(AutomaticTaskOwner<V> task, V input, boolean executeInParallel);
 
 	/**
 	 * Notifies this task that an input failed to arrive. Source tasks would normally call this method from their <code>failed</code> or <code>canceled</code> methods. The implementation could do one of the following:
@@ -64,7 +64,7 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	 * @param executeInParallel
 	 *            True to execute this task in parallel mode (if the above mentioned condition is met).
 	 */
-	void inputFailed(ParameterizedTaskOwner<V> task, boolean executeInParallel);
+	void inputFailed(AutomaticTaskOwner<V> task, boolean executeInParallel);
 
 	/**
 	 * Called by implementing classes as a default implementation of <code>addAutomaticInput</code> method.
@@ -80,7 +80,7 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	 * @param inputThreshold
 	 *            Input threshold.
 	 */
-	default void automaticInputAdded(ParameterizedTaskOwner<V> task, V input, boolean executeInParallel, List<V> inputList, int inputThreshold) {
+	default void automaticInputAdded(AutomaticTaskOwner<V> task, V input, boolean executeInParallel, List<V> inputList, int inputThreshold) {
 
 		// synchronize on input list
 		synchronized (inputList) {
@@ -117,7 +117,7 @@ public interface MultipleInputTask<V> extends ParameterizedTask<V> {
 	 *            Input threshold.
 	 * @return The updated input threshold.
 	 */
-	default int automaticInputFailed(ParameterizedTaskOwner<V> task, boolean executeInParallel, List<V> inputList, int inputThreshold) {
+	default int automaticInputFailed(AutomaticTaskOwner<V> task, boolean executeInParallel, List<V> inputList, int inputThreshold) {
 
 		// decrement threshold
 		inputThreshold--;

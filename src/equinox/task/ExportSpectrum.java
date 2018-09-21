@@ -33,8 +33,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 import jxl.CellType;
@@ -56,7 +56,7 @@ import jxl.write.WriteException;
  * @date Feb 9, 2016
  * @time 2:45:37 PM
  */
-public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Pair<Spectrum, String[]>>, ParameterizedTaskOwner<Path> {
+public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Pair<Spectrum, String[]>>, AutomaticTaskOwner<Path> {
 
 	/** Spectrum. */
 	private Spectrum spectrum_;
@@ -71,7 +71,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 	private String deliveryReference_, description_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -134,7 +134,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -142,7 +142,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -199,7 +199,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 			Path output = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -215,7 +215,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -225,7 +225,7 @@ public class ExportSpectrum extends TemporaryFileCreatingTask<Path> implements L
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

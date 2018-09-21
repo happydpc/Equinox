@@ -32,8 +32,8 @@ import org.jfree.ui.RectangleInsets;
 import equinox.data.MissionParameterPlotAttributes;
 import equinox.data.Pair;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -43,7 +43,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 8 Sep 2018
  * @time 19:06:17
  */
-public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>, ParameterizedTaskOwner<Path> {
+public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>, AutomaticTaskOwner<Path> {
 
 	/** Path to output file. */
 	private final Path output;
@@ -55,7 +55,7 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 	private MissionParameterPlotAttributes attributes;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -88,7 +88,7 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -96,7 +96,7 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -171,7 +171,7 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -187,7 +187,7 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -197,6 +197,6 @@ public class SaveMissionParameterPlot extends InternalEquinoxTask<Path> implemen
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

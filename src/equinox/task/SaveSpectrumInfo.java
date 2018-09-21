@@ -24,8 +24,8 @@ import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -35,7 +35,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Feb 3, 2016
  * @time 1:57:31 PM
  */
-public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements ShortRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Spectrum> {
+public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements ShortRunningTask, SingleInputTask<Spectrum>, AutomaticTaskOwner<Spectrum> {
 
 	/** Spectrum. */
 	private Spectrum spectrum_;
@@ -44,7 +44,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 	private final String[] info_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Spectrum>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Spectrum>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -73,7 +73,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Spectrum> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Spectrum> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -81,7 +81,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Spectrum>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Spectrum>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -158,7 +158,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 
 			// manage automatic tasks
 			else {
-				parameterizedTaskOwnerSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(spectrum, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -175,7 +175,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -185,7 +185,7 @@ public class SaveSpectrumInfo extends InternalEquinoxTask<Spectrum> implements S
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

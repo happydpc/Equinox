@@ -57,8 +57,8 @@ import equinox.process.SaveSTH;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableEquivalentStressAnalysis;
 import equinox.utility.Utility;
@@ -70,7 +70,7 @@ import equinox.utility.Utility;
  * @date Jul 7, 2014
  * @time 11:11:39 AM
  */
-public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, SavableTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<SpectrumItem> {
+public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, SavableTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<SpectrumItem> {
 
 	/** Maximum number of allowed peaks per typical flight for standard in-build/server analysis engine. */
 	public static final int MAX_PEAKS = 100000;
@@ -109,7 +109,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 	private volatile Exception rainflowException_, equivalentStressAnalysisException_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<SpectrumItem>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumItem>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -154,7 +154,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumItem> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumItem> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -162,7 +162,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<SpectrumItem>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<SpectrumItem>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -353,7 +353,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 			}
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(eqStress, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(eqStress, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -369,7 +369,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 
 		// destroy sub processes (if still running)
 		if (omission_ != null && omission_.isAlive()) {
@@ -390,7 +390,7 @@ public class EquivalentStressAnalysis extends TemporaryFileCreatingTask<Spectrum
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 
 		// destroy sub processes (if still running)
 		if (omission_ != null && omission_.isAlive()) {

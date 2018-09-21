@@ -41,6 +41,46 @@
 			<keyword>61 Parabolas</keyword>
 		</searchEntry>
 	</addStf>
+	<addStf>
+		<id>36</id>
+		<spectrumId>2</spectrumId>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>NAME</attributeName>
+			<keyword>Fuselage_F26_TZ</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_PROGRAM</attributeName>
+			<keyword>a310</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>AC_SECTION</attributeName>
+			<keyword>sect13</keyword>
+		</searchEntry>
+		<searchEntry>
+			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
+			<attributeName>FAT_MISSION</attributeName>
+			<keyword>61 Parabolas</keyword>
+		</searchEntry>
+	</addStf>
+	<assignMissionParametersToStf>
+		<id>35</id>
+		<stfId>3</stfId><!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name>Param1</name><!--Mission parameter value. A real number is expected.-->
+			<value>12.7</value>
+		</missionParameter>
+	</assignMissionParametersToStf>
+	<assignMissionParametersToStf>
+		<id>37</id>
+		<stfId>36</stfId><!--Multiple mission parameters with unique names can be given.-->
+		<missionParameter><!--Mission parameter name. This must be unique among parameter names.-->
+			<name>Param1</name><!--Mission parameter value. A real number is expected.-->
+			<value>7.6</value>
+		</missionParameter>
+	</assignMissionParametersToStf>
 	<fastEquivalentStressAnalysis>
 		<id>4</id>
 		<!--The stfId refers to 'addStf' instruction.-->
@@ -50,50 +90,53 @@
 		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
 		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
 	</fastEquivalentStressAnalysis>
-	<plotMissionProfile>
+	<fastEquivalentStressAnalysis>
 		<id>5</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
-		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Path to save mission profile plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/missionProfile.png</outputPath>
-	</plotMissionProfile>
-	<plotLevelCrossing>
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId>36</stfId>
+		<!--Path to input file containing input parameters for generating stress sequence. File name must end with either XML or JSON.-->
+		<generateStressSequenceInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml</generateStressSequenceInputPath>
+		<!--Path to input file containing input parameters for equivalent stress analysis. File name must end with either XML or JSON.-->
+		<equivalentStressAnalysisInputPath>/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml</equivalentStressAnalysisInputPath>
+	</fastEquivalentStressAnalysis>
+	<plotEquivalentStressComparison>
 		<id>6</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Minimum 2 fastEquivalentStressId elements are required.-->
 		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Path to save level crossing plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/levelCrossing.png</outputPath>
-	</plotLevelCrossing>
-	<plotRainflowHistogram>
+		<fastEquivalentStressId>5</fastEquivalentStressId>
+		<!--Path to save equivalent stress comparison plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/comparison.png</outputPath>
+	</plotEquivalentStressComparison>
+	
+	<plotLifeFactors>
 		<id>7</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Minimum 2 fastEquivalentStressId elements are required.-->
 		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Path to save rainflow histogram plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/histogram.png</outputPath>
-	</plotRainflowHistogram>
-	<plotTypicalFlight>
-		<id>8</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
-		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence' or 'Flight With Highest Total Stress'.-->
-		<plotType>Longest Typical Flight</plotType>
-		<!--Path to save typical flight plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/longest.png</outputPath>
-	</plotTypicalFlight>
-	<plotTypicalFlightStatistics>
-		<id>9</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
-		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
-		<plotType>Typical Flight Occurrences</plotType>
-		<!--Path to save typical flight statistics plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/occurrences.png</outputPath>
-	</plotTypicalFlightStatistics>
-	<saveAnalysisOutputFile>
-		<id>10</id>
-		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction.-->
-		<fastEquivalentStressId>4</fastEquivalentStressId>
-		<!--Path to save the analysis output file. Note that an appropriate file extension will be appended based on the analysis engine used.-->
-		<outputPath>/Users/aurora/Temporary/output.html</outputPath>
-	</saveAnalysisOutputFile>
+		<fastEquivalentStressId>5</fastEquivalentStressId>
+		<!--Basis fatigue mission to derive the life factors.-->
+		<basisMission>61 Parabolas</basisMission>
+		<!--Mission parameter name. This element is optional, if given, life factors will be plotted against mission parameter values of pilot points (or their parent spectra).-->
+		<missionParameter>Param1</missionParameter>
+		<!--Path to save life factors plot. File name must end with .png.-->
+		<outputPath>/Users/aurora/Temporary/lifeFactors.png</outputPath>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming>
+			<!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName>false</includeSpectrumName>
+			<includeStfName>true</includeStfName>
+			<includeElementId>false</includeElementId>
+			<includeMaterialName>false</includeMaterialName>
+			<includeOmissionLevel>false</includeOmissionLevel>
+			<includeAircraftProgram>false</includeAircraftProgram>
+			<includeAircraftSection>false</includeAircraftSection>
+			<includeFatigueMission>false</includeFatigueMission>
+		</seriesNaming>
+		<!--Plotting options. This element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To include the life factor for basis fatigue mission (i.e. 1.0). This can be either 'true' or 'false'.-->
+			<includeBasisMission>true</includeBasisMission>
+			<!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels>true</showDataLabels>
+		</options>
+	</plotLifeFactors>
 </equinoxInput>

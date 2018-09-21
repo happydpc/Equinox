@@ -36,8 +36,8 @@ import equinox.data.input.ExternalStatisticsInput;
 import equinox.data.input.ExternalStatisticsInput.ExternalStatistic;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -47,7 +47,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Apr 7, 2016
  * @time 9:19:54 AM
  */
-public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<List<ExternalFlight>>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, SingleInputTask<List<ExternalFlight>>, AutomaticTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/** Automatic inputs. */
 	private final List<ExternalFlight> flights_;
@@ -59,7 +59,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 	private String xAxisLabel_, yAxisLabel_, title_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -96,7 +96,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -104,7 +104,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -182,7 +182,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 				plotAttributes.setYAxisLabel(yAxisLabel_);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -199,7 +199,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -209,7 +209,7 @@ public class GenerateExternalStatistics extends InternalEquinoxTask<CategoryData
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

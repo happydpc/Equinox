@@ -42,8 +42,8 @@ import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
@@ -54,7 +54,7 @@ import equinox.utility.Utility;
  * @date Feb 12, 2014
  * @time 10:25:22 AM
  */
-public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<STFFile> {
+public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> implements LongRunningTask, SingleInputTask<Spectrum>, AutomaticTaskOwner<STFFile> {
 
 	/** STF stress table generation constants. */
 	public static final int MAX_STF_FILES_PER_TABLE = 500, MAX_STRESS_TABLES = 10000;
@@ -72,7 +72,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 	private final List<PilotPointInfo> info_;
 
 	/** Automatic tasks. The key is the STF file name and the value is the task. */
-	private HashMap<String, ParameterizedTask<STFFile>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -143,7 +143,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 	 * Adds automatic task. If <u>multiple STF files are added</u>, task id must be the name of STF file that the automatic task will use as input. Otherwise it should be any unique task identifier.
 	 */
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<STFFile> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -151,7 +151,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<STFFile>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<STFFile>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -262,14 +262,14 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 				// only 1 STF file added
 				if (stfFiles.size() == 1) {
 					STFFile stfFile = stfFiles.get(0);
-					parameterizedTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+					automaticTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 				}
 
 				// multiple STF files added
 				else {
 					for (STFFile stfFile : stfFiles) {
-						ParameterizedTask<STFFile> task = automaticTasks_.get(stfFile.getName());
-						parameterizedTaskOwnerSucceeded(stfFile, task, taskPanel_, executeAutomaticTasksInParallel_);
+						AutomaticTask<STFFile> task = automaticTasks_.get(stfFile.getName());
+						automaticTaskOwnerSucceeded(stfFile, task, taskPanel_, executeAutomaticTasksInParallel_);
 					}
 				}
 			}
@@ -288,7 +288,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -298,7 +298,7 @@ public class AddSTFFiles extends TemporaryFileCreatingTask<ArrayList<STFFile>> i
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

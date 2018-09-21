@@ -39,8 +39,8 @@ import equinox.data.input.ExternalStressSequenceComparisonInput.ExternalComparis
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for compare external stress sequences task.
@@ -49,7 +49,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Apr 7, 2016
  * @time 10:30:04 AM
  */
-public class CompareExternalStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<ExternalStressSequence>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+public class CompareExternalStressSequences extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<ExternalStressSequence>, AutomaticTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/** Comparison input. */
 	private final ExternalStressSequenceComparisonInput input_;
@@ -64,7 +64,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -96,7 +96,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -104,7 +104,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -114,12 +114,12 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<ExternalStressSequence> task, ExternalStressSequence input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<ExternalStressSequence> task, ExternalStressSequence input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, stressSequences_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<ExternalStressSequence> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<ExternalStressSequence> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, stressSequences_, inputThreshold_);
 	}
 
@@ -217,7 +217,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 				plotAttributes.setYAxisLabel(yAxisLabel_);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -234,7 +234,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class CompareExternalStressSequences extends InternalEquinoxTask<Category
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

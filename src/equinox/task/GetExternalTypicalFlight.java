@@ -21,8 +21,8 @@ import java.util.concurrent.ExecutionException;
 import equinox.data.fileType.ExternalFlight;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -32,7 +32,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 11 Sep 2018
  * @time 15:17:01
  */
-public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight> implements ShortRunningTask, SingleInputTask<ExternalStressSequence>, ParameterizedTaskOwner<ExternalFlight> {
+public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight> implements ShortRunningTask, SingleInputTask<ExternalStressSequence>, AutomaticTaskOwner<ExternalFlight> {
 
 	/** Typical flight name. */
 	private final String flightName;
@@ -40,7 +40,7 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 	private ExternalStressSequence stressSequence;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<ExternalFlight>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<ExternalFlight>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -66,7 +66,7 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<ExternalFlight> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<ExternalFlight> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -74,7 +74,7 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<ExternalFlight>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<ExternalFlight>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -118,7 +118,7 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 			ExternalFlight flight = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(flight, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(flight, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -134,7 +134,7 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -144,6 +144,6 @@ public class GetExternalTypicalFlight extends InternalEquinoxTask<ExternalFlight
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

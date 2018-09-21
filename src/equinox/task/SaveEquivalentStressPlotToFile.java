@@ -31,8 +31,8 @@ import equinox.Equinox;
 import equinox.data.fileType.SpectrumItem;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import equinox.task.automation.SingleInputTask;
 import javafx.embed.swing.SwingFXUtils;
@@ -45,7 +45,7 @@ import javafx.scene.image.Image;
  * @date 29 Aug 2018
  * @time 15:32:39
  */
-public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<Path> {
+public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, PostProcessingTask, AutomaticTaskOwner<Path> {
 
 	/** Equivalent stress. */
 	private SpectrumItem equivalentStress;
@@ -57,7 +57,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 	private final PilotPointImageType plotType;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -84,7 +84,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -92,7 +92,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -133,7 +133,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -149,7 +149,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -159,7 +159,7 @@ public class SaveEquivalentStressPlotToFile extends InternalEquinoxTask<Path> im
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

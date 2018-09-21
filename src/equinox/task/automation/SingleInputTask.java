@@ -24,7 +24,7 @@ package equinox.task.automation;
  * @date Mar 7, 2016
  * @time 10:21:57 AM
  */
-public interface SingleInputTask<V> extends ParameterizedTask<V> {
+public interface SingleInputTask<V> extends AutomaticTask<V> {
 
 	/**
 	 * Sets automatic task input.

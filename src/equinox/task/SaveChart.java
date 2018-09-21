@@ -23,8 +23,8 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -34,7 +34,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 5 Sep 2018
  * @time 21:53:20
  */
-public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<JFreeChart>, ParameterizedTaskOwner<Path> {
+public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<JFreeChart>, AutomaticTaskOwner<Path> {
 
 	/** Chart. */
 	private JFreeChart chart;
@@ -43,7 +43,7 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 	private final Path output;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -72,7 +72,7 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -80,7 +80,7 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -123,7 +123,7 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -139,7 +139,7 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -149,6 +149,6 @@ public class SaveChart extends InternalEquinoxTask<Path> implements ShortRunning
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

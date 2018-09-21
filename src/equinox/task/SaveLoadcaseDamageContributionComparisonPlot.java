@@ -36,8 +36,8 @@ import equinox.data.Pair;
 import equinox.data.ui.PieLabelGenerator;
 import equinox.dataServer.remote.data.ContributionType;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -47,7 +47,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 16 Sep 2018
  * @time 00:26:09
  */
-public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, ContributionType>>, ParameterizedTaskOwner<Path> {
+public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, ContributionType>>, AutomaticTaskOwner<Path> {
 
 	/** Path to output file. */
 	private final Path output;
@@ -59,7 +59,7 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 	private ContributionType contributionType;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -92,7 +92,7 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -100,7 +100,7 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -198,7 +198,7 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -214,7 +214,7 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -224,6 +224,6 @@ public class SaveLoadcaseDamageContributionComparisonPlot extends InternalEquino
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

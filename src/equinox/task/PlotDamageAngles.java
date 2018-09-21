@@ -35,8 +35,8 @@ import equinox.data.fileType.DamageAngle;
 import equinox.process.PlotDamageAnglesProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for plot damage angles task.
@@ -45,7 +45,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Apr 7, 2016
  * @time 9:31:32 AM
  */
-public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<DamageAngle>, ParameterizedTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
+public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> implements ShortRunningTask, MultipleInputTask<DamageAngle>, AutomaticTaskOwner<Pair<CategoryDataset, StatisticsPlotAttributes>> {
 
 	/**
 	 * Enumeration for results ordering.
@@ -95,7 +95,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -122,12 +122,12 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<DamageAngle> task, DamageAngle input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<DamageAngle> task, DamageAngle input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, damageAngles_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<DamageAngle> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<DamageAngle> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, damageAngles_, inputThreshold_);
 	}
 
@@ -137,7 +137,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -145,7 +145,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<CategoryDataset, StatisticsPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -220,7 +220,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 				plotAttributes.setYAxisLabel(yAxisLabel);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, plotAttributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -237,7 +237,7 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -247,6 +247,6 @@ public class PlotDamageAngles extends InternalEquinoxTask<CategoryDataset> imple
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

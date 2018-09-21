@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.FollowerTask;
 
 /**
  * Class for delete temporary files task.
@@ -33,7 +32,7 @@ import equinox.task.automation.FollowerTask;
  * @date 10 Aug 2016
  * @time 12:22:20
  */
-public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements ShortRunningTask, FollowerTask {
+public class DeleteTemporaryFiles extends InternalEquinoxTask<Void> implements ShortRunningTask {
 
 	/** Directory containing the temporary files to be deleted. */
 	private final Path directory_;

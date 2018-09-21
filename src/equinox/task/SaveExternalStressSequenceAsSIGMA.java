@@ -32,8 +32,8 @@ import equinox.Equinox;
 import equinox.data.fileType.ExternalStressSequence;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -43,7 +43,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Mar 13, 2015
  * @time 12:06:02 PM
  */
-public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<ExternalStressSequence>, ParameterizedTaskOwner<Path> {
+public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<ExternalStressSequence>, AutomaticTaskOwner<Path> {
 
 	/** Stress sequence to save. */
 	private ExternalStressSequence sequence_;
@@ -61,7 +61,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 	private final DecimalFormat format_ = new DecimalFormat("0.000000E00");
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -85,7 +85,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -93,7 +93,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -166,7 +166,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -182,7 +182,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class SaveExternalStressSequenceAsSIGMA extends InternalEquinoxTask<Path>
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

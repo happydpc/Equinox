@@ -668,7 +668,7 @@ public class STFEquivalentStressPanel implements InternalInputSubPanel, DeltaPIn
 			// add automatic tasks
 			for (EquivalentStressInput input : equivalentStressAnalysisInputs) {
 				EquivalentStressAnalysis analysis = new EquivalentStressAnalysis(null, input, engine).setIsamiEngineInputs(isamiVersion, isamiSubVersion, applyCompression);
-				task.addParameterizedTask(Integer.toString(analysis.hashCode()), analysis);
+				task.addAutomaticTask(Integer.toString(analysis.hashCode()), analysis);
 			}
 
 			// run now

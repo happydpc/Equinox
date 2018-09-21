@@ -31,8 +31,8 @@ import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for get contribution names task.1
@@ -41,7 +41,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Apr 15, 2015
  * @time 9:15:11 PM
  */
-public class GetContributionNames extends InternalEquinoxTask<List<String>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<List<SpectrumItem>, List<String>>> {
+public class GetContributionNames extends InternalEquinoxTask<List<String>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, AutomaticTaskOwner<Pair<List<SpectrumItem>, List<String>>> {
 
 	/** Requesting object. */
 	private final DamageContributionRequester panel_;
@@ -53,7 +53,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<List<SpectrumItem>, List<String>>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -77,12 +77,12 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
 	}
 
@@ -92,7 +92,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<List<SpectrumItem>, List<String>>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -100,7 +100,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<List<SpectrumItem>, List<String>>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<List<SpectrumItem>, List<String>>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -149,7 +149,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(new Pair<>(items_, contributionNames), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(items_, contributionNames), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -166,7 +166,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class GetContributionNames extends InternalEquinoxTask<List<String>> impl
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

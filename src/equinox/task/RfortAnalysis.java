@@ -228,7 +228,7 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 	private void startEquivalentStressAnalysis(AddSpectrum addSpectrum) {
 
 		// create and add set spectrum mission task
-		addSpectrum.addParameterizedTask("Set Spectrum Mission", new SetSpectrumMission(null, omission_.toString()));
+		addSpectrum.addAutomaticTask("Set Spectrum Mission", new SetSpectrumMission(null, omission_.toString()));
 
 		// create add STF files tasks
 		ArrayList<File> stfFiles = new ArrayList<>();
@@ -264,8 +264,8 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressInput fatigueInput = new EquivalentStressInput(false, true, 0.0, pp.getFatigueMaterial());
 				EquivalentStressAnalysis fatigueAnalysis = new EquivalentStressAnalysis(null, fatigueInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveFatigueInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				fatigueAnalysis.addParameterizedTask(Integer.toString(saveFatigueInfo.hashCode()), saveFatigueInfo);
-				generateStressSequence.addParameterizedTask(Integer.toString(fatigueAnalysis.hashCode()), fatigueAnalysis);
+				fatigueAnalysis.addAutomaticTask(Integer.toString(saveFatigueInfo.hashCode()), saveFatigueInfo);
+				generateStressSequence.addAutomaticTask(Integer.toString(fatigueAnalysis.hashCode()), fatigueAnalysis);
 			}
 
 			// preffas equivalent stress analysis
@@ -273,8 +273,8 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressInput preffasInput = new EquivalentStressInput(false, true, 0.0, pp.getPreffasMaterial());
 				EquivalentStressAnalysis preffasAnalysis = new EquivalentStressAnalysis(null, preffasInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo savePreffasInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				preffasAnalysis.addParameterizedTask(Integer.toString(savePreffasInfo.hashCode()), savePreffasInfo);
-				generateStressSequence.addParameterizedTask(Integer.toString(preffasAnalysis.hashCode()), preffasAnalysis);
+				preffasAnalysis.addAutomaticTask(Integer.toString(savePreffasInfo.hashCode()), savePreffasInfo);
+				generateStressSequence.addAutomaticTask(Integer.toString(preffasAnalysis.hashCode()), preffasAnalysis);
 			}
 
 			// linear prop. equivalent stress analysis
@@ -282,16 +282,16 @@ public class RfortAnalysis extends TemporaryFileCreatingTask<AddSpectrum> implem
 				EquivalentStressInput linearInput = new EquivalentStressInput(false, true, 0.0, pp.getLinearMaterial());
 				EquivalentStressAnalysis linearAnalysis = new EquivalentStressAnalysis(null, linearInput, analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
 				SaveRfortInfo saveLinearInfo = new SaveRfortInfo(input_, null, analysisID_, omission_.toString(), omission_.getOmissionType(), analysisEngine_).setIsamiEngineInputs(isamiVersion_, isamiSubVersion_, applyCompression_);
-				linearAnalysis.addParameterizedTask(Integer.toString(saveLinearInfo.hashCode()), saveLinearInfo);
-				generateStressSequence.addParameterizedTask(Integer.toString(linearAnalysis.hashCode()), linearAnalysis);
+				linearAnalysis.addAutomaticTask(Integer.toString(saveLinearInfo.hashCode()), saveLinearInfo);
+				generateStressSequence.addAutomaticTask(Integer.toString(linearAnalysis.hashCode()), linearAnalysis);
 			}
 
 			// add generate stress sequence task to add STF files task
-			addSTFFiles.addParameterizedTask(pp.getName(), generateStressSequence);
+			addSTFFiles.addAutomaticTask(pp.getName(), generateStressSequence);
 		}
 
 		// add add STF files task to add spectrum task
-		addSpectrum.addParameterizedTask("Add STF Files", addSTFFiles);
+		addSpectrum.addAutomaticTask("Add STF Files", addSTFFiles);
 
 		// run task
 		taskPanel_.getOwner().runTaskInParallel(addSpectrum);

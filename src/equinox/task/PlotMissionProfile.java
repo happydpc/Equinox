@@ -34,8 +34,8 @@ import equinox.data.fileType.StressSequence;
 import equinox.process.PlotMissionProfileProcess;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -45,7 +45,7 @@ import equinox.task.automation.SingleInputTask;
  * @date May 30, 2016
  * @time 10:14:48 PM
  */
-public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> implements ShortRunningTask, SingleInputTask<StressSequence>, ParameterizedTaskOwner<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> {
+public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> implements ShortRunningTask, SingleInputTask<StressSequence>, AutomaticTaskOwner<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> {
 
 	/** Input stress sequence. */
 	private StressSequence sequence_;
@@ -63,7 +63,7 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 	private final boolean isComparison_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -106,7 +106,7 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -114,7 +114,7 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<XYDataset[], MissionProfileComparisonPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -214,7 +214,7 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 					MissionProfileComparisonPlotAttributes attributes = new MissionProfileComparisonPlotAttributes(maxDiff, title);
 
 					// manage automatic tasks
-					parameterizedTaskOwnerSucceeded(new Pair<>(datasets, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+					automaticTaskOwnerSucceeded(new Pair<>(datasets, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 				}
 			}
 		}
@@ -232,7 +232,7 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -242,6 +242,6 @@ public class PlotMissionProfile extends InternalEquinoxTask<XYDataset[]> impleme
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

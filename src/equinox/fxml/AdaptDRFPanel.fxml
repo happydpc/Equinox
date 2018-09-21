@@ -28,7 +28,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="395.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.AdaptDRFPanel">
+<VBox fx:id="root_" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="395.0" prefWidth="293.0" spacing="10.0" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.AdaptDRFPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" pannable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="scrollPane" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
@@ -169,6 +169,9 @@
                                        </children>
                                     </HBox>
                                  </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
                               </VBox>
                            </content>
                         </TitledPane>

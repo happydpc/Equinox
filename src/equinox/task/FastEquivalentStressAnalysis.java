@@ -58,8 +58,8 @@ import equinox.process.SafeFastESA;
 import equinox.process.SafeFlightDCA;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for fast equivalent stress analysis task.
@@ -68,7 +68,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Jun 15, 2016
  * @time 3:27:36 PM
  */
-public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, ParameterizedTaskOwner<SpectrumItem> {
+public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<SpectrumItem> implements LongRunningTask, AutomaticTaskOwner<SpectrumItem> {
 
 	/** Maximum number of typical flights to store damage contributions. */
 	private static final int MAX_TYPICAL_FLIGHT_DAMAGE_CONTRIBUTIONS = 5;
@@ -116,7 +116,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 	private ESAProcess<?> analysisProcess_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<SpectrumItem>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumItem>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -231,7 +231,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumItem> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumItem> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -239,7 +239,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<SpectrumItem>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<SpectrumItem>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -334,7 +334,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 
 			// manage automatic tasks
 			if (automaticTasks_ != null) {
-				parameterizedTaskOwnerSucceeded(item, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(item, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -356,7 +356,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -371,7 +371,7 @@ public class FastEquivalentStressAnalysis extends TemporaryFileCreatingTask<Spec
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

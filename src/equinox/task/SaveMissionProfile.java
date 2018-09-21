@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutionException;
 import equinox.Equinox;
 import equinox.data.fileType.StressSequence;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import equinox.task.automation.SingleInputTask;
 import jxl.CellType;
@@ -51,7 +51,7 @@ import jxl.write.WriteException;
  * @date May 21, 2015
  * @time 2:25:01 PM
  */
-public class SaveMissionProfile extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, ParameterizedTaskOwner<Path> {
+public class SaveMissionProfile extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, PostProcessingTask, AutomaticTaskOwner<Path> {
 
 	/** Input stress sequence. */
 	private StressSequence sequence_;
@@ -60,7 +60,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 	private final File output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -89,7 +89,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -97,7 +97,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -169,7 +169,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -185,7 +185,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class SaveMissionProfile extends InternalEquinoxTask<Path> implements Lon
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

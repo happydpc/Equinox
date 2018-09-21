@@ -16,8 +16,10 @@
 package equinox.task;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,12 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 	/** Logger of the task. */
 	protected Logger logger_;
 
+	/** Follower tasks. */
+	private List<InternalEquinoxTask<?>> followerTasks_ = null;
+
+	/** Follower task execution mode. */
+	private boolean executeFollowerTasksInParallel_ = true;
+
 	/**
 	 * Sets owner panel to this task.
 	 *
@@ -64,6 +72,38 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		taskPanel_ = taskPanel;
 		updateTitle(getTaskTitle());
 		updateMessage("Queued for execution...");
+	}
+
+	/**
+	 * Sets follower task execution mode. By default, follower tasks will be executed in parallel.
+	 *
+	 * @param isParallel
+	 *            True for parallel execution.
+	 */
+	public void setFollowerTaskExecutionMode(boolean isParallel) {
+		executeFollowerTasksInParallel_ = isParallel;
+	}
+
+	/**
+	 * Adds follower task.
+	 *
+	 * @param task
+	 *            Task to add.
+	 */
+	public void addFollowerTask(InternalEquinoxTask<?> task) {
+		if (followerTasks_ == null) {
+			followerTasks_ = new ArrayList<>();
+		}
+		followerTasks_.add(task);
+	}
+
+	/**
+	 * Returns a list containing the follower tasks or null if no follower tasks are defined.
+	 *
+	 * @return List containing the follower tasks or null if no follower tasks are defined.
+	 */
+	public List<InternalEquinoxTask<?>> getFollowerTasks() {
+		return followerTasks_;
 	}
 
 	/**
@@ -154,6 +194,11 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		// close task logger (if any)
 		if (logger_ != null) {
 			Arrays.stream(logger_.getHandlers()).forEach(h -> h.close());
+		}
+
+		// execute follower tasks
+		if (followerTasks_ != null) {
+			executeFollowerTasks();
 		}
 	}
 
@@ -247,6 +292,30 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 	}
 
 	/**
+	 * Executes follower tasks (if any). This method is called from <code>succeeded</code> method of this task.
+	 */
+	private void executeFollowerTasks() {
+
+		// there are no follower tasks
+		if (followerTasks_ == null)
+			return;
+
+		// loop over follower tasks
+		for (InternalEquinoxTask<?> task : followerTasks_) {
+
+			// execute in parallel
+			if (executeFollowerTasksInParallel_) {
+				taskPanel_.getOwner().runTaskInParallel(task);
+			}
+
+			// execute sequentially
+			else {
+				taskPanel_.getOwner().runTaskSequentially(task);
+			}
+		}
+	}
+
+	/**
 	 * Interface for long running tasks.
 	 *
 	 * @author Murat Artim
@@ -312,6 +381,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		 * Uploads file with the given path to filer. Note that the destination file name is generated using the following convention:
 		 * <p>
 		 * userAlias_simpleTaskClassName_currentTimeMillis.zip
+		 *
 		 * @param path
 		 *            Path to file to upload.
 		 * @param recipients

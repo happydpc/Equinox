@@ -50,8 +50,8 @@ import equinox.process.FastGenerateSth;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableFastGenerateStressSequence;
 import equinox.utility.Utility;
@@ -63,7 +63,7 @@ import equinox.utility.Utility;
  * @date Jun 14, 2016
  * @time 9:21:27 PM
  */
-public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<SpectrumItem> {
+public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayList<FastEquivalentStressAnalysis>> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, AutomaticTaskOwner<SpectrumItem> {
 
 	/** The owner STF file. */
 	private STFFile stfFile_;
@@ -102,7 +102,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	private boolean applyCompression_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<SpectrumItem>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<SpectrumItem>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -194,7 +194,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<SpectrumItem> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<SpectrumItem> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -202,7 +202,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<SpectrumItem>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<SpectrumItem>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -294,10 +294,10 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 
 				// add automatic tasks
 				if (automaticTasks_ != null) {
-					Iterator<Entry<String, ParameterizedTask<SpectrumItem>>> iterator = automaticTasks_.entrySet().iterator();
+					Iterator<Entry<String, AutomaticTask<SpectrumItem>>> iterator = automaticTasks_.entrySet().iterator();
 					while (iterator.hasNext()) {
-						Entry<String, ParameterizedTask<SpectrumItem>> entry = iterator.next();
-						task.addParameterizedTask(entry.getKey(), entry.getValue());
+						Entry<String, AutomaticTask<SpectrumItem>> entry = iterator.next();
+						task.addAutomaticTask(entry.getKey(), entry.getValue());
 						task.setAutomaticTaskExecutionMode(executeAutomaticTasksInParallel_);
 					}
 				}
@@ -330,7 +330,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -345,7 +345,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

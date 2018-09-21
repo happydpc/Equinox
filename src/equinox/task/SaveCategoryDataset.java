@@ -39,8 +39,8 @@ import equinox.controller.DamageContributionViewPanel;
 import equinox.data.Pair;
 import equinox.data.StatisticsPlotAttributes;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -50,7 +50,7 @@ import equinox.task.automation.SingleInputTask;
  * @date 2 Sep 2018
  * @time 00:46:37
  */
-public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, StatisticsPlotAttributes>>, ParameterizedTaskOwner<Path> {
+public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements ShortRunningTask, SingleInputTask<Pair<CategoryDataset, StatisticsPlotAttributes>>, AutomaticTaskOwner<Path> {
 
 	/** Category dataset. */
 	private CategoryDataset dataset;
@@ -62,7 +62,7 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 	private final Path output;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -92,7 +92,7 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -100,7 +100,7 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -222,7 +222,7 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -238,7 +238,7 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -248,6 +248,6 @@ public class SaveCategoryDataset extends InternalEquinoxTask<Path> implements Sh
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

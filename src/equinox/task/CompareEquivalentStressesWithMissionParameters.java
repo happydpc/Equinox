@@ -48,8 +48,8 @@ import equinox.data.input.EquivalentStressComparisonInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for compare equivalent stresses with mission parameters.
@@ -58,7 +58,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @date Jan 9, 2015
  * @time 1:00:10 PM
  */
-public class CompareEquivalentStressesWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> {
+public class CompareEquivalentStressesWithMissionParameters extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, AutomaticTaskOwner<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> {
 
 	/** Equivalent stresses to compare. */
 	private final List<SpectrumItem> stresses_;
@@ -73,7 +73,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -108,12 +108,12 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
 	}
 
@@ -123,7 +123,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -131,7 +131,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<XYSeriesCollection, MissionParameterPlotAttributes>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -217,7 +217,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 				attributes.setyAxisLabel(yAxisLabel);
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, attributes), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -234,7 +234,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class CompareEquivalentStressesWithMissionParameters extends InternalEqui
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

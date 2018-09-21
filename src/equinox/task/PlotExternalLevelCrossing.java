@@ -40,8 +40,8 @@ import equinox.data.input.ExternalLevelCrossingInput;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 
 /**
@@ -51,7 +51,7 @@ import equinox.task.automation.PostProcessingTask;
  * @date Mar 15, 2015
  * @time 4:05:33 PM
  */
-public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, PostProcessingTask, ParameterizedTaskOwner<Pair<XYSeriesCollection, String>> {
+public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesCollection> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, PostProcessingTask, AutomaticTaskOwner<Pair<XYSeriesCollection, String>> {
 
 	/** Equivalent stresses. */
 	private final List<SpectrumItem> stresses_;
@@ -60,7 +60,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	private final ExternalLevelCrossingInput input_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, String>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<XYSeriesCollection, String>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -95,7 +95,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<XYSeriesCollection, String>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<XYSeriesCollection, String>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -103,7 +103,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<XYSeriesCollection, String>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<XYSeriesCollection, String>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -113,12 +113,12 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, stresses_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, stresses_, inputThreshold_);
 	}
 
@@ -262,7 +262,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(new Pair<>(dataset, xAxisLabel), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(new Pair<>(dataset, xAxisLabel), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -279,7 +279,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -289,7 +289,7 @@ public class PlotExternalLevelCrossing extends InternalEquinoxTask<XYSeriesColle
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	private static void createPlot(XYSeries series, double dsg, double bls, ArrayList<Double> N, ArrayList<Double> Smax, ArrayList<Double> Smin, double smax, double smin) throws Exception {

@@ -19,9 +19,11 @@ package equinox.task.automation;
  * Interface for automatic tasks. Automatic tasks are connected to task owners to be executed in a sequential way.
  *
  * @author Murat Artim
- * @date 30 Aug 2018
- * @time 13:51:54
+ * @date 31 Aug 2018
+ * @time 10:05:20
+ * @param <V>
+ *            Parameter (input) class.
  */
-public interface AutomaticTask {
+public interface AutomaticTask<V> {
 	// no implementation
 }

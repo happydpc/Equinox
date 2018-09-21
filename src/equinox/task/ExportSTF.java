@@ -36,8 +36,8 @@ import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 import javafx.embed.swing.SwingFXUtils;
@@ -61,7 +61,7 @@ import jxl.write.WriteException;
  * @date Feb 5, 2016
  * @time 1:10:31 PM
  */
-public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>>, ParameterizedTaskOwner<Path> {
+public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Triple<STFFile, String[], HashMap<PilotPointImageType, Image>>>, AutomaticTaskOwner<Path> {
 
 	/** STF file. */
 	private STFFile stfFile_;
@@ -79,7 +79,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	private final File output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -178,7 +178,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -186,7 +186,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -260,7 +260,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 			Path output = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -276,7 +276,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -286,7 +286,7 @@ public class ExportSTF extends TemporaryFileCreatingTask<Path> implements LongRu
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

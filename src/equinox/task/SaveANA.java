@@ -31,8 +31,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
@@ -43,7 +43,7 @@ import equinox.utility.Utility;
  * @date Jan 15, 2014
  * @time 10:37:46 AM
  */
-public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, ParameterizedTaskOwner<Path> {
+public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunningTask, SingleInputTask<Spectrum>, AutomaticTaskOwner<Path> {
 
 	/** ID of file item to save. */
 	private Integer fileID_ = null;
@@ -55,7 +55,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	private final FileType type_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -82,7 +82,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -90,7 +90,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -181,7 +181,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -197,7 +197,7 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -207,6 +207,6 @@ public class SaveANA extends TemporaryFileCreatingTask<Path> implements LongRunn
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

@@ -28,8 +28,8 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.FilerConnection;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.utility.Utility;
 
@@ -40,7 +40,7 @@ import equinox.utility.Utility;
  * @date Jul 29, 2014
  * @time 11:43:43 AM
  */
-public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask, SingleInputTask<SpectrumInfo>, ParameterizedTaskOwner<Pair<Path, SpectrumInfo>> {
+public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> implements LongRunningTask, SingleInputTask<SpectrumInfo>, AutomaticTaskOwner<Pair<Path, SpectrumInfo>> {
 
 	/** CDF set info. */
 	private SpectrumInfo info_;
@@ -55,7 +55,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	private boolean executeAutomaticTasksInParallel_ = true;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Pair<Path, SpectrumInfo>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Pair<Path, SpectrumInfo>>> automaticTasks_ = null;
 
 	/**
 	 * Creates download spectrum task.
@@ -94,7 +94,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Pair<Path, SpectrumInfo>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Pair<Path, SpectrumInfo>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -102,7 +102,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Pair<Path, SpectrumInfo>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Pair<Path, SpectrumInfo>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -201,7 +201,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 			}
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(new Pair<>(output_, info_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(new Pair<>(output_, info_), automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -217,7 +217,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -227,7 +227,7 @@ public class DownloadSpectrum extends TemporaryFileCreatingTask<AddSpectrum> imp
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

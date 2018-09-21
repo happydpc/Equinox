@@ -14,6 +14,8 @@
 	<!--Searches spectrum in central database matching with given search entries. If found, downloads the first found spectrum. Note that, as this instruction will download the first found spectrum, it is adviced to supply precise entries which uniquely identifies the spectrum.-->
 	<downloadSpectrum>
 		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
 		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Spectrum attribute name. This can be one of 'NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'FAT_MISSION_ISSUE', 'FLP_ISSUE', 'IFLP_ISSUE', 'CDF_ISSUE', 'DELIVERY_REF_NUM', 'DESCRIPTION'.-->
@@ -30,6 +32,8 @@
 	<!--Adds spectrum to workspace from supplied CDF set files.-->
 	<addSpectrum>
 		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
 		<anaPath></anaPath>
 		<cvtPath></cvtPath>
 		<flsPath></flsPath>
@@ -43,6 +47,8 @@
 	<!--Adds spectrum to workspace from supplied SPEC bundle.-->
 	<addSpectrum>
 		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
 		<specPath></specPath>
 	</addSpectrum>
 	
@@ -138,6 +144,8 @@
 	<!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 	<downloadStf>
 		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
 		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
@@ -257,13 +265,24 @@
 		<id></id><!--Export package to upload. This must refer to an 'exportStf' instruction.-->
 		<exportId></exportId>
 	</uploadStf>
+	
 	<!--Adds headless (as direct input) stress sequence to workspace from given SIGMA file.-->
 	<addHeadlessStressSequence>
 		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
 		<sigmaPath></sigmaPath>
 	</addHeadlessStressSequence>
+	
 	<!--Adds headless (as direct input) stress sequence to workspace from given STH and FLS files.-->
-	<addHeadlessStressSequence><id></id><sthPath></sthPath><flsPath></flsPath></addHeadlessStressSequence>
+	<addHeadlessStressSequence>
+		<id></id>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
+		<sthPath></sthPath>
+		<flsPath></flsPath>
+	</addHeadlessStressSequence>
+	
 	<!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
@@ -271,6 +290,7 @@
 		<!--Path to input file containing input parameters for generating stress sequence. The file name must end with either XML or JSON.-->
 		<inputPath></inputPath>
 	</generateStressSequence>
+	
 	<!--Assigns mission parameters to headless stress sequence.-->
 	<assignMissionParametersToStressSequence>
 		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
@@ -888,6 +908,7 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotTypicalFlightComparison>
+	
 	<!--Plots typical flight comparison to given output file.-->
 	<plotTypicalFlightComparison>
 		<id></id>
@@ -903,14 +924,15 @@
 		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
 		<seriesNaming>
 			<!--Include stress sequence name to plot series names. This can be either 'true' or 'false'.-->
-			<includeStressSequenceName></includeStressSequenceName><includeElementId></includeElementId>
-			
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeElementId></includeElementId>
 			<includeTypicalFlightName></includeTypicalFlightName>
 			<includeAircraftProgram></includeAircraftProgram>
 			<includeAircraftSection></includeAircraftSection>
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotTypicalFlightComparison>
+	
 	<!--Plots equivalent stress comparison to given output file.-->
 	<plotEquivalentStressComparison>
 		<id></id>
@@ -936,6 +958,33 @@
 		<!--Label visibility. This can be either 'true' or 'false'.-->
 		<showDataLabels></showDataLabels>
 	</plotEquivalentStressComparison>
+	
+	<!--Plots equivalent stress comparison from referenced fast equivalent stresses to given output file.-->
+	<plotEquivalentStressComparison>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Minimum 2 fastEquivalentStressId elements are required.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save equivalent stress comparison plot. File name must end with .png.-->
+		<outputPath></outputPath>
+		<!--Mission parameter name. This element is optional, if given, equivalent stresses will be compared against mission parameter values of pilot points (or their parent spectra).-->
+		<missionParameter></missionParameter>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming>
+			<!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeMaterialName></includeMaterialName>
+			<includeOmissionLevel></includeOmissionLevel>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+		<!--Label visibility. This can be either 'true' or 'false'.-->
+		<showDataLabels></showDataLabels>
+	</plotEquivalentStressComparison>
+	
 	<!--Plots equivalent stress comparison to given output file.-->
 	<plotEquivalentStressComparison>
 		<id></id>
@@ -959,6 +1008,7 @@
 		<!--Label visibility. This can be either 'true' or 'false'.-->
 		<showDataLabels></showDataLabels>
 	</plotEquivalentStressComparison>
+	
 	<!--Plots life factors to given output file.-->
 	<plotLifeFactors>
 		<id></id>
@@ -991,6 +1041,39 @@
 			<showDataLabels></showDataLabels>
 		</options>
 	</plotLifeFactors>
+	
+	<!--Plots life factors from referenced fast equivalent stresses to given output file.-->
+	<plotLifeFactors>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Minimum 2 fastEquivalentStressId elements are required.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Basis fatigue mission to derive the life factors.-->
+		<basisMission></basisMission>
+		<!--Mission parameter name. This element is optional, if given, life factors will be plotted against mission parameter values of pilot points (or their parent spectra).-->
+		<missionParameter></missionParameter>
+		<!--Path to save life factors plot. File name must end with .png.-->
+		<outputPath></outputPath>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming>
+			<!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeMaterialName></includeMaterialName>
+			<includeOmissionLevel></includeOmissionLevel>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+		<!--Plotting options. This element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To include the life factor for basis fatigue mission (i.e. 1.0). This can be either 'true' or 'false'.-->
+			<includeBasisMission></includeBasisMission>
+			<!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels>
+		</options>
+	</plotLifeFactors>
+	
 	<!--Plots life factors to given output file.-->
 	<plotLifeFactors>
 		<id></id>
@@ -1021,6 +1104,7 @@
 			<showDataLabels></showDataLabels>
 		</options>
 	</plotLifeFactors>
+	
 	<!--Plots equivalent stress ratios to given output file.-->
 	<plotEquivalentStressRatios>
 		<id></id>
@@ -1053,6 +1137,40 @@
 			<showDataLabels></showDataLabels>
 		</options>
 	</plotEquivalentStressRatios>
+	
+	<!--Plots equivalent stress ratios from referenced fast equivalent stresses to given output file.-->
+	<plotEquivalentStressRatios>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Minimum 2 fastEquivalentStressId elements are required.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Basis fatigue mission to derive the equivalent stress ratios.-->
+		<basisMission></basisMission>
+		<!--Mission parameter name. This element is optional, if given, equivalent stress ratios will be plotted against mission parameter values of pilot points (or their parent spectra).-->
+		<missionParameter></missionParameter>
+		<!--Path to save equivalent stress ratios plot. File name must end with .png.-->
+		<outputPath></outputPath>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<seriesNaming>
+			<!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
+			<includeSpectrumName></includeSpectrumName>
+			<includeStfName></includeStfName>
+			<includeElementId></includeElementId>
+			<includeStressSequenceName></includeStressSequenceName>
+			<includeMaterialName></includeMaterialName>
+			<includeOmissionLevel></includeOmissionLevel>
+			<includeAircraftProgram></includeAircraftProgram>
+			<includeAircraftSection></includeAircraftSection>
+			<includeFatigueMission></includeFatigueMission>
+		</seriesNaming>
+		<!--Plotting options. This element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To include the life factor for basis fatigue mission (i.e. 1.0). This can be either 'true' or 'false'.-->
+			<includeBasisMission></includeBasisMission>
+			<!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels>
+		</options>
+	</plotEquivalentStressRatios>
+	
 	<!--Plots equivalent stress ratios to given output file.-->
 	<plotEquivalentStressRatios>
 		<id></id>
@@ -1083,6 +1201,7 @@
 			<showDataLabels></showDataLabels>
 		</options>
 	</plotEquivalentStressRatios>
+	
 	<!--Saves referenced equivalent stresses to given output XLS file.-->
 	<saveEquivalentStresses>
 		<id></id>
@@ -1110,6 +1229,31 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveEquivalentStresses>
+	
+	<!--Saves referenced fast equivalent stresses to given output XLS file.-->
+	<saveEquivalentStresses>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Multiple fastEquivalentStressIds can be referenced.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save equivalent stresses. File name must end with .xls.-->
+		<outputPath></outputPath>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To save equivalent stress values. This can be either 'true' or 'false'.-->
+			<equivalentStress></equivalentStress>
+			<materialName></materialName>
+			<materialData></materialData>
+			<pilotPointName></pilotPointName>
+			<elementId></elementId>
+			<spectrumName></spectrumName>
+			<aircraftProgram></aircraftProgram>
+			<aircraftSection></aircraftSection>
+			<fatigueMission></fatigueMission>
+			<spectrumValidity></spectrumValidity>
+			<omissionLevel></omissionLevel>
+		</options>
+	</saveEquivalentStresses>
+	
 	<!--Saves referenced equivalent stresses to given output XLS file.-->
 	<saveEquivalentStresses>
 		<id></id>
@@ -1135,6 +1279,7 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveEquivalentStresses>
+	
 	<!--Saves life factors to given output XLS file.-->
 	<saveLifeFactors>
 		<id></id>
@@ -1164,6 +1309,33 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveLifeFactors>
+	
+	<!--Saves life factors from referenced fast equivalent stresses to given output XLS file.-->
+	<saveLifeFactors>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Multiple fastEquivalentStressIds can be referenced.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save life factors. File name must end with .xls.-->
+		<outputPath></outputPath>
+		<!--Basis fatigue mission to derive the life factors.-->
+		<basisMission></basisMission>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To save life factor values. This can be either 'true' or 'false'.-->
+			<lifeFactor></lifeFactor>
+			<materialName></materialName>
+			<materialData></materialData>
+			<pilotPointName></pilotPointName>
+			<elementId></elementId>
+			<spectrumName></spectrumName>
+			<aircraftProgram></aircraftProgram>
+			<aircraftSection></aircraftSection>
+			<fatigueMission></fatigueMission>
+			<spectrumValidity></spectrumValidity>
+			<omissionLevel></omissionLevel>
+		</options>
+	</saveLifeFactors>
+	
 	<!--Saves life factors to given output XLS file.-->
 	<saveLifeFactors>
 		<id></id>
@@ -1191,6 +1363,7 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveLifeFactors>
+	
 	<!--Saves life factors to given output XLS file.-->
 	<saveEquivalentStressRatios>
 		<id></id>
@@ -1220,6 +1393,33 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveEquivalentStressRatios>
+	
+	<!--Saves life factors from referenced fast equivalent stresses to given output XLS file.-->
+	<saveEquivalentStressRatios>
+		<id></id>
+		<!--The fastEquivalentStressId refers to 'fastEquivalentStressAnalysis' instruction. Multiple fastEquivalentStressIds can be referenced.-->
+		<fastEquivalentStressId></fastEquivalentStressId>
+		<!--Path to save life factors. File name must end with .xls.-->
+		<outputPath></outputPath>
+		<!--Basis fatigue mission to derive the life factors.-->
+		<basisMission></basisMission>
+		<!--Select all information to be saved to output Excel file. Note that, this element and all its children are optional, if not given, default values will be set.-->
+		<options>
+			<!--To save life factor values. This can be either 'true' or 'false'.-->
+			<equivalentStressRatio></equivalentStressRatio>
+			<materialName></materialName>
+			<materialData></materialData>
+			<pilotPointName></pilotPointName>
+			<elementId></elementId>
+			<spectrumName></spectrumName>
+			<aircraftProgram></aircraftProgram>
+			<aircraftSection></aircraftSection>
+			<fatigueMission></fatigueMission>
+			<spectrumValidity></spectrumValidity>
+			<omissionLevel></omissionLevel>
+		</options>
+	</saveEquivalentStressRatios>
+	
 	<!--Saves life factors to given output XLS file.-->
 	<saveEquivalentStressRatios>
 		<id></id>
@@ -1247,15 +1447,20 @@
 			<omissionLevel></omissionLevel>
 		</options>
 	</saveEquivalentStressRatios>
-	<equivalentStressAnalysis>
+	
+	<!--Sends text message to given recipient.-->
+	<sendTextMessage>
 		<id></id>
-		<stfId></stfId>
-		<inputPath></inputPath>
-	</equivalentStressAnalysis>
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<previousInstructionId></previousInstructionId>
+		<!--Message text to send.-->
+		<message></message>
+		<!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient>
+	</sendTextMessage>
 	
 	<editPilotPointInfo></editPilotPointInfo>
 	<setPilotPointImage></setPilotPointImage>
 	<shareWorkspace></shareWorkspace>
-	<sendTextMessage></sendTextMessage>
-	<restart></restart>
-	<quit></quit></equinoxInput>
+	<newWorkspace></newWorkspace>
+</equinoxInput>

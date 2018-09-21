@@ -26,8 +26,8 @@ import equinox.data.fileType.StressSequence;
 import equinox.process.SaveSTH;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -37,7 +37,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Jan 7, 2014
  * @time 2:13:14 PM
  */
-public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, ParameterizedTaskOwner<Path> {
+public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implements LongRunningTask, SingleInputTask<StressSequence>, AutomaticTaskOwner<Path> {
 
 	/** Stress sequence. */
 	private StressSequence stressSequence;
@@ -46,7 +46,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	private final File output;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -70,7 +70,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -78,7 +78,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -124,7 +124,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -140,7 +140,7 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -150,6 +150,6 @@ public class SaveStressSequenceAsSTH extends InternalEquinoxTask<Path> implement
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

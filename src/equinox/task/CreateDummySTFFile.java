@@ -35,8 +35,8 @@ import equinox.data.fileType.Spectrum;
 import equinox.plugin.FileType;
 import equinox.process.LoadSTFFile;
 import equinox.serverUtilities.Permission;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -46,7 +46,7 @@ import equinox.task.automation.SingleInputTask;
  * @date May 20, 2014
  * @time 6:25:06 PM
  */
-public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> implements SingleInputTask<Spectrum>, ParameterizedTaskOwner<STFFile> {
+public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> implements SingleInputTask<Spectrum>, AutomaticTaskOwner<STFFile> {
 
 	/** The owner spectrum. */
 	private Spectrum spectrum_;
@@ -64,7 +64,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 	private String dpLC_ = null, dtInfLC_ = null, dtSupLC_ = null;
 
 	/** Automatic tasks. The key is the STF file name and the value is the task. */
-	private HashMap<String, ParameterizedTask<STFFile>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<STFFile>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -91,7 +91,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<STFFile> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<STFFile> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -99,7 +99,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<STFFile>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<STFFile>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -294,7 +294,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 			spectrum_.getChildren().add(stfFile);
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(stfFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -310,7 +310,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -320,7 +320,7 @@ public class CreateDummySTFFile extends TemporaryFileCreatingTask<STFFile> imple
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

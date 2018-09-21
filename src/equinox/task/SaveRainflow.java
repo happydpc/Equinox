@@ -39,8 +39,8 @@ import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.PostProcessingTask;
 import equinox.task.automation.SingleInputTask;
 
@@ -51,7 +51,7 @@ import equinox.task.automation.SingleInputTask;
  * @date Jun 19, 2014
  * @time 9:55:18 PM
  */
-public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunningTask, PostProcessingTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
+public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunningTask, PostProcessingTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** File item to save. */
 	private SpectrumItem file_;
@@ -63,7 +63,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 	private final DecimalFormat format_ = new DecimalFormat("0.00");
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -87,7 +87,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -95,7 +95,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -157,7 +157,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -173,7 +173,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -183,7 +183,7 @@ public class SaveRainflow extends InternalEquinoxTask<Path> implements LongRunni
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

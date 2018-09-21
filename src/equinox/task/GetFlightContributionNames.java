@@ -30,8 +30,8 @@ import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.SpectrumItem;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.utility.AlphanumComparator;
 
 /**
@@ -41,7 +41,7 @@ import equinox.utility.AlphanumComparator;
  * @date 27 Oct 2016
  * @time 13:59:40
  */
-public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<SpectrumItem>, List<String>, List<String>>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Triple<List<SpectrumItem>, List<String>, List<String>>> {
+public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<SpectrumItem>, List<String>, List<String>>> implements ShortRunningTask, MultipleInputTask<SpectrumItem>, AutomaticTaskOwner<Triple<List<SpectrumItem>, List<String>, List<String>>> {
 
 	/** Requesting panel. */
 	private final FlightDamageContributionRequestingPanel panel_;
@@ -53,7 +53,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -77,12 +77,12 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
 	}
 
@@ -92,7 +92,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Triple<List<SpectrumItem>, List<String>, List<String>>> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -100,7 +100,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Triple<List<SpectrumItem>, List<String>, List<String>>>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -159,7 +159,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 
 			// automatic task
 			else {
-				parameterizedTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(output, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -176,7 +176,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class GetFlightContributionNames extends InternalEquinoxTask<Triple<List<
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

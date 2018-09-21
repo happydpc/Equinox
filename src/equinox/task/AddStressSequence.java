@@ -27,8 +27,8 @@ import equinox.process.LoadSIGMAFile;
 import equinox.process.LoadSTHFile;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableAddStressSequence;
 
@@ -39,13 +39,13 @@ import equinox.task.serializableTask.SerializableAddStressSequence;
  * @date Mar 11, 2015
  * @time 3:00:28 PM
  */
-public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, ParameterizedTaskOwner<ExternalStressSequence>, SingleInputTask<Path> {
+public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressSequence> implements LongRunningTask, SavableTask, AutomaticTaskOwner<ExternalStressSequence>, SingleInputTask<Path> {
 
 	/** Path to input file. */
 	private Path sequenceFile_, flsFile_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<ExternalStressSequence>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<ExternalStressSequence>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -100,7 +100,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<ExternalStressSequence> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<ExternalStressSequence> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -108,7 +108,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<ExternalStressSequence>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<ExternalStressSequence>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -188,7 +188,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 			taskPanel_.getOwner().getOwner().getInputPanel().getFileTreeRoot().getChildren().add(sequence);
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -204,7 +204,7 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -214,6 +214,6 @@ public class AddStressSequence extends TemporaryFileCreatingTask<ExternalStressS
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 }

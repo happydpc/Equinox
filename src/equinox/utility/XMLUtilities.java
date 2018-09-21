@@ -261,7 +261,7 @@ public class XMLUtilities {
 	 * @param dependencyName
 	 *            Dependency name.
 	 * @param targetElementName
-	 *            Target element name.
+	 *            Target element name. Can be null for searching all elements.
 	 * @return True if the dependency of the given element is satisfied.
 	 * @throws Exception
 	 *             If exception occurs during process.
@@ -287,11 +287,24 @@ public class XMLUtilities {
 		}
 
 		// search for referenced element
-		for (Element targetElement : root.getChildren(targetElementName)) {
-			Element id = targetElement.getChild("id");
-			if (id != null) {
-				if (sourceId.equals(id.getTextNormalize()))
-					return true;
+		if (targetElementName != null) {
+			for (Element targetElement : root.getChildren(targetElementName)) {
+				Element id = targetElement.getChild("id");
+				if (id != null) {
+					if (sourceId.equals(id.getTextNormalize()))
+						return true;
+				}
+			}
+		}
+
+		// search for all elements
+		else {
+			for (Element targetElement : root.getChildren()) {
+				Element id = targetElement.getChild("id");
+				if (id != null) {
+					if (sourceId.equals(id.getTextNormalize()))
+						return true;
+				}
 			}
 		}
 

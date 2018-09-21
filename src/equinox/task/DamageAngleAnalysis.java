@@ -59,8 +59,8 @@ import equinox.process.InbuiltDAA;
 import equinox.process.SafeDAA;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 import equinox.task.serializableTask.SerializableDamageAngleAnalysis;
 import equinox.utility.Utility;
@@ -72,7 +72,7 @@ import equinox.utility.Utility;
  * @date Aug 6, 2014
  * @time 4:30:36 PM
  */
-public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, ParameterizedTaskOwner<DamageAngle> {
+public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> implements LongRunningTask, SavableTask, SingleInputTask<STFFile>, AutomaticTaskOwner<DamageAngle> {
 
 	/** Result index. */
 	public static final int ANGLE_INDEX = 0, ANGLE = 1, STRESS = 2;
@@ -132,7 +132,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 	private ESAProcess<Double[][]> equivalentStressAnalysis_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<DamageAngle>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<DamageAngle>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -200,7 +200,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<DamageAngle> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<DamageAngle> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -208,7 +208,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<DamageAngle>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<DamageAngle>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -366,7 +366,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 				taskPanel_.getOwner().runTaskSequentially(new SaveDamageAnglePlot(angle));
 
 				// manage automatic tasks
-				parameterizedTaskOwnerSucceeded(angle, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+				automaticTaskOwnerSucceeded(angle, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 			}
 		}
 
@@ -393,7 +393,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -408,7 +408,7 @@ public class DamageAngleAnalysis extends TemporaryFileCreatingTask<DamageAngle> 
 		}
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

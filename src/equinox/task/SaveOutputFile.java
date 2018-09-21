@@ -36,8 +36,8 @@ import equinox.data.fileType.SpectrumItem;
 import equinox.plugin.FileType;
 import equinox.process.SaveOutputFileProcess;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 import equinox.task.automation.SingleInputTask;
 
 /**
@@ -48,7 +48,7 @@ import equinox.task.automation.SingleInputTask;
  * @time 14:04:33
  *
  */
-public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
+public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, SingleInputTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** Spectrum item to save the output file for. */
 	private SpectrumItem item_;
@@ -57,7 +57,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	private final Path output_;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -81,7 +81,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -89,7 +89,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -147,7 +147,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 			Path file = get();
 
 			// manage automatic tasks
-			parameterizedTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(file, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -163,7 +163,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class SaveOutputFile extends TemporaryFileCreatingTask<Path> implements S
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**

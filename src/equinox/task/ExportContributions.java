@@ -32,8 +32,8 @@ import equinox.serverUtilities.Permission;
 import equinox.task.GetContributionNames.DamageContributionRequester;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.automation.MultipleInputTask;
-import equinox.task.automation.ParameterizedTask;
-import equinox.task.automation.ParameterizedTaskOwner;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
 
 /**
  * Class for export damage contributions task.
@@ -43,7 +43,7 @@ import equinox.task.automation.ParameterizedTaskOwner;
  * @time 22:10:53
  *
  */
-public class ExportContributions extends InternalEquinoxTask<Path> implements LongRunningTask, DamageContributionRequester, MultipleInputTask<SpectrumItem>, ParameterizedTaskOwner<Path> {
+public class ExportContributions extends InternalEquinoxTask<Path> implements LongRunningTask, DamageContributionRequester, MultipleInputTask<SpectrumItem>, AutomaticTaskOwner<Path> {
 
 	/** Output file. */
 	private final File output_;
@@ -61,7 +61,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 	private volatile int inputThreshold_ = 0;
 
 	/** Automatic tasks. */
-	private HashMap<String, ParameterizedTask<Path>> automaticTasks_ = null;
+	private HashMap<String, AutomaticTask<Path>> automaticTasks_ = null;
 
 	/** Automatic task execution mode. */
 	private boolean executeAutomaticTasksInParallel_ = true;
@@ -87,7 +87,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 	}
 
 	@Override
-	public void addParameterizedTask(String taskID, ParameterizedTask<Path> task) {
+	public void addAutomaticTask(String taskID, AutomaticTask<Path> task) {
 		if (automaticTasks_ == null) {
 			automaticTasks_ = new HashMap<>();
 		}
@@ -95,7 +95,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 	}
 
 	@Override
-	public HashMap<String, ParameterizedTask<Path>> getParameterizedTasks() {
+	public HashMap<String, AutomaticTask<Path>> getAutomaticTasks() {
 		return automaticTasks_;
 	}
 
@@ -105,12 +105,12 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 	}
 
 	@Override
-	synchronized public void addAutomaticInput(ParameterizedTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
+	synchronized public void addAutomaticInput(AutomaticTaskOwner<SpectrumItem> task, SpectrumItem input, boolean executeInParallel) {
 		automaticInputAdded(task, input, executeInParallel, items_, inputThreshold_);
 	}
 
 	@Override
-	synchronized public void inputFailed(ParameterizedTaskOwner<SpectrumItem> task, boolean executeInParallel) {
+	synchronized public void inputFailed(AutomaticTaskOwner<SpectrumItem> task, boolean executeInParallel) {
 		inputThreshold_ = automaticInputFailed(task, executeInParallel, items_, inputThreshold_);
 	}
 
@@ -235,7 +235,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 			Path outputFile = get();
 
 			// manage automatic task
-			parameterizedTaskOwnerSucceeded(outputFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
+			automaticTaskOwnerSucceeded(outputFile, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);
 		}
 
 		// exception occurred
@@ -251,7 +251,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 		super.failed();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	@Override
@@ -261,7 +261,7 @@ public class ExportContributions extends InternalEquinoxTask<Path> implements Lo
 		super.cancelled();
 
 		// manage automatic tasks
-		parameterizedTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
+		automaticTaskOwnerFailed(automaticTasks_, executeAutomaticTasksInParallel_);
 	}
 
 	/**
