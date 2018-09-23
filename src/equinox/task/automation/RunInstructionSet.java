@@ -37,6 +37,8 @@ import org.jdom2.input.SAXBuilder;
 import equinox.Equinox;
 import equinox.controller.InputPanel;
 import equinox.controller.SearchEngineSettingsPanel;
+import equinox.controller.TaskExecutionPlanViewPanel;
+import equinox.controller.ViewPanel;
 import equinox.data.AnalysisEngine;
 import equinox.data.InstructedTask;
 import equinox.data.IsamiSubVersion;
@@ -139,7 +141,6 @@ import equinox.task.PlotExternalLevelCrossing;
 import equinox.task.PlotExternalTypicalFlights;
 import equinox.task.PlotHistogram;
 import equinox.task.PlotLevelCrossing;
-import equinox.task.SavableTask;
 import equinox.task.SaveANA;
 import equinox.task.SaveCVT;
 import equinox.task.SaveCategoryDataset;
@@ -170,7 +171,6 @@ import equinox.task.SaveStressSequenceAsSTH;
 import equinox.task.SaveStressSequenceInfo;
 import equinox.task.SaveStressSequencePlotToFile;
 import equinox.task.SaveTXT;
-import equinox.task.SaveTask;
 import equinox.task.SaveXYDataset;
 import equinox.task.SaveXYSeriesCollection;
 import equinox.task.SelectAllExternalFlights;
@@ -199,7 +199,7 @@ import javafx.scene.image.Image;
 public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String, InstructedTask>> implements LongRunningTask {
 
 	/** Run mode constant. */
-	public static final String PARALLEL = "parallel", SEQUENTIAL = "sequential", SAVE = "save";
+	public static final String PARALLEL = "parallel", SEQUENTIAL = "sequential";
 
 	/** True if tasks should be executed in parallel mode. */
 	private String runMode = PARALLEL;
@@ -207,14 +207,20 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	/** Input file. */
 	private Path inputFile;
 
+	/** True to generate execution plan. */
+	private final boolean generateExecutionPlan;
+
 	/**
 	 * Creates submit instruction set task.
 	 *
 	 * @param inputFile
 	 *            Input XML/JSON file.
+	 * @param generateExecutionPlan
+	 *            True to generate execution plan.
 	 */
-	public RunInstructionSet(Path inputFile) {
+	public RunInstructionSet(Path inputFile, boolean generateExecutionPlan) {
 		this.inputFile = inputFile;
+		this.generateExecutionPlan = generateExecutionPlan;
 	}
 
 	@Override
@@ -554,34 +560,40 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			if (tasks == null)
 				return;
 
-			// loop over tasks
-			Iterator<Entry<String, InstructedTask>> iterator = tasks.entrySet().iterator();
-			while (iterator.hasNext()) {
+			// generate execution plan
+			if (generateExecutionPlan) {
+				TaskExecutionPlanViewPanel panel = (TaskExecutionPlanViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.EXECUTION_TREE_VIEW_PANEL);
+				panel.setAutomaticTasks(this, tasks);
+				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.EXECUTION_TREE_VIEW_PANEL);
+			}
 
-				// get task
-				InstructedTask task = iterator.next().getValue();
+			// run tasks
+			else {
 
-				// embedded
-				if (task.isEmbedded()) {
-					continue;
-				}
+				// loop over tasks
+				Iterator<Entry<String, InstructedTask>> iterator = tasks.entrySet().iterator();
+				while (iterator.hasNext()) {
 
-				// get task implementation
-				InternalEquinoxTask<?> taskImpl = task.getTask();
+					// get task
+					InstructedTask task = iterator.next().getValue();
 
-				// parallel
-				if (runMode.equals(PARALLEL)) {
-					taskPanel_.getOwner().runTaskInParallel(taskImpl);
-				}
+					// embedded
+					if (task.isEmbedded()) {
+						continue;
+					}
 
-				// sequential
-				else if (runMode.equals(SEQUENTIAL)) {
-					taskPanel_.getOwner().runTaskSequentially(taskImpl);
-				}
+					// get task implementation
+					InternalEquinoxTask<?> taskImpl = task.getTask();
 
-				// save
-				else if (runMode.equals(SAVE)) {
-					taskPanel_.getOwner().runTaskInParallel(new SaveTask((SavableTask) taskImpl, null));
+					// parallel
+					if (runMode.equals(PARALLEL)) {
+						taskPanel_.getOwner().runTaskInParallel(taskImpl);
+					}
+
+					// sequential
+					else if (runMode.equals(SEQUENTIAL)) {
+						taskPanel_.getOwner().runTaskSequentially(taskImpl);
+					}
 				}
 			}
 		}

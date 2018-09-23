@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -28,6 +29,7 @@ import java.util.logging.Level;
 import org.controlsfx.control.PopOver;
 
 import equinox.Equinox;
+import equinox.controller.ScheduleTaskPanel.SchedulingPanel;
 import equinox.data.ActionHandler;
 import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
@@ -53,7 +55,9 @@ import equinox.task.PreparePilotPointUpload;
 import equinox.task.ResetExchangeTable;
 import equinox.task.ResetWorkspace;
 import equinox.task.RfortAnalysis;
+import equinox.task.SaveTask;
 import equinox.task.SaveWorkspace;
+import equinox.task.ShareInstructionSet;
 import equinox.task.ShareWorkspace;
 import equinox.task.ShowNewsFeed;
 import equinox.task.UploadDamageContributions;
@@ -61,6 +65,7 @@ import equinox.task.UploadMaterials;
 import equinox.task.UploadMultiplicationTables;
 import equinox.task.UploadSampleInputs;
 import equinox.task.UploadSpectra;
+import equinox.task.automation.CheckInstructionSet;
 import equinox.task.automation.ConvertJSONFiletoXMLFile;
 import equinox.task.automation.ConvertXMLFiletoJSONFile;
 import equinox.utility.Utility;
@@ -93,7 +98,7 @@ import javafx.stage.FileChooser;
  * @date Oct 23, 2014
  * @time 2:00:03 PM
  */
-public class MenuBarPanel implements Initializable, ListChangeListener<String> {
+public class MenuBarPanel implements Initializable, ListChangeListener<String>, SchedulingPanel {
 
 	/** Task manager notification images. */
 	public static final Image QUIET = Utility.getImage("tm.png"), RUNNING = Utility.getImage("taskManager.gif");
@@ -114,7 +119,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	private MenuBar menuBar_;
 
 	@FXML
-	private Menu openRecentMenu_, selectedMenu_, administratorMenu_, shareWorkspaceFileMenu_, shareWorkspaceCollaborationMenu_, pluginMenu_;
+	private Menu openRecentMenu_, selectedMenu_, administratorMenu_, shareWorkspaceFileMenu_, shareWorkspaceCollaborationMenu_, pluginMenu_, shareInstructionSetMenu_, shareInstructionSetCollaborationMenu_;
 
 	@FXML
 	private MenuItem login_, saveFile_, shareFile_, myCheckMenuItem_, adaptDRFMenuItem_, excaliburMenuItem_, objectView_;
@@ -127,6 +132,9 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 	@FXML
 	private RadioMenuItem available_;
+
+	/** True if the modal task scheduling popup is shown. */
+	private boolean isModalTaskSchedulePopupShown_ = false;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -145,6 +153,26 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 
 		// remove unsupported plugins
 		removeUnsupportedPlugins();
+	}
+
+	@Override
+	public void setTaskScheduleDate(boolean runNow, Date scheduleDate) {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// create batch analysis
+		owner_.getActiveTasksPanel().runTaskInParallel(new SaveTask(new CheckInstructionSet(file.toPath(), CheckInstructionSet.RUN), scheduleDate));
 	}
 
 	/**
@@ -300,18 +328,76 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onScheduleInstructionSetClicked() {
-		// TODO on schedule instruction set clicked
+	private void onSaveInstructionSetClicked() {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// create batch analysis
+		owner_.getActiveTasksPanel().runTaskInParallel(new SaveTask(new CheckInstructionSet(file.toPath(), CheckInstructionSet.RUN), null));
 	}
 
 	@FXML
-	private void onShareInstructionSetClicked() {
-		// TODO on share instruction set clicked
+	private void onScheduleInstructionSetClicked() {
+
+		// popup already shown
+		if (isModalTaskSchedulePopupShown_)
+			return;
+
+		// create pop-over
+		PopOver popOver = new PopOver();
+		popOver.setHideOnEscape(false);
+		popOver.setAutoHide(false);
+		popOver.setContentNode(ScheduleTaskPanel.load(popOver, this, null));
+		popOver.setStyle("-fx-base: #ececec;");
+		popOver.centerOnScreen();
+		popOver.setArrowSize(0.0);
+		popOver.setId("modal");
+
+		// set showing handler
+		popOver.setOnShowing(event -> {
+			owner_.addModalLayer("modalScheduleTask");
+			isModalTaskSchedulePopupShown_ = true;
+		});
+
+		// set hidden handler
+		popOver.setOnHidden(event -> {
+			owner_.removeModalLayer("modalScheduleTask");
+			isModalTaskSchedulePopupShown_ = false;
+		});
+
+		// show
+		popOver.show(owner_.getOwner().getStage());
 	}
 
 	@FXML
 	private void onGenerateExecutionPlanClicked() {
-		// TODO on generate execution plan clicked
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// create batch analysis
+		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), CheckInstructionSet.GENERATE_EXECUTION_PLAN));
 	}
 
 	@FXML
@@ -357,7 +443,27 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
-	private void onDownloadSampleInstructionSetClicked() {
+	private void onDownloadRootTemplateClicked() {
+		// TODO on download sample instruction set clicked
+	}
+
+	@FXML
+	private void onDownloadGenerateStressSequenceTemplateClicked() {
+		// TODO on download sample instruction set clicked
+	}
+
+	@FXML
+	private void onDownloadEquivalentStressAnalysisTemplateClicked() {
+		// TODO on download sample instruction set clicked
+	}
+
+	@FXML
+	private void onDownloadDamageContributionAnalysisTemplateClicked() {
+		// TODO on download sample instruction set clicked
+	}
+
+	@FXML
+	private void onDownloadSampleInstructionSetsClicked() {
 		// TODO on download sample instruction set clicked
 	}
 
@@ -419,6 +525,8 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 		// remove all current recipients
 		shareWorkspaceFileMenu_.getItems().clear();
 		shareWorkspaceCollaborationMenu_.getItems().clear();
+		shareInstructionSetMenu_.getItems().clear();
+		shareInstructionSetCollaborationMenu_.getItems().clear();
 
 		// add new recipients
 		ObservableList<? extends String> list = c.getList();
@@ -431,6 +539,12 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 			MenuItem item2 = new MenuItem(recipient);
 			item2.setOnAction(event -> onShareWorkspaceClicked(recipient));
 			shareWorkspaceCollaborationMenu_.getItems().add(item2);
+			MenuItem item3 = new MenuItem(recipient);
+			item3.setOnAction(event -> onShareInstructionSetClicked(recipient));
+			shareInstructionSetMenu_.getItems().add(item3);
+			MenuItem item4 = new MenuItem(recipient);
+			item4.setOnAction(event -> onShareInstructionSetClicked(recipient));
+			shareInstructionSetCollaborationMenu_.getItems().add(item4);
 		}
 	}
 
@@ -698,11 +812,46 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	}
 
 	@FXML
+	private void onRestartClicked() {
+
+		// there are running tasks
+		if (owner_.getActiveTasksPanel().hasRunningTasks()) {
+			owner_.getOwner().askForClosure(true);
+		}
+
+		// there is no running task
+		else {
+
+			try {
+
+				// restart
+				owner_.getOwner().restartContainer();
+
+				// exit
+				Platform.exit();
+			}
+
+			// exception occurred
+			catch (Exception e) {
+
+				// log exception
+				Equinox.LOGGER.log(Level.WARNING, "Exception occured during restarting Data Analyst.", e);
+
+				// create and show notification
+				String message1 = "Exception occured during restarting Data Analyst: " + e.getLocalizedMessage();
+				message1 += " Click 'Details' for more information.";
+				NotificationPanel np = owner_.getNotificationPane();
+				np.showError("Problem encountered", message1, e);
+			}
+		}
+	}
+
+	@FXML
 	private void onQuitClicked() {
 
 		// there are running tasks
 		if (owner_.getActiveTasksPanel().hasRunningTasks()) {
-			owner_.getOwner().askForClosure();
+			owner_.getOwner().askForClosure(false);
 		}
 
 		// there is no running task
@@ -835,6 +984,31 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String> {
 	@FXML
 	private void onSettingsClicked() {
 		owner_.getInputPanel().showSubPanel(InputPanel.SETTINGS_PANEL);
+	}
+
+	/**
+	 * Recipient to share with.
+	 *
+	 * @param recipient
+	 *            Recipient to share with.
+	 */
+	private void onShareInstructionSetClicked(String recipient) {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// execute tasks
+		owner_.getActiveTasksPanel().runTaskInParallel(new ShareInstructionSet(file.toPath(), recipient));
 	}
 
 	/**

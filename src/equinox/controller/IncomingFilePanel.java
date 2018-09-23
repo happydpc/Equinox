@@ -29,6 +29,7 @@ import equinox.plugin.FileType;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.serverUtilities.SharedFileInfo.SharedFileInfoType;
 import equinox.task.DownloadSharedFile;
+import equinox.task.DownloadSharedInstructionSet;
 import equinox.task.DownloadSharedSpectrum;
 import equinox.task.DownloadSharedView;
 import equinox.task.GetUserProfileImage;
@@ -67,7 +68,7 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 	private Label title_, fileName_, fileSize_;
 
 	@FXML
-	private Button button_;
+	private Button button_, run_;
 
 	@FXML
 	private Circle image_;
@@ -103,10 +104,37 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 		else if (fileType == SharedFileInfo.SPECTRUM) {
 			text += "spectrum:";
 		}
+		else if (fileType == SharedFileInfo.INSTRUCTION_SET) {
+			text += "instruction set:";
+		}
 		text += "\n" + (String) info.getInfo(SharedFileInfoType.FILE_NAME);
 
 		// show
 		mainScreen_.getNotificationPane().show(new Notification(MessageType.NONE, text, -1, root_, false, false));
+	}
+
+	@FXML
+	private void onRunClicked() {
+
+		// get file type
+		SharedFileInfo info = message_.getSharedFileInfo();
+		int fileType = (int) info.getInfo(SharedFileInfoType.FILE_TYPE);
+
+		// instruction set
+		if (fileType == SharedFileInfo.INSTRUCTION_SET) {
+
+			// get task manager
+			ActiveTasksPanel tm = mainScreen_.getActiveTasksPanel();
+
+			// download and run instruction set
+			tm.runTaskInParallel(new DownloadSharedInstructionSet(info, null, true));
+
+			// disable button
+			run_.setDisable(true);
+		}
+
+		// hide
+		mainScreen_.getNotificationPane().hide();
 	}
 
 	@FXML
@@ -153,6 +181,30 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 			tm.runTaskInParallel(new DownloadSharedSpectrum(info));
 		}
 
+		// instruction set
+		else if (fileType == SharedFileInfo.INSTRUCTION_SET) {
+
+			// get file chooser
+			FileChooser fileChooser = mainScreen_.getFileChooser(FileType.ZIP.getExtensionFilter());
+
+			// show save dialog
+			fileChooser.setInitialFileName(FileType.appendExtension((String) info.getInfo(SharedFileInfoType.FILE_NAME), FileType.ZIP));
+			File selectedFile = fileChooser.showSaveDialog(mainScreen_.getOwner().getStage());
+
+			// no file selected
+			if (selectedFile == null)
+				return;
+
+			// set initial directory
+			mainScreen_.setInitialDirectory(selectedFile);
+
+			// append extension if necessary
+			File output = FileType.appendExtension(selectedFile, FileType.ZIP);
+
+			// add and start task
+			tm.runTaskInParallel(new DownloadSharedInstructionSet(info, output.toPath(), false));
+		}
+
 		// hide
 		mainScreen_.getNotificationPane().hide();
 	}
@@ -183,6 +235,7 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 			SharedFileInfo info = message.getSharedFileInfo();
 			String title = (String) info.getInfo(SharedFileInfoType.OWNER) + " shared ";
 			int fileType = (int) info.getInfo(SharedFileInfoType.FILE_TYPE);
+			controller.run_.setVisible(fileType == SharedFileInfo.INSTRUCTION_SET);
 			if (fileType == SharedFileInfo.VIEW) {
 				title += "view";
 			}
@@ -194,6 +247,9 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 			}
 			else if (fileType == SharedFileInfo.SPECTRUM) {
 				title += "spectrum";
+			}
+			else if (fileType == SharedFileInfo.INSTRUCTION_SET) {
+				title += "instruction set";
 			}
 			controller.title_.setText(title);
 			controller.fileName_.setText((String) info.getInfo(SharedFileInfoType.FILE_NAME));
@@ -210,6 +266,9 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 			}
 			else if (fileType == SharedFileInfo.SPECTRUM) {
 				buttonText = "Load";
+			}
+			else if (fileType == SharedFileInfo.INSTRUCTION_SET) {
+				buttonText = "Save As...";
 			}
 			controller.button_.setText(buttonText);
 

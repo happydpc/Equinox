@@ -208,7 +208,7 @@ public class Equinox extends EmbeddedApplication {
 				event.consume();
 
 				// ask user for closure
-				askForClosure();
+				askForClosure(false);
 			}
 
 			// there is no running task
@@ -282,20 +282,42 @@ public class Equinox extends EmbeddedApplication {
 
 	/**
 	 * Asks user for closure.
+	 *
+	 * @param restart
+	 *            True to restart, otherwise quit.
 	 */
-	public void askForClosure() {
+	public void askForClosure(boolean restart) {
 
 		// get notification pane
 		NotificationPanel np = mainScreen_.getNotificationPane();
 
 		// setup notification title and message
 		String title = "Tasks running on background";
-		String message = "There are running tasks on background. They will be canceled if you choose to close. Are you sure you want to close Equinox?";
+		String operation = restart ? "restart" : "close";
+		String message = "There are running tasks on background. They will be canceled if you choose to " + operation + ". Are you sure you want to " + operation + " Data Analyst?";
 
 		// show notification
 		np.showQuestion(title, message, "Yes", "No", event -> {
-			mainScreen_.getActiveTasksPanel().cancelAllTasks();
-			Platform.exit();
+
+			try {
+
+				// cancel all tasks
+				mainScreen_.getActiveTasksPanel().cancelAllTasks();
+
+				// restart
+				if (restart) {
+					restartContainer();
+				}
+
+				// exit
+				Platform.exit();
+			}
+
+			// exception occurred
+			catch (Exception e) {
+				Equinox.LOGGER.log(Level.WARNING, "Exception occured during restarting Data Analyst.", e);
+				np.hide();
+			}
 		}, event -> np.hide());
 	}
 

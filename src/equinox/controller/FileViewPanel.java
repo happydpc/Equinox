@@ -579,7 +579,7 @@ public class FileViewPanel implements InternalInputSubPanel {
 
 					// check & run instruction set
 					if (fileType.equals(FileType.XML) || fileType.equals(FileType.JSON)) {
-						tm.runTaskInParallel(new CheckInstructionSet(file.toPath(), true));
+						tm.runTaskInParallel(new CheckInstructionSet(file.toPath(), CheckInstructionSet.RUN));
 					}
 				}
 			}

@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
+<VBox fx:id="root_" prefHeight="-1.0" prefWidth="-1.0" styleClass="roundPanel" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.InputPanel">
   <!-- TODO Add Nodes -->
   <children>
     <ToolBar fx:id="toolbar_" minWidth="-1.0" styleClass="titleBar" VBox.vgrow="NEVER">
@@ -163,6 +163,21 @@
                      </cursor>
                      <tooltip>
                         <Tooltip fx:id="exchangeServiceTooltip_" text="Collaboration Service: Not available" />
+                     </tooltip>
+                  </Button>
+                  <Button fx:id="automationService_" contentDisplay="GRAPHIC_ONLY" layoutX="106.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#onAutomationServiceClicked" prefHeight="20.0" prefWidth="20.0" style="-fx-base: red;" text="Button">
+                     <graphic>
+                        <ImageView fitHeight="14.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/android.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <tooltip>
+                        <Tooltip fx:id="automationServiceTooltip_" text="Automation Service: Not available" />
                      </tooltip>
                   </Button>
                </children>

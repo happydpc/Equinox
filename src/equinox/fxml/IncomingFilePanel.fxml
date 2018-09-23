@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<VBox fx:id="root_" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.IncomingFilePanel">
+<VBox fx:id="root_" stylesheets="@../css/Commons.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.IncomingFilePanel">
    <children>
       <HBox alignment="CENTER_RIGHT" spacing="10.0" VBox.vgrow="NEVER">
          <children>
@@ -32,6 +32,11 @@
                   </VBox>
                </children>
             </HBox>
+            <Button fx:id="run_" layoutX="386.0" layoutY="33.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunClicked" prefWidth="90.0" style="-fx-font-size: 13px;" styleClass="menuButton" text="Run">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
             <Button fx:id="button_" layoutX="385.0" layoutY="21.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onButtonClicked" prefWidth="90.0" style="-fx-font-size: 13px;" styleClass="menuButton" text="Save As...">
                <cursor>
                   <Cursor fx:constant="HAND" />

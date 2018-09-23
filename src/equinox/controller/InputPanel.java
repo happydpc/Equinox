@@ -110,10 +110,10 @@ public class InputPanel implements Initializable {
 	private ToolBar toolbar_, statusbar_;
 
 	@FXML
-	private Button authentication_, dataService_, analysisService_, exchangeService_;
+	private Button authentication_, dataService_, analysisService_, exchangeService_, automationService_;
 
 	@FXML
-	private Tooltip authenticationTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_;
+	private Tooltip authenticationTooltip_, dataServiceTooltip_, exchangeServiceTooltip_, analysisServiceTooltip_, automationServiceTooltip_;
 
 	@FXML
 	private HBox services_;
@@ -502,6 +502,17 @@ public class InputPanel implements Initializable {
 		exchangeServiceTooltip_.setText(isConnected ? "Collaboration Service: Available" : "Collaboration Service: Not available");
 	}
 
+	/**
+	 * Called when automation service status changes.
+	 *
+	 * @param isAvailable
+	 *            True if service is available.
+	 */
+	public void automationServiceStatusChanged(boolean isAvailable) {
+		automationService_.setStyle(isAvailable ? "-fx-base:green" : "-fx-base:red");
+		automationServiceTooltip_.setText(isAvailable ? "Automation Service: Available" : "Automation Service: Not available");
+	}
+
 	@FXML
 	private void onAuthenticationClicked() {
 
@@ -572,6 +583,11 @@ public class InputPanel implements Initializable {
 
 		// connect
 		owner_.getExchangeServerManager().connect(null, true);
+	}
+
+	@FXML
+	private void onAutomationServiceClicked() {
+		// TODO on automation service clicked
 	}
 
 	@FXML
@@ -647,7 +663,7 @@ public class InputPanel implements Initializable {
 		owner_.setInitialDirectory(file);
 
 		// create batch analysis
-		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), true));
+		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), CheckInstructionSet.RUN));
 	}
 
 	@FXML
@@ -667,7 +683,7 @@ public class InputPanel implements Initializable {
 		owner_.setInitialDirectory(file);
 
 		// create batch analysis
-		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), false));
+		owner_.getActiveTasksPanel().runTaskInParallel(new CheckInstructionSet(file.toPath(), CheckInstructionSet.CHECK));
 	}
 
 	/**

@@ -120,6 +120,11 @@
                      </graphic>
                   </MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#onRestartClicked" text="Restart">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.spinner11" />
+                     </graphic>
+                  </MenuItem>
               <MenuItem mnemonicParsing="false" onAction="#onQuitClicked" text="Quit Data Analyst">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
@@ -267,6 +272,11 @@
                      </accelerator>
                   </MenuItem>
                   <Menu fx:id="shareWorkspaceCollaborationMenu_" mnemonicParsing="false" text="Share Workspace With..." />
+                  <Menu fx:id="shareInstructionSetCollaborationMenu_" mnemonicParsing="false" text="Share Instruction Set With...">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.mail-forward" />
+                     </graphic>
+                  </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onMessageClicked" text="Send Text Message...">
                      <accelerator>
@@ -343,45 +353,52 @@
                         <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.clipboard2" />
                      </graphic>
                   </MenuItem>
+                  <MenuItem mnemonicParsing="false" onAction="#onGenerateExecutionPlanClicked" text="Generate Execution Plan">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.tree7" />
+                     </graphic>
+                  </MenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="false" onAction="#onScheduleInstructionSetClicked" text="Schedule Instruction Set">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.clock-o" />
                      </graphic>
                   </MenuItem>
-                  <MenuItem mnemonicParsing="false" onAction="#onShareInstructionSetClicked" text="Share Instruction Set">
+                  <MenuItem mnemonicParsing="false" onAction="#onSaveInstructionSetClicked" text="Save Instruction Set to Workspace">
+                     <graphic>
+                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
+                     </graphic>
+                  </MenuItem>
+                  <Menu fx:id="shareInstructionSetMenu_" mnemonicParsing="false" text="Share Instruction Set With...">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.mail-forward" />
                      </graphic>
-                  </MenuItem>
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onGenerateExecutionPlanClicked" text="Generate Execution Plan">
-                     <graphic>
-                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.list-numbered" />
-                     </graphic>
-                  </MenuItem>
+                  </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <Menu mnemonicParsing="false" text="Convert Instruction Set...">
                      <items>
-                        <MenuItem mnemonicParsing="false" onAction="#onConvertToJsonClicked" text="To JSON File">
-                           <graphic>
-                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.code" />
-                           </graphic>
-                        </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#onConvertToXmlClicked" text="To XML File">
-                           <graphic>
-                              <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.embed2" />
-                           </graphic>
-                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#onConvertToJsonClicked" text="To JSON..." />
+                        <MenuItem mnemonicParsing="false" onAction="#onConvertToXmlClicked" text="To XML..." />
                      </items>
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.language" />
                      </graphic>
                   </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetClicked" text="Download Sample Instruction Set">
+                  <Menu mnemonicParsing="false" text="Download Templates...">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onDownloadRootTemplateClicked" text="Root Instruction Set Template" />
+                        <MenuItem mnemonicParsing="false" onAction="#onDownloadGenerateStressSequenceTemplateClicked" text="Generate Stress Sequence Template" />
+                        <MenuItem mnemonicParsing="false" onAction="#onDownloadEquivalentStressAnalysisTemplateClicked" text="Equivalent Stress Analysis Template" />
+                        <MenuItem mnemonicParsing="false" onAction="#onDownloadDamageContributionAnalysisTemplateClicked" text="Damage Contribution Analysis Template" />
+                     </items>
                      <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.cloud-download" />
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.insert-template" />
+                     </graphic>
+                  </Menu>
+                  <MenuItem mnemonicParsing="false" onAction="#onDownloadSampleInstructionSetsClicked" text="Download Sample Instruction Sets">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.color-sampler" />
                      </graphic>
                   </MenuItem>
                </items>

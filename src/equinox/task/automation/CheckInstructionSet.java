@@ -42,7 +42,10 @@ import equinox.process.automation.CheckLoadcaseDamageContributionAnalysisInput;
 import equinox.process.automation.ConvertJSONtoXML;
 import equinox.task.CompareDamageAngleLifeFactors.ResultOrdering;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
+import equinox.task.SavableTask;
+import equinox.task.SerializableTask;
 import equinox.task.TemporaryFileCreatingTask;
+import equinox.task.serializableTask.SerializableCheckInstructionSet;
 import equinox.utility.XMLUtilities;
 
 /**
@@ -52,13 +55,16 @@ import equinox.utility.XMLUtilities;
  * @date 18 Aug 2018
  * @time 14:56:00
  */
-public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask {
+public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, SavableTask {
+
+	/** Task mode. */
+	public static final int CHECK = 0, RUN = 1, GENERATE_EXECUTION_PLAN = 2;
 
 	/** Input XML file. */
 	private Path inputFile;
 
-	/** True if the instruction set should be run if it passes the check. */
-	private final boolean run;
+	/** Task mode. */
+	private final int taskMode;
 
 	/** True to overwrite existing files. */
 	private boolean overwriteFiles = true;
@@ -68,22 +74,32 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 	 *
 	 * @param inputFile
 	 *            Input XML file.
-	 * @param run
-	 *            True if the instruction set should be run if it passes the check.
+	 * @param taskMode
+	 *            Task mode.
 	 */
-	public CheckInstructionSet(Path inputFile, boolean run) {
+	public CheckInstructionSet(Path inputFile, int taskMode) {
 		this.inputFile = inputFile;
-		this.run = run;
+		this.taskMode = taskMode;
 	}
 
 	@Override
 	public String getTaskTitle() {
-		return "Check instruction set";
+		if (taskMode == CHECK)
+			return "Check instruction set";
+		else if (taskMode == RUN)
+			return "Check & run instruction set";
+		else
+			return "Check & generate execution plan";
 	}
 
 	@Override
 	public boolean canBeCancelled() {
 		return true;
+	}
+
+	@Override
+	public SerializableTask getSerializableTask() {
+		return new SerializableCheckInstructionSet(inputFile.toFile(), taskMode);
 	}
 
 	@Override
@@ -112,344 +128,403 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 			return false;
 		}
 
+		// initialize pass indicator
+		boolean checkPassed = true;
+
 		// settings
 		if (equinoxInput.getChild("settings") != null) {
-			if (!checkSettings(equinoxInput))
-				return false;
+			if (!checkSettings(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// download spectrum
 		if (equinoxInput.getChild("downloadSpectrum") != null) {
-			if (!checkDownloadSpectrum(equinoxInput))
-				return false;
+			if (!checkDownloadSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// add spectrum
 		if (equinoxInput.getChild("addSpectrum") != null) {
-			if (!checkAddSpectrum(equinoxInput))
-				return false;
+			if (!checkAddSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// assign mission parameters to spectrum
 		if (equinoxInput.getChild("assignMissionParametersToSpectrum") != null) {
-			if (!checkAssignMissionParametersToSpectrum(equinoxInput))
-				return false;
+			if (!checkAssignMissionParametersToSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// edit spectrum info
 		if (equinoxInput.getChild("editSpectrumInfo") != null) {
-			if (!checkEditSpectrumInfo(equinoxInput))
-				return false;
+			if (!checkEditSpectrumInfo(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save spectrum
 		if (equinoxInput.getChild("saveSpectrum") != null) {
-			if (!checkSaveSpectrum(equinoxInput))
-				return false;
+			if (!checkSaveSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save spectrum file
 		if (equinoxInput.getChild("saveSpectrumFile") != null) {
-			if (!checkSaveSpectrumFile(equinoxInput))
-				return false;
+			if (!checkSaveSpectrumFile(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// share spectrum
 		if (equinoxInput.getChild("shareSpectrum") != null) {
-			if (!checkShareSpectrum(equinoxInput))
-				return false;
+			if (!checkShareSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// share spectrum file
 		if (equinoxInput.getChild("shareSpectrumFile") != null) {
-			if (!checkShareSpectrumFile(equinoxInput))
-				return false;
+			if (!checkShareSpectrumFile(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// export spectrum
 		if (equinoxInput.getChild("exportSpectrum") != null) {
-			if (!checkExportSpectrum(equinoxInput))
-				return false;
+			if (!checkExportSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// upload spectrum
 		if (equinoxInput.getChild("uploadSpectrum") != null) {
-			if (!checkUploadSpectrum(equinoxInput))
-				return false;
+			if (!checkUploadSpectrum(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// download STF
 		if (equinoxInput.getChild("downloadStf") != null) {
-			if (!checkDownloadStf(equinoxInput))
-				return false;
+			if (!checkDownloadStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// add STF
 		if (equinoxInput.getChild("addStf") != null) {
-			if (!checkAddStf(equinoxInput))
-				return false;
+			if (!checkAddStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// override fatigue mission
 		if (equinoxInput.getChild("overrideFatigueMission") != null) {
-			if (!checkOverrideFatigueMission(equinoxInput))
-				return false;
+			if (!checkOverrideFatigueMission(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// assign mission parameters to STF
 		if (equinoxInput.getChild("assignMissionParametersToStf") != null) {
-			if (!checkAssignMissionParametersToStf(equinoxInput))
-				return false;
+			if (!checkAssignMissionParametersToStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save STF
 		if (equinoxInput.getChild("saveStf") != null) {
-			if (!checkSaveStf(equinoxInput))
-				return false;
+			if (!checkSaveStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// share STF
 		if (equinoxInput.getChild("shareStf") != null) {
-			if (!checkShareStf(equinoxInput))
-				return false;
+			if (!checkShareStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// export STF
 		if (equinoxInput.getChild("exportStf") != null) {
-			if (!checkExportStf(equinoxInput))
-				return false;
+			if (!checkExportStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// upload STF
 		if (equinoxInput.getChild("uploadStf") != null) {
-			if (!checkUploadStf(equinoxInput))
-				return false;
+			if (!checkUploadStf(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// add headless stress sequence
 		if (equinoxInput.getChild("addHeadlessStressSequence") != null) {
-			if (!checkAddHeadlessStressSequence(equinoxInput))
-				return false;
+			if (!checkAddHeadlessStressSequence(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// generate stress sequence
 		if (equinoxInput.getChild("generateStressSequence") != null) {
-			if (!checkGenerateStressSequence(equinoxInput))
-				return false;
+			if (!checkGenerateStressSequence(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// assign mission parameters to headless stress sequence
 		if (equinoxInput.getChild("assignMissionParametersToStressSequence") != null) {
-			if (!checkAssignMissionParametersToStressSequence(equinoxInput))
-				return false;
+			if (!checkAssignMissionParametersToStressSequence(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// edit stress sequence info
 		if (equinoxInput.getChild("editStressSequenceInfo") != null) {
-			if (!checkEditStressSequenceInfo(equinoxInput))
-				return false;
+			if (!checkEditStressSequenceInfo(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save stress sequence
 		if (equinoxInput.getChild("saveStressSequence") != null) {
-			if (!checkSaveStressSequence(equinoxInput))
-				return false;
+			if (!checkSaveStressSequence(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// fast equivalent stress analysis
 		if (equinoxInput.getChild("fastEquivalentStressAnalysis") != null) {
-			if (!checkFastEquivalentStressAnalysis(equinoxInput))
-				return false;
+			if (!checkFastEquivalentStressAnalysis(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot mission profile
 		if (equinoxInput.getChild("plotMissionProfile") != null) {
-			if (!checkPlotMissionProfile(equinoxInput))
-				return false;
+			if (!checkPlotMissionProfile(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save mission profile info
 		if (equinoxInput.getChild("saveMissionProfileInfo") != null) {
-			if (!checkSaveMissionProfileInfo(equinoxInput))
-				return false;
+			if (!checkSaveMissionProfileInfo(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot typical flight
 		if (equinoxInput.getChild("plotTypicalFlight") != null) {
-			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlight"))
-				return false;
+			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlight")) {
+				checkPassed = false;
+			}
 		}
 
 		// plot typical flight statistics
 		if (equinoxInput.getChild("plotTypicalFlightStatistics") != null) {
-			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlightStatistics"))
-				return false;
+			if (!checkPlotTypicalFlight(equinoxInput, "plotTypicalFlightStatistics")) {
+				checkPassed = false;
+			}
 		}
 
 		// equivalent stress analysis
 		if (equinoxInput.getChild("equivalentStressAnalysis") != null) {
-			if (!checkEquivalentStressAnalysis(equinoxInput))
-				return false;
+			if (!checkEquivalentStressAnalysis(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// loadcase damage contribution analysis
 		if (equinoxInput.getChild("loadcaseDamageContributionAnalysis") != null) {
-			if (!checkLoadcaseDamageContributionAnalysis(equinoxInput))
-				return false;
+			if (!checkLoadcaseDamageContributionAnalysis(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot loadcase damage contribution
 		if (equinoxInput.getChild("plotLoadcaseDamageContribution") != null) {
-			if (!checkPlotLoadcaseDamageContribution(equinoxInput))
-				return false;
+			if (!checkPlotLoadcaseDamageContribution(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save loadcase damage contributions
 		if (equinoxInput.getChild("saveLoadcaseDamageContributions") != null) {
-			if (!checkSaveLoadcaseDamageContributions(equinoxInput))
-				return false;
+			if (!checkSaveLoadcaseDamageContributions(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// export loadcase damage contributions
 		if (equinoxInput.getChild("exportLoadcaseDamageContributions") != null) {
-			if (!checkExportLoadcaseDamageContributions(equinoxInput))
-				return false;
+			if (!checkExportLoadcaseDamageContributions(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot loadcase damage contribution comparison
 		if (equinoxInput.getChild("plotLoadcaseDamageContributionComparison") != null) {
-			if (!checkPlotLoadcaseDamageContributionComparison(equinoxInput))
-				return false;
+			if (!checkPlotLoadcaseDamageContributionComparison(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// typical flight damage contribution analysis
 		if (equinoxInput.getChild("typicalFlightDamageContributionAnalysis") != null) {
-			if (!checkTypicalFlightDamageContributionAnalysis(equinoxInput))
-				return false;
+			if (!checkTypicalFlightDamageContributionAnalysis(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot typical flight damage contribution
 		if (equinoxInput.getChild("plotTypicalFlightDamageContribution") != null) {
-			if (!checkPlotTypicalFlightDamageContribution(equinoxInput))
-				return false;
+			if (!checkPlotTypicalFlightDamageContribution(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save typical flight damage contributions
 		if (equinoxInput.getChild("saveTypicalFlightDamageContributions") != null) {
-			if (!checkSaveTypicalFlightDamageContributions(equinoxInput))
-				return false;
+			if (!checkSaveTypicalFlightDamageContributions(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// damage angle analysis
 		if (equinoxInput.getChild("damageAngleAnalysis") != null) {
-			if (!checkDamageAngleAnalysis(equinoxInput))
-				return false;
+			if (!checkDamageAngleAnalysis(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot damage angles
 		if (equinoxInput.getChild("plotDamageAngles") != null) {
-			if (!checkPlotDamageAngles(equinoxInput))
-				return false;
+			if (!checkPlotDamageAngles(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save damage angles
 		if (equinoxInput.getChild("saveDamageAngles") != null) {
-			if (!checkSaveDamageAngles(equinoxInput))
-				return false;
+			if (!checkSaveDamageAngles(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot level crossing
 		if (equinoxInput.getChild("plotLevelCrossing") != null) {
-			if (!checkPlotLevelCrossing(equinoxInput))
-				return false;
+			if (!checkPlotLevelCrossing(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot rainflow histogram
 		if (equinoxInput.getChild("plotRainflowHistogram") != null) {
-			if (!checkPlotRainflowHistogram(equinoxInput))
-				return false;
+			if (!checkPlotRainflowHistogram(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save rainflow cycle info
 		if (equinoxInput.getChild("saveRainflowCycleInfo") != null) {
-			if (!checkSaveRainflowCycleInfo(equinoxInput))
-				return false;
+			if (!checkSaveRainflowCycleInfo(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save analysis output file
 		if (equinoxInput.getChild("saveAnalysisOutputFile") != null) {
-			if (!checkSaveAnalysisOutputFile(equinoxInput))
-				return false;
+			if (!checkSaveAnalysisOutputFile(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot stress sequence comparison
 		if (equinoxInput.getChild("plotStressSequenceComparison") != null) {
-			if (!checkPlotStressSequenceComparison(equinoxInput))
-				return false;
+			if (!checkPlotStressSequenceComparison(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot level crossing comparison
 		if (equinoxInput.getChild("plotLevelCrossingComparison") != null) {
-			if (!checkPlotLevelCrossingComparison(equinoxInput))
-				return false;
+			if (!checkPlotLevelCrossingComparison(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot typical flight comparison
 		if (equinoxInput.getChild("plotTypicalFlightComparison") != null) {
-			if (!checkPlotTypicalFlightComparison(equinoxInput))
-				return false;
+			if (!checkPlotTypicalFlightComparison(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot equivalent stress comparison
 		if (equinoxInput.getChild("plotEquivalentStressComparison") != null) {
-			if (!checkPlotEquivalentStressComparison(equinoxInput))
-				return false;
+			if (!checkPlotEquivalentStressComparison(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot life factors
 		if (equinoxInput.getChild("plotLifeFactors") != null) {
-			if (!checkPlotLifeFactors(equinoxInput))
-				return false;
+			if (!checkPlotLifeFactors(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// plot equivalent stress ratios
 		if (equinoxInput.getChild("plotEquivalentStressRatios") != null) {
-			if (!checkPlotEquivalentStressRatios(equinoxInput))
-				return false;
+			if (!checkPlotEquivalentStressRatios(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save equivalent stresses
 		if (equinoxInput.getChild("saveEquivalentStresses") != null) {
-			if (!checkSaveEquivalentStresses(equinoxInput))
-				return false;
+			if (!checkSaveEquivalentStresses(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save life factors
 		if (equinoxInput.getChild("saveLifeFactors") != null) {
-			if (!checkSaveLifeFactors(equinoxInput))
-				return false;
+			if (!checkSaveLifeFactors(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// save equivalent stress ratios
 		if (equinoxInput.getChild("saveEquivalentStressRatios") != null) {
-			if (!checkSaveEquivalentStressRatios(equinoxInput))
-				return false;
+			if (!checkSaveEquivalentStressRatios(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// send text message
 		if (equinoxInput.getChild("sendTextMessage") != null) {
-			if (!checkSendTextMessage(equinoxInput))
-				return false;
+			if (!checkSendTextMessage(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
 		// share file
 		if (equinoxInput.getChild("shareFile") != null) {
-			if (!checkShareFile(equinoxInput))
-				return false;
+			if (!checkShareFile(equinoxInput)) {
+				checkPassed = false;
+			}
 		}
 
-		// check passed
-		return true;
+		// return check passed
+		return checkPassed;
 	}
 
 	@Override
@@ -458,8 +533,8 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		// call ancestor
 		super.succeeded();
 
-		// no run
-		if (!run)
+		// check
+		if (taskMode == CHECK)
 			return;
 
 		// execute tasks
@@ -470,7 +545,7 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 				return;
 
 			// run instruction set
-			taskPanel_.getOwner().runTaskInParallel(new RunInstructionSet(inputFile));
+			taskPanel_.getOwner().runTaskInParallel(new RunInstructionSet(inputFile, taskMode == GENERATE_EXECUTION_PLAN));
 		}
 
 		// exception occurred
@@ -3717,7 +3792,7 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		Element settings = equinoxInput.getChild("settings");
 
 		// check run mode
-		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL, RunInstructionSet.SAVE))
+		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL))
 			return false;
 
 		// check overwrite files

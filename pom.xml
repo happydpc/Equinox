@@ -74,6 +74,10 @@
 			<id>my-local-repo</id>
 			<url>file://${basedir}/lib</url>
 		</repository>
+		<repository>
+			<id>openanzo.org</id>
+			<url>http://www.openanzo.org/maven-repositories/release/</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/net.sourceforge.jexcelapi/jxl -->
@@ -182,6 +186,42 @@
 		    <groupId>org.json</groupId>
 		    <artifactId>json</artifactId>
 		    <version>20180813</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-api -->
+		<dependency>
+		    <groupId>net.sf.jung</groupId>
+		    <artifactId>jung-api</artifactId>
+		    <version>2.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-graph-impl -->
+		<dependency>
+			<groupId>net.sf.jung</groupId>
+			<artifactId>jung-graph-impl</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-algorithms -->
+		<dependency>
+		    <groupId>net.sf.jung</groupId>
+		    <artifactId>jung-algorithms</artifactId>
+		    <version>2.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-io -->
+		<dependency>
+		    <groupId>net.sf.jung</groupId>
+		    <artifactId>jung-io</artifactId>
+		    <version>2.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sf.jung/jung-visualization -->
+		<dependency>
+		    <groupId>net.sf.jung</groupId>
+		    <artifactId>jung-visualization</artifactId>
+		    <version>2.1.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openanzo.dependencies/org.apache.commons.collections15 -->
+		<dependency>
+		    <groupId>org.openanzo.dependencies</groupId>
+		    <artifactId>org.apache.commons.collections15</artifactId>
+		    <version>4.01</version>
 		</dependency>
 		<!-- local repository: com.base64.base64-all -->
 		<dependency>

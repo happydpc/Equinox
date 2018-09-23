@@ -62,7 +62,7 @@ public class DownloadSharedSpectrum extends TemporaryFileCreatingTask<AddSpectru
 
 		// update progress info
 		updateTitle("Downloading shared spectrum");
-		updateMessage("Downloading shared spectrum from database...");
+		updateMessage("Downloading shared spectrum from file server...");
 
 		// create path to output file
 		Path output = getWorkingDirectory().resolve((String) info.getInfo(SharedFileInfoType.FILE_NAME));

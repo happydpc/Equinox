@@ -5,16 +5,16 @@
 	
 	<!--Instruction settings. Note that, the following are only instruction settings; all other settings can be set from within the Data Analyst UI.-->
 	<settings>
-		<!--Run mode can be one of 'parallel' (default), 'sequential' or 'save'. Note that, save mode will only save first level tasks (i.e. not the dependent tasks).-->
-		<runMode>parallel</runMode>
-		<!--if overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and ouput file exists, instructions will not run. -->
-		<overwriteFiles>true</overwriteFiles>
+		<!--Run mode can either 'parallel' (default) or 'sequential'.-->
+		<runMode></runMode>
+		<!--This can be either 'true' or 'false'. If overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and output file exists, instructions will not run. -->
+		<overwriteFiles></overwriteFiles>
 	</settings>
 	
-	<!--Searches spectrum in central database matching with given search entries. If found, downloads the first found spectrum. Note that, as this instruction will download the first found spectrum, it is adviced to supply precise entries which uniquely identifies the spectrum.-->
+	<!--Searches spectrum in central database matching with given search entries. If found, downloads the first found spectrum. Note that, as this instruction will download the first found spectrum, it is advised to supply precise entries which uniquely identifies the spectrum.-->
 	<downloadSpectrum>
 		<id></id>
-		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, this instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
 		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
@@ -25,7 +25,7 @@
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
-		<!--Output path to where the downloaded spectrum archive will be saved.-->
+		<!--Output path to where the downloaded spectrum archive will be saved. File name must end with .zip.-->
 		<outputPath></outputPath>
 	</downloadSpectrum>
 	
@@ -34,11 +34,15 @@
 		<id></id>
 		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
+		<!--Path to ANA file. File name must end with .ana.-->
 		<anaPath></anaPath>
+		<!--Path to CVT file. File name must end with .cvt.-->
 		<cvtPath></cvtPath>
+		<!--Path to FLS file. File name must end with .fls.-->
 		<flsPath></flsPath>
+		<!--Path to XLS file. File name must end with .xls.-->
 		<xlsPath></xlsPath>
-		<!--TXT file is optional, if not given, will be generated from CVT and XLS.-->
+		<!--Path to TXT file. File name must end with .txt. TXT file is optional, if not given, will be generated from CVT and XLS.-->
 		<txtPath></txtPath>
 		<!--Worksheet name in the conversion table file.-->
 		<convSheet></convSheet>
@@ -49,12 +53,14 @@
 		<id></id>
 		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
+		<!--Path to spectrum bundle. File name must end with .spec.-->
 		<specPath></specPath>
 	</addSpectrum>
 	
 	<!--Adds spectrum to workspace downloaded from central AF-Twin database.-->
 	<addSpectrum>
 		<id></id>
+		<!--The downloadId refers to 'downloadSpectrum' instruction.-->
 		<downloadId></downloadId>
 	</addSpectrum>
 	
@@ -121,7 +127,7 @@
 		<recipient></recipient>
 	</shareSpectrumFile>
 	
-	<!--Packs and exports spectrum to given ouput path.-->
+	<!--Packs and exports spectrum to given output path.-->
 	<exportSpectrum>
 		<id></id>
 		<!--The spectrumId refers to 'addSpectrum' instruction.-->
@@ -144,31 +150,40 @@
 	<!--Searches pilot point in central database matching with given search entries. If found, downloads the first found pilot point. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 	<downloadStf>
 		<id></id>
-		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, this instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
-		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<!--Search entry is used to search and find the requested stf file in the central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
 			<attributeName></attributeName>
+			<!--Search keyword. This keyword will searched within the specified attribute.-->
 			<keyword></keyword>
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
 		</searchEntry>
+		<!--Path to output file. File name must end with '.zip'.-->
 		<outputPath></outputPath>
 	</downloadStf>
 	
 	<!--Adds STF file to referenced spectrum.-->
 	<addStf>
-		<id></id><!--The spectrumId refers to 'addSpectrum' instruction.-->
-		<spectrumId></spectrumId><!--Path to STF file to add to workspace.-->
+		<id></id>
+		<!--The spectrumId refers to 'addSpectrum' instruction.-->
+		<spectrumId></spectrumId>
+		<!--Path to STF file to add to workspace.-->
 		<stfPath></stfPath>
-	</addStf><!--Searches pilot point in central database matching with given search entries, and if found, adds it to referenced spectrum. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
+	</addStf>
+	
+	<!--Searches pilot point in central database matching with given search entries, and if found, adds it to referenced spectrum. Note that, as this instruction will download the first found pilot point, it is advised to supply precise entries which uniquely identifies the pilot point.-->
 	<addStf>
-		<id></id><!--The spectrumId refers to 'addSpectrum' instruction.-->
-		<spectrumId></spectrumId><!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<id></id>
+		<!--The spectrumId refers to 'addSpectrum' instruction.-->
+		<spectrumId></spectrumId>
+		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Pilot point attribute name. This can be one of 'NAME', 'SPECTRUM_NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'EID', 'FRAME_RIB_POSITION', 'STRINGER_POSITION', 'DATA_SOURCE', 'GENERATION_SOURCE', 'DELIVERY_REF_NUM', 'DESCRIPTION', 'ISSUE', 'FATIGUE_MATERIAL', 'PREFFAS_MATERIAL', 'LINEAR_MATERIAL'.-->
 			<attributeName></attributeName>
+			<!--Search keyword. This keyword will searched within the specified attribute.-->
 			<keyword></keyword>
 			<!--Criteria to use for the given keyword. This element is optional, if not supplied, default value will be used. This can be one of 'Contains' (default), 'Equals', 'Starts with' or 'Ends with'.-->
 			<criteria></criteria>
@@ -198,6 +213,7 @@
 		</incrementStresses>
 		<!--Delta-p stresses. This element is optional, if not set, delta-p stresses will be set to 0.-->
 		<dpStresses>
+			<!--Delta-P loadcase number.-->
 			<dpLoadcase></dpLoadcase>
 			<sx></sx>
 			<sy></sy>
@@ -206,12 +222,14 @@
 		<!--Delta-t stresses. This element is optional, if not set, delta-t stresses will be set to 0.-->
 		<dtStresses>
 			<superior>
+				<!--Delta-T superior loadcase number.-->
 				<loadcase></loadcase>
 				<sx></sx>
 				<sy></sy>
 				<sxy></sxy>
 			</superior>
 			<inferior>
+				<!--Delta-T inferior loadcase number.-->
 				<loadcase></loadcase>
 				<sx></sx>
 				<sy></sy>
@@ -223,11 +241,16 @@
 	<!--Overrides fatigue mission inherited from the parent spectrum with the given mission.-->
 	<overrideFatigueMission>
 		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
 		<stfId></stfId>
-		<fatigueMission></fatigueMission></overrideFatigueMission>
+		<!--Fatigue mission.-->
+		<fatigueMission></fatigueMission>
+	</overrideFatigueMission>
+	
 	<!--Assigns mission parameters to stf file.-->
 	<assignMissionParametersToStf>
 		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
 		<stfId></stfId>
 		<!--Multiple mission parameters with unique names can be given.-->
 		<missionParameter>
@@ -237,32 +260,52 @@
 			<value></value>
 		</missionParameter>
 	</assignMissionParametersToStf>
+	
 	<!--Saves stf file to given output path.-->
 	<saveStf>
 		<id></id>
-		<stfId></stfId><!--Path to save stf file. To save as stf file, end file name with .stf. To save as zip bundle, end file name with .zip. To save as gz bundle, end file name with .gz.-->
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Path to save stf file. To save as stf file, end file name with .stf. To save as zip bundle, end file name with .zip. To save as gz bundle, end file name with .gz.-->
 		<outputPath></outputPath>
-	</saveStf><!--Shares stf file with given recipient.-->
+	</saveStf>
+	
+	<!--Shares stf file with given recipient.-->
 	<shareStf>
 		<id></id>
-		<stfId></stfId><!--Recipient username. Note that, the recipient must be online at the time of execution.-->
-		<recipient></recipient></shareStf><!--Exports pilot point to zip archive. The archive contains pilot point upload information.-->
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Recipient username. Note that, the recipient must be online at the time of execution.-->
+		<recipient></recipient>
+	</shareStf>
+	
+	<!--Exports pilot point to zip archive. The archive contains pilot point upload information.-->
 	<exportStf>
 		<id></id>
-		<stfId></stfId><!--Pilot point attribute. Multiple pilotPointInfo elements can be given for various pilot point attributes. This element is optional.-->
-		<pilotPointInfo><!--Pilot point attribute name. This can be one of 'fatigueMission', 'description', 'dataSource', 'generationSource', 'deliveryReference', 'issue', 'eid', 'elementType', 'framePosition', 'stringerPosition', 'fatigueMaterial', 'preffasMaterial' or 'linearMaterial'.-->
+		<!--The stfId refers to 'addStf' instruction.-->
+		<stfId></stfId>
+		<!--Pilot point attribute. Multiple pilotPointInfo elements can be given for various pilot point attributes. This element is optional.-->
+		<pilotPointInfo>
+			<!--Pilot point attribute name. This can be one of 'fatigueMission', 'description', 'dataSource', 'generationSource', 'deliveryReference', 'issue', 'eid', 'elementType', 'framePosition', 'stringerPosition', 'fatigueMaterial', 'preffasMaterial' or 'linearMaterial'.-->
 			<attributeName></attributeName>
+			<!--Pilot point attribute value.-->
 			<attributeValue></attributeValue>
-		</pilotPointInfo><!--Pilot point image. Multiple pilotPointImage elements can be given for various pilot point images types. This element is optional.-->
-		<pilotPointImage><!--Pilot point image type. This can be one of 'Pilot Point Image', 'Mission Profile', 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Level Crossings', 'Damage Angles', 'Typical Flight Number Of Peaks', 'Typical Flight Occurrences', 'Rainflow Histogram', 'Loadcase Damage Contributions' or 'Flight Damage Contributions'.-->
-			<imageType></imageType><!--Pilot point image path. A png file is expected.-->
+		</pilotPointInfo>
+		<!--Pilot point image. Multiple pilotPointImage elements can be given for various pilot point images types. This element is optional.-->
+		<pilotPointImage>
+			<!--Pilot point image type. This can be one of 'Pilot Point Image', 'Mission Profile', 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Level Crossings', 'Damage Angles', 'Typical Flight Number Of Peaks', 'Typical Flight Occurrences', 'Rainflow Histogram', 'Loadcase Damage Contributions' or 'Flight Damage Contributions'.-->
+			<imageType></imageType>
+			<!--Pilot point image path. A png file is expected.-->
 			<imagePath></imagePath>
-		</pilotPointImage><!--Path to where the pilot point will be exported. File name must end with .zip.-->
+		</pilotPointImage>
+		<!--Path to where the pilot point will be exported. File name must end with .zip.-->
 		<outputPath></outputPath>
-	</exportStf><!--Uploads stf to central database.-->
-
+	</exportStf>
+	
+	<!--Uploads stf to central database.-->
 	<uploadStf>
-		<id></id><!--Export package to upload. This must refer to an 'exportStf' instruction.-->
+		<id></id>
+		<!--Export package to upload. This must refer to an 'exportStf' instruction.-->
 		<exportId></exportId>
 	</uploadStf>
 	
@@ -271,6 +314,7 @@
 		<id></id>
 		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
+		<!--Path to sigma file. File name must end with .sigma.-->
 		<sigmaPath></sigmaPath>
 	</addHeadlessStressSequence>
 	
@@ -279,13 +323,16 @@
 		<id></id>
 		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
+		<!--Path to STH file. File name must end with .sth.-->
 		<sthPath></sthPath>
+		<!--Path to FLS file. File name must end with .fls.-->
 		<flsPath></flsPath>
 	</addHeadlessStressSequence>
 	
 	<!--Generates stress sequence from referenced STF file.-->
 	<generateStressSequence>
 		<id></id>
+		<!--The stfId refers to 'addStf' instruction.-->
 		<stfId></stfId>
 		<!--Path to input file containing input parameters for generating stress sequence. The file name must end with either XML or JSON.-->
 		<inputPath></inputPath>
@@ -293,7 +340,8 @@
 	
 	<!--Assigns mission parameters to headless stress sequence.-->
 	<assignMissionParametersToStressSequence>
-		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<id></id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
 		<headlessStressSequenceId></headlessStressSequenceId>
 		<!--Multiple mission parameters with unique names can be given.-->
 		<missionParameter>
@@ -302,12 +350,18 @@
 			<!--Mission parameter value. A real number is expected.-->
 			<value></value>
 		</missionParameter>
-	</assignMissionParametersToStressSequence><!--Edits headless stress sequence info.-->
+	</assignMissionParametersToStressSequence>
+	
+	<!--Edits headless stress sequence info.-->
 	<editStressSequenceInfo>
-		<id></id><!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
-		<headlessStressSequenceId></headlessStressSequenceId><!--Aircraft program. This element is optional.-->
-		<aircraftProgram></aircraftProgram><!--Aircraft section. This element is optional.-->
-		<aircraftSection></aircraftSection><!--Fatigue mission. This element is optional.-->
+		<id></id>
+		<!--The headlessStressSequenceId refers to 'addHeadlessStressSequence' instruction.-->
+		<headlessStressSequenceId></headlessStressSequenceId>
+		<!--Aircraft program. This element is optional.-->
+		<aircraftProgram></aircraftProgram>
+		<!--Aircraft section. This element is optional.-->
+		<aircraftSection></aircraftSection>
+		<!--Fatigue mission. This element is optional.-->
 		<fatigueMission></fatigueMission>
 	</editStressSequenceInfo>
 	
@@ -360,9 +414,12 @@
 
 	<!--Generates and saves mission profile information file. This file contains all stepping data.-->
 	<saveMissionProfileInfo>
-		<id></id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
-		<stressSequenceId></stressSequenceId><!--Path to save mission profile info. File name must end with .xls.-->
-		<outputPath></outputPath></saveMissionProfileInfo>
+		<id></id>
+		<!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
+		<stressSequenceId></stressSequenceId>
+		<!--Path to save mission profile info. File name must end with .xls.-->
+		<outputPath></outputPath>
+	</saveMissionProfileInfo>
 	
 	<!--Plots selected type of typical flight from referenced stress sequence to given output file.-->
 	<plotTypicalFlight>
@@ -427,11 +484,16 @@
 		<!--Pilot point image type. This can be one of 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
 		<plotType></plotType>
 		<!--Path to save typical flight statistics plot. File name must end with .png.-->
-		<outputPath></outputPath><!--Plotting options. This element and all its children are optional.-->
-		<options><!--Maximum number of flights to plot. An integer value is expected.-->
-			<maxFlights></maxFlights><!--Results ordering. This can be either 'descending' or 'ascending'.-->
-			<resultsOrder></resultsOrder><!--Label visibility. This can be either 'true' or 'false'.-->
-			<showDataLabels></showDataLabels></options>
+		<outputPath></outputPath>
+		<!--Plotting options. This element and all its children are optional.-->
+		<options>
+			<!--Maximum number of flights to plot. An integer value is expected.-->
+			<maxFlights></maxFlights>
+			<!--Results ordering. This can be either 'descending' or 'ascending'.-->
+			<resultsOrder></resultsOrder>
+			<!--Label visibility. This can be either 'true' or 'false'.-->
+			<showDataLabels></showDataLabels>
+		</options>
 	</plotTypicalFlightStatistics>
 	
 	<!--Performs equivalent stress analysis with referenced stress sequence.-->
@@ -724,7 +786,8 @@
 			<!--Number of decimals after comma. An integer between 0 to 5 (inclusive) is expected.-->
 			<decimalPlaces></decimalPlaces>
 			<!--Label visibility. This can be either 'true' or 'false'.-->
-			<showDataLabels></showDataLabels></options>
+			<showDataLabels></showDataLabels>
+		</options>
 	</plotRainflowHistogram>
 	
 	<!--Saves rainflow cycle information to given output file.-->
@@ -836,6 +899,7 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotStressSequenceComparison>
+	
 	<!--Plots level crossing comparison to given output file.-->
 	<plotLevelCrossingComparison>
 		<id></id>
@@ -857,13 +921,15 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotLevelCrossingComparison>
+	
 	<!--Plots level crossing comparison to given output file.-->
 	<plotLevelCrossingComparison>
 		<id></id>
 		<!--The headlessEquivalentStressId refers to 'equivalentStressAnalysis' instruction which refers to headlessStressSequenceId. Minimum 2 headlessEquivalentStressId elements are required.-->
 		<headlessEquivalentStressId></headlessEquivalentStressId>
 		<!--Path to save level crossing plot. File name must end with .png.-->
-		<outputPath></outputPath><!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
+		<outputPath></outputPath>
+		<!--Plot series naming options. This element and all its children are optional, if not supplied, default values will be set.-->
 		<seriesNaming>
 			<!--Include stress sequence name to plot series names. This can be either 'true' or 'false'.-->
 			<includeStressSequenceName></includeStressSequenceName>
@@ -875,6 +941,7 @@
 			<includeFatigueMission></includeFatigueMission>
 		</seriesNaming>
 	</plotLevelCrossingComparison>
+	
 	<!--Plots typical flight comparison to given output file.-->
 	<plotTypicalFlightComparison>
 		<id></id>
@@ -1451,16 +1518,11 @@
 	<!--Sends text message to given recipient.-->
 	<sendTextMessage>
 		<id></id>
-		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, the instruction will be executed according execution plan and parallelism.-->
+		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, this instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
 		<!--Message text to send.-->
 		<message></message>
 		<!--Recipient username. Note that, the recipient must be online at the time of execution.-->
 		<recipient></recipient>
 	</sendTextMessage>
-	
-	<editPilotPointInfo></editPilotPointInfo>
-	<setPilotPointImage></setPilotPointImage>
-	<shareWorkspace></shareWorkspace>
-	<newWorkspace></newWorkspace>
 </equinoxInput>
