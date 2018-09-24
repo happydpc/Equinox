@@ -21,7 +21,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 
-<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
+<StackPane fx:id="root_" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="equinox.controller.MenuBarPanel">
    <children>
       <MenuBar fx:id="menuBar_" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="29.0" stylesheets="@../css/MenuBar.css" StackPane.alignment="TOP_CENTER">
         <menus>
@@ -272,9 +272,11 @@
                      </accelerator>
                   </MenuItem>
                   <Menu fx:id="shareWorkspaceCollaborationMenu_" mnemonicParsing="false" text="Share Workspace With..." />
-                  <Menu fx:id="shareInstructionSetCollaborationMenu_" mnemonicParsing="false" text="Share Instruction Set With...">
+                  <Menu fx:id="shareInstructionSetCollaborationMenu_" mnemonicParsing="false" text="Share Instruction Set With..." />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <Menu fx:id="runInstructionSetCollaborationMenu_" mnemonicParsing="false" text="Run Instruction Set On...">
                      <graphic>
-                        <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.mail-forward" />
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.users4" />
                      </graphic>
                   </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />
@@ -369,9 +371,15 @@
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.save" />
                      </graphic>
                   </MenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
                   <Menu fx:id="shareInstructionSetMenu_" mnemonicParsing="false" text="Share Instruction Set With...">
                      <graphic>
                         <Label stylesheets="@../css/FontAwesomeLabel.css" text="%fa.mail-forward" />
+                     </graphic>
+                  </Menu>
+                  <Menu fx:id="runInstructionSetMenu_" mnemonicParsing="false" text="Run Instruction Set On...">
+                     <graphic>
+                        <Label stylesheets="@../css/IcoMoonLabel.css" text="%icon.users4" />
                      </graphic>
                   </Menu>
                   <SeparatorMenuItem mnemonicParsing="false" />

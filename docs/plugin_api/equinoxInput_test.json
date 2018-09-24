@@ -1,0 +1,390 @@
+{"equinoxInput": {
+    "plotLevelCrossing": {
+        "outputPath": "/Users/aurora/Temporary/levelCrossing.png",
+        "equivalentStressId": 10,
+        "id": 11
+    },
+    "addSpectrum": {
+        "downloadId": 1,
+        "id": 2
+    },
+    "plotMissionProfile": {
+        "stressSequenceId": 6,
+        "outputPath": "/Users/aurora/Temporary/missionProfile.png",
+        "id": 8
+    },
+    "plotEquivalentStressRatios": [
+        {
+            "outputPath": "/Users/aurora/Temporary/equivalentStressRatios.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "basisMission": "61 Parabolas",
+            "id": 39
+        },
+        {
+            "missionParameter": "Param1",
+            "outputPath": "/Users/aurora/Temporary/equivalentStressRatios_withMissionParams.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "basisMission": "61 Parabolas",
+            "id": 40
+        }
+    ],
+    "saveEquivalentStresses": {
+        "outputPath": "/Users/aurora/Temporary/eqStresses.xls",
+        "equivalentStressId": [
+            28,
+            29,
+            30
+        ],
+        "options": {
+            "rRatio": true,
+            "aircraftProgram": true,
+            "aircraftSection": true,
+            "equivalentStress": true,
+            "maximumStress": true,
+            "materialData": true,
+            "materialName": true,
+            "stressSequenceName": true,
+            "fatigueMission": true,
+            "spectrumName": true,
+            "pilotPointName": true,
+            "minimumStress": true,
+            "spectrumValidity": true
+        },
+        "id": 41
+    },
+    "plotLevelCrossingComparison": {
+        "outputPath": "/Users/aurora/Temporary/levelCrossingComparison.png",
+        "equivalentStressId": [
+            10,
+            28,
+            29,
+            30
+        ],
+        "seriesNaming": {
+            "includeStfName": true,
+            "includeMaterialName": false
+        },
+        "id": 31
+    },
+    "downloadSpectrum": {
+        "searchEntry": {
+            "criteria": "Contains",
+            "attributeName": "NAME",
+            "keyword": "A310Microgravity-211Sect13-MR2_61P"
+        },
+        "outputPath": "/Users/aurora/Temporary/download.zip",
+        "id": 1
+    },
+    "assignMissionParametersToSpectrum": {
+        "missionParameter": {
+            "name": "name1",
+            "value": 12.8
+        },
+        "spectrumId": 2,
+        "id": 4
+    },
+    "plotTypicalFlight": {
+        "plotType": "Longest Typical Flight",
+        "stressSequenceId": 6,
+        "outputPath": "/Users/aurora/Temporary/longestFlight.png",
+        "id": 9
+    },
+    "generateStressSequence": [
+        {
+            "inputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml",
+            "stfId": 3,
+            "id": 6
+        },
+        {
+            "inputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml",
+            "stfId": 16,
+            "id": 17
+        },
+        {
+            "inputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml",
+            "stfId": 19,
+            "id": 22
+        },
+        {
+            "inputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml",
+            "stfId": 20,
+            "id": 23
+        },
+        {
+            "inputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/generateStressSequenceInput_test.xml",
+            "stfId": 21,
+            "id": 24
+        }
+    ],
+    "settings": {
+        "overwriteFiles": true,
+        "runMode": "parallel"
+    },
+    "saveStressSequence": {
+        "stressSequenceId": 6,
+        "outputPath": "/Users/aurora/Temporary/saved_stress_sequence.sth",
+        "id": 7
+    },
+    "plotLifeFactors": [
+        {
+            "outputPath": "/Users/aurora/Temporary/lifeFactors.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "basisMission": "61 Parabolas",
+            "id": 37
+        },
+        {
+            "missionParameter": "Param1",
+            "outputPath": "/Users/aurora/Temporary/lifeFactors_withMissionParams.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "basisMission": "61 Parabolas",
+            "id": 38
+        }
+    ],
+    "equivalentStressAnalysis": [
+        {
+            "stressSequenceId": 6,
+            "id": 10,
+            "equivalentStressAnalysisInputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml"
+        },
+        {
+            "stressSequenceId": 24,
+            "id": 28,
+            "equivalentStressAnalysisInputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml"
+        },
+        {
+            "stressSequenceId": 23,
+            "id": 29,
+            "equivalentStressAnalysisInputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml"
+        },
+        {
+            "stressSequenceId": 22,
+            "id": 30,
+            "equivalentStressAnalysisInputPath": "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/equivalentStressAnalysisInput_test.xml"
+        }
+    ],
+    "saveAnalysisOutputFile": {
+        "outputPath": "/Users/aurora/Temporary/output.dossier",
+        "equivalentStressId": 10,
+        "id": 13
+    },
+    "plotStressSequenceComparison": {
+        "comparisonCriteria": "NUM_FLIGHT_TYPES",
+        "stressSequenceId": [
+            6,
+            17,
+            22,
+            23,
+            24
+        ],
+        "outputPath": "/Users/aurora/Temporary/stressSequenceComparison.png",
+        "id": 18
+    },
+    "assignMissionParametersToStf": [
+        {
+            "missionParameter": {
+                "name": "Param1",
+                "value": 4.5
+            },
+            "stfId": 19,
+            "id": 36
+        },
+        {
+            "missionParameter": {
+                "name": "Param1",
+                "value": 12.7
+            },
+            "stfId": 21,
+            "id": 35
+        }
+    ],
+    "plotEquivalentStressComparison": [
+        {
+            "outputPath": "/Users/aurora/Temporary/equivalentStressComparison.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "id": 33
+        },
+        {
+            "missionParameter": "Param1",
+            "outputPath": "/Users/aurora/Temporary/equivalentStressComparison_withMissionParams.png",
+            "equivalentStressId": [
+                30,
+                28
+            ],
+            "id": 34
+        }
+    ],
+    "addStf": [
+        {
+            "searchEntry": [
+                {
+                    "attributeName": "NAME",
+                    "keyword": "Fuselage_F26_MY"
+                },
+                {
+                    "attributeName": "AC_PROGRAM",
+                    "keyword": "a310"
+                },
+                {
+                    "attributeName": "AC_SECTION",
+                    "keyword": "sect13"
+                },
+                {
+                    "attributeName": "FAT_MISSION",
+                    "keyword": "61 Parabolas"
+                }
+            ],
+            "spectrumId": 2,
+            "id": 3
+        },
+        {
+            "searchEntry": [
+                {
+                    "attributeName": "NAME",
+                    "keyword": "Fuselage_F26_TZ"
+                },
+                {
+                    "attributeName": "AC_PROGRAM",
+                    "keyword": "a310"
+                },
+                {
+                    "attributeName": "AC_SECTION",
+                    "keyword": "sect13"
+                },
+                {
+                    "attributeName": "FAT_MISSION",
+                    "keyword": "61 Parabolas"
+                }
+            ],
+            "spectrumId": 2,
+            "id": 16
+        },
+        {
+            "spectrumId": 2,
+            "id": 19,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test1.stf"
+        },
+        {
+            "spectrumId": 2,
+            "id": 20,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test2.stf"
+        },
+        {
+            "spectrumId": 2,
+            "id": 21,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test3.stf"
+        },
+        {
+            "spectrumId": 2,
+            "id": 25,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test4.stf"
+        },
+        {
+            "spectrumId": 2,
+            "id": 26,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test5.stf"
+        },
+        {
+            "spectrumId": 2,
+            "id": 27,
+            "stfPath": "/Users/aurora/Temporary/Fuselage_F26_MY_test6.stf"
+        }
+    ],
+    "saveLifeFactors": {
+        "outputPath": "/Users/aurora/Temporary/lifeFactors.xls",
+        "equivalentStressId": [
+            28,
+            29,
+            30
+        ],
+        "basisMission": "61 Parabolas",
+        "options": {
+            "rRatio": true,
+            "aircraftProgram": true,
+            "aircraftSection": true,
+            "maximumStress": true,
+            "materialData": true,
+            "materialName": true,
+            "stressSequenceName": true,
+            "fatigueMission": true,
+            "lifeFactor": true,
+            "spectrumName": true,
+            "pilotPointName": true,
+            "minimumStress": true,
+            "spectrumValidity": true
+        },
+        "id": 42
+    },
+    "plotTypicalFlightComparison": {
+        "typicalFlight": [
+            {
+                "stressSequenceId": 22,
+                "typicalFlightName": "TF_1_2s"
+            },
+            {
+                "stressSequenceId": 22,
+                "typicalFlightName": "TF_2_2s"
+            },
+            {
+                "stressSequenceId": 23,
+                "typicalFlightName": "TF_4_2s"
+            }
+        ],
+        "outputPath": "/Users/aurora/Temporary/typicalFlightComparison.png",
+        "id": 32
+    },
+    "saveMissionProfileInfo": {
+        "stressSequenceId": 6,
+        "outputPath": "/Users/aurora/Temporary/missionProfileInfo.xls",
+        "id": 14
+    },
+    "plotRainflowHistogram": {
+        "outputPath": "/Users/aurora/Temporary/rainflowHistogram.png",
+        "equivalentStressId": 10,
+        "id": 12
+    },
+    "saveEquivalentStressRatios": {
+        "outputPath": "/Users/aurora/Temporary/eqStressRatios.xls",
+        "equivalentStressId": [
+            28,
+            29,
+            30
+        ],
+        "basisMission": "61 Parabolas",
+        "options": {
+            "rRatio": true,
+            "aircraftProgram": true,
+            "equivalentStressRatio": true,
+            "aircraftSection": true,
+            "maximumStress": true,
+            "materialData": true,
+            "materialName": true,
+            "stressSequenceName": true,
+            "fatigueMission": true,
+            "spectrumName": true,
+            "pilotPointName": true,
+            "minimumStress": true,
+            "spectrumValidity": true
+        },
+        "id": 43
+    },
+    "saveRainflowCycleInfo": {
+        "outputPath": "/Users/aurora/Temporary/rainflowCyleInfo.rflow",
+        "equivalentStressId": 10,
+        "id": 15
+    }
+}}

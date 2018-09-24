@@ -39,6 +39,7 @@ import equinox.controller.ChatPopup;
 import equinox.controller.DirectoryOutputtingOkNotificationPanel;
 import equinox.controller.ErrorPanel;
 import equinox.controller.IncomingFilePanel;
+import equinox.controller.IncomingRunRequestPanel;
 import equinox.controller.InfoNotificationPanel;
 import equinox.controller.InternalEngineAnalysisFailedPanel;
 import equinox.controller.MainScreen;
@@ -63,6 +64,7 @@ import equinox.dataServer.remote.data.EquinoxUpdate;
 import equinox.dataServer.remote.data.EquinoxUpdate.EquinoxUpdateInfoType;
 import equinox.exchangeServer.remote.message.Announcement;
 import equinox.exchangeServer.remote.message.ChatMessage;
+import equinox.exchangeServer.remote.message.InstructionSetRunRequest;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.ServerUtility;
@@ -235,12 +237,12 @@ public class NotificationPanel extends NotificationPane implements java.awt.even
 	}
 
 	/**
-	 * Creates and shows incoming notification.
+	 * Creates and shows incoming shared file notification.
 	 *
 	 * @param message
 	 *            Message of notification.
 	 */
-	public void showIncoming(ShareFile message) {
+	public void showIncomingSharedFile(ShareFile message) {
 
 		// no notification
 		if (!(boolean) mainScreen_.getSettings().getValue(Settings.NOTIFY_FILES))
@@ -248,6 +250,22 @@ public class NotificationPanel extends NotificationPane implements java.awt.even
 
 		// load and show notification panel
 		IncomingFilePanel.load(mainScreen_, message);
+	}
+
+	/**
+	 * Creates and shows incoming run request notification.
+	 *
+	 * @param message
+	 *            Message of notification.
+	 */
+	public void showIncomingRunRequest(InstructionSetRunRequest message) {
+
+		// no notification
+		if (!(boolean) mainScreen_.getSettings().getValue(Settings.NOTIFY_FILES))
+			return;
+
+		// load and show notification panel
+		IncomingRunRequestPanel.load(mainScreen_, message);
 	}
 
 	/**

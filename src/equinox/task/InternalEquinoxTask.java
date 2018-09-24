@@ -29,6 +29,7 @@ import com.jcraft.jsch.JSchException;
 
 import equinox.Equinox;
 import equinox.controller.TaskPanel;
+import equinox.exchangeServer.remote.message.InstructionSetRunRequest;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.plugin.EquinoxTask;
 import equinox.serverUtilities.FilerConnection;
@@ -428,6 +429,56 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 			for (String recipient : recipients) {
 				message.addRecipient(recipient);
 			}
+
+			// send message
+			task.taskPanel_.getOwner().getOwner().getExchangeServerManager().sendMessage(message);
+		}
+
+		/**
+		 * Uploads file with the given path to filer and send run instruction set request to given recipient. Note that the destination file name is generated using the following convention:
+		 * <p>
+		 * userAlias_simpleTaskClassName_currentTimeMillis.zip
+		 *
+		 * @param path
+		 *            Path to file to upload.
+		 * @param recipient
+		 *            Recipient username.
+		 * @throws Exception
+		 *             If exception occurs during process.
+		 */
+		default void sendInstructionSetRunRequest(Path path, String recipient) throws Exception {
+
+			// get task
+			InternalEquinoxTask<?> task = (InternalEquinoxTask<?>) this;
+
+			// update info
+			task.updateMessage("Uploading instruction set file to filer...");
+			String url = null;
+
+			// get filer connection
+			try (FilerConnection filer = task.getFilerConnection()) {
+
+				// set path to destination file
+				url = filer.getDirectoryPath(FilerConnection.EXCHANGE) + "/" + Equinox.USER.getAlias() + "_" + task.getClass().getSimpleName() + "_" + System.currentTimeMillis() + ".zip";
+
+				// upload file to filer
+				filer.getSftpChannel().put(path.toString(), url);
+			}
+
+			// update info
+			task.updateMessage("Sending instruction set run request...");
+
+			// create message
+			InstructionSetRunRequest message = new InstructionSetRunRequest();
+			SharedFileInfo info = new SharedFileInfo();
+			info.setInfo(SharedFileInfoType.OWNER, Equinox.USER.getUsername());
+			info.setInfo(SharedFileInfoType.FILE_TYPE, SharedFileInfo.INSTRUCTION_SET);
+			info.setInfo(SharedFileInfoType.FILE_NAME, path.getFileName().toString());
+			info.setInfo(SharedFileInfoType.DATA_SIZE, path.toFile().length());
+			info.setInfo(SharedFileInfoType.DATA_URL, url);
+			message.setSharedFileInfo(info);
+			message.setSender(Equinox.USER.getUsername());
+			message.setRecipient(recipient);
 
 			// send message
 			task.taskPanel_.getOwner().getOwner().getExchangeServerManager().sendMessage(message);

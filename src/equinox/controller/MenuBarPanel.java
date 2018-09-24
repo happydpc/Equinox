@@ -55,6 +55,7 @@ import equinox.task.PreparePilotPointUpload;
 import equinox.task.ResetExchangeTable;
 import equinox.task.ResetWorkspace;
 import equinox.task.RfortAnalysis;
+import equinox.task.RunInstructionSetOn;
 import equinox.task.SaveTask;
 import equinox.task.SaveWorkspace;
 import equinox.task.ShareInstructionSet;
@@ -119,7 +120,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 	private MenuBar menuBar_;
 
 	@FXML
-	private Menu openRecentMenu_, selectedMenu_, administratorMenu_, shareWorkspaceFileMenu_, shareWorkspaceCollaborationMenu_, pluginMenu_, shareInstructionSetMenu_, shareInstructionSetCollaborationMenu_;
+	private Menu openRecentMenu_, selectedMenu_, administratorMenu_, shareWorkspaceFileMenu_, shareWorkspaceCollaborationMenu_, pluginMenu_, shareInstructionSetMenu_, shareInstructionSetCollaborationMenu_, runInstructionSetMenu_, runInstructionSetCollaborationMenu_;
 
 	@FXML
 	private MenuItem login_, saveFile_, shareFile_, myCheckMenuItem_, adaptDRFMenuItem_, excaliburMenuItem_, objectView_;
@@ -527,6 +528,8 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 		shareWorkspaceCollaborationMenu_.getItems().clear();
 		shareInstructionSetMenu_.getItems().clear();
 		shareInstructionSetCollaborationMenu_.getItems().clear();
+		runInstructionSetMenu_.getItems().clear();
+		runInstructionSetCollaborationMenu_.getItems().clear();
 
 		// add new recipients
 		ObservableList<? extends String> list = c.getList();
@@ -545,6 +548,12 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 			MenuItem item4 = new MenuItem(recipient);
 			item4.setOnAction(event -> onShareInstructionSetClicked(recipient));
 			shareInstructionSetCollaborationMenu_.getItems().add(item4);
+			MenuItem item5 = new MenuItem(recipient);
+			item5.setOnAction(event -> onRunInstructionSetOnClicked(recipient));
+			runInstructionSetMenu_.getItems().add(item5);
+			MenuItem item6 = new MenuItem(recipient);
+			item6.setOnAction(event -> onRunInstructionSetOnClicked(recipient));
+			runInstructionSetCollaborationMenu_.getItems().add(item6);
 		}
 	}
 
@@ -1009,6 +1018,31 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 
 		// execute tasks
 		owner_.getActiveTasksPanel().runTaskInParallel(new ShareInstructionSet(file.toPath(), recipient));
+	}
+
+	/**
+	 * Recipient to send the request.
+	 *
+	 * @param recipient
+	 *            Recipient to send the request.
+	 */
+	private void onRunInstructionSetOnClicked(String recipient) {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// execute tasks
+		owner_.getActiveTasksPanel().runTaskInParallel(new RunInstructionSetOn(file.toPath(), recipient));
 	}
 
 	/**

@@ -33,6 +33,8 @@ import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
 import equinox.exchangeServer.remote.message.Announcement;
 import equinox.exchangeServer.remote.message.ChatMessage;
 import equinox.exchangeServer.remote.message.ExchangeMessage;
+import equinox.exchangeServer.remote.message.InstructionSetRunRequest;
+import equinox.exchangeServer.remote.message.InstructionSetRunResponse;
 import equinox.exchangeServer.remote.message.RoomChange;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.exchangeServer.remote.message.StatusChange;
@@ -263,6 +265,16 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 			// share file
 			else if (message instanceof ShareFile) {
 				processShareFile((ShareFile) message);
+			}
+
+			// instruction set run request
+			else if (message instanceof InstructionSetRunRequest) {
+				processInstructionSetRunRequest((InstructionSetRunRequest) message);
+			}
+
+			// instruction set run response
+			else if (message instanceof InstructionSetRunResponse) {
+				processInstructionSetRunResponse((InstructionSetRunResponse) message);
 			}
 
 			// announcement
@@ -710,7 +722,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	}
 
 	/**
-	 * Processes share view message from the server.
+	 * Processes share file message from the server.
 	 *
 	 * @param message
 	 *            Share file message.
@@ -726,7 +738,36 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 			return;
 
 		// create and show notification
-		notificationPane_.showIncoming(message);
+		notificationPane_.showIncomingSharedFile(message);
+	}
+
+	/**
+	 * Processes instruction set run response message from the server.
+	 *
+	 * @param message
+	 *            Instruction set run request message.
+	 */
+	private void processInstructionSetRunResponse(InstructionSetRunResponse message) {
+		String title = null, text = null;
+		if (message.isAccepted()) {
+			title = "Instruction Set Run Accepted";
+			text = message.getSender() + " accepted your instruction set run request.";
+		}
+		else {
+			title = "Instruction Set Run Rejected";
+			text = message.getSender() + " rejected your instruction set run request.";
+		}
+		notificationPane_.showInfo(title, text);
+	}
+
+	/**
+	 * Processes instruction set run request message from the server.
+	 *
+	 * @param message
+	 *            Instruction set run request message.
+	 */
+	private void processInstructionSetRunRequest(InstructionSetRunRequest message) {
+		notificationPane_.showIncomingRunRequest(message);
 	}
 
 	/**
@@ -762,9 +803,4 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 			throw new RuntimeException(e);
 		}
 	}
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see equinox.dataServer.remote.listener.DataMessageListener#respondToDataMessage(equinox.dataServer.remote.message.DataMessage)
-	 */
 }
