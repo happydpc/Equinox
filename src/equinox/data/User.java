@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import equinox.controller.MainScreen;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.serverUtilities.Permission;
 
 /**
@@ -54,6 +55,15 @@ public class User {
 		permissions = new ArrayList<>();
 		isAdministrator = false;
 		isLoggedAsAdministrator = false;
+	}
+
+	/**
+	 * Creates and returns exchange user.
+	 * 
+	 * @return Newly created exchange user.
+	 */
+	public ExchangeUser createExchangeUser() {
+		return new ExchangeUser(alias, username);
 	}
 
 	/**

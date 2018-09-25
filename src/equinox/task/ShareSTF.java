@@ -21,6 +21,7 @@ import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFile;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
@@ -43,7 +44,7 @@ public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRun
 	private STFFile item_;
 
 	/** Recipients. */
-	private final List<String> recipients_;
+	private final List<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share spectrum item task.
@@ -53,7 +54,7 @@ public class ShareSTF extends TemporaryFileCreatingTask<Void> implements LongRun
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSTF(STFFile item, List<String> recipients) {
+	public ShareSTF(STFFile item, List<ExchangeUser> recipients) {
 		item_ = item;
 		recipients_ = recipients;
 	}

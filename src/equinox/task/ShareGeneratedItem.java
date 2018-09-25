@@ -18,6 +18,7 @@ package equinox.task;
 import java.nio.file.Path;
 import java.util.List;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -39,7 +40,7 @@ public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implemen
 	private Path file_;
 
 	/** Recipients. */
-	private final List<String> recipients_;
+	private final List<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share generated item task.
@@ -49,7 +50,7 @@ public class ShareGeneratedItem extends TemporaryFileCreatingTask<Void> implemen
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareGeneratedItem(Path file, List<String> recipients) {
+	public ShareGeneratedItem(Path file, List<ExchangeUser> recipients) {
 		file_ = file;
 		recipients_ = recipients;
 	}

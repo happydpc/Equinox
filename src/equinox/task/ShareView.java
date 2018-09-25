@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -44,7 +45,7 @@ public class ShareView extends TemporaryFileCreatingTask<Void> implements ShortR
 	private final String name_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final ArrayList<ExchangeUser> recipients_;
 
 	/**
 	 * Creates upload view task.
@@ -56,7 +57,7 @@ public class ShareView extends TemporaryFileCreatingTask<Void> implements ShortR
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareView(String name, WritableImage image, ArrayList<String> recipients) {
+	public ShareView(String name, WritableImage image, ArrayList<ExchangeUser> recipients) {
 		name_ = name;
 		image_ = image;
 		recipients_ = recipients;

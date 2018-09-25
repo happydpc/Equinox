@@ -26,6 +26,7 @@ import java.util.List;
 
 import equinox.Equinox;
 import equinox.data.fileType.Spectrum;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -50,7 +51,7 @@ public class ShareSpectrumFile extends TemporaryFileCreatingTask<Void> implement
 	private final FileType type_;
 
 	/** Recipients. */
-	private final List<String> recipients_;
+	private final List<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share core spectrum file task.
@@ -62,7 +63,7 @@ public class ShareSpectrumFile extends TemporaryFileCreatingTask<Void> implement
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSpectrumFile(Spectrum spectrum, FileType type, List<String> recipients) {
+	public ShareSpectrumFile(Spectrum spectrum, FileType type, List<ExchangeUser> recipients) {
 		spectrum_ = spectrum;
 		type_ = type;
 		recipients_ = recipients;

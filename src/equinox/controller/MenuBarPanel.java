@@ -35,6 +35,7 @@ import equinox.data.EquinoxTheme;
 import equinox.data.Settings;
 import equinox.data.ui.NotificationPanel;
 import equinox.dataServer.remote.message.GetAccessRequestsRequest;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
@@ -99,7 +100,7 @@ import javafx.stage.FileChooser;
  * @date Oct 23, 2014
  * @time 2:00:03 PM
  */
-public class MenuBarPanel implements Initializable, ListChangeListener<String>, SchedulingPanel {
+public class MenuBarPanel implements Initializable, ListChangeListener<ExchangeUser>, SchedulingPanel {
 
 	/** Task manager notification images. */
 	public static final Image QUIET = Utility.getImage("tm.png"), RUNNING = Utility.getImage("taskManager.gif");
@@ -323,6 +324,31 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 		owner_.getInputPanel().onRunInstructionSetClicked();
 	}
 
+	/**
+	 * Recipient to send the request.
+	 *
+	 * @param recipient
+	 *            Recipient to send the request.
+	 */
+	private void onRunInstructionSetOnClicked(ExchangeUser recipient) {
+
+		// get file chooser
+		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
+
+		// show open dialog
+		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
+
+		// no file selected
+		if (file == null || !file.exists())
+			return;
+
+		// set initial directory
+		owner_.setInitialDirectory(file);
+
+		// execute tasks
+		owner_.getActiveTasksPanel().runTaskInParallel(new RunInstructionSetOn(file.toPath(), recipient));
+	}
+
 	@FXML
 	private void onCheckInstructionSetClicked() {
 		owner_.getInputPanel().onCheckInstructionSetClicked();
@@ -470,7 +496,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 
 	@FXML
 	private void onAvailableSelected() {
-		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), true));
 	}
 
 	@FXML
@@ -517,11 +543,11 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 
 	@FXML
 	private void onBusySelected() {
-		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), false));
+		owner_.getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), false));
 	}
 
 	@Override
-	public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends ExchangeUser> c) {
 
 		// remove all current recipients
 		shareWorkspaceFileMenu_.getItems().clear();
@@ -532,26 +558,26 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 		runInstructionSetCollaborationMenu_.getItems().clear();
 
 		// add new recipients
-		ObservableList<? extends String> list = c.getList();
+		ObservableList<? extends ExchangeUser> list = c.getList();
 		int size = list.size();
 		for (int i = 0; i < size; i++) {
-			String recipient = list.get(i);
-			MenuItem item1 = new MenuItem(recipient);
+			ExchangeUser recipient = list.get(i);
+			MenuItem item1 = new MenuItem(recipient.toString());
 			item1.setOnAction(event -> onShareWorkspaceClicked(recipient));
 			shareWorkspaceFileMenu_.getItems().add(item1);
-			MenuItem item2 = new MenuItem(recipient);
+			MenuItem item2 = new MenuItem(recipient.toString());
 			item2.setOnAction(event -> onShareWorkspaceClicked(recipient));
 			shareWorkspaceCollaborationMenu_.getItems().add(item2);
-			MenuItem item3 = new MenuItem(recipient);
+			MenuItem item3 = new MenuItem(recipient.toString());
 			item3.setOnAction(event -> onShareInstructionSetClicked(recipient));
 			shareInstructionSetMenu_.getItems().add(item3);
-			MenuItem item4 = new MenuItem(recipient);
+			MenuItem item4 = new MenuItem(recipient.toString());
 			item4.setOnAction(event -> onShareInstructionSetClicked(recipient));
 			shareInstructionSetCollaborationMenu_.getItems().add(item4);
-			MenuItem item5 = new MenuItem(recipient);
+			MenuItem item5 = new MenuItem(recipient.toString());
 			item5.setOnAction(event -> onRunInstructionSetOnClicked(recipient));
 			runInstructionSetMenu_.getItems().add(item5);
-			MenuItem item6 = new MenuItem(recipient);
+			MenuItem item6 = new MenuItem(recipient.toString());
 			item6.setOnAction(event -> onRunInstructionSetOnClicked(recipient));
 			runInstructionSetCollaborationMenu_.getItems().add(item6);
 		}
@@ -1001,7 +1027,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 	 * @param recipient
 	 *            Recipient to share with.
 	 */
-	private void onShareInstructionSetClicked(String recipient) {
+	private void onShareInstructionSetClicked(ExchangeUser recipient) {
 
 		// get file chooser
 		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
@@ -1021,37 +1047,12 @@ public class MenuBarPanel implements Initializable, ListChangeListener<String>, 
 	}
 
 	/**
-	 * Recipient to send the request.
-	 *
-	 * @param recipient
-	 *            Recipient to send the request.
-	 */
-	private void onRunInstructionSetOnClicked(String recipient) {
-
-		// get file chooser
-		FileChooser fileChooser = owner_.getFileChooser(FileType.XML.getExtensionFilter(), FileType.JSON.getExtensionFilter());
-
-		// show open dialog
-		File file = fileChooser.showOpenDialog(owner_.getOwner().getStage());
-
-		// no file selected
-		if (file == null || !file.exists())
-			return;
-
-		// set initial directory
-		owner_.setInitialDirectory(file);
-
-		// execute tasks
-		owner_.getActiveTasksPanel().runTaskInParallel(new RunInstructionSetOn(file.toPath(), recipient));
-	}
-
-	/**
 	 * Recipient to share with.
 	 *
 	 * @param recipient
 	 *            Recipient to share with.
 	 */
-	private void onShareWorkspaceClicked(String recipient) {
+	private void onShareWorkspaceClicked(ExchangeUser recipient) {
 
 		// create working directory
 		Path workingDirectory = null;

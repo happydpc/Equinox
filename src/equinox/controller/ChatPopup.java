@@ -25,6 +25,7 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import equinox.Equinox;
 import equinox.controller.InputPanel.InputPopup;
 import equinox.data.EquinoxTheme;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.ChatMessage;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.exchangeServer.remote.message.StatusChange;
@@ -50,7 +51,7 @@ import javafx.scene.layout.VBox;
  * @date Sep 18, 2014
  * @time 11:31:41 AM
  */
-public class ChatPopup implements InputPopup, ListChangeListener<String> {
+public class ChatPopup implements InputPopup, ListChangeListener<ExchangeUser> {
 
 	/** The owner panel. */
 	private InputPanel owner_;
@@ -65,7 +66,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	private VBox root_, messageContainer_;
 
 	@FXML
-	private ComboBox<String> recipient_;
+	private ComboBox<ExchangeUser> recipient_;
 
 	@FXML
 	private TextArea message_;
@@ -99,10 +100,10 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	}
 
 	@Override
-	public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends ExchangeUser> c) {
 
 		// get currently selected member
-		String selected = recipient_.getValue();
+		ExchangeUser selected = recipient_.getValue();
 
 		// clear items and add new items
 		recipient_.getItems().setAll(c.getList());
@@ -132,7 +133,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	 * @param recipient
 	 *            Initial selection.
 	 */
-	public void show(String recipient) {
+	public void show(ExchangeUser recipient) {
 
 		// not shown
 		if (!isShown_) {
@@ -178,7 +179,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	 *            Chat message to add.
 	 */
 	public void addChatMessage(ChatMessage message) {
-		messageContainer_.getChildren().add(ChatMessagePanel.load(message.getMessage(), message.getSenderUsername()));
+		messageContainer_.getChildren().add(ChatMessagePanel.load(message.getMessage(), message.getSender()));
 	}
 
 	/**
@@ -197,7 +198,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	private void sendMessage() {
 
 		// get inputs
-		String recipient = recipient_.getValue();
+		ExchangeUser recipient = recipient_.getValue();
 		String messageText = message_.getText();
 		messageText = messageText != null ? messageText.trim() : messageText;
 
@@ -211,7 +212,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 
 		// create message
 		ChatMessage message = new ChatMessage(messageText, recipient);
-		message.setSender(Equinox.USER.getUsername(), Equinox.USER.getAlias());
+		message.setSender(Equinox.USER.createExchangeUser());
 
 		// send message
 		owner_.getOwner().getExchangeServerManager().sendMessage(message);
@@ -229,7 +230,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 	 *            Message text.
 	 * @return True if message is acceptable.
 	 */
-	private boolean checkInputs(String recipient, String messageText) {
+	private boolean checkInputs(ExchangeUser recipient, String messageText) {
 
 		// initialize warning message
 		String warning = null;
@@ -241,7 +242,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), true));
 				popOver.hide();
 			};
 
@@ -257,7 +258,7 @@ public class ChatPopup implements InputPopup, ListChangeListener<String> {
 		}
 
 		// recipient
-		else if (recipient == null || recipient.isEmpty()) {
+		else if (recipient == null) {
 			warning = "Please select a recipient to send the message.";
 			node = recipient_;
 		}

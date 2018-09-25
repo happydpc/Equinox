@@ -563,6 +563,59 @@ public class XMLUtilities {
 	 *            Name of the element to check.
 	 * @param isOptionalElement
 	 *            True if the element is optional.
+	 * @return True if given element has a valid <code>Path</code> value.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static boolean checkInputDirectoryPathValue(InternalEquinoxTask<?> task, Path xmlFile, Element parentElement, String elementName, boolean isOptionalElement) throws Exception {
+
+		// get element
+		Element element = parentElement.getChild(elementName);
+
+		// element not found
+		if (element == null) {
+
+			// optional
+			if (isOptionalElement)
+				return true;
+
+			// obligatory
+			task.addWarning("Cannot locate element '" + elementName + "' under " + XMLUtilities.getFamilyTree(parentElement) + " in instruction set '" + xmlFile.toString() + "'. This element is obligatory. Check failed.");
+			return false;
+		}
+
+		// get input path
+		Path input = Paths.get(element.getTextNormalize());
+
+		// invalid value
+		if (!Files.exists(input)) {
+			task.addWarning("Invalid directory path supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// not a directory
+		if (!Files.isDirectory(input)) {
+			task.addWarning("Invalid directory path supplied for " + XMLUtilities.getFamilyTree(element) + " in instruction set '" + xmlFile.toString() + "'. Check failed.");
+			return false;
+		}
+
+		// valid value
+		return true;
+	}
+
+	/**
+	 * Returns true if given element has a valid <code>Path</code> value.
+	 *
+	 * @param task
+	 *            Calling task. Used for adding warnings.
+	 * @param xmlFile
+	 *            Path to input XML file. Used for warning content.
+	 * @param parentElement
+	 *            Parent of the element to check.
+	 * @param elementName
+	 *            Name of the element to check.
+	 * @param isOptionalElement
+	 *            True if the element is optional.
 	 * @param overwriteFiles
 	 *            True to allow overwriting existing files.
 	 * @param fileTypes

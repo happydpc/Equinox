@@ -81,13 +81,13 @@ public class ChatNotificationPanel implements Initializable, UserProfileImageReq
 		}
 
 		// setup and show notification
-		String text = message_.getSenderUsername() + " says: " + message_.getMessage();
+		String text = message_.getSender().toString() + " says: " + message_.getMessage();
 		mainScreen_.getNotificationPane().show(new Notification(MessageType.NONE, text, -1, root_, false, false));
 	}
 
 	@FXML
 	private void onButtonClicked() {
-		chatPanel_.show(message_.getSenderUsername());
+		chatPanel_.show(message_.getSender());
 		mainScreen_.getNotificationPane().hide();
 	}
 
@@ -117,12 +117,12 @@ public class ChatNotificationPanel implements Initializable, UserProfileImageReq
 			controller.mainScreen_ = mainScreen;
 			controller.message_ = message;
 			controller.chatPanel_ = chatPanel;
-			controller.title_.setText(message.getSenderUsername() + " says:");
+			controller.title_.setText(message.getSender().toString() + " says:");
 			controller.text_.setText(WordUtils.wrap(message.getMessage(), 100));
 
 			// request sender profile image
 			ActiveTasksPanel tm = controller.mainScreen_.getActiveTasksPanel();
-			tm.runTaskSilently(new GetUserProfileImage(message.getSenderAlias(), controller), false);
+			tm.runTaskSilently(new GetUserProfileImage(message.getSender(), controller), false);
 
 			// return controller
 			return controller.root_;

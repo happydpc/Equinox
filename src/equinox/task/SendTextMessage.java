@@ -16,6 +16,7 @@
 package equinox.task;
 
 import equinox.Equinox;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.ChatMessage;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
@@ -30,7 +31,10 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
 public class SendTextMessage extends InternalEquinoxTask<Void> implements ShortRunningTask {
 
 	/** Message text and recipient username. */
-	private final String messageText, recipient;
+	private final String messageText;
+
+	/** Recipient. */
+	private final ExchangeUser recipient;
 
 	/**
 	 * Creates send text message task.
@@ -40,8 +44,7 @@ public class SendTextMessage extends InternalEquinoxTask<Void> implements ShortR
 	 * @param recipient
 	 *            Recipient username.
 	 */
-	public SendTextMessage(String message, String recipient) {
-		super();
+	public SendTextMessage(String message, ExchangeUser recipient) {
 		this.messageText = message;
 		this.recipient = recipient;
 	}
@@ -69,7 +72,7 @@ public class SendTextMessage extends InternalEquinoxTask<Void> implements ShortR
 
 		// create message
 		ChatMessage message = new ChatMessage(messageText, recipient);
-		message.setSender(Equinox.USER.getUsername(), Equinox.USER.getAlias());
+		message.setSender(Equinox.USER.createExchangeUser());
 
 		// send message
 		taskPanel_.getOwner().getOwner().getExchangeServerManager().sendMessage(message);
@@ -87,7 +90,7 @@ public class SendTextMessage extends InternalEquinoxTask<Void> implements ShortR
 	 *            Message text.
 	 * @return True if message is acceptable.
 	 */
-	private boolean checkInputs(String recipient, String messageText) {
+	private boolean checkInputs(ExchangeUser recipient, String messageText) {
 
 		// this user is not available
 		if (!taskPanel_.getOwner().getOwner().isAvailable()) {
@@ -96,8 +99,8 @@ public class SendTextMessage extends InternalEquinoxTask<Void> implements ShortR
 		}
 
 		// recipient
-		else if (recipient == null || recipient.isEmpty()) {
-			addWarning("Please supply a recipient username to send the message.");
+		else if (recipient == null) {
+			addWarning("Please supply a recipient to send the message.");
 			return false;
 		}
 

@@ -17,6 +17,7 @@ package equinox.task;
 
 import java.nio.file.Path;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
@@ -35,7 +36,7 @@ public class RunInstructionSetOn extends TemporaryFileCreatingTask<Void> impleme
 	private Path file;
 
 	/** Recipients. */
-	private final String recipient;
+	private final ExchangeUser recipient;
 
 	/**
 	 * Creates share instruction set task.
@@ -45,14 +46,14 @@ public class RunInstructionSetOn extends TemporaryFileCreatingTask<Void> impleme
 	 * @param recipient
 	 *            Recipient username.
 	 */
-	public RunInstructionSetOn(Path file, String recipient) {
+	public RunInstructionSetOn(Path file, ExchangeUser recipient) {
 		this.file = file;
 		this.recipient = recipient;
 	}
 
 	@Override
 	public String getTaskTitle() {
-		return "Run instruction set on '" + recipient + "'";
+		return "Run instruction set on '" + recipient.toString() + "'";
 	}
 
 	@Override

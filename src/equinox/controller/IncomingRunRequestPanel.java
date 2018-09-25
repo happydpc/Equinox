@@ -111,8 +111,11 @@ public class IncomingRunRequestPanel implements Initializable, UserProfileImageR
 		// send acceptance message to sender
 		InstructionSetRunResponse response = new InstructionSetRunResponse();
 		response.setAccepted(true);
-		response.setSender(Equinox.USER.getUsername());
+		response.setSender(Equinox.USER.createExchangeUser());
 		response.setRecipient(message_.getSender());
+
+		// send message
+		mainScreen_.getExchangeServerManager().sendMessage(response);
 
 		// hide
 		mainScreen_.getNotificationPane().hide();
@@ -124,8 +127,11 @@ public class IncomingRunRequestPanel implements Initializable, UserProfileImageR
 		// send rejection message to sender
 		InstructionSetRunResponse response = new InstructionSetRunResponse();
 		response.setAccepted(false);
-		response.setSender(Equinox.USER.getUsername());
+		response.setSender(Equinox.USER.createExchangeUser());
 		response.setRecipient(message_.getSender());
+
+		// send message
+		mainScreen_.getExchangeServerManager().sendMessage(response);
 
 		// hide
 		mainScreen_.getNotificationPane().hide();

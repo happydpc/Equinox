@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -3790,6 +3791,26 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 
 		// get element
 		Element settings = equinoxInput.getChild("settings");
+
+		// check logger
+		if (settings.getChild("logger") != null) {
+
+			// get logger element
+			Element logger = settings.getChild("logger");
+
+			// check log level
+			if (!XMLUtilities.checkStringValue(this, inputFile, logger, "logLevel", false, XMLUtilities.getStringArray(new Level[] { Level.ALL, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST, Level.INFO, Level.OFF, Level.SEVERE, Level.WARNING })))
+				return false;
+
+			// check log directory
+			if (!XMLUtilities.checkInputDirectoryPathValue(this, inputFile, logger, "logDirectoryPath", false))
+				return false;
+
+			// get log level and directory path
+			Level logLevel = Level.parse(logger.getChildTextNormalize("logLevel"));
+			Path logFile = Paths.get(logger.getChildTextNormalize("logDirectoryPath")).resolve(this.getClass().getSimpleName() + " (" + this.hashCode() + ").log");
+			createLogger(this.getClass().getSimpleName() + "_" + this.hashCode(), logFile, logLevel);
+		}
 
 		// check run mode
 		if (!XMLUtilities.checkStringValue(this, inputFile, settings, "runMode", true, RunInstructionSet.PARALLEL, RunInstructionSet.SEQUENTIAL))

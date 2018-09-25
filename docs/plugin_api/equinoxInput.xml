@@ -9,6 +9,13 @@
 		<runMode></runMode>
 		<!--This can be either 'true' or 'false'. If overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and output file exists, instructions will not run. -->
 		<overwriteFiles></overwriteFiles>
+		<!--Task logger settings. This element is optional, if not supplied, no log file will be generated.-->
+		<logger>
+			<!--Set the log level specifying which message levels will be logged by the loggers. Message levels lower than this value will be discarded. The levels in descending order are: 'OFF', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST' or 'ALL'.-->
+			<logLevel></logLevel>
+			<!--Path to directory where all log files will be saved. Log files will be named with the following convention: taskClassName_taskObjectHashCode.log.-->
+			<logDirectoryPath></logDirectoryPath>
+		</logger>
 	</settings>
 	
 	<!--Searches spectrum in central database matching with given search entries. If found, downloads the first found spectrum. Note that, as this instruction will download the first found spectrum, it is advised to supply precise entries which uniquely identifies the spectrum.-->

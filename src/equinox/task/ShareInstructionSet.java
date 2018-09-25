@@ -18,6 +18,7 @@ package equinox.task;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -37,7 +38,7 @@ public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> impleme
 	private Path file;
 
 	/** Recipients. */
-	private final String recipient;
+	private final ExchangeUser recipient;
 
 	/**
 	 * Creates share instruction set task.
@@ -47,7 +48,7 @@ public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> impleme
 	 * @param recipient
 	 *            Recipient username.
 	 */
-	public ShareInstructionSet(Path file, String recipient) {
+	public ShareInstructionSet(Path file, ExchangeUser recipient) {
 		this.file = file;
 		this.recipient = recipient;
 	}

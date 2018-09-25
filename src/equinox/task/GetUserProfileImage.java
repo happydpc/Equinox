@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.serverUtilities.FilerConnection;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 
@@ -33,8 +34,8 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  */
 public class GetUserProfileImage extends TemporaryFileCreatingTask<byte[]> implements ShortRunningTask {
 
-	/** User alias. */
-	private final String alias;
+	/** User. */
+	private final ExchangeUser user;
 
 	/** Requesting panel. */
 	private final UserProfileImageRequestingPanel panel;
@@ -42,13 +43,13 @@ public class GetUserProfileImage extends TemporaryFileCreatingTask<byte[]> imple
 	/**
 	 * Creates get user profile image task.
 	 *
-	 * @param alias
-	 *            User alias.
+	 * @param user
+	 *            User.
 	 * @param panel
 	 *            Requesting panel.
 	 */
-	public GetUserProfileImage(String alias, UserProfileImageRequestingPanel panel) {
-		this.alias = alias;
+	public GetUserProfileImage(ExchangeUser user, UserProfileImageRequestingPanel panel) {
+		this.user = user;
 		this.panel = panel;
 	}
 
@@ -70,13 +71,13 @@ public class GetUserProfileImage extends TemporaryFileCreatingTask<byte[]> imple
 		updateMessage("Please wait...");
 
 		// create temporary path
-		Path tempFile = getWorkingDirectory().resolve(alias + ".png");
+		Path tempFile = getWorkingDirectory().resolve(user.getAlias() + ".png");
 
 		// get image
 		try (FilerConnection filer = getFilerConnection()) {
 
 			// create image URL
-			String imageUrl = filer.getDirectoryPath(FilerConnection.USERS) + "/" + alias + ".png";
+			String imageUrl = filer.getDirectoryPath(FilerConnection.USERS) + "/" + user.getAlias() + ".png";
 
 			// image exists
 			if (filer.fileExists(imageUrl)) {

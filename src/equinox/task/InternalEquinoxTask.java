@@ -29,6 +29,7 @@ import com.jcraft.jsch.JSchException;
 
 import equinox.Equinox;
 import equinox.controller.TaskPanel;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.InstructionSetRunRequest;
 import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.plugin.EquinoxTask;
@@ -157,7 +158,14 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 	 *            Warning message to add.
 	 */
 	public void addWarning(String warning) {
+
+		// append warning
 		warnings_ += warning + "\n";
+
+		// log to task logger (if any)
+		if (logger_ != null) {
+			logger_.log(Level.WARNING, warning);
+		}
 	}
 
 	/**
@@ -175,11 +183,36 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 			warnings_ += ste.toString() + "\n";
 		}
 		Equinox.LOGGER.log(Level.WARNING, warning, e);
+
+		// log to task logger (if any)
+		if (logger_ != null) {
+			logger_.log(Level.WARNING, warning, e);
+		}
 	}
 
 	@Override
 	public String toString() {
 		return getTaskTitle();
+	}
+
+	@Override
+	public void updateMessage(String message) {
+		super.updateMessage(message);
+
+		// log to task logger (if any)
+		if (logger_ != null) {
+			logger_.log(Level.FINE, message);
+		}
+	}
+
+	@Override
+	public void updateProgress(long workDone, long max) {
+		super.updateProgress(workDone, max);
+
+		// log to task logger (if any)
+		if (logger_ != null) {
+			logger_.log(Level.FINEST, "Progress info: " + workDone + " of " + max + " work done.");
+		}
 	}
 
 	@Override
@@ -194,6 +227,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 
 		// close task logger (if any)
 		if (logger_ != null) {
+			logger_.log(Level.INFO, getClass().getSimpleName() + " is successfully completed.");
 			Arrays.stream(logger_.getHandlers()).forEach(h -> h.close());
 		}
 
@@ -218,6 +252,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 
 		// close task logger (if any)
 		if (logger_ != null) {
+			logger_.log(Level.SEVERE, getClass().getSimpleName() + " has failed.", getException());
 			Arrays.stream(logger_.getHandlers()).forEach(h -> h.close());
 		}
 	}
@@ -234,6 +269,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 
 		// close task logger (if any)
 		if (logger_ != null) {
+			logger_.log(Level.WARNING, getClass().getSimpleName() + " has been cancelled.");
 			Arrays.stream(logger_.getHandlers()).forEach(h -> h.close());
 		}
 	}
@@ -393,7 +429,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		 * @throws Exception
 		 *             If exception occurs during process.
 		 */
-		default void shareFile(Path path, Collection<String> recipients, int fileType) throws Exception {
+		default void shareFile(Path path, Collection<ExchangeUser> recipients, int fileType) throws Exception {
 
 			// get task
 			InternalEquinoxTask<?> task = (InternalEquinoxTask<?>) this;
@@ -426,7 +462,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 			message.setSharedFileInfo(info);
 
 			// add recipients
-			for (String recipient : recipients) {
+			for (ExchangeUser recipient : recipients) {
 				message.addRecipient(recipient);
 			}
 
@@ -446,7 +482,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 		 * @throws Exception
 		 *             If exception occurs during process.
 		 */
-		default void sendInstructionSetRunRequest(Path path, String recipient) throws Exception {
+		default void sendInstructionSetRunRequest(Path path, ExchangeUser recipient) throws Exception {
 
 			// get task
 			InternalEquinoxTask<?> task = (InternalEquinoxTask<?>) this;
@@ -477,7 +513,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 			info.setInfo(SharedFileInfoType.DATA_SIZE, path.toFile().length());
 			info.setInfo(SharedFileInfoType.DATA_URL, url);
 			message.setSharedFileInfo(info);
-			message.setSender(Equinox.USER.getUsername());
+			message.setSender(Equinox.USER.createExchangeUser());
 			message.setRecipient(recipient);
 
 			// send message

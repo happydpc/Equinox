@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -56,11 +57,11 @@ public class ChatMessagePanel implements Initializable {
 	 *
 	 * @param message
 	 *            Message text.
-	 * @param id
-	 *            ID of sender.
+	 * @param sender
+	 *            Sender.
 	 * @return Chat message panel.
 	 */
-	public static VBox load(String message, String id) {
+	public static VBox load(String message, ExchangeUser sender) {
 
 		try {
 
@@ -72,10 +73,10 @@ public class ChatMessagePanel implements Initializable {
 			ChatMessagePanel controller = (ChatMessagePanel) fxmlLoader.getController();
 
 			// set attributes
-			boolean isSent = id.equals(Equinox.USER.getUsername());
+			boolean isSent = sender.equals(Equinox.USER.createExchangeUser());
 			controller.message_.setText(message);
 			controller.message_.setTextFill(isSent ? Color.WHITE : Color.BLACK);
-			controller.id_.setText(isSent ? "You" : id);
+			controller.id_.setText(isSent ? "You" : sender.toString());
 			controller.id_.setTextFill(isSent ? Color.STEELBLUE : Color.BLACK);
 			DateFormat format = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.US);
 			controller.time_.setText(format.format(new Date()));

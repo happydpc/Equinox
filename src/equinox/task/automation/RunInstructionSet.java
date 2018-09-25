@@ -628,7 +628,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			String recipient = sendTextMessage.getChild("recipient").getTextNormalize();
 
 			// create task
-			SendTextMessage task = new SendTextMessage(message, recipient);
+			SendTextMessage task = new SendTextMessage(message, taskPanel_.getOwner().getOwner().getUser(recipient));
 
 			// previous instruction given
 			if (sendTextMessage.getChild("previousInstructionId") != null) {
@@ -2682,7 +2682,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			String recipient = shareFile.getChild("recipient").getTextNormalize();
 
 			// create tasks
-			ShareGeneratedItem shareTask = new ShareGeneratedItem(null, Arrays.asList(recipient));
+			ShareGeneratedItem shareTask = new ShareGeneratedItem(null, Arrays.asList(taskPanel_.getOwner().getOwner().getUser(recipient)));
 
 			// add to parent task
 			AutomaticTaskOwner<Path> parentTask = (AutomaticTaskOwner<Path>) tasks.get(fileId).getTask();
@@ -4253,7 +4253,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			String id = shareStf.getChild("id").getTextNormalize();
 			String stfId = shareStf.getChild("stfId").getTextNormalize();
 			String recipient = shareStf.getChild("recipient").getTextNormalize();
-			ShareSTF shareSTFTask = new ShareSTF(null, Arrays.asList(recipient));
+			ShareSTF shareSTFTask = new ShareSTF(null, Arrays.asList(taskPanel_.getOwner().getOwner().getUser(recipient)));
 
 			// add to parent task
 			AutomaticTaskOwner<STFFile> parentTask = (AutomaticTaskOwner<STFFile>) tasks.get(stfId).getTask();
@@ -4722,7 +4722,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			String spectrumId = shareSpectrumFile.getChild("spectrumId").getTextNormalize();
 			FileType fileType = FileType.getFileTypeForExtension("." + shareSpectrumFile.getChild("fileType").getTextNormalize());
 			String recipient = shareSpectrumFile.getChild("recipient").getTextNormalize();
-			ShareSpectrumFile shareSpectrumFileTask = new ShareSpectrumFile(null, fileType, Arrays.asList(recipient));
+			ShareSpectrumFile shareSpectrumFileTask = new ShareSpectrumFile(null, fileType, Arrays.asList(taskPanel_.getOwner().getOwner().getUser(recipient)));
 
 			// add to parent task
 			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();
@@ -4756,7 +4756,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			String id = shareSpectrum.getChild("id").getTextNormalize();
 			String spectrumId = shareSpectrum.getChild("spectrumId").getTextNormalize();
 			String recipient = shareSpectrum.getChild("recipient").getTextNormalize();
-			ShareSpectrum shareSpectrumTask = new ShareSpectrum(null, Arrays.asList(recipient));
+			ShareSpectrum shareSpectrumTask = new ShareSpectrum(null, Arrays.asList(taskPanel_.getOwner().getOwner().getUser(recipient)));
 
 			// add to parent task
 			AutomaticTaskOwner<Spectrum> parentTask = (AutomaticTaskOwner<Spectrum>) tasks.get(spectrumId).getTask();

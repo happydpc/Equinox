@@ -274,7 +274,7 @@ public class IncomingFilePanel implements Initializable, UserProfileImageRequest
 
 			// request sender profile image
 			ActiveTasksPanel tm = controller.mainScreen_.getActiveTasksPanel();
-			tm.runTaskSilently(new GetUserProfileImage(message.getOwnerAlias(), controller), false);
+			tm.runTaskSilently(new GetUserProfileImage(message.getSender(), controller), false);
 
 			// return controller
 			return controller.root_;

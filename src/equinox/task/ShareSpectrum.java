@@ -28,6 +28,7 @@ import java.util.List;
 import equinox.Equinox;
 import equinox.data.ConversionTableSheetName;
 import equinox.data.fileType.Spectrum;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.process.SaveSTFFile;
 import equinox.serverUtilities.Permission;
@@ -50,7 +51,7 @@ public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements Lo
 	private Spectrum spectrum_ = null;
 
 	/** Recipients. */
-	private final List<String> recipients_;
+	private final List<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share spectrum task.
@@ -60,7 +61,7 @@ public class ShareSpectrum extends TemporaryFileCreatingTask<Void> implements Lo
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSpectrum(Spectrum file, List<String> recipients) {
+	public ShareSpectrum(Spectrum file, List<ExchangeUser> recipients) {
 		spectrum_ = file;
 		recipients_ = recipients;
 	}

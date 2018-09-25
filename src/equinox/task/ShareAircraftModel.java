@@ -32,6 +32,7 @@ import java.util.Date;
 
 import equinox.Equinox;
 import equinox.data.fileType.AircraftModel;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -52,7 +53,7 @@ public class ShareAircraftModel extends TemporaryFileCreatingTask<Void> implemen
 	private final AircraftModel model_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final ArrayList<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share aircraft model task.
@@ -62,7 +63,7 @@ public class ShareAircraftModel extends TemporaryFileCreatingTask<Void> implemen
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareAircraftModel(AircraftModel file, ArrayList<String> recipients) {
+	public ShareAircraftModel(AircraftModel file, ArrayList<ExchangeUser> recipients) {
 		model_ = file;
 		recipients_ = recipients;
 	}

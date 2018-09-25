@@ -25,6 +25,7 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 
 import equinox.Equinox;
 import equinox.data.EquinoxTheme;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.plugin.ViewSubPanel;
 import equinox.task.ShareView;
@@ -48,7 +49,7 @@ import javafx.scene.layout.VBox;
  * @date Sep 19, 2014
  * @time 4:32:40 PM
  */
-public class ShareViewPanel implements Initializable, ListChangeListener<String> {
+public class ShareViewPanel implements Initializable, ListChangeListener<ExchangeUser> {
 
 	/** The owner panel. */
 	private ViewPanel owner_;
@@ -71,20 +72,21 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 	}
 
 	@Override
-	public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends ExchangeUser> c) {
 
 		// get currently selected recipients
-		ArrayList<String> selected = getSelectedRecipients();
+		ArrayList<ExchangeUser> selected = getSelectedRecipients();
 
 		// remove all current recipients
 		container_.getChildren().clear();
 
 		// add new recipients
-		ObservableList<? extends String> list = c.getList();
+		ObservableList<? extends ExchangeUser> list = c.getList();
 		int size = list.size();
 		for (int i = 0; i < size; i++) {
-			String recipient = list.get(i);
-			ToggleButton button = new ToggleButton(recipient);
+			ExchangeUser recipient = list.get(i);
+			ToggleButton button = new ToggleButton(recipient.toString());
+			button.setUserData(recipient);
 			button.setMaxWidth(Double.MAX_VALUE);
 			if (size == 1) {
 				button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
@@ -163,7 +165,7 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 	private void onShareClicked() {
 
 		// get inputs
-		ArrayList<String> selected = getSelectedRecipients();
+		ArrayList<ExchangeUser> selected = getSelectedRecipients();
 
 		// check inputs
 		if (!checkInputs(selected))
@@ -189,7 +191,7 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 	 *            Selected recipients to share.
 	 * @return True if message is acceptable.
 	 */
-	private boolean checkInputs(ArrayList<String> selected) {
+	private boolean checkInputs(ArrayList<ExchangeUser> selected) {
 
 		// this user is not available
 		if (!owner_.getOwner().isAvailable()) {
@@ -197,7 +199,7 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), true));
 				popOver.hide();
 			};
 
@@ -234,12 +236,12 @@ public class ShareViewPanel implements Initializable, ListChangeListener<String>
 	 *
 	 * @return Selected recipients.
 	 */
-	private ArrayList<String> getSelectedRecipients() {
-		ArrayList<String> selected = new ArrayList<>();
+	private ArrayList<ExchangeUser> getSelectedRecipients() {
+		ArrayList<ExchangeUser> selected = new ArrayList<>();
 		for (Node node : container_.getChildren()) {
 			ToggleButton recipient = (ToggleButton) node;
 			if (recipient.isSelected()) {
-				selected.add(recipient.getText());
+				selected.add((ExchangeUser) recipient.getUserData());
 			}
 		}
 		return selected;

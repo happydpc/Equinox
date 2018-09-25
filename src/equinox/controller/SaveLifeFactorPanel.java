@@ -42,6 +42,7 @@ import equinox.data.fileType.FatigueEquivalentStress;
 import equinox.data.fileType.LinearEquivalentStress;
 import equinox.data.fileType.PreffasEquivalentStress;
 import equinox.data.fileType.SpectrumItem;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.font.IconicFont;
 import equinox.plugin.FileType;
@@ -76,7 +77,7 @@ import javafx.stage.FileChooser;
  * @date Sep 28, 2015
  * @time 2:07:43 PM
  */
-public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeListener<String>, SchedulingPanel {
+public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeListener<ExchangeUser>, SchedulingPanel {
 
 	/** The owner panel. */
 	private InputPanel owner_;
@@ -100,7 +101,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 	private SplitMenuButton ok_;
 
 	@FXML
-	private ListView<String> recipients_;
+	private ListView<ExchangeUser> recipients_;
 
 	@FXML
 	private TitledPane recipientsPane_;
@@ -132,17 +133,17 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 	}
 
 	@Override
-	public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends ExchangeUser> c) {
 
 		// get currently selected recipients
-		ObservableList<String> selected = recipients_.getSelectionModel().getSelectedItems();
+		ObservableList<ExchangeUser> selected = recipients_.getSelectionModel().getSelectedItems();
 
 		// add new recipients
 		recipients_.getItems().setAll(c.getList());
 
 		// make previous selections
 		recipients_.getSelectionModel().clearSelection();
-		for (String recipient : selected) {
+		for (ExchangeUser recipient : selected) {
 			recipients_.getSelectionModel().select(recipient);
 		}
 	}
@@ -317,7 +318,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 			return;
 
 		// get selected recipients
-		ObservableList<String> recipients = recipients_.getSelectionModel().getSelectedItems();
+		ObservableList<ExchangeUser> recipients = recipients_.getSelectionModel().getSelectedItems();
 
 		// check inputs
 		if (!checkInputs(recipients))
@@ -404,7 +405,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 	 *            Selected recipients to share.
 	 * @return True if message is acceptable.
 	 */
-	private boolean checkInputs(ObservableList<String> selected) {
+	private boolean checkInputs(ObservableList<ExchangeUser> selected) {
 
 		// no basis mission selected
 		String basisMission = basisMission_.getSelectionModel().getSelectedItem();
@@ -446,7 +447,7 @@ public class SaveLifeFactorPanel implements InternalInputSubPanel, ListChangeLis
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), true));
 				popOver.hide();
 			};
 

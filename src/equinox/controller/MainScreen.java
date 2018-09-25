@@ -29,6 +29,7 @@ import equinox.dataServer.remote.listener.DataMessageListener;
 import equinox.dataServer.remote.message.DataMessage;
 import equinox.dataServer.remote.message.LoginFailed;
 import equinox.dataServer.remote.message.LoginSuccessful;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
 import equinox.exchangeServer.remote.message.Announcement;
 import equinox.exchangeServer.remote.message.ChatMessage;
@@ -140,7 +141,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	private DataServerManager dataServerManager_;
 
 	/** List containing the available users. */
-	private ObservableList<String> availableUsers_;
+	private ObservableList<ExchangeUser> availableUsers_;
 
 	/** User's status. */
 	private SimpleBooleanProperty isAvailable_;
@@ -418,7 +419,26 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 * @return True if user with given username is currently available.
 	 */
 	public boolean isUserAvailable(String username) {
-		return availableUsers_.contains(username);
+		for (ExchangeUser user : availableUsers_) {
+			if (user.getUsername().equals(username))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the user with the given username, or null if no available user found with the given username.
+	 * 
+	 * @param username
+	 *            Username.
+	 * @return The user with the given username, or null if no available user found with the given username.
+	 */
+	public ExchangeUser getUser(String username) {
+		for (ExchangeUser user : availableUsers_) {
+			if (user.getUsername().equals(username))
+				return user;
+		}
+		return null;
 	}
 
 	/**
@@ -659,7 +679,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 */
 	private void processWho(WhoResponse message) {
 		for (int i = 0; i < message.size(); i++) {
-			availableUsers_.add(message.getMember(i));
+			availableUsers_.add(message.getUser(i));
 		}
 	}
 
@@ -688,12 +708,12 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 *            Room change message.
 	 */
 	private void processRoomChange(RoomChange message) {
-		String username = message.getUsername();
+		ExchangeUser user = message.getUser();
 		if (message.entered()) {
-			availableUsers_.add(username);
+			availableUsers_.add(user);
 		}
 		else {
-			availableUsers_.remove(username);
+			availableUsers_.remove(user);
 		}
 	}
 
@@ -705,19 +725,19 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 */
 	private void processStatusChange(StatusChange message) {
 
-		// get user name
-		String username = message.getUsername();
+		// get user
+		ExchangeUser user = message.getUser();
 
 		// this client
-		if (username.equals(Equinox.USER.getUsername())) {
+		if (user.equals(Equinox.USER.createExchangeUser())) {
 			isAvailable_.set(message.isAvailable());
 			menuBarPanel_.getNetworkStatusItem().setSelected(message.isAvailable());
 		}
 		else if (message.isAvailable()) {
-			availableUsers_.add(username);
+			availableUsers_.add(user);
 		}
 		else {
-			availableUsers_.remove(username);
+			availableUsers_.remove(user);
 		}
 	}
 

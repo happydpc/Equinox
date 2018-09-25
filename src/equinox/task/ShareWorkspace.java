@@ -18,6 +18,7 @@ package equinox.task;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -34,7 +35,7 @@ import equinox.utility.Utility;
 public class ShareWorkspace extends InternalEquinoxTask<Void> implements FileSharingTask {
 
 	/** Recipient. */
-	private final String recipient_;
+	private final ExchangeUser recipient_;
 
 	/** Path to workspace to be shared. */
 	private final Path path_;
@@ -47,7 +48,7 @@ public class ShareWorkspace extends InternalEquinoxTask<Void> implements FileSha
 	 * @param path
 	 *            Path to workspace to be shared.
 	 */
-	public ShareWorkspace(String recipient, Path path) {
+	public ShareWorkspace(ExchangeUser recipient, Path path) {
 		recipient_ = recipient;
 		path_ = path;
 	}

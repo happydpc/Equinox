@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import equinox.Equinox;
 import equinox.data.fileType.STFFileBucket;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.process.SaveSTFBucketProcess;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
@@ -42,7 +43,7 @@ public class ShareSTFBucket extends TemporaryFileCreatingTask<Void> implements L
 	private final STFFileBucket bucket_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final ArrayList<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share STF file bucket task.
@@ -52,7 +53,7 @@ public class ShareSTFBucket extends TemporaryFileCreatingTask<Void> implements L
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareSTFBucket(STFFileBucket bucket, ArrayList<String> recipients) {
+	public ShareSTFBucket(STFFileBucket bucket, ArrayList<ExchangeUser> recipients) {
 		bucket_ = bucket;
 		recipients_ = recipients;
 	}

@@ -46,6 +46,7 @@ import equinox.data.fileType.STFFileBucket;
 import equinox.data.fileType.Spectrum;
 import equinox.data.fileType.SpectrumItem;
 import equinox.data.fileType.StressSequence;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.plugin.FileType;
 import equinox.process.SaveBucketOutputFilesProcess;
@@ -85,7 +86,7 @@ import javafx.scene.layout.VBox;
  * @date Sep 23, 2014
  * @time 10:30:59 AM
  */
-public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
+public class ShareFilePopup implements InputPopup, ListChangeListener<ExchangeUser> {
 
 	/** The owner panel. */
 	private InputPanel owner_;
@@ -122,20 +123,21 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 	}
 
 	@Override
-	public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends ExchangeUser> c) {
 
 		// get currently selected recipients
-		ArrayList<String> selected = getSelectedRecipients();
+		ArrayList<ExchangeUser> selected = getSelectedRecipients();
 
 		// remove all current recipients
 		container_.getChildren().clear();
 
 		// add new recipients
-		ObservableList<? extends String> list = c.getList();
+		ObservableList<? extends ExchangeUser> list = c.getList();
 		int size = list.size();
 		for (int i = 0; i < size; i++) {
-			String recipient = list.get(i);
-			ToggleButton button = new ToggleButton(recipient);
+			ExchangeUser recipient = list.get(i);
+			ToggleButton button = new ToggleButton(recipient.toString());
+			button.setUserData(recipient);
 			button.setMaxWidth(Double.MAX_VALUE);
 			if (size == 1) {
 				button.getStylesheets().add(Equinox.class.getResource("css/ToggleButton2.css").toString());
@@ -229,7 +231,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 	private void onShareClicked() {
 
 		// get inputs
-		ArrayList<String> recipients = getSelectedRecipients();
+		ArrayList<ExchangeUser> recipients = getSelectedRecipients();
 
 		// check inputs
 		if (!checkInputs(recipients))
@@ -483,7 +485,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 	 *            Selected recipients to share.
 	 * @return True if message is acceptable.
 	 */
-	private boolean checkInputs(ArrayList<String> selected) {
+	private boolean checkInputs(ArrayList<ExchangeUser> selected) {
 
 		// this user is not available
 		if (!owner_.getOwner().isAvailable()) {
@@ -491,7 +493,7 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 			// create confirmation action
 			PopOver popOver = new PopOver();
 			EventHandler<ActionEvent> handler = event -> {
-				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.getUsername(), true));
+				owner_.getOwner().getExchangeServerManager().sendMessage(new StatusChange(Equinox.USER.createExchangeUser(), true));
 				popOver.hide();
 			};
 
@@ -528,12 +530,12 @@ public class ShareFilePopup implements InputPopup, ListChangeListener<String> {
 	 *
 	 * @return Selected recipients.
 	 */
-	private ArrayList<String> getSelectedRecipients() {
-		ArrayList<String> selected = new ArrayList<>();
+	private ArrayList<ExchangeUser> getSelectedRecipients() {
+		ArrayList<ExchangeUser> selected = new ArrayList<>();
 		for (Node node : container_.getChildren()) {
 			ToggleButton recipient = (ToggleButton) node;
 			if (recipient.isSelected()) {
-				selected.add(recipient.getText());
+				selected.add((ExchangeUser) recipient.getUserData());
 			}
 		}
 		return selected;

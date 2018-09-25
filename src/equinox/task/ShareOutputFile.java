@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import equinox.Equinox;
 import equinox.data.fileType.SpectrumItem;
+import equinox.exchangeServer.remote.data.ExchangeUser;
 import equinox.plugin.FileType;
 import equinox.process.SaveOutputFileProcess;
 import equinox.serverUtilities.SharedFileInfo;
@@ -42,7 +43,7 @@ public class ShareOutputFile extends TemporaryFileCreatingTask<Void> implements 
 	private final SpectrumItem item_;
 
 	/** Recipients. */
-	private final ArrayList<String> recipients_;
+	private final ArrayList<ExchangeUser> recipients_;
 
 	/**
 	 * Creates share spectrum item task.
@@ -52,7 +53,7 @@ public class ShareOutputFile extends TemporaryFileCreatingTask<Void> implements 
 	 * @param recipients
 	 *            Recipients.
 	 */
-	public ShareOutputFile(SpectrumItem item, ArrayList<String> recipients) {
+	public ShareOutputFile(SpectrumItem item, ArrayList<ExchangeUser> recipients) {
 		item_ = item;
 		recipients_ = recipients;
 	}
