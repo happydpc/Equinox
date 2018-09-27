@@ -471,27 +471,27 @@ public class MenuBarPanel implements Initializable, ListChangeListener<ExchangeU
 
 	@FXML
 	private void onDownloadRootTemplateClicked() {
-		// TODO on download sample instruction set clicked
+		owner_.downloadSampleInput("equinoxInput.xml");
 	}
 
 	@FXML
 	private void onDownloadGenerateStressSequenceTemplateClicked() {
-		// TODO on download sample instruction set clicked
+		owner_.downloadSampleInput("generateStressSequenceInput.xml");
 	}
 
 	@FXML
 	private void onDownloadEquivalentStressAnalysisTemplateClicked() {
-		// TODO on download sample instruction set clicked
+		owner_.downloadSampleInput("equivalentStressAnalysisInput.xml");
 	}
 
 	@FXML
 	private void onDownloadDamageContributionAnalysisTemplateClicked() {
-		// TODO on download sample instruction set clicked
+		owner_.downloadSampleInput("loadcaseDamageContributionAnalysisInput.xml");
 	}
 
 	@FXML
 	private void onDownloadSampleInstructionSetsClicked() {
-		// TODO on download sample instruction set clicked
+		// TODO on download sample instruction sets clicked
 	}
 
 	@FXML

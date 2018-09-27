@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package equinox.network.automation;
+package equinox.network;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -95,14 +95,18 @@ public class AutomationServer extends Thread {
 
 		// wait for incoming connections
 		try {
+			owner.getInputPanel().automationServiceStatusChanged(true);
 			Equinox.LOGGER.info("Automation server started listening for incoming connections on port " + AUTOMATION_SERVER_PORT + ".");
 			while (true) {
-				new AutomationClientHandler(socket.accept()).start();
+				Equinox.CACHED_THREADPOOL.submit(new AutomationClientHandler(this, socket.accept()));
 			}
 		}
 
 		// socket exception
 		catch (SocketException e) {
+
+			// notify UI
+			owner.getInputPanel().automationServiceStatusChanged(false);
 
 			// socket closed
 			if (socket.isClosed()) {
@@ -117,6 +121,7 @@ public class AutomationServer extends Thread {
 
 		// exception occurred during process
 		catch (IOException e) {
+			owner.getInputPanel().automationServiceStatusChanged(false);
 			Equinox.LOGGER.log(Level.WARNING, "Exception occurred during accepting client connection.", e);
 		}
 	}

@@ -36,6 +36,7 @@ import equinox.plugin.InputSubPanel;
 import equinox.task.AddStressSequence;
 import equinox.task.automation.CheckInstructionSet;
 import equinox.utility.Utility;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -509,8 +510,10 @@ public class InputPanel implements Initializable {
 	 *            True if service is available.
 	 */
 	public void automationServiceStatusChanged(boolean isAvailable) {
-		automationService_.setStyle(isAvailable ? "-fx-base:green" : "-fx-base:red");
-		automationServiceTooltip_.setText(isAvailable ? "Automation Service: Available" : "Automation Service: Not available");
+		Platform.runLater(() -> {
+			automationService_.setStyle(isAvailable ? "-fx-base:green" : "-fx-base:red");
+			automationServiceTooltip_.setText(isAvailable ? "Automation Service: Available" : "Automation Service: Not available");
+		});
 	}
 
 	@FXML
@@ -587,7 +590,17 @@ public class InputPanel implements Initializable {
 
 	@FXML
 	private void onAutomationServiceClicked() {
-		// TODO on automation service clicked
+
+		// alive
+		if (owner_.getAutomationServer().isAlive()) {
+			String title = "No operation";
+			String msg = "Automation service is alive and running.";
+			owner_.getNotificationPane().showInfo(title, msg);
+			return;
+		}
+
+		// create and start new automation server
+		owner_.createAndStartAutomationServer();
 	}
 
 	@FXML

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import org.jdom2.Element;
 
@@ -37,6 +38,32 @@ import equinox.task.InternalEquinoxTask;
  * @time 09:58:49
  */
 public class XMLUtilities {
+
+	/**
+	 * Creates task logger.
+	 *
+	 * @param logDirectory
+	 *            Directory where the log file will be stored.
+	 * @param task
+	 *            Task for which the log file path will be created.
+	 * @param logLevel
+	 *            Log level.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	public static void createLogger(Path logDirectory, InternalEquinoxTask<?> task, Level logLevel) throws Exception {
+
+		// get salt (i.e. task simple class name and hash code)
+		String className = task.getClass().getSimpleName();
+		int hashCode = task.hashCode();
+
+		// create log file
+		String fileName = className + "_" + Equinox.USER.getAlias() + "_" + hashCode + ".log";
+		Path logFile = logDirectory.resolve(fileName);
+
+		// create logger
+		task.createLogger(fileName, logFile, logLevel);
+	}
 
 	/**
 	 * Extracts and returns search keywords.

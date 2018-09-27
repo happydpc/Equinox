@@ -3792,8 +3792,8 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		// get element
 		Element settings = equinoxInput.getChild("settings");
 
-		// check logger
-		if (settings.getChild("logger") != null) {
+		// check logger (if not generate execution plan mode)
+		if (taskMode != GENERATE_EXECUTION_PLAN && settings.getChild("logger") != null) {
 
 			// get logger element
 			Element logger = settings.getChild("logger");
@@ -3808,8 +3808,8 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 
 			// get log level and directory path
 			Level logLevel = Level.parse(logger.getChildTextNormalize("logLevel"));
-			Path logFile = Paths.get(logger.getChildTextNormalize("logDirectoryPath")).resolve(this.getClass().getSimpleName() + " (" + this.hashCode() + ").log");
-			createLogger(this.getClass().getSimpleName() + "_" + this.hashCode(), logFile, logLevel);
+			Path logDirectory = Paths.get(logger.getChildTextNormalize("logDirectoryPath"));
+			XMLUtilities.createLogger(logDirectory, this, logLevel);
 		}
 
 		// check run mode

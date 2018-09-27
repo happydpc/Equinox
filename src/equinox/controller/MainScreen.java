@@ -41,6 +41,7 @@ import equinox.exchangeServer.remote.message.ShareFile;
 import equinox.exchangeServer.remote.message.StatusChange;
 import equinox.exchangeServer.remote.message.WhoResponse;
 import equinox.network.AnalysisServerManager;
+import equinox.network.AutomationServer;
 import equinox.network.DataServerManager;
 import equinox.network.ExchangeServerManager;
 import equinox.plugin.FileType;
@@ -140,6 +141,9 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	/** Data server manager. */
 	private DataServerManager dataServerManager_;
 
+	/** Automation server. */
+	private AutomationServer automationServer_;
+
 	/** List containing the available users. */
 	private ObservableList<ExchangeUser> availableUsers_;
 
@@ -177,6 +181,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 		analysisServerManager_ = new AnalysisServerManager(this);
 		exchangeServerManager_ = new ExchangeServerManager(this);
 		dataServerManager_ = new DataServerManager(this);
+		automationServer_ = new AutomationServer(this);
 
 		// create available users list
 		availableUsers_ = FXCollections.observableArrayList();
@@ -217,6 +222,9 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 		viewPanel_.start();
 		menuBarPanel_.start();
 
+		// start automation server
+		automationServer_.start();
+
 		// load and show intro panel
 		IntroPanel introPanel = IntroPanel.load(this);
 		introPanel.showIntro();
@@ -232,6 +240,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 		analysisServerManager_.stop();
 		exchangeServerManager_.stop();
 		dataServerManager_.stop();
+		automationServer_.stopServer();
 
 		// stop files panel
 		inputPanel_.stop();
@@ -428,7 +437,7 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 
 	/**
 	 * Returns the user with the given username, or null if no available user found with the given username.
-	 * 
+	 *
 	 * @param username
 	 *            Username.
 	 * @return The user with the given username, or null if no available user found with the given username.
@@ -651,6 +660,28 @@ public class MainScreen implements Initializable, ExchangeMessageListener, DataM
 	 */
 	public DataServerManager getDataServerManager() {
 		return dataServerManager_;
+	}
+
+	/**
+	 * Returns automation server.
+	 *
+	 * @return Automation server.
+	 */
+	public AutomationServer getAutomationServer() {
+		return automationServer_;
+	}
+
+	/**
+	 * Starts automation server if not already running.
+	 *
+	 * @return True if automation server is started.
+	 */
+	public boolean createAndStartAutomationServer() {
+		if (automationServer_.isAlive())
+			return false;
+		automationServer_ = new AutomationServer(this);
+		automationServer_.start();
+		return true;
 	}
 
 	/**

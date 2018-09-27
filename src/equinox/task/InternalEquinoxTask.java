@@ -206,16 +206,6 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 	}
 
 	@Override
-	public void updateProgress(long workDone, long max) {
-		super.updateProgress(workDone, max);
-
-		// log to task logger (if any)
-		if (logger_ != null) {
-			logger_.log(Level.FINEST, "Progress info: " + workDone + " of " + max + " work done.");
-		}
-	}
-
-	@Override
 	protected void succeeded() {
 
 		// call ancestor
@@ -306,7 +296,11 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 	 * @throws Exception
 	 *             If exception occurs during creating task logger.
 	 */
-	protected void createLogger(String name, Path logFile, Level level) throws Exception {
+	public void createLogger(String name, Path logFile, Level level) throws Exception {
+
+		// already has logger
+		if (logger_ != null)
+			return;
 
 		// log level is off
 		if (level.equals(Level.OFF))

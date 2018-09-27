@@ -13,7 +13,7 @@
 		<logger>
 			<!--Set the log level specifying which message levels will be logged by the loggers. Message levels lower than this value will be discarded. The levels in descending order are: 'OFF', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST' or 'ALL'.-->
 			<logLevel></logLevel>
-			<!--Path to directory where all log files will be saved. Log files will be named with the following convention: taskClassName_taskObjectHashCode.log.-->
+			<!--Path to directory where all log files will be saved. Log files will be named with the following convention: taskClassName_username_taskObjectHashCode.log.-->
 			<logDirectoryPath></logDirectoryPath>
 		</logger>
 	</settings>

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -184,6 +184,7 @@ import equinox.task.ShareSpectrumFile;
 import equinox.task.TemporaryFileCreatingTask;
 import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSpectra;
+import equinox.utility.XMLUtilities;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.image.Image;
@@ -204,8 +205,11 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	/** True if tasks should be executed in parallel mode. */
 	private String runMode = PARALLEL;
 
-	/** Input file. */
-	private Path inputFile;
+	/** Log level. */
+	private Level logLevel;
+
+	/** Input file and path to log directory. */
+	private Path inputFile, logDirectory;
 
 	/** True to generate execution plan. */
 	private final boolean generateExecutionPlan;
@@ -258,11 +262,7 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 		// get settings (if given)
 		if (equinoxInput.getChild("settings") != null) {
-
-			// get run mode (if given)
-			if (equinoxInput.getChild("settings").getChild("runMode") != null) {
-				runMode = equinoxInput.getChild("settings").getChild("runMode").getTextNormalize();
-			}
+			getSettings(equinoxInput);
 		}
 
 		// download spectrum
@@ -574,33 +574,149 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 				Iterator<Entry<String, InstructedTask>> iterator = tasks.entrySet().iterator();
 				while (iterator.hasNext()) {
 
-					// get task
-					InstructedTask task = iterator.next().getValue();
+					// get instructed task
+					InstructedTask instructedTask = iterator.next().getValue();
 
 					// embedded
-					if (task.isEmbedded()) {
+					if (instructedTask.isEmbedded()) {
 						continue;
 					}
 
-					// get task implementation
-					InternalEquinoxTask<?> taskImpl = task.getTask();
+					// get task
+					InternalEquinoxTask<?> task = instructedTask.getTask();
+
+					// logging requested
+					if (logLevel != null && logDirectory != null) {
+
+						// create logger for the task
+						XMLUtilities.createLogger(logDirectory, task, logLevel);
+
+						// create loggers for automatic tasks
+						if (task instanceof AutomaticTaskOwner) {
+							createLoggersForAutomaticTasks((AutomaticTaskOwner<?>) task);
+						}
+
+						// create loggers for follower tasks
+						createLoggersForFollowerTasks(task);
+					}
 
 					// parallel
 					if (runMode.equals(PARALLEL)) {
-						taskPanel_.getOwner().runTaskInParallel(taskImpl);
+						taskPanel_.getOwner().runTaskInParallel(task);
 					}
 
 					// sequential
 					else if (runMode.equals(SEQUENTIAL)) {
-						taskPanel_.getOwner().runTaskSequentially(taskImpl);
+						taskPanel_.getOwner().runTaskSequentially(task);
 					}
 				}
 			}
 		}
 
-		// exception occurred
-		catch (InterruptedException | ExecutionException e) {
+		// exception occurred during retrieving results
+		catch (Exception e) {
 			handleResultRetrievalException(e);
+		}
+	}
+
+	/**
+	 * Creates loggers for automatic tasks.
+	 *
+	 * @param sourceTask
+	 *            Automatic task owner.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	@SuppressWarnings("rawtypes")
+	private void createLoggersForAutomaticTasks(AutomaticTaskOwner sourceTask) throws Exception {
+
+		// no automatic task
+		if (sourceTask.getAutomaticTasks() == null || sourceTask.getAutomaticTasks().isEmpty())
+			return;
+
+		// loop over automatic tasks
+		Iterator<AutomaticTask> iterator = sourceTask.getAutomaticTasks().values().iterator();
+		while (iterator.hasNext()) {
+
+			// get task
+			AutomaticTask task = iterator.next();
+
+			// create logger
+			XMLUtilities.createLogger(logDirectory, (InternalEquinoxTask<?>) task, logLevel);
+
+			// create loggers for automatic tasks
+			if (task instanceof AutomaticTaskOwner) {
+				createLoggersForAutomaticTasks((AutomaticTaskOwner) task);
+			}
+
+			// create loggers for follower tasks
+			createLoggersForFollowerTasks((InternalEquinoxTask<?>) task);
+		}
+	}
+
+	/**
+	 * Creates loggers for follower tasks.
+	 *
+	 * @param sourceTask
+	 *            Source task.
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void createLoggersForFollowerTasks(InternalEquinoxTask<?> sourceTask) throws Exception {
+
+		// no follower task
+		if (sourceTask.getFollowerTasks() == null || sourceTask.getFollowerTasks().isEmpty())
+			return;
+
+		// loop over follower tasks
+		for (InternalEquinoxTask<?> task : sourceTask.getFollowerTasks()) {
+
+			// create logger
+			XMLUtilities.createLogger(logDirectory, task, logLevel);
+
+			// create loggers for automatic tasks
+			if (task instanceof AutomaticTaskOwner) {
+				createLoggersForAutomaticTasks((AutomaticTaskOwner<?>) task);
+			}
+
+			// create loggers for follower tasks
+			createLoggersForFollowerTasks(task);
+		}
+	}
+
+	/**
+	 * Reads instruction set settings.
+	 *
+	 * @param equinoxInput
+	 *            Root input element
+	 * @throws Exception
+	 *             If exception occurs during process.
+	 */
+	private void getSettings(Element equinoxInput) throws Exception {
+
+		// update info
+		updateMessage("Reading instruction set settings...");
+
+		// get element
+		Element settings = equinoxInput.getChild("settings");
+
+		// check logger (if not generate execution plan mode)
+		if (!generateExecutionPlan && settings.getChild("logger") != null) {
+
+			// get logger element
+			Element logger = settings.getChild("logger");
+
+			// get log level and directory path
+			logLevel = Level.parse(logger.getChildTextNormalize("logLevel"));
+			logDirectory = Paths.get(logger.getChildTextNormalize("logDirectoryPath"));
+
+			// create logger for this task
+			XMLUtilities.createLogger(logDirectory, this, logLevel);
+		}
+
+		// get run mode (if given)
+		if (settings.getChild("runMode") != null) {
+			runMode = settings.getChild("runMode").getTextNormalize();
 		}
 	}
 
