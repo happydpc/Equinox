@@ -3,11 +3,11 @@
 <!--Root input element. This element is obligatory, but all its children are optional.-->
 <equinoxInput>
 	
-	<!--Instruction settings. Note that, the following are only instruction settings; all other settings can be set from within the Data Analyst UI.-->
+	<!--Instruction settings. This element is optional, if not supplied, default settings will be used. Note that, the following are only instruction settings; all other settings can be set from within the Data Analyst UI.-->
 	<settings>
 		<!--Run mode can either 'parallel' (default) or 'sequential'.-->
 		<runMode></runMode>
-		<!--This can be either 'true' or 'false'. If overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and output file exists, instructions will not run. -->
+		<!--This can be either 'true' (default) or 'false'. If overwriteFiles is set to true, output files will overwrite existing files (if any). If set to false and output file exists, instructions will not run. -->
 		<overwriteFiles></overwriteFiles>
 		<!--Task logger settings. This element is optional, if not supplied, no log file will be generated.-->
 		<logger>
@@ -23,7 +23,7 @@
 		<id></id>
 		<!--The previousInstructionId refers to the instruction which will be executed prior to this instruction. This element is optional, if not given, this instruction will be executed according execution plan and parallelism.-->
 		<previousInstructionId></previousInstructionId>
-		<!--Search entry is used to search and find the requested stf file in central database. Multiple search entries can be supplied for different attributes.-->
+		<!--Search entry is used to search and find the requested spectrum in central database. Multiple search entries can be supplied for different attributes.-->
 		<searchEntry>
 			<!--Spectrum attribute name. This can be one of 'NAME', 'AC_PROGRAM', 'AC_SECTION', 'FAT_MISSION', 'FAT_MISSION_ISSUE', 'FLP_ISSUE', 'IFLP_ISSUE', 'CDF_ISSUE', 'DELIVERY_REF_NUM', 'DESCRIPTION'.-->
 			<attributeName></attributeName>
