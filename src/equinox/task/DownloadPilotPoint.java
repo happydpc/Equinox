@@ -211,7 +211,7 @@ public class DownloadPilotPoint extends TemporaryFileCreatingTask<AddSTFFiles> i
 				}
 
 				// execute resulting task
-				taskPanel_.getOwner().runTaskSequentially(task);
+				taskPanel_.getOwner().runTaskSilently(task, true);
 			}
 		}
 

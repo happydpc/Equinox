@@ -98,15 +98,8 @@ public interface AutomaticTaskOwner<V> {
 				// set input
 				((SingleInputTask<V>) task).setAutomaticInput(input);
 
-				// execute in parallel
-				if (executeInParallel) {
-					taskPanel.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-				}
-
-				// execute sequentially
-				else {
-					taskPanel.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-				}
+				// execute
+				taskPanel.getOwner().runTaskSilently((InternalEquinoxTask<?>) task, !executeInParallel);
 			}
 		}
 	}
@@ -145,15 +138,8 @@ public interface AutomaticTaskOwner<V> {
 			// set input
 			((SingleInputTask<V>) task).setAutomaticInput(input);
 
-			// execute in parallel
-			if (executeInParallel) {
-				taskPanel.getOwner().runTaskInParallel((InternalEquinoxTask<?>) task);
-			}
-
-			// execute sequentially
-			else {
-				taskPanel.getOwner().runTaskSequentially((InternalEquinoxTask<?>) task);
-			}
+			// execute
+			taskPanel.getOwner().runTaskSilently((InternalEquinoxTask<?>) task, !executeInParallel);
 		}
 	}
 

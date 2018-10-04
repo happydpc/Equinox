@@ -34,10 +34,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
-import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
-import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.exchangeServer.remote.Registry;
 import equinox.exchangeServer.remote.listener.ExchangeMessageListener;
@@ -51,7 +49,6 @@ import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
-import equinox.task.GetExchangeRequests;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 
@@ -348,12 +345,6 @@ public class ExchangeServerManager implements ExchangeMessageListener {
 			ExchangeMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
-			}
-
-			// request exchange server statistics
-			if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
-				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetExchangeRequests(period));
 			}
 		}
 

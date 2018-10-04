@@ -491,7 +491,7 @@ public class MenuBarPanel implements Initializable, ListChangeListener<ExchangeU
 
 	@FXML
 	private void onDownloadSampleInstructionSetsClicked() {
-		// TODO on download sample instruction sets clicked
+		owner_.downloadSampleInput("instructionSetExamples.zip");
 	}
 
 	@FXML

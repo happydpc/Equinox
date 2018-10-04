@@ -3,6 +3,10 @@
 	<settings>
 		<runMode>parallel</runMode>
 		<overwriteFiles>true</overwriteFiles>
+		<logger>
+			<logLevel>ALL</logLevel>
+			<logDirectoryPath>/Users/aurora/Temporary/example1/logs</logDirectoryPath>
+		</logger>
 	</settings>
 	<addStf>
 		<id>3</id>
@@ -35,7 +39,7 @@
 			<keyword>A310Microgravity-211Sect13-MR2_61P</keyword>
 			<criteria>Contains</criteria>
 		</searchEntry>
-		<outputPath>/Users/aurora/Temporary/download.zip</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/download.zip</outputPath>
 	</downloadSpectrum>
 	<addSpectrum>
 		<id>2</id>
@@ -54,21 +58,21 @@
 	<saveStressSequence>
 		<id>7</id>
 		<stressSequenceId>6</stressSequenceId>
-		<outputPath>/Users/aurora/Temporary/saved_stress_sequence.sth</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/saved_stress_sequence.sth</outputPath>
 	</saveStressSequence>
 	<plotMissionProfile>
 		<id>8</id>
 		<stressSequenceId>6</stressSequenceId>
-		<outputPath>/Users/aurora/Temporary/missionProfile.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/missionProfile.png</outputPath>
 	</plotMissionProfile>
 	<saveMissionProfileInfo>
 		<id>14</id>
 		<stressSequenceId>6</stressSequenceId>
-		<outputPath>/Users/aurora/Temporary/missionProfileInfo.xls</outputPath></saveMissionProfileInfo>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/missionProfileInfo.xls</outputPath></saveMissionProfileInfo>
 	<plotTypicalFlight><id>9</id><!--The stressSequenceId refers to 'generateStressSequence' instruction.-->
 		<stressSequenceId>6</stressSequenceId><!--Pilot point image type. This can be one of 'Longest Typical Flight', 'Flight With Highest Occurrence', 'Flight With Highest Total Stress', 'Typical Flight Number Of Peaks' or 'Typical Flight Occurrences'.-->
 		<plotType>Longest Typical Flight</plotType><!--Path to save typical flight plot. File name must end with .png.-->
-		<outputPath>/Users/aurora/Temporary/longestFlight.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/longestFlight.png</outputPath>
 	</plotTypicalFlight>
 	<equivalentStressAnalysis>
 		<id>10</id>
@@ -78,21 +82,21 @@
 	<plotLevelCrossing>
 		<id>11</id>
 		<equivalentStressId>10</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/levelCrossing.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/levelCrossing.png</outputPath>
 	</plotLevelCrossing>
 	<plotRainflowHistogram>
 		<id>12</id>
 		<equivalentStressId>10</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/rainflowHistogram.png</outputPath></plotRainflowHistogram>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/rainflowHistogram.png</outputPath></plotRainflowHistogram>
 	<saveAnalysisOutputFile>
 		<id>13</id>
 		<equivalentStressId>10</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/output.dossier</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/output.dossier</outputPath>
 	</saveAnalysisOutputFile>
 	<saveRainflowCycleInfo>
 		<id>15</id>
 		<equivalentStressId>10</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/rainflowCyleInfo.rflow</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/rainflowCyleInfo.rflow</outputPath>
 	</saveRainflowCycleInfo>
 	<addStf>
 		<id>16</id>
@@ -131,7 +135,7 @@
 		<stressSequenceId>23</stressSequenceId>
 		<stressSequenceId>24</stressSequenceId>
 		<comparisonCriteria>NUM_FLIGHT_TYPES</comparisonCriteria>
-		<outputPath>/Users/aurora/Temporary/stressSequenceComparison.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/stressSequenceComparison.png</outputPath>
 	</plotStressSequenceComparison>
 	<addStf>
 		<id>19</id><spectrumId>2</spectrumId><stfPath>/Users/aurora/Temporary/Fuselage_F26_MY_test1.stf</stfPath>
@@ -197,7 +201,7 @@
 		<equivalentStressId>28</equivalentStressId>
 		<equivalentStressId>29</equivalentStressId>
 		<equivalentStressId>30</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/levelCrossingComparison.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/levelCrossingComparison.png</outputPath>
 		<seriesNaming><!--Include spectrum name to plot series names. This can be either 'true' or 'false'.-->
 			<includeStfName>true</includeStfName>
 			<includeMaterialName>false</includeMaterialName>
@@ -217,19 +221,19 @@
 			<stressSequenceId>23</stressSequenceId>
 			<typicalFlightName>TF_4_2s</typicalFlightName>
 		</typicalFlight>
-		<outputPath>/Users/aurora/Temporary/typicalFlightComparison.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/typicalFlightComparison.png</outputPath>
 	</plotTypicalFlightComparison>
 	<plotEquivalentStressComparison>
 		<id>33</id>
 		<equivalentStressId>30</equivalentStressId>
 		<equivalentStressId>28</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/equivalentStressComparison.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/equivalentStressComparison.png</outputPath>
 	</plotEquivalentStressComparison>
 	<plotEquivalentStressComparison>
 		<id>34</id>
 		<equivalentStressId>30</equivalentStressId>
 		<equivalentStressId>28</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/equivalentStressComparison_withMissionParams.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/equivalentStressComparison_withMissionParams.png</outputPath>
 		<missionParameter>Param1</missionParameter>
 	</plotEquivalentStressComparison>
 	<plotLifeFactors>
@@ -237,7 +241,7 @@
 		<equivalentStressId>30</equivalentStressId>
 		<equivalentStressId>28</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
-		<outputPath>/Users/aurora/Temporary/lifeFactors.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/lifeFactors.png</outputPath>
 	</plotLifeFactors>
 	<plotLifeFactors>
 		<id>38</id>
@@ -245,14 +249,14 @@
 		<equivalentStressId>28</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
 		<missionParameter>Param1</missionParameter>
-		<outputPath>/Users/aurora/Temporary/lifeFactors_withMissionParams.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/lifeFactors_withMissionParams.png</outputPath>
 	</plotLifeFactors>
 	<plotEquivalentStressRatios>
 		<id>39</id>
 		<equivalentStressId>30</equivalentStressId>
 		<equivalentStressId>28</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
-		<outputPath>/Users/aurora/Temporary/equivalentStressRatios.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/equivalentStressRatios.png</outputPath>
 	</plotEquivalentStressRatios>
 	<plotEquivalentStressRatios>
 		<id>40</id>
@@ -260,14 +264,14 @@
 		<equivalentStressId>28</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
 		<missionParameter>Param1</missionParameter>
-		<outputPath>/Users/aurora/Temporary/equivalentStressRatios_withMissionParams.png</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/equivalentStressRatios_withMissionParams.png</outputPath>
 	</plotEquivalentStressRatios>
 	<saveEquivalentStresses>
 		<id>41</id>
 		<equivalentStressId>28</equivalentStressId>
 		<equivalentStressId>29</equivalentStressId>
 		<equivalentStressId>30</equivalentStressId>
-		<outputPath>/Users/aurora/Temporary/eqStresses.xls</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/eqStresses.xls</outputPath>
 		<options>
 			<equivalentStress>true</equivalentStress>
 			<materialName>true</materialName>
@@ -290,7 +294,7 @@
 		<equivalentStressId>29</equivalentStressId>
 		<equivalentStressId>30</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
-		<outputPath>/Users/aurora/Temporary/lifeFactors.xls</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/lifeFactors.xls</outputPath>
 		<options>
 			<lifeFactor>true</lifeFactor>
 			<materialName>true</materialName>
@@ -313,7 +317,7 @@
 		<equivalentStressId>29</equivalentStressId>
 		<equivalentStressId>30</equivalentStressId>
 		<basisMission>61 Parabolas</basisMission>
-		<outputPath>/Users/aurora/Temporary/eqStressRatios.xls</outputPath>
+		<outputPath>/Users/aurora/Temporary/example1/outputs/eqStressRatios.xls</outputPath>
 		<options>
 			<equivalentStressRatio>true</equivalentStressRatio>
 			<materialName>true</materialName>

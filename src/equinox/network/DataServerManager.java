@@ -36,10 +36,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import equinox.Equinox;
-import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
-import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.dataServer.remote.Registry;
 import equinox.dataServer.remote.listener.DataMessageListener;
@@ -53,13 +51,6 @@ import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
 import equinox.task.CheckUserAuthentication;
-import equinox.task.GetAccessRequestCount;
-import equinox.task.GetBugReportCount;
-import equinox.task.GetDataQueryCounts;
-import equinox.task.GetPilotPointCounts;
-import equinox.task.GetSearchHits;
-import equinox.task.GetSpectrumCounts;
-import equinox.task.GetWishCount;
 import equinox.task.SaveUserAuthentication;
 import equinox.utility.Utility;
 import javafx.application.Platform;
@@ -379,18 +370,6 @@ public class DataServerManager implements DataMessageListener {
 			// start scheduled thread pool
 			CheckUserAuthentication check = new CheckUserAuthentication(owner_.getInputPanel());
 			((ScheduledExecutorService) Equinox.SCHEDULED_THREADPOOL).scheduleAtFixedRate(check, 60, 120, TimeUnit.SECONDS);
-
-			// request data server statistics
-			if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
-				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetDataQueryCounts(period));
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetSpectrumCounts());
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetSearchHits());
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetPilotPointCounts());
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetBugReportCount());
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetWishCount());
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetAccessRequestCount());
-			}
 		}
 
 		// unsuccessful

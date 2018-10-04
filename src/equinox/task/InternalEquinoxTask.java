@@ -333,16 +333,7 @@ public abstract class InternalEquinoxTask<V> extends EquinoxTask<V> {
 
 		// loop over follower tasks
 		for (InternalEquinoxTask<?> task : followerTasks_) {
-
-			// execute in parallel
-			if (executeFollowerTasksInParallel_) {
-				taskPanel_.getOwner().runTaskInParallel(task);
-			}
-
-			// execute sequentially
-			else {
-				taskPanel_.getOwner().runTaskSequentially(task);
-			}
+			taskPanel_.getOwner().runTaskSilently(task, !executeFollowerTasksInParallel_);
 		}
 	}
 

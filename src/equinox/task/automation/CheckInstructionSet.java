@@ -36,6 +36,7 @@ import equinox.data.input.StressSequenceComparisonInput.ComparisonCriteria;
 import equinox.dataServer.remote.data.PilotPointImageType;
 import equinox.dataServer.remote.data.PilotPointInfo.PilotPointInfoType;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
+import equinox.network.AutomationClientHandler;
 import equinox.plugin.FileType;
 import equinox.process.automation.CheckEquivalentStressAnalysisInput;
 import equinox.process.automation.CheckGenerateStressSequenceInput;
@@ -56,7 +57,7 @@ import equinox.utility.XMLUtilities;
  * @date 18 Aug 2018
  * @time 14:56:00
  */
-public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, SavableTask {
+public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> implements LongRunningTask, SavableTask, AutomationTask {
 
 	/** Task mode. */
 	public static final int CHECK = 0, RUN = 1, GENERATE_EXECUTION_PLAN = 2;
@@ -70,6 +71,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 	/** True to overwrite existing files. */
 	private boolean overwriteFiles = true;
 
+	/** Request id. */
+	private int requestId = -1;
+
+	/** Automation client handler. */
+	private AutomationClientHandler automationClientHandler = null;
+
 	/**
 	 * Creates check instruction set task.
 	 *
@@ -81,6 +88,12 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 	public CheckInstructionSet(Path inputFile, int taskMode) {
 		this.inputFile = inputFile;
 		this.taskMode = taskMode;
+	}
+
+	@Override
+	public void setAutomationClientHandler(AutomationClientHandler automationClientHandler, int requestId) {
+		this.automationClientHandler = automationClientHandler;
+		this.requestId = requestId;
 	}
 
 	@Override
@@ -535,23 +548,62 @@ public class CheckInstructionSet extends TemporaryFileCreatingTask<Boolean> impl
 		super.succeeded();
 
 		// check
-		if (taskMode == CHECK)
+		if (taskMode == CHECK) {
+			if (automationClientHandler != null) {
+				automationClientHandler.taskCompleted(requestId);
+			}
 			return;
+		}
 
 		// execute tasks
 		try {
 
 			// couldn't pass check
-			if (!get())
+			if (!get()) {
+				if (automationClientHandler != null) {
+					automationClientHandler.taskFailed(requestId);
+				}
 				return;
+			}
 
 			// run instruction set
-			taskPanel_.getOwner().runTaskInParallel(new RunInstructionSet(inputFile, taskMode == GENERATE_EXECUTION_PLAN));
+			RunInstructionSet run = new RunInstructionSet(inputFile, taskMode == GENERATE_EXECUTION_PLAN);
+			run.setAutomationClientHandler(automationClientHandler, requestId);
+			taskPanel_.getOwner().runTaskInParallel(run);
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+
+			// notify client handler of task failure (if set)
+			if (automationClientHandler != null) {
+				automationClientHandler.taskFailed(requestId);
+			}
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
 		}
 	}
 

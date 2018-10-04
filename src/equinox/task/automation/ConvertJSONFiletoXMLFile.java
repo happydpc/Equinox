@@ -17,6 +17,7 @@ package equinox.task.automation;
 
 import java.nio.file.Path;
 
+import equinox.network.AutomationClientHandler;
 import equinox.process.automation.ConvertJSONtoXML;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
 import equinox.task.TemporaryFileCreatingTask;
@@ -28,10 +29,16 @@ import equinox.task.TemporaryFileCreatingTask;
  * @date 12 Sep 2018
  * @time 23:31:19
  */
-public class ConvertJSONFiletoXMLFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask {
+public class ConvertJSONFiletoXMLFile extends TemporaryFileCreatingTask<Path> implements ShortRunningTask, AutomationTask {
 
 	/** Input and output files. */
 	private final Path inputJsonFile, outputXmlFile;
+
+	/** Request id. */
+	private int requestId = -1;
+
+	/** Automation client handler. */
+	private AutomationClientHandler automationClientHandler = null;
 
 	/**
 	 * Creates convert JSON file to XML file process.
@@ -47,6 +54,12 @@ public class ConvertJSONFiletoXMLFile extends TemporaryFileCreatingTask<Path> im
 	}
 
 	@Override
+	public void setAutomationClientHandler(AutomationClientHandler automationClientHandler, int requestId) {
+		this.automationClientHandler = automationClientHandler;
+		this.requestId = requestId;
+	}
+
+	@Override
 	public String getTaskTitle() {
 		return "Convert JSON file to XML file";
 	}
@@ -59,5 +72,41 @@ public class ConvertJSONFiletoXMLFile extends TemporaryFileCreatingTask<Path> im
 	@Override
 	protected Path call() throws Exception {
 		return new ConvertJSONtoXML(this, inputJsonFile, outputXmlFile).start(null);
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// notify client handler of task completion (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskCompleted(requestId);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
 	}
 }

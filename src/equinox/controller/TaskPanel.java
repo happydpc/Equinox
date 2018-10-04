@@ -25,6 +25,9 @@ import equinox.data.EquinoxTheme;
 import equinox.task.InternalEquinoxTask;
 import equinox.task.InternalEquinoxTask.LongRunningTask;
 import equinox.task.PluginTask;
+import equinox.task.automation.AutomaticTask;
+import equinox.task.automation.AutomaticTaskOwner;
+import equinox.task.automation.RunInstructionSet;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -109,13 +112,7 @@ public class TaskPanel implements Initializable, ChangeListener<State> {
 	public void updateCancelState(boolean canBeCanceled) {
 
 		// set button state
-		Platform.runLater(new Runnable() {
-
-			@Override
-			public void run() {
-				cancel_.setDisable(!canBeCanceled);
-			}
-		});
+		Platform.runLater(() -> cancel_.setDisable(!canBeCanceled));
 	}
 
 	/**
@@ -169,8 +166,13 @@ public class TaskPanel implements Initializable, ChangeListener<State> {
 			// setup cancel button state
 			controller.cancel_.setDisable(!controller.task_.canBeCancelled());
 
-			// setup components
-			controller.notify_.setSelected((task instanceof LongRunningTask) || ((task instanceof PluginTask) && ((PluginTask) task).isLongRunning()));
+			// setup notification
+			if (task instanceof AutomaticTask || task instanceof AutomaticTaskOwner || task instanceof RunInstructionSet) {
+				controller.notify_.setSelected(false);
+			}
+			else {
+				controller.notify_.setSelected(task instanceof LongRunningTask || task instanceof PluginTask && ((PluginTask) task).isLongRunning());
+			}
 
 			// bind UI to task
 			controller.progressIndicator_.progressProperty().bind(controller.task_.progressProperty());

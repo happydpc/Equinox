@@ -195,12 +195,12 @@ public class GenerateStressSequence extends InternalEquinoxTask<StressSequence> 
 			stfFile_.getChildren().add(sequence);
 
 			// generate and save plots
-			taskPanel_.getOwner().runTaskSequentially(new SaveMissionProfilePlot(sequence));
-			taskPanel_.getOwner().runTaskSequentially(new SaveLongestFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskSequentially(new SaveHOFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskSequentially(new SaveHSFlightPlot(sequence));
-			taskPanel_.getOwner().runTaskSequentially(new SaveNumPeaksPlot(sequence));
-			taskPanel_.getOwner().runTaskSequentially(new SaveFlightOccurrencePlot(sequence));
+			taskPanel_.getOwner().runTaskSilently(new SaveMissionProfilePlot(sequence), true);
+			taskPanel_.getOwner().runTaskSilently(new SaveLongestFlightPlot(sequence), true);
+			taskPanel_.getOwner().runTaskSilently(new SaveHOFlightPlot(sequence), true);
+			taskPanel_.getOwner().runTaskSilently(new SaveHSFlightPlot(sequence), true);
+			taskPanel_.getOwner().runTaskSilently(new SaveNumPeaksPlot(sequence), true);
+			taskPanel_.getOwner().runTaskSilently(new SaveFlightOccurrencePlot(sequence), true);
 
 			// manage automatic tasks
 			automaticTaskOwnerSucceeded(sequence, automaticTasks_, taskPanel_, executeAutomaticTasksInParallel_);

@@ -85,7 +85,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 	private PasswordField filerPassword_;
 
 	@FXML
-	private ToggleSwitch showHealthMonitor_, notifyEquinoxUpdates_, notifyPluginUpdates_, notifyMaterialUpdates_, notifyMessages_, notifyFiles_, notifyErrors_, notifyWarnings_, notifyInfo_, notifyQueued_, notifySubmitted_, notifySucceeded_, notifySaved_, notifyScheduled_, useSystemTray_, fallback_,
+	private ToggleSwitch showNewsfeed_, notifyEquinoxUpdates_, notifyPluginUpdates_, notifyMaterialUpdates_, notifyMessages_, notifyFiles_, notifyErrors_, notifyWarnings_, notifyInfo_, notifyQueued_, notifySubmitted_, notifySucceeded_, notifySaved_, notifyScheduled_, useSystemTray_, fallback_,
 			showFromBottom_, keepOutputs_, detailedAnalysis_, compression_;
 
 	@FXML
@@ -237,7 +237,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 		boolean notifySaved = notifySaved_.isSelected();
 		boolean notifyScheduled = notifyScheduled_.isSelected();
 		boolean useSystemTray = useSystemTray_.isSelected();
-		boolean showHealthMonitor = showHealthMonitor_.isSelected();
+		boolean showNewsfeed = showNewsfeed_.isSelected();
 		boolean showFromBottom = showFromBottom_.isSelected();
 		boolean fallbackToInbuilt = fallback_.isSelected();
 		boolean applyCompression = compression_.isSelected();
@@ -427,7 +427,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 		if (settings_.setValue(Settings.SHOW_NOTIFY_FROM_BOTTOM, showFromBottom)) {
 			restart = true;
 		}
-		if (settings_.setValue(Settings.SHOW_HEALTH_MONITORING, showHealthMonitor)) {
+		if (settings_.setValue(Settings.SHOW_NEWSFEED, showNewsfeed)) {
 			restart = true;
 		}
 		if (settings_.setValue(Settings.ANALYSIS_ENGINE, analysisEngine)) {
@@ -557,7 +557,7 @@ public class SettingsPanel implements InternalInputSubPanel {
 		notifyScheduled_.setSelected((boolean) settings_.getValue(Settings.NOTIFY_SCHEDULED));
 		useSystemTray_.setSelected((boolean) settings_.getValue(Settings.USE_SYSTEMTRAY));
 		showFromBottom_.setSelected((boolean) settings_.getValue(Settings.SHOW_NOTIFY_FROM_BOTTOM));
-		showHealthMonitor_.setSelected((boolean) settings_.getValue(Settings.SHOW_HEALTH_MONITORING));
+		showNewsfeed_.setSelected((boolean) settings_.getValue(Settings.SHOW_NEWSFEED));
 	}
 
 	/**

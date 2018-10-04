@@ -90,23 +90,14 @@ public interface MultipleInputTask<V> extends AutomaticTask<V> {
 
 			// input threshold reached
 			if (inputList.size() == inputThreshold) {
-
-				// execute in parallel
-				if (executeInParallel) {
-					((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskInParallel((InternalEquinoxTask<?>) this);
-				}
-
-				// execute sequentially
-				else {
-					((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSequentially((InternalEquinoxTask<?>) this);
-				}
+				((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSilently((InternalEquinoxTask<?>) this, !executeInParallel);
 			}
 		}
 	}
 
 	/**
 	 * Called by implementing classes as a default implementation of <code>inputFailed</code> method.
-	 * 
+	 *
 	 * @param task
 	 *            Source task.
 	 * @param executeInParallel
@@ -124,16 +115,7 @@ public interface MultipleInputTask<V> extends AutomaticTask<V> {
 
 		// input threshold reached
 		if (inputList.size() == inputThreshold && inputThreshold >= 2) {
-
-			// execute in parallel
-			if (executeInParallel) {
-				((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskInParallel((InternalEquinoxTask<?>) this);
-			}
-
-			// execute sequentially
-			else {
-				((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSequentially((InternalEquinoxTask<?>) this);
-			}
+			((InternalEquinoxTask<?>) task).getTaskPanel().getOwner().runTaskSilently((InternalEquinoxTask<?>) this, !executeInParallel);
 		}
 
 		// return input threshold

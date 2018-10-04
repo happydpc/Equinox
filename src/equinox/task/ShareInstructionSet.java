@@ -19,10 +19,12 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import equinox.exchangeServer.remote.data.ExchangeUser;
+import equinox.network.AutomationClientHandler;
 import equinox.plugin.FileType;
 import equinox.serverUtilities.Permission;
 import equinox.serverUtilities.SharedFileInfo;
 import equinox.task.InternalEquinoxTask.FileSharingTask;
+import equinox.task.automation.AutomationTask;
 import equinox.utility.Utility;
 
 /**
@@ -32,13 +34,19 @@ import equinox.utility.Utility;
  * @date 22 Sep 2018
  * @time 17:25:09
  */
-public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> implements FileSharingTask {
+public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> implements FileSharingTask, AutomationTask {
 
 	/** File to share. */
 	private Path file;
 
 	/** Recipients. */
 	private final ExchangeUser recipient;
+
+	/** Request id. */
+	private int requestId = -1;
+
+	/** Automation client handler. */
+	private AutomationClientHandler automationClientHandler = null;
 
 	/**
 	 * Creates share instruction set task.
@@ -51,6 +59,12 @@ public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> impleme
 	public ShareInstructionSet(Path file, ExchangeUser recipient) {
 		this.file = file;
 		this.recipient = recipient;
+	}
+
+	@Override
+	public void setAutomationClientHandler(AutomationClientHandler automationClientHandler, int requestId) {
+		this.automationClientHandler = automationClientHandler;
+		this.requestId = requestId;
 	}
 
 	@Override
@@ -80,5 +94,41 @@ public class ShareInstructionSet extends TemporaryFileCreatingTask<Void> impleme
 		// upload file to filer
 		shareFile(output, Arrays.asList(recipient), SharedFileInfo.INSTRUCTION_SET);
 		return null;
+	}
+
+	@Override
+	protected void succeeded() {
+
+		// call ancestor
+		super.succeeded();
+
+		// notify client handler of task completion (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskCompleted(requestId);
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
 	}
 }

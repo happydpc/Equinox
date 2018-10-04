@@ -85,6 +85,7 @@ import equinox.dataServer.remote.data.SearchItem;
 import equinox.dataServer.remote.data.SpectrumInfo;
 import equinox.dataServer.remote.data.SpectrumInfo.SpectrumInfoType;
 import equinox.dataServer.remote.data.SpectrumSearchInput;
+import equinox.network.AutomationClientHandler;
 import equinox.plugin.FileType;
 import equinox.process.automation.ConvertJSONtoXML;
 import equinox.process.automation.ReadEquivalentStressAnalysisInput;
@@ -185,8 +186,12 @@ import equinox.task.TemporaryFileCreatingTask;
 import equinox.task.UploadPilotPoints;
 import equinox.task.UploadSpectra;
 import equinox.utility.XMLUtilities;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker.State;
 import javafx.scene.image.Image;
 
 /**
@@ -197,7 +202,7 @@ import javafx.scene.image.Image;
  * @time 15:12:11
  */
 @SuppressWarnings("unchecked")
-public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String, InstructedTask>> implements LongRunningTask {
+public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String, InstructedTask>> implements LongRunningTask, ChangeListener<State>, AutomationTask {
 
 	/** Run mode constant. */
 	public static final String PARALLEL = "parallel", SEQUENTIAL = "sequential";
@@ -214,6 +219,15 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	/** True to generate execution plan. */
 	private final boolean generateExecutionPlan;
 
+	/** Number of all tasks to be executed. */
+	private int allTasks = 0, requestId;
+
+	/** Number of completed tasks. */
+	private volatile int completedTasks = 0;
+
+	/** Automation client handler. */
+	private AutomationClientHandler automationClientHandler = null;
+
 	/**
 	 * Creates submit instruction set task.
 	 *
@@ -225,6 +239,44 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 	public RunInstructionSet(Path inputFile, boolean generateExecutionPlan) {
 		this.inputFile = inputFile;
 		this.generateExecutionPlan = generateExecutionPlan;
+	}
+
+	@Override
+	public void setAutomationClientHandler(AutomationClientHandler automationClientHandler, int requestId) {
+		this.automationClientHandler = automationClientHandler;
+		this.requestId = requestId;
+	}
+
+	@Override
+	public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue) {
+
+		// succeeded, failed or canceled
+		if (newValue.equals(State.SUCCEEDED) || newValue.equals(State.CANCELLED) || newValue.equals(State.FAILED)) {
+
+			// increment completed tasks
+			completedTasks++;
+
+			// notify client handler of task progress (if set)
+			if (automationClientHandler != null) {
+				automationClientHandler.taskProgress(requestId, completedTasks * 100d / allTasks);
+			}
+
+			// all tasks completed
+			if (completedTasks >= allTasks) {
+
+				// notify client handler of task completion (if set)
+				if (automationClientHandler != null) {
+					automationClientHandler.taskCompleted(requestId);
+				}
+
+				// show completion popup (in javafx event queue)
+				Platform.runLater(() -> {
+					String title = "Task completed (in " + getDuration() + ")";
+					String message = getTaskTitle() + " is successfully completed.";
+					taskPanel_.getOwner().getOwner().getNotificationPane().showOk(title, message);
+				});
+			}
+		}
 	}
 
 	@Override
@@ -557,14 +609,27 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 			HashMap<String, InstructedTask> tasks = get();
 
 			// no tasks found
-			if (tasks == null)
+			if (tasks == null) {
+
+				// notify client handler of task completion (if set)
+				if (automationClientHandler != null) {
+					automationClientHandler.taskFailed(requestId);
+				}
 				return;
+			}
 
 			// generate execution plan
 			if (generateExecutionPlan) {
+
+				// plot
 				TaskExecutionPlanViewPanel panel = (TaskExecutionPlanViewPanel) taskPanel_.getOwner().getOwner().getViewPanel().getSubPanel(ViewPanel.EXECUTION_TREE_VIEW_PANEL);
 				panel.setAutomaticTasks(this, tasks);
 				taskPanel_.getOwner().getOwner().getViewPanel().showSubPanel(ViewPanel.EXECUTION_TREE_VIEW_PANEL);
+
+				// notify client handler of task completion (if set)
+				if (automationClientHandler != null) {
+					automationClientHandler.taskCompleted(requestId);
+				}
 			}
 
 			// run tasks
@@ -572,18 +637,22 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 
 				// loop over tasks
 				Iterator<Entry<String, InstructedTask>> iterator = tasks.entrySet().iterator();
+				allTasks = tasks.size();
 				while (iterator.hasNext()) {
 
 					// get instructed task
 					InstructedTask instructedTask = iterator.next().getValue();
 
+					// get task
+					InternalEquinoxTask<?> task = instructedTask.getTask();
+
+					// listen for state change
+					task.stateProperty().addListener(this);
+
 					// embedded
 					if (instructedTask.isEmbedded()) {
 						continue;
 					}
-
-					// get task
-					InternalEquinoxTask<?> task = instructedTask.getTask();
 
 					// logging requested
 					if (logLevel != null && logDirectory != null) {
@@ -600,15 +669,8 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 						createLoggersForFollowerTasks(task);
 					}
 
-					// parallel
-					if (runMode.equals(PARALLEL)) {
-						taskPanel_.getOwner().runTaskInParallel(task);
-					}
-
-					// sequential
-					else if (runMode.equals(SEQUENTIAL)) {
-						taskPanel_.getOwner().runTaskSequentially(task);
-					}
+					// run task
+					taskPanel_.getOwner().runTaskSilently(task, runMode.equals(SEQUENTIAL));
 				}
 			}
 		}
@@ -616,6 +678,35 @@ public class RunInstructionSet extends TemporaryFileCreatingTask<HashMap<String,
 		// exception occurred during retrieving results
 		catch (Exception e) {
 			handleResultRetrievalException(e);
+
+			// notify client handler of task completion (if set)
+			if (automationClientHandler != null) {
+				automationClientHandler.taskFailed(requestId);
+			}
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
 		}
 	}
 

@@ -303,12 +303,7 @@ public class FastGenerateStressSequence extends TemporaryFileCreatingTask<ArrayL
 				}
 
 				// run task
-				if (executeAutomaticTasksInParallel_) {
-					tm.runTaskInParallel(task);
-				}
-				else {
-					tm.runTaskSequentially(task);
-				}
+				tm.runTaskSilently(task, !executeAutomaticTasksInParallel_);
 			}
 		}
 

@@ -38,17 +38,14 @@ import equinox.analysisServer.remote.Registry;
 import equinox.analysisServer.remote.listener.AnalysisMessageListener;
 import equinox.analysisServer.remote.message.AnalysisMessage;
 import equinox.analysisServer.remote.message.HandshakeWithAnalysisServer;
-import equinox.controller.HealthMonitorViewPanel;
 import equinox.controller.MainScreen;
 import equinox.controller.NotificationPanel1;
-import equinox.controller.ViewPanel;
 import equinox.data.Settings;
 import equinox.serverUtilities.BigMessage;
 import equinox.serverUtilities.NetworkMessage;
 import equinox.serverUtilities.PartialMessage;
 import equinox.serverUtilities.PermissionDenied;
 import equinox.serverUtilities.SplitMessage;
-import equinox.task.GetAnalysisRequests;
 import equinox.utility.Utility;
 import javafx.application.Platform;
 
@@ -340,12 +337,6 @@ public class AnalysisServerManager implements AnalysisMessageListener {
 			AnalysisMessage message;
 			while ((message = messageQueue_.poll()) != null) {
 				sendMessage(message);
-			}
-
-			// request analysis server statistics
-			if ((boolean) owner_.getSettings().getValue(Settings.SHOW_HEALTH_MONITORING)) {
-				long period = ((HealthMonitorViewPanel) owner_.getViewPanel().getSubPanel(ViewPanel.HEALTH_MONITOR_VIEW)).getPeriod();
-				owner_.getActiveTasksPanel().runTaskInParallel(new GetAnalysisRequests(period));
 			}
 		}
 

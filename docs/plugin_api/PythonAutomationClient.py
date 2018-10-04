@@ -14,6 +14,28 @@ inputPath = "/Users/aurora/EclipseWorkspace/Equinox/docs/plugin_api/NewFile.xml"
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('localhost', portNumber))
 
-# send input file path to server and close socket
-s.send(inputPath.encode("utf8"))
-s.close() 
+# send send run request
+s.sendall('|'.join([inputPath, 'run', '\n']).encode("utf8"))
+
+try:
+    
+    # wait for server response
+    while True:
+        
+        # receive response
+        data = str(s.recv(1024).decode())
+        
+        # print server response
+        print (data)
+        
+        # get response header
+        header = data.split('|')[0]
+        
+        # completed or failed
+        if header in ['Completed', 'Failed']:
+            break
+
+# close socket
+finally:
+    print('closing socket')
+    s.close()

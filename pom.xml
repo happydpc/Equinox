@@ -53,12 +53,12 @@
 					<manifestAttributes>
 						<Implementation-Vendor>No Magic Inc.</Implementation-Vendor>
 						<Implementation-Title>AF-Twin Data Analyst</Implementation-Title>
-						<Implementation-Version>3.8</Implementation-Version>
+						<Implementation-Version>4.0</Implementation-Version>
 						<Notify-Update>true</Notify-Update>
-						<Allow-Ignore-Update>true</Allow-Ignore-Update>
-						<Jar-Version>3.8.9.6</Jar-Version>
-						<Lib-Version>3.8.6</Lib-Version>
-						<Resource-Version>3.8.1</Resource-Version>
+						<Allow-Ignore-Update>false</Allow-Ignore-Update>
+						<Jar-Version>4.0</Jar-Version>
+						<Lib-Version>4.0</Lib-Version>
+						<Resource-Version>4.0</Resource-Version>
 						<JavaFX-Feature-Proxy>None</JavaFX-Feature-Proxy>
 					</manifestAttributes>
 				</configuration>

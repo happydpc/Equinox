@@ -29,7 +29,9 @@ import java.util.concurrent.ExecutionException;
 
 import equinox.Equinox;
 import equinox.data.ui.SavedTaskItem;
+import equinox.network.AutomationClientHandler;
 import equinox.task.InternalEquinoxTask.ShortRunningTask;
+import equinox.task.automation.AutomationTask;
 
 /**
  * Class for save task task.
@@ -38,7 +40,7 @@ import equinox.task.InternalEquinoxTask.ShortRunningTask;
  * @date Oct 8, 2015
  * @time 12:02:19 PM
  */
-public class SaveTask extends InternalEquinoxTask<SavedTaskItem> implements ShortRunningTask {
+public class SaveTask extends InternalEquinoxTask<SavedTaskItem> implements ShortRunningTask, AutomationTask {
 
 	/** Serializable task. */
 	private final SerializableTask serializableTask_;
@@ -48,6 +50,12 @@ public class SaveTask extends InternalEquinoxTask<SavedTaskItem> implements Shor
 
 	/** Task title. */
 	private final String title_;
+
+	/** Request id. */
+	private int requestId = -1;
+
+	/** Automation client handler. */
+	private AutomationClientHandler automationClientHandler = null;
 
 	/**
 	 * Creates save task task.
@@ -61,6 +69,12 @@ public class SaveTask extends InternalEquinoxTask<SavedTaskItem> implements Shor
 		serializableTask_ = task.getSerializableTask();
 		scheduleDate_ = scheduleDate;
 		title_ = task.getTaskTitle();
+	}
+
+	@Override
+	public void setAutomationClientHandler(AutomationClientHandler automationClientHandler, int requestId) {
+		this.automationClientHandler = automationClientHandler;
+		this.requestId = requestId;
 	}
 
 	/**
@@ -180,11 +194,45 @@ public class SaveTask extends InternalEquinoxTask<SavedTaskItem> implements Shor
 				taskPanel_.getOwner().getOwner().getScheduledTasksPanel().getScheduledTasks().getItems().add(task);
 				Collections.sort(taskPanel_.getOwner().getOwner().getScheduledTasksPanel().getScheduledTasks().getItems());
 			}
+
+			// notify client handler of task completion (if set)
+			if (automationClientHandler != null) {
+				automationClientHandler.taskCompleted(requestId);
+			}
 		}
 
 		// exception occurred
 		catch (InterruptedException | ExecutionException e) {
 			handleResultRetrievalException(e);
+
+			// notify client handler of task failure (if set)
+			if (automationClientHandler != null) {
+				automationClientHandler.taskFailed(requestId);
+			}
+		}
+	}
+
+	@Override
+	protected void failed() {
+
+		// call ancestor
+		super.failed();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
+		}
+	}
+
+	@Override
+	protected void cancelled() {
+
+		// call ancestor
+		super.cancelled();
+
+		// notify client handler of task failure (if set)
+		if (automationClientHandler != null) {
+			automationClientHandler.taskFailed(requestId);
 		}
 	}
 }
